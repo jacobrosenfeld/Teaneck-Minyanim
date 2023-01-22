@@ -9,6 +9,7 @@ import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanDAO;
 import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
 import com.reesedevelopment.greatneckzmanim.admin.structure.organization.OrganizationDAO;
 import com.reesedevelopment.greatneckzmanim.front.MinyanEvent;
+import com.reesedevelopment.greatneckzmanim.front.KolhaMinyanim;
 import com.reesedevelopment.greatneckzmanim.global.Nusach;
 import com.reesedevelopment.greatneckzmanim.global.Zman;
 
@@ -33,9 +34,9 @@ import java.util.*;
 public class ZmanimController {
     TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
 
-    String locationName = "Great Neck, NY";
-    double latitude = 40.8007;
-    double longitude = -73.7285;
+    String locationName = "Teaneck, NJ";
+    double latitude = 40.906871;
+    double longitude = -74.020924;
     double elevation = 0;
     GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
 
@@ -43,6 +44,7 @@ public class ZmanimController {
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm aa");
     SimpleDateFormat onlyDateFormat = new SimpleDateFormat("EEEE, MMMM d");
     SimpleDateFormat strippedDayFormat = new SimpleDateFormat("MMMM d");
+    SimpleDateFormat timeFormatSec = new SimpleDateFormat("h:mm:ss aa");
     SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
 
     ZmanimHandler zmanimHandler = new ZmanimHandler(geoLocation);
@@ -76,12 +78,17 @@ public class ZmanimController {
         return zmanim(new Date());
     }
 
-    private String timeFormatWithRoundingToSecond(Date date) {
+    private String timeFormatWithRoundingToMinute(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(Calendar.SECOND, 30);
         calendar.setTimeZone(timeZone);
         return timeFormat.format(calendar.getTime());
+    }
+    private String timeFormatWithRoundingToSecond(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return timeFormatSec.format(calendar.getTime());
     }
 
     public ModelAndView zmanim(Date date) {
@@ -131,17 +138,19 @@ public class ZmanimController {
         System.out.println("DEBUG: Putting zmanim in model");
         
         System.out.println("ALOT HASH: " + zmanim.get(Zman.ALOT_HASHACHAR));
-        mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOT_HASHACHAR)));
-        mv.getModel().put("sunrise", timeFormatWithRoundingToSecond(zmanim.get(Zman.NETZ)));
-        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOT)));
-        mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_GEDOLA)));
-        mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_KETANA)));
-        mv.getModel().put("plagHamincha", timeFormatWithRoundingToSecond(zmanim.get(Zman.PLAG_HAMINCHA)));
-        mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
-        mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
-        mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZET)));
-
-
+        mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.ALOT_HASHACHAR)));
+        mv.getModel().put("sunrise", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.NETZ)));
+        mv.getModel().put("szks", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.SZKS)));
+        mv.getModel().put("szt", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.SZT)));
+        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.CHATZOT)));
+        mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.MINCHA_GEDOLA)));
+        mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.MINCHA_KETANA)));
+        mv.getModel().put("plagHamincha", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.PLAG_HAMINCHA)));
+        mv.getModel().put("shekiya", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.SHEKIYA)));
+        mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.EARLIEST_SHEMA)));
+        mv.getModel().put("tzet", timeFormatWithRoundingToSecond((Date) zmanim.get(Zman.TZET)));
+        
+        
         System.out.println("DEBUG: Fetching minyanim");
 
 //        get minyanim closest in time to now
@@ -203,25 +212,81 @@ public class ZmanimController {
                 }
             }*/
         }
+// KolhaMinyanim insertion
+List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
+for (Minyan minyan : enabledMinyanim) {
+    LocalDate ref = LocalDate.of(date.getYear() + 1900, date.getMonth(), date.getDate()).plusMonths(1);
+    Date startDate = minyan.getStartDate(ref);
+    Date now = new Date();
+    System.out.println("SD: " + startDate);
+    if (startDate != null) {      
+        String organizationName;
+        Nusach organizationNusach;
+        String organizationId;
+        Organization organization = minyan.getOrganization();
+        if (organization == null) {
+            Organization temp = organizationDAO.findById(minyan.getOrganizationId());
+            organizationName = temp.getName();
+            organizationNusach = temp.getNusach();
+            organizationId = temp.getId();
+        } else {
+            organizationName = organization.getName();
+            organizationNusach = organization.getNusach();
+            organizationId = organization.getId();
+        }
+
+        String locationName = null;
+        Location location = minyan.getLocation();
+        if (location == null) {
+            location = locationDAO.findById(minyan.getLocationId());
+            if (location != null) {
+                locationName = location.getName();
+            }
+        } else {
+            locationName = location.getName();
+        }
+
+        String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
+        if (dynamicDisplayName != null) {
+            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
+        } else {
+            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+        }
+    } /*else {
+        if (startDate != null) {
+            System.out.println("Skipping minyan with start date: " + startDate.toString());
+        } else {
+            System.out.println("Skipping minyan with null start date.");
+        }
+    }*/
+}
+kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
+mv.getModel().put("kolminyanim", kolhaMinyanims);
+//end kol
+//orgs
+List<Organization> shulNames = new ArrayList<>();
+for (Organization organization : shulNames)
+mv.getModel().put("shuls", shulNames);
+//end orgs
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
         mv.getModel().put("allminyanim", minyanEvents);
 
         List<MinyanEvent> shacharitMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
-        List<MinyanEvent> arvitMinyanim = new ArrayList<>();
+        List<MinyanEvent> maarivMinyanim = new ArrayList<>();
         for (MinyanEvent me : minyanEvents) {
             if (me.getType().isShacharit()) {
                 shacharitMinyanim.add(me);
             } else if (me.getType().isMincha()) {
                 minchaMinyanim.add(me);
-            } else if (me.getType().isArvit()) {
-                arvitMinyanim.add(me);
+            } else if (me.getType().isMaariv()) {
+                maarivMinyanim.add(me);
             }
         }
         mv.getModel().put("shacharitMinyanim", shacharitMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
-        mv.getModel().put("arvitMinyanim", arvitMinyanim);
+        mv.getModel().put("maarivMinyanim", maarivMinyanim);
 
         return mv;
     }
@@ -321,8 +386,9 @@ public class ZmanimController {
 
         for (Minyan minyan : enabledMinyanim) {
             Date startDate = minyan.getStartDate(LocalDate.of(date.getYear() + 1900, date.getMonth(), date.getDate()).plusMonths(1));
-            Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
-            if (startDate != null && startDate.after(terminationDate)) {
+            //Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
+            //if (startDate != null && startDate.after(terminationDate)) {
+            if (startDate != null) {    
                 String organizationName;
                 Nusach organizationNusach;
                 String organizationId;
@@ -357,25 +423,24 @@ public class ZmanimController {
                 }
             }
         }
-
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
         mv.getModel().put("allminyanim", minyanEvents);
 
         List<MinyanEvent> shacharitMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
-        List<MinyanEvent> arvitMinyanim = new ArrayList<>();
+        List<MinyanEvent> maarivMinyanim = new ArrayList<>();
         for (MinyanEvent me : minyanEvents) {
             if (me.getType().isShacharit()) {
                 shacharitMinyanim.add(me);
             } else if (me.getType().isMincha()) {
                 minchaMinyanim.add(me);
-            } else if (me.getType().isArvit()) {
-                arvitMinyanim.add(me);
+            } else if (me.getType().isMaariv()) {
+                maarivMinyanim.add(me);
             }
         }
         mv.getModel().put("shacharitMinyanim", shacharitMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
-        mv.getModel().put("arvitMinyanim", arvitMinyanim);
+        mv.getModel().put("maarivMinyanim", maarivMinyanim);
 
 //        mv.getModel().put("usesLocations", minyanEvents.)
 
