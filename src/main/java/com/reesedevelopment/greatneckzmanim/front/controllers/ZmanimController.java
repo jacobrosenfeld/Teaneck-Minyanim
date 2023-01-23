@@ -208,8 +208,8 @@ public class ZmanimController {
 // KolhaMinyanim insertion
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
-for (KolhaMinyanim minyan : kolhaMinyanims) {
-    LocalDate ref = dateToLocalDate(date).plusMonths(1);
+for (Minyan minyan : enabledMinyanim) {
+    LocalDate ref = LocalDate.of(date.getYear() + 1900, date.getMonth(), date.getDate()).plusMonths(1);
     Date startDate = minyan.getStartDate(ref);
     Date now = new Date();
     System.out.println("SD: " + startDate);
