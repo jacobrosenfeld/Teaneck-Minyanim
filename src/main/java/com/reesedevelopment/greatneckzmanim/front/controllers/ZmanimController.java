@@ -208,7 +208,7 @@ public class ZmanimController {
 // KolhaMinyanim insertion
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
-for (Minyan minyan : enabledMinyanim) {
+for (Minyan minyan : minyanDAO.getEnabled()) {
     LocalDate ref = dateToLocalDate(date).plusMonths(1);
     Date startDate = minyan.getStartDate(ref);
     Date now = new Date();
@@ -259,13 +259,7 @@ mv.getModel().put("kolminyanim", kolhaMinyanims);
 //end kol
 //orgs
 List<Organization> shulNames = new ArrayList<>();
-MinyanEvent[] allminyanim;
-for (MinyanEvent minyan : allminyanim) {
-    Organization organization = minyan.getOrganization();
-    if (!shulNames.contains(organization)) {
-        shulNames.add(organization);
-    }
-}
+for (Organization organization : shulNames)
 mv.getModel().put("shuls", shulNames);
 //end orgs
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
