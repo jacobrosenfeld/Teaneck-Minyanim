@@ -347,7 +347,7 @@ public class Minyan extends GNZObject implements IDGenerator {
     }
 
     public MinyanTime getMinyanTime(LocalDate date) {
-        LocalDate temp = date.plusMonths(1);
+        LocalDate temp = date;
         JewishCalendar jc = new JewishCalendar(temp);
         if (jc.isRoshChodesh()) {
             if (jc.isChanukah()) {
