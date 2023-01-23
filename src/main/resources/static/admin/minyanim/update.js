@@ -1,62 +1,127 @@
-function update(name, mode) {
-    var newBox = document.createElement('div');
-    newBox.className = "col";
+function update(name) {
+//    get currently selected mode
+    var mode = document.getElementById(`${name}-time-type`).value;
+    console.log("mode: " + mode);
 
+    var newBox = document.createElement(`div`);
+    newBox.className = "col";
     var nm = `<input type="text" class="form-control" name="${name}-fixed-time" id="${name}-fixed-time" disabled>`;
     var fixed = `<input type="time" class="form-control" name="${name}-fixed-time" id="${name}-fixed-time" required>`;
     var dynamic = `<div class="form-row">
-                        <div class="col">
-                            <select class="custom-select" name="${name}-zman" id="${name}-zman" required>
-                                <option disabled selected>Choose a zman</option>
-                                <option value="netz">Netz</option>
-                                <option value="chatzot">Chatzot</option>
-                                <option value="mincha_gedola">Mincha Gedola</option>
-                                <option value="mincha_ketana">Mincha Ketana</option>
-                                <option value="plag_hamincha">Plag HaMincha</option>
-                                <option value="shekiya">Shekiya</option>
-                                <option value="tzet">Tzet Hakochavim</option>
-                            </select>
+                            <div class="col">
+                                <select class="custom-select" name="${name}-zman" id="${name}-zman" required>
+                                                                            <option disabled selected>Choose a zman</option>
+                                                                            <option value="netz">Netz</option>
+                                                                            <option value="chatzot">Chatzot</option>
+                                                                            <option value="mincha_gedola">Mincha Gedola</option>
+                                                                            <option value="mincha_ketana">Mincha Ketana</option>
+                                                                            <option value="plag_hamincha">Plag HaMincha</option>
+                                                                            <option value="shekiya">Shekiya</option>
+                                                                            <option value="tzet">Tzet Hakochavim</option>
+                                                                        </select>
+                            </div>
+                            <div class="col">
+                                <input type="number" class="form-control" name="${name}-zman-offset" id="${name}-zman-offset" value=0 required>
+                            </div>
                         </div>
-                        <div class="col">
-                            <input type="number" class="form-control" name="${name}-zman-offset" id="${name}-zman-offset" value=0 required>
-                        </div>
-                    </div>`;
+                        `;
 
-    var currentBox = document.getElementById(`${mode}-time-box-${name}`);
+    var nmBox = document.getElementById(`nm-time-box-${name}`);
+    var fixedBox = document.getElementById(`fixed-time-box-${name}`);
+    var dynamicBox = document.getElementById(`dynamic-time-box-${name}`);
 
-    switch(mode) {
-        case "nm":
-            newBox.id = `nm-time-box-${name}`;
-            newBox.innerHTML = nm;
-            break;
-        case "fixed":
-            newBox.id = `fixed-time-box-${name}`;
-            newBox.innerHTML = fixed;
-            break;
-        case "dynamic":
-            newBox.id = `dynamic-time-box-${name}`;
-            newBox.innerHTML = dynamic;
-            break;
-        default:
-            console.log("Update failed. Invalid mode: " + mode);
-            return;
-    }
-
-    if (currentBox) {
-        currentBox.replaceWith(newBox);
+    if (mode == "nm") {
+        newBox.id = `nm-time-box-${name}`;
+        newBox.innerHTML = nm;
+        if (dynamicBox) {
+            dynamicBox.replaceWith(newBox);
+        } else if (fixedBox) {
+            fixedBox.replaceWith(newBox);
+        } else if (nmBox) {
+            nmBox.replaceWith(newBox);
+        }
+    } else if (mode == "fixed") {
+//        console.log("Removing dynamic box");
+        newBox.id = `fixed-time-box-${name}`;
+        newBox.innerHTML = fixed;
+        if (nmBox) {
+            nmBox.replaceWith(newBox);
+        } else if (dynamicBox) {
+            dynamicBox.replaceWith(newBox);
+        } else if (fixedBox) {
+            fixedBox.replaceWith(newBox);
+        }
+    } else if (mode == "dynamic") {
+//        console.log("Removing static box");
+        newBox.id = `dynamic-time-box-${name}`;
+        newBox.innerHTML = dynamic;
+        if (nmBox) {
+            nmBox.replaceWith(newBox);
+        } else if (fixedBox) {
+            fixedBox.replaceWith(newBox);
+        } else if (dynamicBox) {
+            dynamicBox.replaceWith(newBox);
+        }
+    } else {
+        console.log("Update failed. Mode: " + mode);
+        return;
     }
 }
 
 function updateAll() {
-    update("sunday", document.getElementById("sunday-time-type").value);
-    update("monday", document.getElementById("monday-time-type").value);
-    update("tuesday", document.getElementById("tuesday-time-type").value);
-    update("wednesday", document.getElementById("wednesday-time-type").value);
-    update("thursday", document.getElementById("thursday-time-type").value);
-    update("friday", document.getElementById("friday-time-type").value);
-    update("shabbat", document.getElementById("shabbat-time-type").value);
-    update("yt", document.getElementById("yt-time-type").value);
-    update("rc", document.getElementById("rc-time-type").value);
-    update("chanuka", document.getElementById("chanuka-time-type").value);
-    update("rcc", document.getElementById("rcc-time-type").value);
+    update("sunday");
+    update("monday");
+    update("tuesday");
+    update("wednesday");
+    update("thursday");
+    update("friday");
+    update("shabbat");
+    update("yt")
+    update("rc")
+    update("chanuka")
+    update("rcc")
+}
+
+//updateAll();
+
+function applyMondayThroughFriday() {
+    var mondayMode = document.getElementById(`monday-time-type`).value;
+    var mondayZman = document.getElementById(`monday-zman`).value;
+    var mondayOffset = document.getElementById(`monday-zman-offset`).value;
+    var mondayTime = document.getElementById(`monday-fixed-time`).value;
+
+    const needToMatch = ["tuesday", "wednesday", "thursday", "friday"];
+
+    needToMatch.forEach(setMatching);
+
+    function setMatching(name) {
+        var nameZman = document.getElementById(`${name}-zman`);
+        var nameOffset = document.getElementById(`${name}-zman-offset`);
+        var nameTime = document.getElementById(`${name}-fixed-time`);
+        var nameType = document.getElementById(`${name}-time-type`);
+        nameType.value = mondayMode;
+        if (mondayMode === "nm") {
+
+        } else if (mondayMode === "dynamic") {
+            nameZman.value = mondayZman;
+            nameOffset.value = mondayOffset;
+        } else if (mondayMode === "fixed") {
+            nameTime.value = mondayTime;
+        }
+    }
+}
+
+
+function updateMode(name, mode) {
+    document.getElementById(`${name}-time-type`).value = mode;
+    update(name);
+}
+
+function updateDynamicTime(name, zman, offset) {
+    document.getElementById(`${name}-zman`).value = zman;
+    document.getElementById(`${name}-zman-offset`).value = offset;
+}
+
+function updateFixedTime(name, time) {
+    document.getElementById(`${name}-fixed-time`).value = time;
 }
