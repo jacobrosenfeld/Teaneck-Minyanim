@@ -115,4 +115,8 @@ public class MinyanEvent {
 
         return result;
     }
+
+    public Organization getOrganization() {
+        return null;
+    }
 }
