@@ -1,19 +1,20 @@
 package com.reesedevelopment.greatneckzmanim.front.controllers;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Dictionary;
-import java.util.List;
-import java.util.TimeZone;
-
+import com.kosherjava.zmanim.util.GeoLocation;
+import com.kosherjava.zmanim.util.Time;
+import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
+import com.reesedevelopment.greatneckzmanim.admin.structure.location.LocationDAO;
+import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.Minyan;
+import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanDAO;
+import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
+import com.reesedevelopment.greatneckzmanim.admin.structure.organization.OrganizationDAO;
+import com.reesedevelopment.greatneckzmanim.front.MinyanEvent;
+import com.reesedevelopment.greatneckzmanim.front.KolhaMinyanim;
+import com.reesedevelopment.greatneckzmanim.global.Nusach;
+import com.reesedevelopment.greatneckzmanim.global.Zman;
+import net.bytebuddy.asm.Advice.Local;
+import com.reesedevelopment.greatneckzmanim.front.ZmanimHandler;
+import org.codehaus.groovy.runtime.powerassert.SourceText;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,18 +23,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.kosherjava.zmanim.util.GeoLocation;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.LocationDAO;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.Minyan;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanDAO;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.OrganizationDAO;
-import com.reesedevelopment.greatneckzmanim.front.KolhaMinyanim;
-import com.reesedevelopment.greatneckzmanim.front.MinyanEvent;
-import com.reesedevelopment.greatneckzmanim.front.ZmanimHandler;
-import com.reesedevelopment.greatneckzmanim.global.Nusach;
-import com.reesedevelopment.greatneckzmanim.global.Zman;
+import java.text.SimpleDateFormat;
+import java.time.*;
+import java.util.*;
 
 @Controller
 public class ZmanimController {
@@ -215,52 +207,6 @@ public class ZmanimController {
         }
 // KolhaMinyanim insertion
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
-
-for (Minyan minyan : enabledMinyanim) {
-    LocalDate ref = dateToLocalDate(date).plusMonths(1);
-    Date startDate = minyan.getStartDate(ref);
-    System.out.println("SD: " + startDate);
-    if (startDate != null) {      
-        String organizationName;
-        Nusach organizationNusach;
-        String organizationId;
-        Organization organization = minyan.getOrganization();
-        if (organization == null) {
-            Organization temp = organizationDAO.findById(minyan.getOrganizationId());
-            organizationName = temp.getName();
-            organizationNusach = temp.getNusach();
-            organizationId = temp.getId();
-        } else {
-            organizationName = organization.getName();
-            organizationNusach = organization.getNusach();
-            organizationId = organization.getId();
-        }
-
-        String locationName = null;
-        Location location = minyan.getLocation();
-        if (location == null) {
-            location = locationDAO.findById(minyan.getLocationId());
-            if (location != null) {
-                locationName = location.getName();
-            }
-        } else {
-            locationName = location.getName();
-        }
-
-        String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
-        if (dynamicDisplayName != null) {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
-        } else {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
-        }
-    } /*else {
-        if (startDate != null) {
-            System.out.println("Skipping minyan with start date: " + startDate.toString());
-        } else {
-            System.out.println("Skipping minyan with null start date.");
-        }
-    }*/
-}
 kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
 mv.getModel().put("kolminyanim", kolhaMinyanims);
 //end kol
@@ -308,19 +254,9 @@ mv.getModel().put("shuls", shulNames);
 
     @GetMapping("/zmanim/next")
     public ModelAndView nextZmanimAfter(@RequestParam(value = "after", required = true) String dateString) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        Date date;
-        try {
-            date = format.parse(dateString);
-        } catch (ParseException e) {
-            throw new IllegalArgumentException("Invalid date format. Please use yyyy-MM-dd'T'HH:mm:ss");
-        }
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.add(Calendar.DATE, 1);
-        return navigateZmanim(cal.getTime());
+        Date date = new Date(dateString);
+        return navigateZmanim(new Date(date.getYear(), date.getMonth(), date.getDate() + 1, date.getHours(), date.getMinutes(), date.getSeconds()));
     }
-
 
     @GetMapping("/zmanim/last")
     public ModelAndView lastZmanimBefore(@RequestParam(value = "before", required = true) String dateString) {
