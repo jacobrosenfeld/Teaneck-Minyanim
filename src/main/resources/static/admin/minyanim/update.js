@@ -86,26 +86,31 @@ function updateAll() {
 
 function applyMondayThroughFriday() {
     var mondayMode = document.getElementById(`monday-time-type`).value;
+    var mondayZman = document.getElementById(`monday-zman`).value;
+    var mondayOffset = document.getElementById(`monday-zman-offset`).value;
+    var mondayTime = document.getElementById(`monday-fixed-time`).value;
 
-    const needToMatch =  ["tuesday", "wednesday", "thursday", "friday"];
+    const needToMatch = ["tuesday", "wednesday", "thursday", "friday"];
 
     needToMatch.forEach(setMatching);
 
     function setMatching(name) {
-        updateMode(name, mondayMode);
-        if (mondayMode == "nm") {
+        var nameZman = document.getElementById(`${name}-zman`);
+        var nameOffset = document.getElementById(`${name}-zman-offset`);
+        var nameTime = document.getElementById(`${name}-fixed-time`);
+        var nameType = document.getElementById(`${name}-time-type`);
+        nameType.value = mondayMode;
+        if (mondayMode === "nm") {
 
-        } else if (mondayMode == "dynamic") {
-            var mondayZman = document.getElementById(`monday-zman`).value;
-            var mondayOffset = document.getElementById(`monday-zman-offset`).value;
-            updateDynamicTime(name, mondayZman, mondayOffset);
-        } else if (mondayMode == "fixed") {
-            var mondayTime = document.getElementById(`monday-fixed-time`).value;
-            updateFixedTime(name, mondayTime);
+        } else if (mondayMode === "dynamic") {
+            nameZman.value = mondayZman;
+            nameOffset.value = mondayOffset;
+        } else if (mondayMode === "fixed") {
+            nameTime.value = mondayTime;
         }
     }
-
 }
+
 
 function updateMode(name, mode) {
     document.getElementById(`${name}-time-type`).value = mode;
