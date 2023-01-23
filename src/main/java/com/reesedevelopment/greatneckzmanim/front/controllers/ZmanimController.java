@@ -206,9 +206,10 @@ public class ZmanimController {
             }*/
         }
 // KolhaMinyanim insertion
+List<Minyan> allMinyanim = minyanDAO.getAll();
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
-for (Minyan minyan : minyanDAO.getAll()) {
+for (Minyan minyan : allMinyanim) {
     LocalDate ref = dateToLocalDate(date).plusMonths(1);;
     Date startDate = minyan.getStartDate(ref);
     Date now = new Date();
