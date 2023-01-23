@@ -243,9 +243,9 @@ for (Minyan minyan : allMinyan) {
 
         String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
         if (dynamicDisplayName != null) {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
+            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
         } else {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
         }
     } /*else {
         if (startDate != null) {
