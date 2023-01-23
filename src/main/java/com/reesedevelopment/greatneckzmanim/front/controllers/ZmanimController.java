@@ -154,7 +154,7 @@ public class ZmanimController {
         System.out.println("DEBUG: Filtering through minyanim");
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
+            LocalDate ref = dateToLocalDate(date).plusMonths(1);
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
@@ -209,7 +209,7 @@ public class ZmanimController {
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
 for (Minyan minyan : enabledMinyanim) {
-    LocalDate ref = dateToLocalDate(date);
+    LocalDate ref = dateToLocalDate(date).plusMonths(1);
     Date startDate = minyan.getStartDate(ref);
     Date now = new Date();
     System.out.println("SD: " + startDate);
@@ -378,7 +378,7 @@ mv.getModel().put("shuls", shulNames);
 //        boolean usesNotes;
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
+            LocalDate ref = dateToLocalDate(date).plusMonths(1);
             Date startDate = minyan.getStartDate(ref);
             //Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
             //if (startDate != null && startDate.after(terminationDate)) {
