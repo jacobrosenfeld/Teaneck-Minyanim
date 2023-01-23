@@ -188,7 +188,6 @@ public class MinyanDAO extends JdbcDaoSupport implements GNZSaveable<Minyan> {
             return false;
         }
     }
-    
 
     public List<Minyan> findMatching(String organizationId){
         String sql = MinyanMapper.BASE_SQL + " WHERE m.ORGANIZATION_ID = ? ";
