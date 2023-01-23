@@ -322,16 +322,16 @@ public class Minyan extends GNZObject implements IDGenerator {
         return getStartDate(LocalDate.now());
     }
 
-    public LocalDateTime getStartDate(LocalDate date) {
-        MinyanTime mt = getMinyanTime(date);
-        Time t = mt.getTime(date);
-        if (t == null) {
-            return null;
-        }
-        LocalDate temp = date.minusMonths(1);
-        return LocalDateTime.of(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
+//        need to check if that date is a special day
+public LocalDateTime getStartDate(LocalDate date) {
+    MinyanTime mt = getMinyanTime(date);
+    Time t = mt.getTime(date);
+    if (t == null) {
+        return null;
     }
-
+    LocalDate temp = date.minusMonths(1);
+    return LocalDateTime.of(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
+}
 
     public Time getStartTime() {
         return getStartTime(LocalDate.now());
