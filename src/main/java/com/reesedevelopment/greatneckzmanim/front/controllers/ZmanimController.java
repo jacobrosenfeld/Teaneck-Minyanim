@@ -206,10 +206,9 @@ public class ZmanimController {
             }*/
         }
 // KolhaMinyanim insertion
-List<Minyan> allMinyan = minyanDAO.getAll();
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
-for (Minyan minyan : allMinyan) {
+for (Minyan minyan : enabledMinyanim) {
     LocalDate ref = dateToLocalDate(date).plusMonths(1);
     Date startDate = minyan.getStartDate(ref);
     Date now = new Date();
@@ -243,9 +242,9 @@ for (Minyan minyan : allMinyan) {
 
         String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
         if (dynamicDisplayName != null) {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
+            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
         } else {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
         }
     } /*else {
         if (startDate != null) {
