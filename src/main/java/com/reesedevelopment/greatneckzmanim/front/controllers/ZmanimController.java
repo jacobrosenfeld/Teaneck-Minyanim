@@ -256,7 +256,7 @@ List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 //     }*/
 // }
 kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
-mv.getModel().put("kolminyanim", kolhaMinyanims);
+mv.getModel().put("kolminyanim", allMinyan);
 //end kol
 //orgs
 List<Organization> shulNames = new ArrayList<>();
