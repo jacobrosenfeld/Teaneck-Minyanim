@@ -5,8 +5,6 @@ import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
 import com.reesedevelopment.greatneckzmanim.admin.structure.location.LocationMapper;
 import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
 import com.reesedevelopment.greatneckzmanim.admin.structure.organization.OrganizationMapper;
-import com.reesedevelopment.greatneckzmanim.front.KolhaMinyanim;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
@@ -44,7 +42,7 @@ public class MinyanDAO extends JdbcDaoSupport implements GNZSaveable<Minyan> {
     }
 
     @Override
-    public List<KolhaMinyanim> getAll() {
+    public List<Minyan> getAll() {
         String sql = "SELECT * FROM MINYAN";
 
         MinyanMapper mapper = new MinyanMapper();
