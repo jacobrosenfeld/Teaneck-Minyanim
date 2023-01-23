@@ -9,6 +9,7 @@ import com.reesedevelopment.greatneckzmanim.global.Nusach;
 
 //import javax.persistence.Id;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -35,26 +36,26 @@ public class MinyanEvent {
 
     private String notes;
 
-    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes) {
+    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, LocalDateTime startDate, Nusach nusach, String notes) {
         this.parentMinyanId = parentMinyanId;
         this.type = type;
         this.organizationName = organizationName;
         this.organizationNusach = organizationNusach;
         this.organizationId = organizationId;
         this.locationName = locationName;
-        this.startTime = startTime;
+        this.startTime = startDate;
         this.nusach = nusach;
         this.notes = notes;
     }
 
-    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes) {
+    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, LocalDateTime startDate, String dynamicTimeString, Nusach nusach, String notes) {
         this.parentMinyanId = parentMinyanId;
         this.type = type;
         this.organizationName = organizationName;
         this.organizationNusach = organizationNusach;
         this.organizationId = organizationId;
         this.locationName = locationName;
-        this.startTime = startTime;
+        this.startTime = startDate;
         this.dynamicTimeString = dynamicTimeString;
         this.nusach = nusach;
         this.notes = notes;
