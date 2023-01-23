@@ -259,8 +259,9 @@ mv.getModel().put("kolminyanim", kolhaMinyanims);
 //end kol
 //orgs
 List<Organization> shulNames = new ArrayList<>();
-for (MinyanEvent minyan : minyanEvents) {
-    String organization = minyan.getOrganizationName();
+MinyanEvent[] allminyanim;
+for (MinyanEvent minyan : allminyanim) {
+    Organization organization = minyan.getOrganization();
     if (!shulNames.contains(organization)) {
         shulNames.add(organization);
     }
