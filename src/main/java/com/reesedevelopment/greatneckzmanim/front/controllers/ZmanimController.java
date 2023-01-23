@@ -209,7 +209,7 @@ public class ZmanimController {
 List<Minyan> allMinyan = minyanDAO.getAll();
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
-for (Minyan minyan : enabledMinyanim) {
+for (Minyan minyan : allMinyan) {
     LocalDate ref = dateToLocalDate(date).plusMonths(1);
     Date startDate = minyan.getStartDate(ref);
     Date now = new Date();
@@ -255,7 +255,7 @@ for (Minyan minyan : enabledMinyanim) {
         }
     }*/
 }
-// kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
+kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
 mv.getModel().put("kolminyanim", kolhaMinyanims);
 //end kol
 //orgs
