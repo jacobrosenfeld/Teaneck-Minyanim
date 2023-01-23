@@ -210,51 +210,45 @@ List<Minyan> allMinyanim = minyanDAO.getMinyans();
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
 for (Minyan minyan : allMinyanim) {
-    LocalDate ref = dateToLocalDate(date).plusMonths(1);;
-    Date startDate = minyan.getStartDate(ref);
-    Date now = new Date();
-    System.out.println("SD: " + startDate);
-    if (startDate != null) {      
-        String organizationName;
-        Nusach organizationNusach;
-        String organizationId;
-        Organization organization = minyan.getOrganization();
-        if (organization == null) {
-            Organization temp = organizationDAO.findById(minyan.getOrganizationId());
-            organizationName = temp.getName();
-            organizationNusach = temp.getNusach();
-            organizationId = temp.getId();
-        } else {
-            organizationName = organization.getName();
-            organizationNusach = organization.getNusach();
-            organizationId = organization.getId();
-        }
+    LocalDate ref = dateToLocalDate(date).plusMonths(1);
+            Date startDate = minyan.getStartDate(ref);
+            //Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
+            //if (startDate != null && startDate.after(terminationDate)) {
+            if (startDate != null) {    
+                String organizationName;
+                Nusach organizationNusach;
+                String organizationId;
+                Organization organization = minyan.getOrganization();
+                if (organization == null) {
+                    Organization temp = organizationDAO.findById(minyan.getOrganizationId());
+                    organizationName = temp.getName();
+                    organizationId = temp.getId();
+                    organizationNusach = temp.getNusach();
+                } else {
+                    organizationName = organization.getName();
+                    organizationId = organization.getId();
+                    organizationNusach = organization.getNusach();
+                }
 
-        String locationName = null;
-        Location location = minyan.getLocation();
-        if (location == null) {
-            location = locationDAO.findById(minyan.getLocationId());
-            if (location != null) {
-                locationName = location.getName();
+                String locationName = null;
+                Location location = minyan.getLocation();
+                if (location == null) {
+                    location = locationDAO.findById(minyan.getLocationId());
+                    if (location != null) {
+                        locationName = location.getName();
+                    }
+                } else {
+                    locationName = location.getName();
+                }
+
+                String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
+                if (dynamicDisplayName != null) {
+                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
+                } else {
+                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+                }
             }
-        } else {
-            locationName = location.getName();
         }
-
-        String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
-        if (dynamicDisplayName != null) {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
-        } else {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
-        }
-    } /*else {
-        if (startDate != null) {
-            System.out.println("Skipping minyan with start date: " + startDate.toString());
-        } else {
-            System.out.println("Skipping minyan with null start date.");
-        }
-    }*/
-}
 kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
 mv.getModel().put("kolminyanim", kolhaMinyanims);
 //end kol
