@@ -4,6 +4,7 @@ import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.Minyan;
 import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanType;
 import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
 import com.reesedevelopment.greatneckzmanim.global.Nusach;
+import org.springframework.beans.factory.annotation.Autowired;
 
 //import javax.persistence.Id;
 import java.text.SimpleDateFormat;
