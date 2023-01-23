@@ -50,9 +50,6 @@ public class ZmanimController {
     private MinyanDAO minyanDAO;
 
     @Autowired
-    private KolhaMinyanim kolHaminyanim;
-
-    @Autowired
     private OrganizationDAO organizationDAO;
 
     @Autowired
@@ -63,6 +60,8 @@ public class ZmanimController {
     public ModelAndView home() {
         return todaysZmanim();
     }
+
+    private KolhaMinyanim kolHaminyanim;
 
     private void setTimeZone(TimeZone tz) {
         // set time format
