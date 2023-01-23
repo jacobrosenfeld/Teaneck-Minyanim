@@ -154,7 +154,7 @@ public class ZmanimController {
         System.out.println("DEBUG: Filtering through minyanim");
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
+            LocalDate ref = dateToLocalDate(date).plusMonths(1);
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
@@ -163,7 +163,7 @@ public class ZmanimController {
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate() != startDate.getDate())) {  
             // if (startDate != null && (startDate.after(terminationDate))) {      
             // start date must be valid AND (be after the termination date OR date must not be the same date as today, to disregard the termination time when the user is looking ahead)
-            if (startDate != null && (startDate.after(terminationDate))) {
+            if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))) {
                 // show the minyan
                 String organizationName;
                 Nusach organizationNusach;
@@ -209,7 +209,7 @@ public class ZmanimController {
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
 for (Minyan minyan : enabledMinyanim) {
-    LocalDate ref = dateToLocalDate(date);
+    LocalDate ref = dateToLocalDate(date).plusMonths(1);
     Date startDate = minyan.getStartDate(ref);
     Date now = new Date();
     System.out.println("SD: " + startDate);
