@@ -154,10 +154,10 @@ public class ZmanimController {
         System.out.println("DEBUG: Filtering through minyanim");
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
+            LocalDate ref = dateToLocalDate(date).plusMonths(1);
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
-            Date terminationDate = new Date(now.getTime() - (60000 * 8));
+            Date terminationDate = new Date(now.getTime() + (60000 * 8));
             System.out.println("SD: " + startDate);
             System.out.println("TD: " + terminationDate);
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate() != startDate.getDate())) {  
