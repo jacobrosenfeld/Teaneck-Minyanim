@@ -163,7 +163,7 @@ public class ZmanimController {
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate() != startDate.getDate())) {  
             // if (startDate != null && (startDate.after(terminationDate))) {      
             // start date must be valid AND (be after the termination date OR date must not be the same date as today, to disregard the termination time when the user is looking ahead)
-            if (startDate != null && (startDate.after(terminationDate))) {
+            if (startDate != null && (!sameDayOfMonth(now, date))) {
                 // show the minyan
                 String organizationName;
                 Nusach organizationNusach;
