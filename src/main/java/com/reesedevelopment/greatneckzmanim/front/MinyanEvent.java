@@ -65,7 +65,7 @@ public class MinyanEvent {
     }
 
 //    add getters
-    public Organization getOrganizationName() {
+    public String getOrganizationName() {
         return organizationName;
     }
 

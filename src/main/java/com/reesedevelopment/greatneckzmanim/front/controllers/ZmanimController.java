@@ -259,7 +259,12 @@ mv.getModel().put("kolminyanim", kolhaMinyanims);
 //end kol
 //orgs
 List<Organization> shulNames = new ArrayList<>();
-for (Organization organization : shulNames)
+for (MinyanEvent minyan : minyanEvents) {
+    String organization = minyan.getOrganizationName();
+    if (!shulNames.contains(organization)) {
+        shulNames.add(organization);
+    }
+}
 mv.getModel().put("shuls", shulNames);
 //end orgs
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
