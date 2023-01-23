@@ -206,7 +206,7 @@ public class ZmanimController {
             }*/
         }
 // KolhaMinyanim insertion
-List<KolhaMinyanim> allMinyan = minyanDAO.getAll();
+List<Minyan> allMinyan = minyanDAO.getAll();
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
 // for (Minyan minyan : allMinyan) {
@@ -255,7 +255,7 @@ List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 //         }
 //     }*/
 // }
-kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
+// kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
 mv.getModel().put("kolminyanim", allMinyan);
 //end kol
 //orgs
