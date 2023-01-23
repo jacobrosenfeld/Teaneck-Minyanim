@@ -50,6 +50,9 @@ public class ZmanimController {
     private MinyanDAO minyanDAO;
 
     @Autowired
+    private KolhaMinyanim kolHaminyanim;
+
+    @Autowired
     private OrganizationDAO organizationDAO;
 
     @Autowired
@@ -206,8 +209,9 @@ public class ZmanimController {
             }*/
         }
 // KolhaMinyanim insertion
-List<Minyan> allMinyanim = minyanDAO.getAll();
+List<Minyan> allMinyanim = kolHaminyanim.getAll();
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
+
 kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
 mv.getModel().put("kolminyanim", kolhaMinyanims);
 //end kol
