@@ -360,7 +360,7 @@ public class Minyan extends GNZObject implements IDGenerator {
         } else if (jc.isYomTovAssurBemelacha()) {
             return schedule.getYomTov();
         } else {
-            return switch (date.getDayOfWeek()) {
+            return switch (temp.getDayOfWeek()) {
                 case SUNDAY -> schedule.getSunday();
                 case MONDAY -> schedule.getMonday();
                 case TUESDAY -> schedule.getTuesday();
