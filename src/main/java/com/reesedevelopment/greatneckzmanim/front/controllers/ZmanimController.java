@@ -1,20 +1,18 @@
 package com.reesedevelopment.greatneckzmanim.front.controllers;
 
-import com.kosherjava.zmanim.util.GeoLocation;
-import com.kosherjava.zmanim.util.Time;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.LocationDAO;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.Minyan;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanDAO;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.OrganizationDAO;
-import com.reesedevelopment.greatneckzmanim.front.MinyanEvent;
-import com.reesedevelopment.greatneckzmanim.front.KolhaMinyanim;
-import com.reesedevelopment.greatneckzmanim.global.Nusach;
-import com.reesedevelopment.greatneckzmanim.global.Zman;
-import net.bytebuddy.asm.Advice.Local;
-import com.reesedevelopment.greatneckzmanim.front.ZmanimHandler;
-import org.codehaus.groovy.runtime.powerassert.SourceText;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.List;
+import java.util.TimeZone;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,9 +21,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.text.SimpleDateFormat;
-import java.time.*;
-import java.util.*;
+import com.kosherjava.zmanim.util.GeoLocation;
+import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
+import com.reesedevelopment.greatneckzmanim.admin.structure.location.LocationDAO;
+import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.Minyan;
+import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanDAO;
+import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
+import com.reesedevelopment.greatneckzmanim.admin.structure.organization.OrganizationDAO;
+import com.reesedevelopment.greatneckzmanim.front.KolhaMinyanim;
+import com.reesedevelopment.greatneckzmanim.front.MinyanEvent;
+import com.reesedevelopment.greatneckzmanim.front.ZmanimHandler;
+import com.reesedevelopment.greatneckzmanim.global.Nusach;
+import com.reesedevelopment.greatneckzmanim.global.Zman;
 
 @Controller
 public class ZmanimController {
