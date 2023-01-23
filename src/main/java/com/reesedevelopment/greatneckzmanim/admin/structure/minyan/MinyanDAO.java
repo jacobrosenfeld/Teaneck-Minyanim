@@ -61,7 +61,15 @@ public class MinyanDAO extends JdbcDaoSupport implements GNZSaveable<Minyan> {
     public List<Minyan> getMinyans() {
         String sql = "SELECT * FROM MINYAN";
 
+        MinyanMapper mapper = new MinyanMapper();
+
+        List<Map<String, Object>> minyanMaps = this.getJdbcTemplate().queryForList(sql);
+
         List<Minyan> minyanim = new ArrayList<>();
+
+        for (Map<String, Object> minyanMap : minyanMaps) {
+            minyanim.add(mapper.mapRow(minyanMap));
+        }
 
         return minyanim;
     }
