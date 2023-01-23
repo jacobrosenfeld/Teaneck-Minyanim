@@ -624,17 +624,11 @@ public class AdminController {
                 System.out.println("You do not have permission to view this organization.");
                 throw new AccessDeniedException("You do not have permission to view this organization.");
             } else {
-//                get organization and check if it exists
-                if (account != null) {
-                    if (this.gnzUserDAO.delete(account)) {
-                        System.out.println("Account deleted successfully.");
-                        return accounts("Successfully deleted the account.", null);
-                    } else {
-                        System.out.println("Account delete failed.");
-                        return accounts(null, "Sorry, the account could not be deleted.");
-                    }
+if (this.gnzUserDAO.delete(account)) {
+                    System.out.println("Account deleted successfully.");
+                    return accounts("Successfully deleted the account.", null);
                 } else {
-                    System.out.println("Organization does not exist. Failed to delete.");
+                    System.out.println("Account delete failed.");
                     return accounts(null, "Sorry, the account could not be deleted.");
                 }
             }

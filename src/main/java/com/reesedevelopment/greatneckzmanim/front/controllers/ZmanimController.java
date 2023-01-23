@@ -378,7 +378,8 @@ mv.getModel().put("shuls", shulNames);
 //        boolean usesNotes;
 
         for (Minyan minyan : enabledMinyanim) {
-            Date startDate = minyan.getStartDate(LocalDate.of(date.getYear() + 1900, date.getMonth(), date.getDate()).plusMonths(1));
+            LocalDate ref = dateToLocalDate(date).plusMonths(1);
+            Date startDate = minyan.getStartDate(ref);
             //Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
             //if (startDate != null && startDate.after(terminationDate)) {
             if (startDate != null) {    
