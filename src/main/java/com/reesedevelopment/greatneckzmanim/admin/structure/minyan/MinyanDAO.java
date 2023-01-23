@@ -58,6 +58,14 @@ public class MinyanDAO extends JdbcDaoSupport implements GNZSaveable<Minyan> {
         return minyanim;
     }
 
+    public List<Minyan> getMinyans() {
+        String sql = "SELECT * FROM MINYAN";
+
+        List<Minyan> minyanim = new ArrayList<>();
+
+        return minyanim;
+    }
+
     public List<Minyan> getEnabled() {
         String sql = "SELECT * FROM MINYAN WHERE ENABLED = 1";
 
