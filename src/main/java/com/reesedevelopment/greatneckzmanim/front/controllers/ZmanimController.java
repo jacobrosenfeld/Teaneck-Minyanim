@@ -209,7 +209,7 @@ public class ZmanimController {
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
 for (Minyan minyan : enabledMinyanim) {
-    LocalDate ref = dateToLocalDate(date).plusMonths(1);
+    LocalDate ref = dateToLocalDate(date).plusMonths(1);;
     Date startDate = minyan.getStartDate(ref);
     Date now = new Date();
     System.out.println("SD: " + startDate);
