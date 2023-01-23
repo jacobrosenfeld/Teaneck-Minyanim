@@ -15,7 +15,6 @@ import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,15 +62,6 @@ public class ZmanimController {
     @Autowired
     private LocationDAO locationDAO;
 
-    @Autowired
-    private Organization organizationService;
-
-    @GetMapping("/zmanim")
-    public String getShulNames(Model model) {
-        List<Organization> shulNames = organizationService.getAllShulNames();
-        model.addAttribute("shulNames", shulNames);
-        return "shulNames";
-    }
 
     @GetMapping("/")
     public ModelAndView home() {
