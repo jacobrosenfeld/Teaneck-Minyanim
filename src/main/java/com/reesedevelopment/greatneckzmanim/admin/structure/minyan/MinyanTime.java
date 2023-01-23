@@ -3,7 +3,6 @@ import com.kosherjava.zmanim.util.Time;
 import com.reesedevelopment.greatneckzmanim.global.Zman;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 public class MinyanTime {
     private Time time;
