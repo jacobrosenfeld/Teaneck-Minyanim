@@ -285,7 +285,7 @@
               <div class="col-md-12">
                 <div class="features-intro">
                   <h2>Shuls</h2>
-                  <a role="button" class="btn-action js-scroll-trigger mx-2 my-2" th:each="${organization}" th:href="@{|/orgs/${organization.getOrganizationId()}|}" th:text="${organization.getOrganizationName()}"></a>
+                  <a role="button" class="btn-action js-scroll-trigger mx-2 my-2" th:each="${shuls}" th:href="@{|/orgs/${organization.getOrganizationId()}|}" th:text="${organization.getOrganizationName()}"></a>
                 </div>
               </div>
             </div>
@@ -310,7 +310,7 @@
                </div>
                <div class="col-sm-4">
                  <div class="counter-up">
-                  <h3 th:text="${kolminyanim.size()}" class="counter"/>
+                  <h3 th:text="${shuls.size()}" class="counter"/>
                    <div class="counter-text">
                      <h2>Shuls</h2>
                    </div>
