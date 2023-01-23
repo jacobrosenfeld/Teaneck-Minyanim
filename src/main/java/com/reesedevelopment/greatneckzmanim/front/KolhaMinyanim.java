@@ -1,11 +1,14 @@
 package com.reesedevelopment.greatneckzmanim.front;
 
+import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.Minyan;
 import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanType;
+import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
 import com.reesedevelopment.greatneckzmanim.global.Nusach;
 
 //import javax.persistence.Id;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 public class KolhaMinyanim {
@@ -106,5 +109,13 @@ public class KolhaMinyanim {
         }
 
         return result;
+    }
+
+    public List<Minyan> getAll() {
+        return null;
+    }
+
+    public static Organization getOrganization() {
+        return null;
     }
 }
