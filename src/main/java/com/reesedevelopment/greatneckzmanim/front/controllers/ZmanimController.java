@@ -255,7 +255,7 @@ for (Minyan minyan : enabledMinyanim) {
         }
     }*/
 }
-kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
+// kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
 mv.getModel().put("kolminyanim", kolhaMinyanims);
 //end kol
 //orgs
