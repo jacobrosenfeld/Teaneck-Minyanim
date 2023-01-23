@@ -206,6 +206,7 @@ public class ZmanimController {
             }*/
         }
 // KolhaMinyanim insertion
+List<Minyan> allMinyan = minyanDAO.getAll();
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
 for (Minyan minyan : enabledMinyanim) {
