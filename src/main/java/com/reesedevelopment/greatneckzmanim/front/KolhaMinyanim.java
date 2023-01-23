@@ -29,7 +29,7 @@ public class KolhaMinyanim {
 
     private String notes;
 
-    public KolhaMinyanim(String parentMinyanId, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes) {
+    public KolhaMinyanim(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes) {
         this.type = type;
         this.organizationName = organizationName;
         this.organizationNusach = organizationNusach;
@@ -40,7 +40,7 @@ public class KolhaMinyanim {
         this.notes = notes;
     }
 
-    public KolhaMinyanim(String parentMinyanId, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes) {
+    public KolhaMinyanim(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes) {
         this.type = type;
         this.organizationName = organizationName;
         this.organizationNusach = organizationNusach;
