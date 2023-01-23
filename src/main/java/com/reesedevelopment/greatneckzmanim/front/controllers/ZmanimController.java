@@ -155,13 +155,15 @@ public class ZmanimController {
 
         for (Minyan minyan : enabledMinyanim) {
             LocalDate ref = dateToLocalDate(date).plusMonths(1);
-            LocalDateTime startDate = minyan.getStartDate(ref);
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime terminationDate = now.minusMinutes(8);
+            Date startDate = minyan.getStartDate(ref);
+            Date now = new Date();
+            Date terminationDate = new Date(now.getTime() - (60000 * 8));
             System.out.println("SD: " + startDate);
             System.out.println("TD: " + terminationDate);
-
-            if (startDate != null && (startDate.isAfter(terminationDate) || !startDate.toLocalDate().isEqual(now.toLocalDate()))) {
+            // if (startDate != null && (startDate.after(terminationDate) || now.getDate() != startDate.getDate())) {  
+            // if (startDate != null && (startDate.after(terminationDate))) {      
+            // start date must be valid AND (be after the termination date OR date must not be the same date as today, to disregard the termination time when the user is looking ahead)
+            if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))) {
                 // show the minyan
                 String organizationName;
                 Nusach organizationNusach;
@@ -195,7 +197,14 @@ public class ZmanimController {
                 } else {
                     minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
                 }
-            }}
+            } /*else {
+                if (startDate != null) {
+                    System.out.println("Skipping minyan with start date: " + startDate.toString());
+                } else {
+                    System.out.println("Skipping minyan with null start date.");
+                }
+            }*/
+        }
 // KolhaMinyanim insertion
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
