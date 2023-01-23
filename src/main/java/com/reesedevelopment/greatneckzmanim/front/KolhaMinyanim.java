@@ -3,7 +3,6 @@ package com.reesedevelopment.greatneckzmanim.front;
 import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
 import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.Minyan;
 import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanTime;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanType;
 import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
 import com.reesedevelopment.greatneckzmanim.global.Nusach;
 
@@ -16,8 +15,6 @@ public class KolhaMinyanim {
     TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
 
     private String parentMinyanId;
-
-    private MinyanType type;
 
     private String organizationName;
 
@@ -35,9 +32,8 @@ public class KolhaMinyanim {
 
     private String notes;
 
-    public KolhaMinyanim(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes) {
+    public KolhaMinyanim(String parentMinyanId, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes) {
         this.parentMinyanId = parentMinyanId;
-        this.type = type;
         this.organizationName = organizationName;
         this.organizationNusach = organizationNusach;
         this.organizationId = organizationId;
@@ -47,9 +43,8 @@ public class KolhaMinyanim {
         this.notes = notes;
     }
 
-    public KolhaMinyanim(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes) {
+    public KolhaMinyanim(String parentMinyanId, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes) {
         this.parentMinyanId = parentMinyanId;
-        this.type = type;
         this.organizationName = organizationName;
         this.organizationNusach = organizationNusach;
         this.organizationId = organizationId;
@@ -58,10 +53,6 @@ public class KolhaMinyanim {
         this.dynamicTimeString = dynamicTimeString;
         this.nusach = nusach;
         this.notes = notes;
-    }
-
-    public MinyanType getType() {
-        return type;
     }
 
 //    add getters
