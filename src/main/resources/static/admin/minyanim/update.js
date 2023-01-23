@@ -48,16 +48,15 @@ function update(name, mode) {
 }
 
 function updateAll() {
-    var mode = document.getElementById("time-type").value;
-    update("sunday", mode);
-    update("monday", mode);
-    update("tuesday", mode);
-    update("wednesday", mode);
-    update("thursday", mode);
-    update("friday", mode);
-    update("shabbat", mode);
-    update("yt", mode);
-    update("rc", mode);
-    update("chanuka", mode);
-    update("rcc", mode);
+    update("sunday", document.getElementById("sunday-time-type").value);
+    update("monday", document.getElementById("monday-time-type").value);
+    update("tuesday", document.getElementById("tuesday-time-type").value);
+    update("wednesday", document.getElementById("wednesday-time-type").value);
+    update("thursday", document.getElementById("thursday-time-type").value);
+    update("friday", document.getElementById("friday-time-type").value);
+    update("shabbat", document.getElementById("shabbat-time-type").value);
+    update("yt", document.getElementById("yt-time-type").value);
+    update("rc", document.getElementById("rc-time-type").value);
+    update("chanuka", document.getElementById("chanuka-time-type").value);
+    update("rcc", document.getElementById("rcc-time-type").value);
 }
