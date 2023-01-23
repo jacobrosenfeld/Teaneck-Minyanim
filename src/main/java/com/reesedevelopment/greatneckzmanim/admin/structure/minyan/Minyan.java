@@ -11,6 +11,7 @@ import com.reesedevelopment.greatneckzmanim.global.Nusach;
 import javax.persistence.Column;
 import javax.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Table(name = "MINYAN")
@@ -317,20 +318,20 @@ public class Minyan extends GNZObject implements IDGenerator {
 
 //    public [Date] getStartTimes(int next)
 
-    public Date getStartDateFromNow() {
+    public LocalDateTime getStartDateFromNow() {
         return getStartDate(LocalDate.now());
     }
 
-    public Date getStartDate(LocalDate date) {
-//        need to check if that date is a special day
+    public LocalDateTime getStartDate(LocalDate date) {
         MinyanTime mt = getMinyanTime(date);
         Time t = mt.getTime(date);
         if (t == null) {
             return null;
         }
-        LocalDate temp = date.minusMonths(1).minusYears(1900);
-        return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
+        LocalDate temp = date.minusMonths(1);
+        return LocalDateTime.of(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
     }
+
 
     public Time getStartTime() {
         return getStartTime(LocalDate.now());
