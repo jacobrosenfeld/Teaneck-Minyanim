@@ -154,7 +154,7 @@ public class ZmanimController {
         System.out.println("DEBUG: Filtering through minyanim");
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date).minusMonths(1);
+            LocalDate ref = dateToLocalDate(date);
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
