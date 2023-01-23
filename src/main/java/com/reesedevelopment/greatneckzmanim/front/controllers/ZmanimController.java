@@ -209,18 +209,18 @@ public class ZmanimController {
 List<Minyan> allMinyanim = minyanDAO.getAll();
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
-for (Minyan minyan : allMinyanim) {
+for (Minyan minyanim : allMinyanim) {
     LocalDate ref = dateToLocalDate(date).plusMonths(1);;
-    Date startDate = minyan.getStartDate(ref);
+    Date startDate = minyanim.getStartDate(ref);
     Date now = new Date();
     System.out.println("SD: " + startDate);
     if (startDate != null) {      
         String organizationName;
         Nusach organizationNusach;
         String organizationId;
-        Organization organization = minyan.getOrganization();
+        Organization organization = minyanim.getOrganization();
         if (organization == null) {
-            Organization temp = organizationDAO.findById(minyan.getOrganizationId());
+            Organization temp = organizationDAO.findById(minyanim.getOrganizationId());
             organizationName = temp.getName();
             organizationNusach = temp.getNusach();
             organizationId = temp.getId();
@@ -231,9 +231,9 @@ for (Minyan minyan : allMinyanim) {
         }
 
         String locationName = null;
-        Location location = minyan.getLocation();
+        Location location = minyanim.getLocation();
         if (location == null) {
-            location = locationDAO.findById(minyan.getLocationId());
+            location = locationDAO.findById(minyanim.getLocationId());
             if (location != null) {
                 locationName = location.getName();
             }
@@ -241,11 +241,11 @@ for (Minyan minyan : allMinyanim) {
             locationName = location.getName();
         }
 
-        String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
+        String dynamicDisplayName = minyanim.getMinyanTime().dynamicDisplayName();
         if (dynamicDisplayName != null) {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
+            kolhaMinyanims.add(new KolhaMinyanim(minyanim.getId(), minyanim.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyanim.getNusach(), minyanim.getNotes()));
         } else {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+            kolhaMinyanims.add(new KolhaMinyanim(minyanim.getId(), minyanim.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyanim.getNusach(), minyanim.getNotes()));
         }
     } /*else {
         if (startDate != null) {
