@@ -207,6 +207,9 @@ public class ZmanimController {
         }
 // KolhaMinyanim insertion
 List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
+
+for (KolhaMinyanim minyan : kolhaMinyanims) {
+}
 kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
 mv.getModel().put("kolminyanim", kolhaMinyanims);
 //end kol
