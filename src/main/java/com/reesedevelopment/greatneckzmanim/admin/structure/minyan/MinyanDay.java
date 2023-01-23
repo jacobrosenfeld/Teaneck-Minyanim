@@ -1,10 +1,5 @@
 package com.reesedevelopment.greatneckzmanim.admin.structure.minyan;
 
-import java.time.LocalDate;
-import java.util.Date;
-
-import static java.time.temporal.TemporalAdjusters.next;
-
 public enum MinyanDay {
     SUNDAY,
     MONDAY,

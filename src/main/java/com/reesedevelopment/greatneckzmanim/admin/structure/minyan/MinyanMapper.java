@@ -1,8 +1,5 @@
 package com.reesedevelopment.greatneckzmanim.admin.structure.minyan;
-
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
 import org.springframework.jdbc.core.RowMapper;
-
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
