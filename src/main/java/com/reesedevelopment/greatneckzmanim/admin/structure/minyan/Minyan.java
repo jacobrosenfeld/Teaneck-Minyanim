@@ -54,6 +54,9 @@ public class Minyan extends GNZObject implements IDGenerator {
     @Column(name = "START_TIME_7")
     private String startTime7;
 
+    @Column(name = "START_TIME_YT")
+    private String startTimeYT;
+    
     @Column(name = "START_TIME_RC")
     private String startTimeRC;
 
@@ -62,9 +65,6 @@ public class Minyan extends GNZObject implements IDGenerator {
 
     @Column(name = "START_TIME_CHRC")
     private String startTimeCHRC;
-
-    @Column(name = "START_TIME_YT")
-    private String startTimeYT;
 
     private Schedule schedule;
 
@@ -91,10 +91,10 @@ public class Minyan extends GNZObject implements IDGenerator {
                   String startTime5,
                   String startTime6,
                   String startTime7,
+                  String startTimeYT,
                   String startTimeRC,
                   String startTimeCH,
                   String startTimeCHRC,
-                  String startTimeYT,
                   String notes,
                   String nusach
     ) {
@@ -111,10 +111,10 @@ public class Minyan extends GNZObject implements IDGenerator {
         this.startTime5 = startTime5;
         this.startTime6 = startTime6;
         this.startTime7 = startTime7;
+        this.startTimeYT = startTimeYT;
         this.startTimeRC = startTimeRC;
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
-        this.startTimeYT = startTimeYT;
         this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeCH, startTimeCHRC, startTimeYT);
         this.notes = notes;
         this.nusachString = nusach;
@@ -132,10 +132,10 @@ public class Minyan extends GNZObject implements IDGenerator {
                   String startTime5,
                   String startTime6,
                   String startTime7,
+                  String startTimeYT,
                   String startTimeRC,
                   String startTimeCH,
                   String startTimeCHRC,
-                  String startTimeYT,
                   String notes,
                   String nusach
     ) {
@@ -152,11 +152,11 @@ public class Minyan extends GNZObject implements IDGenerator {
         this.startTime5 = startTime5;
         this.startTime6 = startTime6;
         this.startTime7 = startTime7;
+        this.startTimeYT = startTimeYT;
         this.startTimeRC = startTimeRC;
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
-        this.startTimeYT = startTimeYT;
-        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeCH, startTimeCHRC, startTimeYT);
+        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeYT, startTimeRC, startTimeCH, startTimeCHRC);
         this.notes = notes;
         this.nusachString = nusach;
         this.nusach = Nusach.fromString(nusach);
