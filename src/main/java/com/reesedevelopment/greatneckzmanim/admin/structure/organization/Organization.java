@@ -7,7 +7,6 @@ import com.reesedevelopment.greatneckzmanim.global.Nusach;
 import javax.persistence.Column;
 import javax.persistence.Table;
 import java.net.URI;
-import java.util.List;
 
 @Table(name="ORGANIZATION")
 public class Organization extends GNZObject implements IDGenerator {
@@ -53,9 +52,5 @@ public class Organization extends GNZObject implements IDGenerator {
 
     public Nusach getNusach() {
         return nusach;
-    }
-
-    public List<Organization> getAllShulNames() {
-        return null;
     }
 }
