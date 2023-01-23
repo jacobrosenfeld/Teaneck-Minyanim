@@ -210,11 +210,16 @@ public class ZmanimController {
         List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
         for (Minyan minyan : allMinyanim) {
-            LocalDate ref = dateToLocalDate(date).plusMonths(1);;
+            LocalDate ref = dateToLocalDate(date).plusMonths(1);
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
+            Date terminationDate = new Date(now.getTime() - (60000 * 8));
             System.out.println("SD: " + startDate);
-            if (startDate != null) {      
+            System.out.println("TD: " + terminationDate);
+            // if (startDate != null && (startDate.after(terminationDate) || now.getDate() != startDate.getDate())) {  
+            // if (startDate != null && (startDate.after(terminationDate))) {      
+            if (startDate != null) {
+                // show the minyan
                 String organizationName;
                 Nusach organizationNusach;
                 String organizationId;
@@ -243,9 +248,9 @@ public class ZmanimController {
 
                 String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
                 if (dynamicDisplayName != null) {
-                    kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
+                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
                 } else {
-                    kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
                 }
             } /*else {
                 if (startDate != null) {
