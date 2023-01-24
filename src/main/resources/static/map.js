@@ -7,7 +7,7 @@ function initMap() {
           mapId: `ab35d05ad627f5db`,
           center: results[0].geometry.location
         });
-        for (const property of properties) {
+
             const advancedMarkerView = new google.maps.marker.AdvancedMarkerView({
               map,
               content: buildContent(property),
@@ -78,6 +78,5 @@ function initMap() {
           return content;
         }
     }
-})
-    
+    )
 }
