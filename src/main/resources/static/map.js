@@ -12,7 +12,6 @@ function initMap() {
         priceTag.className = "price-tag";
         priceTag.textContent = marker;
 
-        });
       } else {
         alert('Geocode was not successful for the following reason: ' + status);
       }
