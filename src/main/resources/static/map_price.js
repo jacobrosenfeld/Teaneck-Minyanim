@@ -11,11 +11,14 @@ function initMap() {
 
       priceTag.className = "price-tag";
       priceTag.textContent = "Next Minyan: "+minyantype+" at "+minyantime;
+      priceTag.textContent = shulname;
 
       const markerView = new google.maps.marker.AdvancedMarkerView({
         map,
         position: results[0].geometry.location,
-        content: priceTag,
+        content: priceTag.textContent,
+        title: priceTag.title
+        
       });
       markerView.addListener("click", ({ domEvent, latLng }) => {
         const { target } = domEvent;
