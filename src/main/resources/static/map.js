@@ -10,22 +10,13 @@ function initMap() {
       const priceTag = document.createElement("div");
 
       priceTag.className = "price-tag";
-      priceTag.title = marker;
-      priceTag.textContent = "Next Minyan: "+minyantype+" at"+minyantime;
+      priceTag.title = marker+ '\n' +"Next Minyan: "+minyantype+" at"+minyantime;
 
       const markerView = new google.maps.marker.AdvancedMarkerView({
         map,
         position: results[0].geometry.location,
-        title: priceTag.title,
-        content: priceTag.textContent,
+        title: priceTag,
       });
-      marker.addListener("click", ({ domEvent, latLng }) => {
-        const { target } = domEvent;
-  
-        infoWindow.close();
-        infoWindow.setContent(marker.title);
-        infoWindow.open(marker.map, marker);
-      }); 
     } else {
       alert('Geocode was not successful for the following reason: ' + status);
     }
