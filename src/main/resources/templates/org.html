@@ -70,29 +70,29 @@
                   <div class="mpt0" id="row-housing" style="padding: 1rem;">
                   <!-- new scrollspy -->
                   <div class="container">
+                    <div class="row align-items-start">
                     <div class="col">
                       <div id="pricing" class="pricing-section text-center">
-
-                                  <div class="table-left wow">
-                                    <div class="pricing-details">
-                                      <h2 th:text="${org.getName()}"></h2>
-                                      <!-- <img src="assets/icons/free.png" width="60" alt="Icon"> -->
-                                      <!-- <span>$0.00</span> -->
-                                      <ul>
-                                        <li>second</li>
-                                        <li th:text="${org.getNusach().displayName()}"></li>
-                                        <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"><li th:text="${org.getAddress()}"></li></a>
-                                        <!-- <li>Any other third feature</li> -->
-                                      </ul>
-                                      <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
-                                    </div>
-                                  </div>
-                                
+                        <div class="table-left wow">
+                          <div class="pricing-details">
+                            <h2 th:text="${org.getName()}"></h2>
+                            <!-- <img src="assets/icons/free.png" width="60" alt="Icon"> -->
+                            <!-- <span>$0.00</span> -->
+                            <ul>
+                              <li>second</li>
+                              <li th:text="${org.getNusach().displayName()}"></li>
+                              <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"><li th:text="${org.getAddress()}"></li></a>
+                              <!-- <li>Any other third feature</li> -->
+                            </ul>
+                            <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div class="col">
                       <div id="map"></div>
                     </div>
+                  </div>
                     <div class="container">
                       <div class="row">
                         <div class="col">
