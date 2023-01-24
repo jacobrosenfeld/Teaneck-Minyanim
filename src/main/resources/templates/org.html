@@ -66,13 +66,13 @@
               <div class="col-sm-12">
                 <div class="pricing-intro wow fadeInDown">
                   <h1 th:text="${org.getName()}"></h1>
-                          <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"><h2 th:text="${org.getAddress()}"></h2></a>
+                          <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"><h6 th:text="${org.getAddress()}"></h6></a>
                           <p th:text="${org.getNusach().displayName()}"></p>
                          <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
                 </div>
                 <div class="row">
                   <div class="col-lg-4 offset-lg-2 col-md-6">
-                   <div class="table-left wow fadeInDown">
+                   <div class="table-left wow">
                      <div class="pricing-details">
                        <h2 th:text="${org.getName()}"></h2>
                        <!-- <img src="assets/icons/free.png" width="60" alt="Icon"> -->
@@ -88,19 +88,34 @@
                     </div>
                   </div>
                   <div class="col-lg-4 col-md-6">
-                    <div class="table-right wow fadeInDown">
-                      <div class="pricing-details">
-                         <h2>Beginner</h2>
-                         <img src="assets/icons/paid.png" width="60" alt="Icon">
-                         <span>$24.99</span>
-                         <ul>
-                           <li>First premium feature </li>
-                           <li>Second premium one goes here</li>
-                           <li>Third premium feature here</li>
-                         </ul>
-                         <button class="btn-action">Buy Now</button>
-                      </div>
-                    </div>
+                    <table class="table" th:if="${!allminyanim.isEmpty()}">
+                      <thead>
+                      <tr>
+                          <th scope="col">Type</th>
+                          <th scope="col">Time</th>
+                          <th scope="col">Location</th>
+                          <th scope="col">Nusach</th>
+                          <th scope="col">Notes</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      <tr th:each="minyan: ${allminyanim}">
+                          <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
+<!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
+<!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
+<!--                                        </td>-->
+                          <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                          <td class="middle" th:text="${minyan.getInformation()}">
+<!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
+                          </td>
+                         <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
+                         <td class="middle" th:text="${minyan.getNotes()}"></td>
+                      </tr>
+                      </tbody>
+                  </table>
+                  <div class="jumbotron" th:if="${allminyanim.isEmpty()}">
+                      <h4>Sorry, there aren't any minyanim scheduled.</h4>
+                  </div>
                   </div>
                 </div>
               </div>
@@ -138,36 +153,9 @@
                                 <a href="#" class="card-link">Another link</a>-->
                             </div>
                         </div>
-                    </div> -->
+                    </div>
                     <div class="col-lg-9 col-md-8" id="minyanim-box">
-                                <table class="table" th:if="${!allminyanim.isEmpty()}">
-                                    <thead>
-                                    <tr>
-                                        <th scope="col">Type</th>
-                                        <th scope="col">Time</th>
-                                        <th scope="col">Location</th>
-                                        <th scope="col">Nusach</th>
-                                        <th scope="col">Notes</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr th:each="minyan: ${allminyanim}">
-                                        <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
-<!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
-<!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
-<!--                                        </td>-->
-                                        <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                        <td class="middle" th:text="${minyan.getInformation()}">
-<!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
-                                        </td>
-                                       <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
-                                       <td class="middle" th:text="${minyan.getNotes()}"></td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <div class="jumbotron" th:if="${allminyanim.isEmpty()}">
-                                    <h4>Sorry, there aren't any minyanim scheduled.</h4>
-                                </div>
+
                 </div>
                 </div>
                 </div>
