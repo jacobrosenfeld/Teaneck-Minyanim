@@ -4,7 +4,7 @@ package com.tbdev.teaneckminyanim;
 //import org.springframework.boot.test.context.SpringBootTest;
 
 //@SpringBootTest
-class GreatNeckZmanimApplicationTests {
+class TeaneckMinyanimApplicationTests {
 
 //    @Test
     void contextLoads() {

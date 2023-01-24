@@ -1,6 +1,6 @@
 package com.tbdev.teaneckminyanim.admin.structure.organization;
 
-import com.tbdev.teaneckminyanim.admin.structure.GNZObject;
+import com.tbdev.teaneckminyanim.admin.structure.TNMObject;
 import com.tbdev.teaneckminyanim.admin.structure.IDGenerator;
 import com.tbdev.teaneckminyanim.global.Nusach;
 
@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.net.URI;
 
 @Table(name="ORGANIZATION")
-public class Organization extends GNZObject implements IDGenerator {
+public class Organization extends TNMObject implements IDGenerator {
     @Column(name="NAME", nullable = false)
     private String name;
 

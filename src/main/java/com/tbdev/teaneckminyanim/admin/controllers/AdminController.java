@@ -6,8 +6,8 @@ import com.tbdev.teaneckminyanim.admin.structure.location.LocationDAO;
 import com.tbdev.teaneckminyanim.admin.structure.minyan.*;
 import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
 import com.tbdev.teaneckminyanim.admin.structure.organization.OrganizationDAO;
-import com.tbdev.teaneckminyanim.admin.structure.user.GNZUser;
-import com.tbdev.teaneckminyanim.admin.structure.user.GNZUserDAO;
+import com.tbdev.teaneckminyanim.admin.structure.user.TNMUser;
+import com.tbdev.teaneckminyanim.admin.structure.user.TNMUserDAO;
 import com.tbdev.teaneckminyanim.global.Nusach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -30,7 +30,7 @@ import static com.tbdev.teaneckminyanim.admin.structure.Role.ADMIN;
 @Controller
 public class AdminController {
     @Autowired
-    private GNZUserDAO gnzUserDAO;
+    private TNMUserDAO TNMUserDAO;
 
     @Autowired
     private OrganizationDAO organizationDAO;
@@ -53,12 +53,12 @@ public class AdminController {
                 SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority(ADMIN.getName()));
     }
 
-    private GNZUser getCurrentUser() {
-        return this.gnzUserDAO.findByName(SecurityContextHolder.getContext().getAuthentication().getName());
+    private TNMUser getCurrentUser() {
+        return this.TNMUserDAO.findByName(SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     private boolean isSuperAdmin() {
-        GNZUser user = getCurrentUser();
+        TNMUser user = getCurrentUser();
         return user.getOrganizationId() == null && user.role().equals(ADMIN);
     }
 
@@ -66,7 +66,7 @@ public class AdminController {
 //        if (isAdmin()) {
 //            return null;
 //        } else {
-//            return gnzUserDAO.getOrganizationsWithAccess(SecurityContextHolder.getContext().getAuthentication().getName());
+//            return TNMUserDAO.getOrganizationsWithAccess(SecurityContextHolder.getContext().getAuthentication().getName());
 //        }
 //    }
 
@@ -222,7 +222,7 @@ public class AdminController {
         }
 
 //        check if username already exists
-        if (gnzUserDAO.findByName(username) != null) {
+        if (TNMUserDAO.findByName(username) != null) {
             System.out.println("Sorry, this username already exists.");
             return addOrganization(false, "The organization could not be created. This username already in use.","Sorry, this username is already in use.");
         }
@@ -271,8 +271,8 @@ public class AdminController {
             System.out.println("Organization created successfully.");
             System.out.println("Creating account for organization...");
 
-            GNZUser user = new GNZUser(username, email, Encrypter.encrytedPassword(password), organization.getId(), ADMIN.getId());
-            if (this.gnzUserDAO.save(user)) {
+            TNMUser user = new TNMUser(username, email, Encrypter.encrytedPassword(password), organization.getId(), ADMIN.getId());
+            if (this.TNMUserDAO.save(user)) {
                 return addOrganization(true, null, null);
             } else {
                 System.out.println("Account creation failed. Deleting organization from database...");
@@ -300,11 +300,11 @@ public class AdminController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/accounts");
 
-        List<GNZUser> users = this.gnzUserDAO.getAll();
+        List<TNMUser> users = this.TNMUserDAO.getAll();
         mv.addObject("accounts", users);
 
         Map<String, String> organizationNames = new HashMap<>();
-        for (GNZUser user : users) {
+        for (TNMUser user : users) {
             Organization organization = this.organizationDAO.findById(user.getOrganizationId());
             String organizationDisplayName = organization == null ? "" : organization.getName();
             organizationNames.put(user.getId(), organizationDisplayName);
@@ -327,7 +327,7 @@ public class AdminController {
         mv.setViewName("account");
 //        TODO: ENSURE SECURITY
         if (isSuperAdmin()) {
-            GNZUser queriedUser = this.gnzUserDAO.findById(id);
+            TNMUser queriedUser = this.TNMUserDAO.findById(id);
             System.out.println("Queried user: " + queriedUser);
             mv.addObject("queriedaccount", queriedUser);
 
@@ -339,8 +339,8 @@ public class AdminController {
             System.out.println("Associated organization: " + associatedOrganization);
             mv.addObject("associatedorganization", associatedOrganization);
         } else if (isAdmin()) {
-            GNZUser user = getCurrentUser();
-            GNZUser queriedUser = this.gnzUserDAO.findById(id);
+            TNMUser user = getCurrentUser();
+            TNMUser queriedUser = this.TNMUserDAO.findById(id);
             System.out.println("Queried user: " + queriedUser);
 
             if (user != null && user.getOrganizationId().equals(queriedUser.getOrganizationId()) && !(queriedUser.isAdmin() && !queriedUser.getId().equals(user.getId()))) {
@@ -354,13 +354,13 @@ public class AdminController {
                 throw new AccessDeniedException("You are not authorized to view this account.");
             }
         } else if (isUser()) {
-            GNZUser user = getCurrentUser();
+            TNMUser user = getCurrentUser();
 
             if (!user.getId().equals(id)) {
                 throw new AccessDeniedException("You are not authorized to view this account.");
             }
 
-            GNZUser queriedUser = this.gnzUserDAO.findById(id);
+            TNMUser queriedUser = this.TNMUserDAO.findById(id);
             System.out.println("Queried user: " + queriedUser);
 
             if (user.getId().equals(queriedUser.getId())) {
@@ -393,7 +393,7 @@ public class AdminController {
             return account(accountId, null, null, "Sorry, the passwords don't match.");
         }
 
-        GNZUser targetUser = gnzUserDAO.findById(accountId);
+        TNMUser targetUser = TNMUserDAO.findById(accountId);
         if (targetUser == null) {
             return account(accountId, null, null, "Sorry, we ran into an unexpected error.");
         }
@@ -420,7 +420,7 @@ public class AdminController {
         }
 
         try {
-            gnzUserDAO.update(new GNZUser(targetUser.getId(), targetUser.getUsername(), targetUser.getEmail(), Encrypter.encrytedPassword(password), targetUser.getOrganizationId(), targetUser.role()));
+            TNMUserDAO.update(new TNMUser(targetUser.getId(), targetUser.getUsername(), targetUser.getEmail(), Encrypter.encrytedPassword(password), targetUser.getOrganizationId(), targetUser.role()));
 
             return account(accountId, "Successfully updated the account password.", null, null);
         } catch (Exception e) {
@@ -465,12 +465,12 @@ public class AdminController {
                 throw new Exception("Organization not found.");
             }
 
-            List<GNZUser> associatedUsers = this.organizationDAO.getUsersForOrganization(organization);
+            List<TNMUser> associatedUsers = this.organizationDAO.getUsersForOrganization(organization);
             mv.addObject("associatedusers", associatedUsers);
         } else if (isUser()) {
 //              check if user is associated with organization
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            GNZUser user = this.gnzUserDAO.findByName(username);
+            TNMUser user = this.TNMUserDAO.findByName(username);
             String associatedOrganizationId = user.getOrganizationId();
             if (!associatedOrganizationId.equals(id)) {
                 System.out.println("You do not have permission to view this organization.");
@@ -487,7 +487,7 @@ public class AdminController {
                 }
 
 
-                List<GNZUser> associatedUsers = this.organizationDAO.getUsersForOrganization(organization);
+                List<TNMUser> associatedUsers = this.organizationDAO.getUsersForOrganization(organization);
                 mv.addObject("associatedusers", associatedUsers);
             }
         }
@@ -536,7 +536,7 @@ public class AdminController {
             }
         } else if (isUser()) {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            GNZUser user = this.gnzUserDAO.findByName(username);
+            TNMUser user = this.TNMUserDAO.findByName(username);
             String associatedOrganizationId = user.getOrganizationId();
             if (!associatedOrganizationId.equals(id)) {
                 System.out.println("You do not have permission to view this organization.");
@@ -574,7 +574,7 @@ public class AdminController {
             }
         } /*else if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority(Role.USER.getName()))) {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            GNZUser user = this.gnzUserDAO.findByName(username);
+            TNMUser user = this.TNMUserDAO.findByName(username);
             String associatedOrganizationId = user.getOrganizationId();
             if (!associatedOrganizationId.equals(id)) {
                 System.out.println("You do not have permission to view this organization.");
@@ -604,9 +604,9 @@ public class AdminController {
     public ModelAndView deleteAccount(@RequestParam(value = "id", required = true) String id) throws Exception {
         if (isSuperAdmin()) {
 //            get organization and check if it exists
-            GNZUser account = this.gnzUserDAO.findById(id);
+            TNMUser account = this.TNMUserDAO.findById(id);
             if (account != null) {
-                if (this.gnzUserDAO.delete(account)) {
+                if (this.TNMUserDAO.delete(account)) {
                     System.out.println("Account deleted successfully.");
                     return accounts("Successfully deleted the account.", null);
                 } else {
@@ -618,12 +618,12 @@ public class AdminController {
                 return accounts(null, "Sorry, the account could not be deleted.");
             }
         } else if (isAdmin()) {
-            GNZUser account = this.gnzUserDAO.findById(id);
+            TNMUser account = this.TNMUserDAO.findById(id);
             if (!getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
                 System.out.println("You do not have permission to view this organization.");
                 throw new AccessDeniedException("You do not have permission to view this organization.");
             } else {
-if (this.gnzUserDAO.delete(account)) {
+if (this.TNMUserDAO.delete(account)) {
                     System.out.println("Account deleted successfully.");
                     return accounts("Successfully deleted the account.", null);
                 } else {
@@ -671,7 +671,7 @@ if (this.gnzUserDAO.delete(account)) {
         }
 
 //        check if username already exists
-        if (gnzUserDAO.findByName(username) != null) {
+        if (TNMUserDAO.findByName(username) != null) {
             System.out.println("Sorry, this username already exists.");
             return organization(organizationId, null, null, null,"Sorry, this username already exists.");
         }
@@ -712,9 +712,9 @@ if (this.gnzUserDAO.delete(account)) {
             if (isAdmin()) {
                 System.out.println("Creating account...");
 
-                GNZUser user = new GNZUser(username.toLowerCase(), email.toLowerCase(), Encrypter.encrytedPassword(password), organizationId, role);
+                TNMUser user = new TNMUser(username.toLowerCase(), email.toLowerCase(), Encrypter.encrytedPassword(password), organizationId, role);
 
-                if (this.gnzUserDAO.save(user)) {
+                if (this.TNMUserDAO.save(user)) {
                     return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
                 } else {
                     System.out.println("Account creation failed.");
@@ -727,9 +727,9 @@ if (this.gnzUserDAO.delete(account)) {
             if (isAdmin()) {
                 System.out.println("Creating account...");
 
-                GNZUser user = new GNZUser(username.toLowerCase(), email.toLowerCase(), Encrypter.encrytedPassword(password), organizationId, role);
+                TNMUser user = new TNMUser(username.toLowerCase(), email.toLowerCase(), Encrypter.encrytedPassword(password), organizationId, role);
 
-                if (this.gnzUserDAO.save(user)) {
+                if (this.TNMUserDAO.save(user)) {
                     return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
                 } else {
                     System.out.println("Account creation failed.");
@@ -738,12 +738,12 @@ if (this.gnzUserDAO.delete(account)) {
             } else if (isUser()) {
 //                    check if user is in the same organization
                 if (organizationId != null) {
-                    if (gnzUserDAO.findByName(username).getId().equals(organizationId)) {
+                    if (TNMUserDAO.findByName(username).getId().equals(organizationId)) {
                         System.out.println("Creating account...");
 
-                        GNZUser user = new GNZUser(username.toLowerCase(), email.toLowerCase(), Encrypter.encrytedPassword(password), organizationId, role);
+                        TNMUser user = new TNMUser(username.toLowerCase(), email.toLowerCase(), Encrypter.encrytedPassword(password), organizationId, role);
 
-                        if (this.gnzUserDAO.save(user)) {
+                        if (this.TNMUserDAO.save(user)) {
                             return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
                         } else {
                             System.out.println("Account creation failed.");
@@ -773,8 +773,8 @@ if (this.gnzUserDAO.delete(account)) {
             @RequestParam(value = "privileges", required = false) int roleId
     ) {
         System.out.println("IM IN THE FUNCTION");
-        GNZUser userToUpdate = gnzUserDAO.findById(id);
-        GNZUser currentUser = getCurrentUser();
+        TNMUser userToUpdate = TNMUserDAO.findById(id);
+        TNMUser currentUser = getCurrentUser();
 
 
         if (!currentUser.isSuperAdmin()) {
@@ -806,22 +806,22 @@ if (this.gnzUserDAO.delete(account)) {
 
 //        TODO: DECIDE ABOUT CONTROL OF SUPER ADMIN STATUSES
         if (isSuperAdmin() && (!userToUpdate.isSuperAdmin() || userToUpdate.getId().equals(currentUser.getId()))) {
-            GNZUser updatedUser = new GNZUser(id, newUsername.toLowerCase(), newEmail.toLowerCase(), userToUpdate.getEncryptedPassword(), userToUpdate.getOrganizationId(), newRole);
-            if (gnzUserDAO.update(updatedUser)) {
+            TNMUser updatedUser = new TNMUser(id, newUsername.toLowerCase(), newEmail.toLowerCase(), userToUpdate.getEncryptedPassword(), userToUpdate.getOrganizationId(), newRole);
+            if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
             } else {
                 return account(id,null, "Sorry, an error occurred. The account could not be updated.", null);
             }
         } else if (isAdmin() && !userToUpdate.isSuperAdmin()) {
-            GNZUser updatedUser = new GNZUser(id, newUsername.toLowerCase(), newEmail.toLowerCase(), userToUpdate.getEncryptedPassword(), userToUpdate.getOrganizationId(), newRole);
-            if (gnzUserDAO.update(updatedUser)) {
+            TNMUser updatedUser = new TNMUser(id, newUsername.toLowerCase(), newEmail.toLowerCase(), userToUpdate.getEncryptedPassword(), userToUpdate.getOrganizationId(), newRole);
+            if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
             } else {
                 return account(id,null, "Sorry, an error occurred. The account could not be updated.", null);
             }
         } else if (!isAdmin() && userToUpdate.getId().equals(getCurrentUser().getId())) {
-            GNZUser updatedUser = new GNZUser(id, newUsername.toLowerCase(), newEmail.toLowerCase(), userToUpdate.getEncryptedPassword(), userToUpdate.getOrganizationId(), userToUpdate.role());
-            if (gnzUserDAO.update(updatedUser)) {
+            TNMUser updatedUser = new TNMUser(id, newUsername.toLowerCase(), newEmail.toLowerCase(), userToUpdate.getEncryptedPassword(), userToUpdate.getOrganizationId(), userToUpdate.role());
+            if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
             } else {
                 return account(id,null, "Sorry, an error occurred. The account could not be updated.", null);
@@ -843,7 +843,7 @@ if (this.gnzUserDAO.delete(account)) {
         ModelAndView mv = new ModelAndView("admin/locations");
         mv.addObject("locations", locationDAO.findMatching(oidToUse));
 
-        GNZUser currentUser = getCurrentUser();
+        TNMUser currentUser = getCurrentUser();
         mv.addObject("user", currentUser);
 
         Organization organization = organizationDAO.findById(oidToUse);

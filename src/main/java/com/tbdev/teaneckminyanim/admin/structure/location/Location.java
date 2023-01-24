@@ -1,13 +1,13 @@
 package com.tbdev.teaneckminyanim.admin.structure.location;
 
-import com.tbdev.teaneckminyanim.admin.structure.GNZObject;
+import com.tbdev.teaneckminyanim.admin.structure.TNMObject;
 import com.tbdev.teaneckminyanim.admin.structure.IDGenerator;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
 
 @Table(name = "LOCATION")
-public class Location extends GNZObject implements IDGenerator {
+public class Location extends TNMObject implements IDGenerator {
     @Column(name="NAME")
     private String name;
 

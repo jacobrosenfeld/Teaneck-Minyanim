@@ -6,9 +6,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import com.tbdev.teaneckminyanim.admin.structure.GNZSaveable;
-import com.tbdev.teaneckminyanim.admin.structure.user.GNZUser;
-import com.tbdev.teaneckminyanim.admin.structure.user.GNZUserMapper;
+import com.tbdev.teaneckminyanim.admin.structure.TNMSaveable;
+import com.tbdev.teaneckminyanim.admin.structure.user.TNMUser;
+import com.tbdev.teaneckminyanim.admin.structure.user.TNMUserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @Transactional
-public class OrganizationDAO extends JdbcDaoSupport implements GNZSaveable<Organization> {
+public class OrganizationDAO extends JdbcDaoSupport implements TNMSaveable<Organization> {
 
     @Autowired
     public OrganizationDAO(DataSource dataSource) {
@@ -128,16 +128,16 @@ public class OrganizationDAO extends JdbcDaoSupport implements GNZSaveable<Organ
         }
     }
 
-    public List<GNZUser> getUsersForOrganization(Organization organization) {
+    public List<TNMUser> getUsersForOrganization(Organization organization) {
         String sql = String.format("SELECT * FROM ACCOUNT WHERE ORGANIZATION_ID='%s'", organization.getId());
 
-        GNZUserMapper mapper = new GNZUserMapper();
+        TNMUserMapper mapper = new TNMUserMapper();
 
         List<Map<String, Object>> userMaps = this.getJdbcTemplate().queryForList(sql);
 
-        List<GNZUser> users = new ArrayList<>();
+        List<TNMUser> users = new ArrayList<>();
 
-//        iterate through the list and create an GNZUser object for each row
+//        iterate through the list and create an TNMUser object for each row
         for (Map<String, Object> userMap : userMaps) {
             users.add(mapper.mapRow(userMap));
         }

@@ -7,12 +7,12 @@ import java.util.Map;
 
 import org.springframework.jdbc.core.RowMapper;
 
-public class GNZUserMapper implements RowMapper<GNZUser>, Serializable {
+public class TNMUserMapper implements RowMapper<TNMUser>, Serializable {
 
     public static final String BASE_SQL = "SELECT u.ID, u.USERNAME, u.EMAIL, u.ENCRYPTED_PASSWORD, u.ORGANIZATION_ID, u.ROLE_ID FROM ACCOUNT u ";
 
     @Override
-    public GNZUser mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public TNMUser mapRow(ResultSet rs, int rowNum) throws SQLException {
 
         String id = rs.getString("ID");
         String username = rs.getString("USERNAME");
@@ -21,10 +21,10 @@ public class GNZUserMapper implements RowMapper<GNZUser>, Serializable {
         String orgId = rs.getString("ORGANIZATION_ID");
         Integer role = rs.getInt("ROLE_ID");
 
-        return new GNZUser(id, username, email, encrytedPassword, orgId, role);
+        return new TNMUser(id, username, email, encrytedPassword, orgId, role);
     }
 
-    public GNZUser mapRow(Map<String, Object> m) {
+    public TNMUser mapRow(Map<String, Object> m) {
 
         String id = (String) m.get("ID");
         String username = (String) m.get("USERNAME");
@@ -33,7 +33,7 @@ public class GNZUserMapper implements RowMapper<GNZUser>, Serializable {
         String orgId = (String) m.get("ORGANIZATION_ID");
         Integer role = Integer.valueOf(m.get("ROLE_ID").toString());
 
-        return new GNZUser(id, username, email, encrytedPassword, orgId, role);
+        return new TNMUser(id, username, email, encrytedPassword, orgId, role);
     }
 
 }

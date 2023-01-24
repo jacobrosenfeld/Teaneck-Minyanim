@@ -2,14 +2,14 @@ package com.tbdev.teaneckminyanim.admin.structure.user;
 
 //import org.springframework.data.annotation.Id;
 
-import com.tbdev.teaneckminyanim.admin.structure.GNZObject;
+import com.tbdev.teaneckminyanim.admin.structure.TNMObject;
 import com.tbdev.teaneckminyanim.admin.structure.IDGenerator;
 import com.tbdev.teaneckminyanim.admin.structure.Role;
 
 import javax.persistence.*;
 
 @Table(name="ACCOUNT")
-public class GNZUser extends GNZObject implements IDGenerator {
+public class TNMUser extends TNMObject implements IDGenerator {
     @Column(name="USERNAME", nullable = false, unique = true)
     private String username;
 
@@ -29,7 +29,7 @@ public class GNZUser extends GNZObject implements IDGenerator {
         return Role.getRole(roleId);
     }
 
-    public GNZUser(String id, String username, String email, String encryptedPassword, String organizationId, Integer role) {
+    public TNMUser(String id, String username, String email, String encryptedPassword, String organizationId, Integer role) {
         super.id = id;
         this.username = username;
         this.email = email;
@@ -39,7 +39,7 @@ public class GNZUser extends GNZObject implements IDGenerator {
         this.roleId = role;
     }
 
-    public GNZUser(String username, String email, String encryptedPassword, String organizationId, Integer role) {
+    public TNMUser(String username, String email, String encryptedPassword, String organizationId, Integer role) {
         super.id = generateID('A');
         this.username = username;
         this.email = email;
@@ -49,7 +49,7 @@ public class GNZUser extends GNZObject implements IDGenerator {
         this.roleId = role;
     }
 
-    public GNZUser(String id, String username, String email, String encryptedPassword, String organizationId, Role role) {
+    public TNMUser(String id, String username, String email, String encryptedPassword, String organizationId, Role role) {
         super.id = id;
         this.username = username;
         this.email = email;
@@ -59,7 +59,7 @@ public class GNZUser extends GNZObject implements IDGenerator {
         this.roleId = role.getId();
     }
 
-    public GNZUser(String username, String email, String encryptedPassword, String organizationId, Role role) {
+    public TNMUser(String username, String email, String encryptedPassword, String organizationId, Role role) {
         super.id = generateID('A');
         this.username = username;
         this.email = email;
@@ -89,13 +89,13 @@ public class GNZUser extends GNZObject implements IDGenerator {
         return roleId;
     }
 
-//    private GNZOrganization getOrganization() {
+//    private TNMOrganization getOrganization() {
 //
-//        return gnzOrganizationDAO.find(organizationId);
+//        return TNMOrganizationDAO.find(organizationId);
 //    }
 //
 //    public String getOrganizationDisplayName() {
-//        GNZOrganization org = getOrganization();
+//        TNMOrganization org = getOrganization();
 //        return (org == null) ? "" : org.getName();
 //    }
 
