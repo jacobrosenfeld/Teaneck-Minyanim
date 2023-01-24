@@ -24,8 +24,8 @@ function initMap() {
         const { target } = domEvent;
   
         infoWindow.close();
-        infoWindow.setContent(marker.title);
-        infoWindow.open(markerView.map, marker);
+        infoWindow.setContent(priceTag.title);
+        infoWindow.open(markerView.map, markerView);
       });
       window.initMap = initMap;
     } else {
