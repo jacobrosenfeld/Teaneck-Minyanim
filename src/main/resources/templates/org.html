@@ -113,18 +113,18 @@
                           .then(data => {
                             // The data object returned from the API will contain an array of features
                             // representing the geocoded addresses that match the query
-                            const coordinates = data.features[0].geometry.coordinates;
+                            const geocode = data.features[0].geometry.coordinates;
 
                             const map = new mapboxgl.Map({
                               container: 'map',
                               // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
                               style: 'mapbox://styles/mapbox/light-v11',
-                              center: coordinates,
+                              center: geocode,
                               zoom: 15,
                             });
                             // Add a marker to the map
                             new mapboxgl.Marker()
-                              .setLngLat(coordinates)
+                              .setLngLat(geocode)
                               .addTo(map);
                           });
 
@@ -145,7 +145,7 @@
                                   },
                                   'geometry': {
                                     'type': 'Point',
-                                    'coordinates': coordinates,
+                                    'coordinates': geocode,
                                   }
                                 },
                               ]
