@@ -11,7 +11,13 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -263,6 +269,12 @@ for (Minyan minyan : enabledMinyanim) {
 }
 kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
 mv.getModel().put("kolminyanim", kolhaMinyanims);
+Stream<KolhaMinyanim> stream = kolhaMinyanims.stream();
+
+// Get the unique values based on the 'organizationId' property
+List<KolhaMinyanim> uniqueKolhaMinyanims = stream.filter(distinctByKey(KolhaMinyanim::getOrganizationId)).collect(Collectors.toList());
+
+mv.getModel().put("kolminyanim", uniqueKolhaMinyanims);
 //end kol
 // //orgs
 // List<Organization> shulNames = new ArrayList<>();
@@ -305,7 +317,10 @@ mv.getModel().put("kolminyanim", kolhaMinyanims);
         calendar2.setTime(date2);
         return calendar1.get(Calendar.DAY_OF_MONTH) == calendar2.get(Calendar.DAY_OF_MONTH);
     }
-
+    static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
+    }
     @GetMapping("/zmanim/next")
     public ModelAndView nextZmanimAfter(@RequestParam(value = "after", required = true) String dateString) {
         Date date = new Date(dateString);
