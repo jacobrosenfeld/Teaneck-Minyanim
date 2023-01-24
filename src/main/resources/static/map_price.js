@@ -16,15 +16,14 @@ function initMap() {
       const markerView = new google.maps.marker.AdvancedMarkerView({
         map,
         position: results[0].geometry.location,
-        content: priceTag.textContent,
-        title: priceTag.title
-        
+        title: priceTag.title,
+        content: priceTag.textContent       
       });
       markerView.addListener("click", ({ domEvent, latLng }) => {
         const { target } = domEvent;
   
         infoWindow.close();
-        infoWindow.setContent(priceTag.title);
+        infoWindow.setContent(markerView.title);
         infoWindow.open(markerView.map, markerView);
       });
       window.initMap = initMap;
