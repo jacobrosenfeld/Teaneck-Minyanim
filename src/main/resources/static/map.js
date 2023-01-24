@@ -8,7 +8,6 @@ function initMap() {
           mapId: `ab35d05ad627f5db`,
           center: results[0].geometry.location
         });
-        for (const property of properties) {
             const advancedMarkerView = new google.maps.marker.AdvancedMarkerView({
               map,
               position: results[0].geometry.location,
@@ -31,17 +30,17 @@ function initMap() {
               unhighlight(advancedMarkerView, property);
             });
           }
-        }
+        });
         
         function highlight(markerView, property) {
           markerView.content.classList.add("highlight");
           markerView.element.style.zIndex = 1;
-        }
+        };
         
         function unhighlight(markerView, property) {
           markerView.content.classList.remove("highlight");
           markerView.element.style.zIndex = "";
-        }
+        };
         
         function buildContent(property) {
           const content = document.createElement("div");
@@ -63,10 +62,5 @@ function initMap() {
             `;
           return content;
         }
-        const properties = [
-          {
-            address: address,
-            type: "building",
-          },]
-})}
+}
 window.initMap = initMap;
