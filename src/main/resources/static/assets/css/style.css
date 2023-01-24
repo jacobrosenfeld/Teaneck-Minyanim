@@ -18,7 +18,7 @@
    v2.0 | 20110126
    License: none (public domain)
 */
-/* Mobile carried over from Great Neck */
+/* Mobile carried over from old */
 @media screen and (max-width: 600px) {
 	.mobile-hide {
 	  visibility: hidden;
