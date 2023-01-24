@@ -11,10 +11,10 @@ function initMap() {
 
         priceTag.className = "price-tag";
         priceTag.textContent = marker;
-        
+
         const markerView = new google.maps.marker.AdvancedMarkerView({
           map,
-          position: { lat: 40.888489, lng: -74.0123889 },
+          position: results[0].geometry.location,
           content: priceTag,
         });
       } else {
