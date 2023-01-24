@@ -16,8 +16,8 @@ function initMap() {
       const markerView = new google.maps.marker.AdvancedMarkerView({
         map,
         position: results[0].geometry.location,
-        title: priceTag.title,
-        content: priceTag.textContent       
+        title: title,
+        content: textContent
       });
       markerView.addListener("click", ({ domEvent, latLng }) => {
         const { target } = domEvent;
