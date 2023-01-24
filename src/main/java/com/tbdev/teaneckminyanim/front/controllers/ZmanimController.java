@@ -113,6 +113,12 @@ public class ZmanimController {
         mv.getModel().put("date", dateFormat.format(date));
         mv.getModel().put("onlyDate", onlyDateFormat.format(date));
 
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date datenow = new Date();
+        String timenow = dateFormat.format(datenow);
+        mv.getModel().put("timenow", dateFormat.format(timenow));
+
         Calendar c = Calendar.getInstance();
 
         // adds model data for tomorrow's date
