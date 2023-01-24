@@ -1,6 +1,3 @@
-var map;
-var markerView;
-
 function initMap() {
   var geocoder = new google.maps.Geocoder();
   geocoder.geocode({'address': address}, function(results, status) {
@@ -15,7 +12,7 @@ function initMap() {
   
   const markerView = new google.maps.marker.AdvancedMarkerView({
     position: results[0].geometry.location,
-    map: map,
+    map,
     title: shulname
   });
   
