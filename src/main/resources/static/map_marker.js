@@ -30,7 +30,7 @@ function initMap() {
         });
     
         // Add a click listener for each marker, and set up the info window.
-        marker.addListener("mouseover", ({ domEvent, latLng }) => {
+        marker.addListener("hover", ({ domEvent, latLng }) => {
           const { target } = domEvent;
     
           infoWindow.close();
