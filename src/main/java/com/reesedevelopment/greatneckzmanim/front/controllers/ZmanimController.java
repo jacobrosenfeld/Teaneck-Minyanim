@@ -274,7 +274,7 @@ Stream<KolhaMinyanim> stream = kolhaMinyanims.stream();
 // Get the unique values based on the 'organizationId' property
 List<KolhaMinyanim> uniqueKolhaMinyanims = stream.filter(distinctByKey(KolhaMinyanim::getOrganizationId)).collect(Collectors.toList());
 
-mv.getModel().put("kolminyanim", uniqueKolhaMinyanims);
+mv.getModel().put("uniquekolminyanim", uniqueKolhaMinyanims);
 //end kol
 // //orgs
 // List<Organization> shulNames = new ArrayList<>();
