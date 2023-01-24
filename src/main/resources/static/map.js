@@ -6,7 +6,7 @@ function initMap() {
     const map = new google.maps.Map(document.getElementById("map"), {
       zoom: 11,
       center,
-      mapId: "4504f8b37365c3d0",
+      mapId: "ab35d05ad627f5db",
     });
   
     for (const property of properties) {
