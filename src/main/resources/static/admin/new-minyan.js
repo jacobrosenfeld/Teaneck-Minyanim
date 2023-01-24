@@ -2,7 +2,7 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const start = urlParams.get('st');
 if (start == "sh") {
-    updateMinyanType('shacharit');
+    updateMinyanType('shacharis');
 } else if (start == "mi") {
     updateMinyanType('mincha');
 } else if (start == "ar") {
@@ -186,7 +186,7 @@ function updateTime(name, minyanTime) {
 
 /**
 * Updates minyan type selector
-* @param {string} type Either 'shacharit'/'mincha'/'maariv'/'selichot'/'megilareading'
+* @param {string} type Either 'shacharis'/'mincha'/'maariv'/'selichot'/'megilareading'
 */
 function updateMinyanType(type) {
     updateSelector('type', type);

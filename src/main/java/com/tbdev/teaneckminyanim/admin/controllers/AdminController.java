@@ -931,18 +931,18 @@ if (this.TNMUserDAO.delete(account)) {
         List<Minyan> minyanim = minyanDAO.findMatching(oidToUse);
 //        minyanim.stream().filter(m -> m.getType() == MinyanType.SHACHARIT);
 
-//        get elements from list that are shacharit
-//        List<Minyan> shacharitMinyanim = new ArrayList<>();
+//        get elements from list that are shacharis
+//        List<Minyan> shacharisMinyanim = new ArrayList<>();
 //        for (Minyan m : minyanim) {
-//            if (m.getType().equals("shacharit")) {
-//                shacharitMinyanim.add(m);
+//            if (m.getType().equals("shacharis")) {
+//                shacharisMinyanim.add(m);
 //            }
 //        }
-        List<Minyan> shacharitMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SHACHARIT)).collect(Collectors.toList());
-        mv.addObject("shacharitminyanim", shacharitMinyanim);
-        Map<String, HashMap<MinyanDay, MinyanTime>> shacharitTimes = new HashMap<>();
-        for (Minyan m : shacharitMinyanim) {
-            shacharitTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
+        List<Minyan> shacharisMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SHACHARIT)).collect(Collectors.toList());
+        mv.addObject("shacharisminyanim", shacharisMinyanim);
+        Map<String, HashMap<MinyanDay, MinyanTime>> shacharisTimes = new HashMap<>();
+        for (Minyan m : shacharisMinyanim) {
+            shacharisTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
         List<Minyan> minchaMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.MINCHA)).collect(Collectors.toList());
@@ -973,7 +973,7 @@ if (this.TNMUserDAO.delete(account)) {
             megilaTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
-        mv.addObject("shacharittimes", shacharitTimes);
+        mv.addObject("shacharistimes", shacharisTimes);
         mv.addObject("minchatimes", minchaTimes);
         mv.addObject("maarivtimes", maarivTimes);
         mv.addObject("selichottimes", selichotTimes);

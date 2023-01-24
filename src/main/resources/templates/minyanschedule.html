@@ -39,7 +39,7 @@
                             <div>
                                 <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                                     <li class="nav-item" role="presentation">
-                                        <a class="nav-link active" id="pills-shacharit-tab" data-toggle="pill" href="#pills-shacharit" role="tab" aria-controls="pills-shacharit" aria-selected="true">Shacharit</a>
+                                        <a class="nav-link active" id="pills-shacharis-tab" data-toggle="pill" href="#pills-shacharis" role="tab" aria-controls="pills-shacharis" aria-selected="true">Shacharis</a>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <a class="nav-link" id="pills-mincha-tab" data-toggle="pill" href="#pills-mincha" role="tab" aria-controls="pills-mincha" aria-selected="false">Mincha</a>
@@ -55,8 +55,8 @@
                                     </li>
                                 </ul>
                                 <div class="tab-content" id="pills-tabContent">
-                                    <div class="tab-pane fade active show" id="pills-shacharit" role="tabpanel" aria-labelledby="pills-shacharit-tab">
-                                        <div th:if="${!shacharitminyanim.isEmpty()}" class="table-responsive">
+                                    <div class="tab-pane fade active show" id="pills-shacharis" role="tabpanel" aria-labelledby="pills-shacharis-tab">
+                                        <div th:if="${!shacharisminyanim.isEmpty()}" class="table-responsive">
                                             <table class="table">
                                                 <thead class="thead-inverse">
                                                 <tr>
@@ -79,7 +79,7 @@
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-                                                <tr th:each="minyan: ${shacharitminyanim}" th:with="minyantimes=${shacharittimes.get(minyan.getId())}">
+                                                <tr th:each="minyan: ${shacharisminyanim}" th:with="minyantimes=${shacharistimes.get(minyan.getId())}">
                                                     <td>
                                                         <div>
                                                             <a role="button" class="btn btn-dark btn-sm" th:href="@{|/admin/minyanim/${minyan.getId()}/view|}">
@@ -139,9 +139,9 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div th:if="${shacharitminyanim.isEmpty()}" class="jumbotron jumbotron-fluid">
+                                        <div th:if="${shacharisminyanim.isEmpty()}" class="jumbotron jumbotron-fluid">
                                             <div class="container">
-                                                <h3>You don't have any shacharit minyanim saved.</h3>
+                                                <h3>You don't have any shacharis minyanim saved.</h3>
                                                 <hr>
                                                 <a th:href="@{|/admin/${organization.id}/minyanim/new?st=sh|}" role="button" class="btn btn-primary">Add a Minyan</a>
                                             </div>

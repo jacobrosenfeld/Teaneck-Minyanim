@@ -50,7 +50,7 @@ public enum MinyanType {
     public String displayName() {
         switch (this) {
             case SHACHARIT:
-                return "Shacharit";
+                return "Shacharis";
             case MINCHA:
                 return "Mincha";
             case MAARIV:
@@ -64,7 +64,7 @@ public enum MinyanType {
         }
     }
 
-    public boolean isShacharit() {
+    public boolean isShacharis() {
         return this == SHACHARIT;
     }
 
