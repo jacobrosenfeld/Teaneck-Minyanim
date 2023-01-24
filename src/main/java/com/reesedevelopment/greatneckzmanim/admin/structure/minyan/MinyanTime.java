@@ -1,6 +1,6 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.minyan;
+package com.tbdev.teaneckminyanim.admin.structure.minyan;
 import com.kosherjava.zmanim.util.Time;
-import com.reesedevelopment.greatneckzmanim.global.Zman;
+import com.tbdev.teaneckminyanim.global.Zman;
 
 import java.time.LocalDate;
 

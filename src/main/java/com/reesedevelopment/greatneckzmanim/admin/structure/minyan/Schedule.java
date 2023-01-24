@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.minyan;
+package com.tbdev.teaneckminyanim.admin.structure.minyan;
 
 import com.kosherjava.zmanim.util.Time;
 

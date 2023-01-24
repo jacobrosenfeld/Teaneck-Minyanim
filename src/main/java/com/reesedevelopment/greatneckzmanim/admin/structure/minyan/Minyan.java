@@ -1,12 +1,12 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.minyan;
+package com.tbdev.teaneckminyanim.admin.structure.minyan;
 
 import com.kosherjava.zmanim.hebrewcalendar.JewishCalendar;
 import com.kosherjava.zmanim.util.Time;
-import com.reesedevelopment.greatneckzmanim.admin.structure.GNZObject;
-import com.reesedevelopment.greatneckzmanim.admin.structure.IDGenerator;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
-import com.reesedevelopment.greatneckzmanim.global.Nusach;
+import com.tbdev.teaneckminyanim.admin.structure.GNZObject;
+import com.tbdev.teaneckminyanim.admin.structure.IDGenerator;
+import com.tbdev.teaneckminyanim.admin.structure.location.Location;
+import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
+import com.tbdev.teaneckminyanim.global.Nusach;
 
 import javax.persistence.Column;
 import javax.persistence.Table;

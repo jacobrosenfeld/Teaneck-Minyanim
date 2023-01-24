@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.minyan;
+package com.tbdev.teaneckminyanim.admin.structure.minyan;
 import org.springframework.jdbc.core.RowMapper;
 import java.io.Serializable;
 import java.sql.ResultSet;

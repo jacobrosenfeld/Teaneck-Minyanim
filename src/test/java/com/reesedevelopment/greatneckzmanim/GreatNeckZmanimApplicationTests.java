@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim;
+package com.tbdev.teaneckminyanim;
 
 //import org.junit.jupiter.api.Test;
 //import org.springframework.boot.test.context.SpringBootTest;

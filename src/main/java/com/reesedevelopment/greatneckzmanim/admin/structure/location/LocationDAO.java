@@ -1,6 +1,6 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.location;
+package com.tbdev.teaneckminyanim.admin.structure.location;
 
-import com.reesedevelopment.greatneckzmanim.admin.structure.GNZSaveable;
+import com.tbdev.teaneckminyanim.admin.structure.GNZSaveable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;

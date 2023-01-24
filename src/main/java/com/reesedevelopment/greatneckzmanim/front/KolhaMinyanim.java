@@ -1,7 +1,7 @@
-package com.reesedevelopment.greatneckzmanim.front;
+package com.tbdev.teaneckminyanim.front;
 
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanType;
-import com.reesedevelopment.greatneckzmanim.global.Nusach;
+import com.tbdev.teaneckminyanim.admin.structure.minyan.MinyanType;
+import com.tbdev.teaneckminyanim.global.Nusach;
 
 //import javax.persistence.Id;
 import java.text.SimpleDateFormat;

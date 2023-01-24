@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure;
+package com.tbdev.teaneckminyanim.admin.structure;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

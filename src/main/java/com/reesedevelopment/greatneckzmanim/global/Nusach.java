@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.global;
+package com.tbdev.teaneckminyanim.global;
 
 public enum Nusach {
     EDOT_HAMIZRACH("EDOT_HAMIZRACH"),
