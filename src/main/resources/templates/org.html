@@ -59,14 +59,17 @@
                   <div class="container">
                     <div class="container">
                       <div class="row">
-                        <div class="col-4">
-                    <div id="list-example" class="list-group">
-                      <a class="list-group-item list-group-item-action" href="#shacharis">Shacharis</a>
-                      <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
-                      <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
+                        <div class="col">
+
+                        </div>
+                        <div class="col">
+                          <div id="list-example" class="list-group">
+                            <a class="list-group-item list-group-item-action" href="#shacharis">Shacharis</a>
+                            <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
+                            <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
+                          </div>
                     </div>
-                    </div>
-                        <div class="col-8">
+                        <div class="col">
                     <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0" class="scrollspy-example" tabindex="0">
                       <h4 id="shacharis">Shacharis</h4>
                       <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
@@ -94,8 +97,8 @@
                              </tr>
                           </tbody>
                       </table>
-                      <div class="jumbotron" th:if="${shacharisMinyanim.isEmpty()}">
-                          <h4>Sorry, there aren't any shacharis minyanim scheduled.</h4>
+                      <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
+                          <h5><small class="text-muted">Sorry, there aren't any shacharis minyanim scheduled.</small></h5>
                       </div>
                       <h4 id="mincha">Mincha</h4>
                       <p>...</p>
@@ -156,8 +159,8 @@
                                           </tr>
                                           </tbody>
                                       </table>
-                                      <div class="jumbotron" th:if="${allminyanim.isEmpty()}">
-                                          <h4>Sorry, there aren't any minyanim scheduled.</h4>
+                                      <div class="nominyan" th:if="${allminyanim.isEmpty()}">
+                                          <h5><small class="text-muted"></small>Sorry, there aren't any minyanim scheduled.</small></h5>
                                       </div>
                                   </div>
                                   <div class="tab-pane fade" id="pills-shacharis" role="tabpanel" aria-labelledby="pills-shacharis-tab">
@@ -179,8 +182,8 @@
                                           </tr>
                                           </tbody>
                                       </table>
-                                      <div class="jumbotron" th:if="${shacharisMinyanim.isEmpty()}">
-                                          <h4>Sorry, there aren't any shacharis minyanim scheduled.</h4>
+                                      <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
+                                          <h5><small class="text-muted">Sorry, there aren't any shacharis minyanim scheduled.</small></h5>
                                       </div>
                                   </div>
                                   <div class="tab-pane fade" id="pills-mincha" role="tabpanel" aria-labelledby="pills-mincha-tab">
@@ -202,8 +205,8 @@
                                           </tr>
                                           </tbody>
                                       </table>
-                                      <div class="jumbotron" th:if="${minchaMinyanim.isEmpty()}">
-                                          <h4>Sorry, there aren't any mincha minyanim scheduled.</h4>
+                                      <div class="nominyan" th:if="${minchaMinyanim.isEmpty()}">
+                                          <h5><small class="text-muted">Sorry, there aren't any mincha minyanim scheduled.</small></h5>
                                       </div>
                                   </div>
 
@@ -226,8 +229,8 @@
                                           </tr>
                                           </tbody>
                                       </table>
-                                      <div class="jumbotron" th:if="${maarivMinyanim.isEmpty()}">
-                                          <h4>Sorry, there aren't any maariv minyanim scheduled.</h4>
+                                      <div class="nominyan" th:if="${maarivMinyanim.isEmpty()}">
+                                          <h5><small class="text-muted">Sorry, there aren't any maariv minyanim scheduled.</small></h5>
                                       </div>
                                   </div>
                               </div>
@@ -291,8 +294,8 @@
                       </tr>
                       </tbody>
                   </table>
-                  <div class="jumbotron" th:if="${allminyanim.isEmpty()}">
-                      <h4>Sorry, there aren't any minyanim scheduled.</h4>
+                  <div class="nominyan" th:if="${allminyanim.isEmpty()}">
+                      <h5><small class="text-muted">Sorry, there aren't any minyanim scheduled.</small></h5>
                   </div>
                   </div>
                 </div>
