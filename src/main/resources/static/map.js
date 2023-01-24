@@ -13,7 +13,6 @@ function initMap() {
               map,
               position: results[0].geometry.location,
               content: buildContent(property),
-              position: property.position,
               title: marker,
             });
             const element = advancedMarkerView.element;
@@ -68,7 +67,6 @@ function initMap() {
           {
             address: address,
             type: "building",
-            position: results[0].geometry.location
           },]
 })}
 window.initMap = initMap;
