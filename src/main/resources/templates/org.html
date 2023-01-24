@@ -53,87 +53,117 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-9 col-md-8" id="minyanim-box">
-                                <table class="table" th:if="${!allminyanim.isEmpty()}">
-                                    <thead>
-                                    <tr>
-                                        <th scope="col">Type</th>
-                                        <th scope="col">Time</th>
-                                        <th scope="col">Information</th>
-<!--                                        <th scope="col">Nusach</th>-->
-<!--                                        <th scope="col">Notes</th>-->
-                                    </tr>
-                                    </thead>
-                                    <div class="tab-pane fade" id="pills-shacharit" role="tabpanel" aria-labelledby="pills-shacharit-tab">
-                                        <table class="table" th:if="${!shacharitMinyanim.isEmpty()}">
-                                            <thead>
-                                            <tr>
-                                                <th scope="col">Time</th>
-                                                <th scope="col">Minyan</th>
-                                                <th scope="col">Location</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr th:each="minyan: ${shacharitMinyanim}">
-                                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                                <td class="middle">
-                                                    <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                                </td>
-                                                <td class="middle" th:text="${minyan.getLocationName()}"></td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                        <div class="jumbotron" th:if="${shacharitMinyanim.isEmpty()}">
-                                            <h4>Sorry, there aren't any shacharit minyanim scheduled.</h4>
-                                        </div>
-                                    </div>
-                                    <div class="tab-pane fade" id="pills-mincha" role="tabpanel" aria-labelledby="pills-mincha-tab">
-                                        <table class="table" th:if="${!minchaMinyanim.isEmpty()}">
-                                            <thead>
-                                            <tr>
-                                                <th scope="col">Time</th>
-                                                <th scope="col">Minyan</th>
-                                                <th scope="col">Location</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr th:each="minyan: ${minchaMinyanim}">
-                                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                                <td class="middle">
-                                                    <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                                </td>
-                                                <td class="middle" th:text="${minyan.getLocationName()}"></td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                        <div class="jumbotron" th:if="${minchaMinyanim.isEmpty()}">
-                                            <h4>Sorry, there aren't any mincha minyanim scheduled.</h4>
-                                        </div>
-                                    </div>
-
-                                    <div class="tab-pane fade" id="pills-maariv" role="tabpanel" aria-labelledby="pills-maariv-tab">
-                                        <table class="table" th:if="${!maarivMinyanim.isEmpty()}">
-                                            <thead>
-                                            <tr>
-                                                <th scope="col">Time</th>
-                                                <th scope="col">Minyan</th>
-                                                <th scope="col">Location</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr th:each="minyan: ${maarivMinyanim}">
-                                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                                <td class="middle">
-                                                    <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                                </td>
-                                                <td class="middle" th:text="${minyan.getLocationName()}"></td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                            <div class="jumbotron" th:if="${maarivMinyanim.isEmpty()}">
-                                            <h4>Sorry, there aren't any maariv minyanim scheduled.</h4>
-                                        </div>
-                                    </div>
+                                    <div id="housing-housing">
+                                        <div class="mpt0" id="row-housing" style="padding: 1rem;">
+                                            <div class="row my-4">
+                                                <div class="col-lg-9 col-md-8" id="minyanim-box">
+                                                    <ul class="nav nav-tabs mb-3" id="pills-tab" role="tablist">
+                                                        <li class="nav-item" role="presentation">
+                                                            <a class="nav-link active" id="pills-all-tab" data-toggle="pill" href="#pills-all" role="tab" aria-controls="pills-all" aria-selected="true">Upcoming Minyanim</a>
+                                                        </li>
+                                                    </ul>
+                                                    <div class="tab-content" id="pills-tabContent">
+                                                        <div class="tab-pane fade active show" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
+                                                            <table class="table" th:if="${!allminyanim.isEmpty()}">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th scope="col">Type</th>
+                                                                    <th scope="col">Time</th>
+                                                                    <th scope="col">Minyan</th>
+                                                                    <!--                                        <th scope="col">Nusach</th>-->
+                                                                    <!--                                        <th scope="col">Notes</th>-->
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <tr th:each="minyan: ${allminyanim}">
+                                                                    <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
+                                                                        <!-- <td th:if="${minyan.getLocationName() != null}" class="middle">
+                                                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>
+                                                                        </td> -->
+                                                                        <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                                                                        <td class="middle">
+                                                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
+                                                                        </td>
+                                                                    <!--                                        <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>-->
+                                                                    <!--                                        <td class="middle" th:text="${minyan.getNotes()}"></td>-->
+                                                                </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <div class="jumbotron" th:if="${allminyanim.isEmpty()}">
+                                                                <h4>Sorry, there aren't any upcoming minyanim.</h4>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tab-pane fade" id="pills-shacharit" role="tabpanel" aria-labelledby="pills-shacharit-tab">
+                                                            <table class="table" th:if="${!shacharitMinyanim.isEmpty()}">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th scope="col">Time</th>
+                                                                    <th scope="col">Minyan</th>
+                                                                    <th scope="col">Location</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <tr th:each="minyan: ${shacharitMinyanim}">
+                                                                    <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                                                                    <td class="middle">
+                                                                        <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
+                                                                    </td>
+                                                                    <td class="middle" th:text="${minyan.getLocationName()}"></td>
+                                                                </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <div class="jumbotron" th:if="${shacharitMinyanim.isEmpty()}">
+                                                                <h4>Sorry, there aren't any shacharit minyanim scheduled.</h4>
+                                                            </div>
+                                                        </div>
+                                                        <div class="tab-pane fade" id="pills-mincha" role="tabpanel" aria-labelledby="pills-mincha-tab">
+                                                            <table class="table" th:if="${!minchaMinyanim.isEmpty()}">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th scope="col">Time</th>
+                                                                    <th scope="col">Minyan</th>
+                                                                    <th scope="col">Location</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <tr th:each="minyan: ${minchaMinyanim}">
+                                                                    <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                                                                    <td class="middle">
+                                                                        <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
+                                                                    </td>
+                                                                    <td class="middle" th:text="${minyan.getLocationName()}"></td>
+                                                                </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <div class="jumbotron" th:if="${minchaMinyanim.isEmpty()}">
+                                                                <h4>Sorry, there aren't any mincha minyanim scheduled.</h4>
+                                                            </div>
+                                                        </div>
+                
+                                                        <div class="tab-pane fade" id="pills-maariv" role="tabpanel" aria-labelledby="pills-maariv-tab">
+                                                            <table class="table" th:if="${!maarivMinyanim.isEmpty()}">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th scope="col">Time</th>
+                                                                    <th scope="col">Minyan</th>
+                                                                    <th scope="col">Location</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                <tr th:each="minyan: ${maarivMinyanim}">
+                                                                    <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                                                                    <td class="middle">
+                                                                        <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
+                                                                    </td>
+                                                                    <td class="middle" th:text="${minyan.getLocationName()}"></td>
+                                                                </tr>
+                                                                </tbody>
+                                                            </table>
+                                                                <div class="jumbotron" th:if="${maarivMinyanim.isEmpty()}">
+                                                                <h4>Sorry, there aren't any maariv minyanim scheduled.</h4>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                 
                 </div>
                 </div>
