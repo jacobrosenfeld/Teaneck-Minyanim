@@ -342,17 +342,17 @@ body {
 .btn-shul {
 	font-family: 'Montserrat';
 	display: inline-block;
-  height: 38px;
+  /* height: 38px; */
   padding: 0 30px;
   text-align: center;
   font-size: calc(.75rem);
   font-weight: 600;
-  line-height: 36px;
-  letter-spacing: 2px;
+  line-height: calc(1.5rem);
+  /* letter-spacing: 2px; */
 	margin: 0;
   text-transform: uppercase;
 	text-decoration: none !important;
-  white-space: nowrap;
+  /* white-space: nowrap; */
   cursor: pointer;
 	background-color: #387ed1;
 	background: #275ed8;
