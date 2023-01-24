@@ -19,7 +19,7 @@ function initMap() {
       // Create the markers.
       shul.forEach(({ position, title }, i) => {
         const pinView = new google.maps.marker.PinView({
-          glyph: `${i + 1}`,
+          glyphColor: "blue",
         });
         const marker = new google.maps.marker.AdvancedMarkerView({
           position,
@@ -29,7 +29,7 @@ function initMap() {
         });
     
         // Add a click listener for each marker, and set up the info window.
-        marker.addListener("click", ({ domEvent, latLng }) => {
+        marker.addListener("mouseover", ({ domEvent, latLng }) => {
           const { target } = domEvent;
     
           infoWindow.close();
