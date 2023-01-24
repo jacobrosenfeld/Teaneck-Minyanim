@@ -59,23 +59,76 @@
                 <hr>
                 <div id="housing-housing">
                     <div class="mpt0 pb0" id="row-housing" style="padding: 1rem;">
-                <div class="row my-4" style="margin-bottom: 40px!important;">
+        <!-- Array Pricing Section -->
+        <div id="pricing" class="pricing-section text-center">
+          <div class="container">
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="pricing-intro wow fadeInDown">
+                  <h1>Pricing Plans.</h1>
+                  <p>
+                    Our plans are designed to meet the requirements of both beginners <br class="hidden-xs"> and players.
+                    Get the right plan that suits you.
+                  </p>
+                </div>
+                <div class="row">
                   <div class="col-lg-4 offset-lg-2 col-md-6">
-                    <div class="table-left wow fadeInDown">
+                   <div class="table-left wow fadeInDown">
+                     <div class="pricing-details">
+                       <h2 th:text="${org.getName()}"></h2>
+                       <!-- <img src="assets/icons/free.png" width="60" alt="Icon"> -->
+
+                       <!-- <span>$0.00</span> -->
+                          <ul>
+                           <li th:text="${org.getNusach().displayName()}"></li>
+                           <li th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></li>
+                           <!-- <li>Any other third feature</li> -->
+                           </ul>
+                         <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-4 col-md-6">
+                    <div class="table-right wow fadeInDown">
                       <div class="pricing-details">
-                        <h2 th:text="${org.getName()}"></h2>
-                        <!-- <img src="assets/icons/free.png" width="60" alt="Icon"> -->
- 
-                        <!-- <span>$0.00</span> -->
-                           <ul>
-                            <li th:text="${org.getNusach().displayName()}"></li>
-                            <li th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></li>
-                            <li>Any other third feature</li>
-                            </ul>
-                          <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
-                       </div>
-                     </div>
-                   </div>
+                         <h2>Beginner</h2>
+                         <img src="assets/icons/paid.png" width="60" alt="Icon">
+                         <span>$24.99</span>
+                         <ul>
+                           <li>First premium feature </li>
+                           <li>Second premium one goes here</li>
+                           <li>Third premium feature here</li>
+                         </ul>
+                         <button class="btn-action">Buy Now</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Array Pricing Ends -->
+
+        <!-- CTA Signup Section -->
+        <div id="info" class="cta-sm">
+          <div class="container-m text-center">
+            <div class="cta-content">
+               <h4>Teaneck Minyanim is supported by volunteers and donations from people like you.</h4>
+               <h1>Drop us a line to learn how you can help support and maintain Teaneck Minyanim.</h1>
+               <div class="form wow fadeIn" data-wow-delay="0.2s">
+                <form id="chimp-form" class="subscribe-form wow zoomIn" action="assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
+                  <input class="mail" id="chimp-email" type="email" name="email" placeholder="Enter your email address" autocomplete="off">
+                  <input class="submit-button" type="submit" value="Sign up now">
+                </form>
+                <div id="response"></div>
+              </div>
+              <div class="form-note">
+                <p>Thank you!</p>
+              </div>
+            </div>
+          </div>
+        </div>
                   <!-- <div class="col-lg-3 col-md-4" id="org-box">
                         <div class="card" style="border: 0;">
                             <div class="card-body">
