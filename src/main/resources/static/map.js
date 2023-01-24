@@ -1,4 +1,5 @@
 function initMap() {
+    var property;
     var geocoder = new google.maps.Geocoder();
     geocoder.geocode({'address': address}, function(results, status) {
       if (status === 'OK') {
@@ -7,7 +8,7 @@ function initMap() {
           mapId: `ab35d05ad627f5db`,
           center: results[0].geometry.location
         });
-        const property = document.createElement("div");
+
             const advancedMarkerView = new google.maps.marker.AdvancedMarkerView({
               map,
               content: buildContent(property),
@@ -47,7 +48,7 @@ function initMap() {
           content.classList.add("property");
           content.innerHTML = `
             <div class="icon">
-                <i aria-hidden="true" class="fa fa-icon fa-building" title="$${org.getName()}"></i>
+                <i aria-hidden="true" class="fa fa-icon fa-building" th:each="minyan: ${allminyanim}" title="$${org.getName()}"></i>
                 <span class="fa-sr-only">building</span>
             </div>
             <div class="details">
@@ -77,6 +78,7 @@ function initMap() {
             `;
           return content;
         }
+
     }
     )
 }
