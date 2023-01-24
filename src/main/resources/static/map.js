@@ -10,12 +10,12 @@ function initMap() {
       const priceTag = document.createElement("div");
 
       priceTag.className = "price-tag";
-      priceTag.title = marker+ '\n' +"Next Minyan: "+minyantype+" at"+minyantime;
+      priceTag.textContent = marker+ '\n' +"Next Minyan: "+minyantype+" at"+minyantime;
 
       const markerView = new google.maps.marker.AdvancedMarkerView({
         map,
         position: results[0].geometry.location,
-        title: priceTag,
+        content: priceTag,
       });
     } else {
       alert('Geocode was not successful for the following reason: ' + status);
