@@ -473,4 +473,15 @@ mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
     public ModelAndView orgToday(@PathVariable String orgId) throws Exception {
         return org(orgId, new Date());
     }
+    public ModelAndView orgs(Date date) {
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("orgs");
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM DD, yyyy h:mm a");
+        Date datenow = new Date();
+        String timenow = dateFormat.format(datenow);
+        mv.getModel().put("timenow", timenow);
+    
+        return mv;
+    }
 }
