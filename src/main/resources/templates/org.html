@@ -58,41 +58,39 @@
                                 <!-- End Date Nav Buttons -->
                 <hr>
                   <!-- new scrollspy -->
-                  <div class="row">
-                    <div class="col-md-3 offset-md-3">
-                      <div id="list-example" class="list-group">
-                        <a class="list-group-item list-group-item-action" href="#list-item-1">Shacharis</a>
-                        <a class="list-group-item list-group-item-action" href="#list-item-2">Mincha</a>
-                        <a class="list-group-item list-group-item-action" href="#list-item-3">Maariv</a>
+                  <div class="container">
+                    <div id="list-example" class="list-group">
+                      <a class="list-group-item list-group-item-action" href="#list-item-1">Shacharis</a>
+                      <a class="list-group-item list-group-item-action" href="#list-item-2">Mincha</a>
+                      <a class="list-group-item list-group-item-action" href="#list-item-3">Maariv</a>
+                    </div>
+                    <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0" class="scrollspy-example" tabindex="0">
+                      <h4 id="list-item-1">Shacharis</h4>
+                      <table class="table" th:if="${!shacharitMinyanim.isEmpty()}">
+                          <thead>
+                          <tr>
+                              <th scope="col">Time</th>
+                              <th scope="col">Minyan</th>
+                              <th scope="col">Location</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          <tr th:each="minyan: ${shacharitMinyanim}">
+                              <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                              <td class="middle">
+                                  <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
+                              </td>
+                              <td class="middle" th:text="${minyan.getLocationName()}"></td>
+                          </tr>
+                          </tbody>
+                      </table>
+                      <div class="jumbotron" th:if="${shacharitMinyanim.isEmpty()}">
+                          <h4>Sorry, there aren't any shacharit minyanim scheduled.</h4>
                       </div>
-                      <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0" class="scrollspy-example" tabindex="0">
-                        <h4 id="list-item-1">Shacharis</h4>
-                        <table class="table" th:if="${!shacharitMinyanim.isEmpty()}">
-                            <thead>
-                            <tr>
-                                <th scope="col">Time</th>
-                                <th scope="col">Minyan</th>
-                                <th scope="col">Location</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="minyan: ${shacharitMinyanim}">
-                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                <td class="middle">
-                                    <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                </td>
-                                <td class="middle" th:text="${minyan.getLocationName()}"></td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <div class="jumbotron" th:if="${shacharitMinyanim.isEmpty()}">
-                            <h4>Sorry, there aren't any shacharit minyanim scheduled.</h4>
-                        </div>
-                        <h4 id="list-item-2">Mincha</h4>
-                        <p>...</p>
-                        <h4 id="list-item-3">Maariv</h4>
-                        <p>...</p>
-                      </div>
+                      <h4 id="list-item-2">Mincha</h4>
+                      <p>...</p>
+                      <h4 id="list-item-3">Maariv</h4>
+                      <p>...</p>
                     </div>
                   </div>
                 <!-- old pills -->
