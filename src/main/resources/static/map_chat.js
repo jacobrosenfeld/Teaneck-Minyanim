@@ -13,7 +13,7 @@ function initMap() {
     };
   });
   
-  marker = new google.maps.Marker({
+  const markerView = new google.maps.marker.AdvancedMarkerView({
     position: results[0].geometry.location,
     map: map,
     title: shulname
