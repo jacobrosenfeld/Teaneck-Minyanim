@@ -1,76 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Teaneck Minyanim</title>
-    <link rel="icon" href="/assets/icons/favicon.png" type="image/png" sizes="16x16">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="description" content="Zmanim and Minyanim for Teaneck New Jersey">
-    <meta name="keywords" content="Jewish,minyanim,zmanim,times,sechedule,teaneck,nj,07666">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
-    <script th:src="@{/map_marker.js}"></script>
-    <script defer src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-    <script defer src="https://use.fontawesome.com/releases/v6.2.0/js/all.js"></script>
-    <script th:inline="javascript">
-      /*<![CDATA[*/
-      var address = /*[[${org.getAddress()}]]*/ "";
-      var shulname = /*[[${org.getName()}]]*/ "";
-      var minyantype = /*[[${allminyanim.get(0).getType().displayName()}]]*/ "";
-      var minyantime = /*[[${allminyanim.get(0).getFormattedStartTime()}]]*/ "";
+
+<head>
+  <meta charset="utf-8">
+  <title>Teaneck Minyanim</title>
+  <link rel="icon" href="/assets/icons/favicon.png" type="image/png" sizes="16x16">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Zmanim and Minyanim for Teaneck New Jersey">
+  <meta name="keywords" content="Jewish,minyanim,zmanim,times,sechedule,teaneck,nj,07666">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+    crossorigin="anonymous"></script>
+  <script th:src="@{/mapbox.js}"></script>
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    var address = /*[[${org.getAddress()}]]*/ "";
+    var shulname = /*[[${org.getName()}]]*/ "";
+    var minyantype = /*[[${allminyanim.get(0).getType().displayName()}]]*/ "";
+    var minyantime = /*[[${allminyanim.get(0).getFormattedStartTime()}]]*/ "";
       /*]]>*/
-    </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBZJ-LggluwG2Nm1nZlY7t9B61ILaAcQSg&callback=initMap&libraries=marker&v=beta" defer></script>
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/animate.css"> <!-- Resource style -->
-    <link rel="stylesheet" href="/assets/css/owl.carousel.css">
-    <link rel="stylesheet" href="/assets/css/owl.theme.css">
-    <link rel="stylesheet" href="/assets/css/ionicons.min.css"> <!-- Resource style -->
-    <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
-    
-  </head>
-  <body>
-    <div class="wrapper">
-      <!-- Navbar Section -->
-      <div class="horizontal-container d-flex" id="wrapper">
-        <th:block th:include="frontnavbar"></th:block>
-        <!-- Navbar End -->
-        <div class="container-fluid " id="main">
+  </script>
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBZJ-LggluwG2Nm1nZlY7t9B61ILaAcQSg&callback=initMap&libraries=marker&v=beta"
+    defer></script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/animate.css"> <!-- Resource style -->
+  <link rel="stylesheet" href="/assets/css/owl.carousel.css">
+  <link rel="stylesheet" href="/assets/css/owl.theme.css">
+  <link rel="stylesheet" href="/assets/css/ionicons.min.css"> <!-- Resource style -->
+  <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
+
+</head>
+
+<body>
+  <div class="wrapper">
+    <!-- Navbar Section -->
+    <div class="horizontal-container d-flex" id="wrapper">
+      <th:block th:include="frontnavbar"></th:block>
+      <!-- Navbar End -->
+      <div class="container-fluid " id="main">
         <div class="row" style="flex-direction: column;">
           <!-- <th:block th:include="admin/sidebar"></th:block>-->
           <!--/col-->
-            <main class="col main pt-5 mt-4 overflow-auto" style="flex-shrink: 3; padding-bottom: 65px!important;">
-              <!-- Date Nav header -->
-              <div class="d-flex justify-content-between">
-                <!-- <p class="col-md-4 h3 mt-3 mobile-hide" th:text="${'Schedule | ' + onlyDate}"></p> -->
-                <h4 class="col-md-4 mt-3" th:text="${onlyDate}"></h4>
-                <!-- Date nav button -->
-                <!-- <div class="col-md-4 btn-toolbar d-flex flex-nowrap justify-content-center p-2" role="toolbar" aria-label="Toolbar with button groups"> -->
-                  <!-- <div class="btn-group  me-2" style="align-self: center;" role="group"> -->
-                  <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">Today</button> -->
-                    <!-- <button type="button" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">Today</button> -->
-                  <!-- </div> -->
-                  <!-- <div class="btn-group me-2" style="align-self: center;" role="group"> -->
-                  <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
-                    <!-- <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
-                    <!-- <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">></button> -->
-                  <!-- </div> -->
-                <!-- </div> -->
-                <!-- End Date Nav Buttons -->
-                <!-- <div class="col-md-4 mt-2 btn-group desktop-hide" style="height: 50%; align-self: center;" role="group">
+          <main class="col main pt-5 mt-4 overflow-auto" style="flex-shrink: 3; padding-bottom: 65px!important;">
+            <!-- Date Nav header -->
+            <div class="d-flex justify-content-between">
+              <!-- <p class="col-md-4 h3 mt-3 mobile-hide" th:text="${'Schedule | ' + onlyDate}"></p> -->
+              <h4 class="col-md-4 mt-3" th:text="${onlyDate}"></h4>
+              <!-- Date nav button -->
+              <!-- <div class="col-md-4 btn-toolbar d-flex flex-nowrap justify-content-center p-2" role="toolbar" aria-label="Toolbar with button groups"> -->
+              <!-- <div class="btn-group  me-2" style="align-self: center;" role="group"> -->
+              <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">Today</button> -->
+              <!-- <button type="button" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">Today</button> -->
+              <!-- </div> -->
+              <!-- <div class="btn-group me-2" style="align-self: center;" role="group"> -->
+              <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
+              <!-- <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
+              <!-- <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">></button> -->
+              <!-- </div> -->
+              <!-- </div> -->
+              <!-- End Date Nav Buttons -->
+              <!-- <div class="col-md-4 mt-2 btn-group desktop-hide" style="height: 50%; align-self: center;" role="group">
                   <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn" style="width: 38%;" th:text="${yesterdayStrippedDay}">‹</button>
                   <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn" style="width: 38%;" th:text="${tommorowStrippedDay}">›</button>
                 </div> -->
-                <h4 class="col-md-4 mt-3 mobile-hide"  style="text-align: right; font-weight: 430;" th:text="${hebrewDate}"></h4>
-              </div>
-              <!-- End Date Nav header -->
-                <hr>
-                <div id="housing-housing">
-                  <div class="mpt0" id="row-housing" style="padding: 1rem;">
-                  <!-- new scrollspy -->
-                  <div class="container">
-                    <div class="row align-items-start">
+              <h4 class="col-md-4 mt-3 mobile-hide" style="text-align: right; font-weight: 430;"
+                th:text="${hebrewDate}"></h4>
+            </div>
+            <!-- End Date Nav header -->
+            <hr>
+            <div id="housing-housing">
+              <div class="mpt0" id="row-housing" style="padding: 1rem;">
+                <!-- new scrollspy -->
+                <div class="container">
+                  <div class="row align-items-start">
                     <div class="col">
                       <div id="pricing" class="pricing-section text-center">
                         <div class="table-left wow">
@@ -81,285 +89,313 @@
                             <ul>
                               <li>second</li>
                               <li th:text="${org.getNusach().displayName()}"></li>
-                              <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"><li th:text="${org.getAddress()}"></li></a>
+                              <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}"
+                                th:target="_blank">
+                                <li th:text="${org.getAddress()}"></li>
+                              </a>
                               <!-- <li>Any other third feature</li> -->
                             </ul>
-                            <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
+                            <button class="btn-action" th:if="${org.getWebsiteURI() != null}"
+                              th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
                           </div>
                         </div>
                       </div>
                     </div>
                     <div class="col">
-                      <div id="map"></div>
+                      <div id='map' style='width: 400px; height: 300px;'></div>
                     </div>
                   </div>
-                    <div class="container">
-                      <div class="row">
-                        <div class="col">
-                          <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0" class="scrollspy-example" tabindex="0">
-                            <h4 id="shacharis">Shacharis</h4>
-                            <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Time</th>
-                                    <th scope="col">Minyan</th>
-                                    <th scope="col">Location</th>
-                                    <th scope="col">Nusach</th>
-                                    <th scope="col">Notes</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                  <tr th:each="minyan: ${shacharisMinyanim}">
-                                    <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
-          <!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
-          <!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
-          <!--                                        </td>-->
-                                    <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                    <td class="middle" th:text="${minyan.getInformation()}">
-          <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
-                                    </td>
-                                    <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
-                                    <td class="middle" th:text="${minyan.getNotes()}"></td>
-                                  </tr>
-                                </tbody>
-                            </table>
-                            <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
-                                <h5><small class="text-muted">Sorry, there aren't any shacharis minyanim scheduled.</small></h5>
-                            </div>
-                            <h4 id="mincha">Mincha</h4>
-                            <p>...</p>
-                            <h4 id="maariv">Maariv</h4>
-                            <p>...</p>
+                  <div class="container">
+                    <div class="row">
+                      <div class="col">
+                        <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0"
+                          class="scrollspy-example" tabindex="0">
+                          <h4 id="shacharis">Shacharis</h4>
+                          <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
+                            <thead>
+                              <tr>
+                                <th scope="col">Time</th>
+                                <th scope="col">Minyan</th>
+                                <th scope="col">Location</th>
+                                <th scope="col">Nusach</th>
+                                <th scope="col">Notes</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr th:each="minyan: ${shacharisMinyanim}">
+                                <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
+                                <!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
+                                <!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
+                                <!--                                        </td>-->
+                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                                <td class="middle" th:text="${minyan.getInformation()}">
+                                  <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
+                                </td>
+                                <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
+                                <td class="middle" th:text="${minyan.getNotes()}"></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
+                            <h5><small class="text-muted">Sorry, there aren't any shacharis minyanim scheduled.</small>
+                            </h5>
                           </div>
+                          <h4 id="mincha">Mincha</h4>
+                          <p>...</p>
+                          <h4 id="maariv">Maariv</h4>
+                          <p>...</p>
                         </div>
-                  <div class="col">
-                    <div id="list-example" class="list-group">
-                      <a class="list-group-item list-group-item-action" href="#shacharis">Shacharis</a>
-                      <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
-                      <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
+                      </div>
+                      <div class="col">
+                        <div id="list-example" class="list-group">
+                          <a class="list-group-item list-group-item-action" href="#shacharis">Shacharis</a>
+                          <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
+                          <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  </div>
-                  </div>
-                  </div>
-                  </div>
-                  </div>
-                  </div>
-                  <!-- end scrollspy -->
-                <!-- old pills -->
-                <div id="housing-housing">
-                  <div class="mpt0" id="row-housing" style="padding: 1rem;">
-                      <div class="row my-4">
-                          <div class="col-lg-9 col-md-8" id="minyanim-box">
-                              <ul class="nav nav-tabs mb-3" id="pills-tab" role="tablist">
-                                  <li class="nav-item" role="presentation">
-                                      <a class="nav-link active" id="pills-all-tab" data-toggle="pill" href="#pills-all" role="tab" aria-controls="pills-all" aria-selected="true">All Minyanim</a>
-                                  </li>
-                                  <li class="nav-item" role="presentation">
-                                      <a class="nav-link" id="pills-shacharis-tab" data-toggle="pill" href="#pills-shacharis" role="tab" aria-controls="pills-shacharis" aria-selected="false">Shacharis</a>
-                                  </li>
-                                  <li class="nav-item" role="presentation">
-                                      <a class="nav-link" id="pills-mincha-tab" data-toggle="pill" href="#pills-mincha" role="tab" aria-controls="pills-mincha" aria-selected="false">Mincha</a>
-                                  </li>
-                                  <li class="nav-item" role="presentation">
-                                      <a class="nav-link" id="pills-maariv-tab" data-toggle="pill" href="#pills-maariv" role="tab" aria-controls="pills-maariv" aria-selected="false">Maariv</a>
-                                  </li>
-                              </ul>
-                              <div class="tab-content" id="pills-tabContent">
-                                  <div class="tab-pane fade active show" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
-                                      <table class="table" th:if="${!allminyanim.isEmpty()}">
-                                          <thead>
-                                          <tr>
-                                              <th scope="col">Type</th>
-                                              <th scope="col">Time</th>
-                                              <th scope="col">Minyan</th>
-                                              <!--                                        <th scope="col">Nusach</th>-->
-                                              <!--                                        <th scope="col">Notes</th>-->
-                                          </tr>
-                                          </thead>
-                                          <tbody>
-                                          <tr th:each="minyan: ${allminyanim}">
-                                              <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
-                                              <!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
-                                              <!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
-                                              <!--                                        </td>-->
-                                              <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                              <td class="middle">
-                                                  <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                              </td>
-                                              <!--                                        <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>-->
-                                              <!--                                        <td class="middle" th:text="${minyan.getNotes()}"></td>-->
-                                          </tr>
-                                          </tbody>
-                                      </table>
-                                      <div class="nominyan" th:if="${allminyanim.isEmpty()}">
-                                          <h5><small class="text-muted"></small>Sorry, there aren't any minyanim scheduled.</small></h5>
-                                      </div>
-                                  </div>
-                                  <div class="tab-pane fade" id="pills-shacharis" role="tabpanel" aria-labelledby="pills-shacharis-tab">
-                                      <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
-                                          <thead>
-                                          <tr>
-                                              <th scope="col">Time</th>
-                                              <th scope="col">Minyan</th>
-                                              <th scope="col">Location</th>
-                                          </tr>
-                                          </thead>
-                                          <tbody>
-                                          <tr th:each="minyan: ${shacharisMinyanim}">
-                                              <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                              <td class="middle">
-                                                  <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                              </td>
-                                              <td class="middle" th:text="${minyan.getLocationName()}"></td>
-                                          </tr>
-                                          </tbody>
-                                      </table>
-                                      <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
-                                          <h5><small class="text-muted">Sorry, there aren't any shacharis minyanim scheduled.</small></h5>
-                                      </div>
-                                  </div>
-                                  <div class="tab-pane fade" id="pills-mincha" role="tabpanel" aria-labelledby="pills-mincha-tab">
-                                      <table class="table" th:if="${!minchaMinyanim.isEmpty()}">
-                                          <thead>
-                                          <tr>
-                                              <th scope="col">Time</th>
-                                              <th scope="col">Minyan</th>
-                                              <th scope="col">Location</th>
-                                          </tr>
-                                          </thead>
-                                          <tbody>
-                                          <tr th:each="minyan: ${minchaMinyanim}">
-                                              <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                              <td class="middle">
-                                                  <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                              </td>
-                                              <td class="middle" th:text="${minyan.getLocationName()}"></td>
-                                          </tr>
-                                          </tbody>
-                                      </table>
-                                      <div class="nominyan" th:if="${minchaMinyanim.isEmpty()}">
-                                          <h5><small class="text-muted">Sorry, there aren't any mincha minyanim scheduled.</small></h5>
-                                      </div>
-                                  </div>
-
-                                  <div class="tab-pane fade" id="pills-maariv" role="tabpanel" aria-labelledby="pills-maariv-tab">
-                                      <table class="table" th:if="${!maarivMinyanim.isEmpty()}">
-                                          <thead>
-                                          <tr>
-                                              <th scope="col">Time</th>
-                                              <th scope="col">Minyan</th>
-                                              <th scope="col">Location</th>
-                                          </tr>
-                                          </thead>
-                                          <tbody>
-                                          <tr th:each="minyan: ${maarivMinyanim}">
-                                              <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                              <td class="middle">
-                                                  <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                              </td>
-                                              <td class="middle" th:text="${minyan.getLocationName()}"></td>
-                                          </tr>
-                                          </tbody>
-                                      </table>
-                                      <div class="nominyan" th:if="${maarivMinyanim.isEmpty()}">
-                                          <h5><small class="text-muted">Sorry, there aren't any maariv minyanim scheduled.</small></h5>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-                <div id="housing-housing">
-                    <div class="mpt0 pb0" id="row-housing" style="padding: 1rem;">
-        <!-- Array Pricing Section -->
-        <div id="pricing" class="pricing-section text-center">
-          <div class="container">
-            <div class="row">
-              <div class="col-sm-12">
-                <div class="pricing-intro wow fadeInDown">
-                  <h1 th:text="${org.getName()}"></h1>
-                          <p>first pricing</p>
-                          <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"><h6 th:text="${org.getAddress()}"></h6></a>
-                          <p th:text="${org.getNusach().displayName()}"></p>
-                         <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
                 </div>
-                <div class="row">
-                  <div class="col-lg-4 offset-lg-2 col-md-6">
-                   <div class="table-left wow">
-                     <div class="pricing-details">
-                       <h2 th:text="${org.getName()}"></h2>
-                       <!-- <img src="assets/icons/free.png" width="60" alt="Icon"> -->
-
-                       <!-- <span>$0.00</span> -->
-                          <ul>
-                           <li>second</li>
-                           <li th:text="${org.getNusach().displayName()}"></li>
-                           <li th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></li>
-                           <!-- <li>Any other third feature</li> -->
-                           </ul>
-                         <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-4 col-md-6">
+              </div>
+            </div>
+        </div>
+        <!-- end scrollspy -->
+        <!-- old pills -->
+        <div id="housing-housing">
+          <div class="mpt0" id="row-housing" style="padding: 1rem;">
+            <div class="row my-4">
+              <div class="col-lg-9 col-md-8" id="minyanim-box">
+                <ul class="nav nav-tabs mb-3" id="pills-tab" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <a class="nav-link active" id="pills-all-tab" data-toggle="pill" href="#pills-all" role="tab"
+                      aria-controls="pills-all" aria-selected="true">All Minyanim</a>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-shacharis-tab" data-toggle="pill" href="#pills-shacharis" role="tab"
+                      aria-controls="pills-shacharis" aria-selected="false">Shacharis</a>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-mincha-tab" data-toggle="pill" href="#pills-mincha" role="tab"
+                      aria-controls="pills-mincha" aria-selected="false">Mincha</a>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="pills-maariv-tab" data-toggle="pill" href="#pills-maariv" role="tab"
+                      aria-controls="pills-maariv" aria-selected="false">Maariv</a>
+                  </li>
+                </ul>
+                <div class="tab-content" id="pills-tabContent">
+                  <div class="tab-pane fade active show" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
                     <table class="table" th:if="${!allminyanim.isEmpty()}">
                       <thead>
-                      <tr>
+                        <tr>
                           <th scope="col">Type</th>
                           <th scope="col">Time</th>
-                          <th scope="col">Location</th>
-                          <th scope="col">Nusach</th>
-                          <th scope="col">Notes</th>
-                      </tr>
+                          <th scope="col">Minyan</th>
+                          <!--                                        <th scope="col">Nusach</th>-->
+                          <!--                                        <th scope="col">Notes</th>-->
+                        </tr>
                       </thead>
                       <tbody>
-                      <tr th:each="minyan: ${allminyanim}">
+                        <tr th:each="minyan: ${allminyanim}">
                           <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
-<!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
-<!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
-<!--                                        </td>-->
+                          <!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
+                          <!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
+                          <!--                                        </td>-->
                           <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                          <td class="middle" th:text="${minyan.getInformation()}">
-<!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
+                          <td class="middle">
+                            <a role="button" class="btn btn-primary btn-sm"
+                              th:href="@{|/orgs/${minyan.getOrganizationId()}|}"
+                              th:text="${minyan.getOrganizationName()}"></a>
                           </td>
-                         <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
-                         <td class="middle" th:text="${minyan.getNotes()}"></td>
-                      </tr>
+                          <!--                                        <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>-->
+                          <!--                                        <td class="middle" th:text="${minyan.getNotes()}"></td>-->
+                        </tr>
                       </tbody>
-                  </table>
-                  <div class="nominyan" th:if="${allminyanim.isEmpty()}">
-                      <h5><small class="text-muted">Sorry, there aren't any minyanim scheduled.</small></h5>
+                    </table>
+                    <div class="nominyan" th:if="${allminyanim.isEmpty()}">
+                      <h5><small class="text-muted"></small>Sorry, there aren't any minyanim scheduled.</small></h5>
+                    </div>
                   </div>
+                  <div class="tab-pane fade" id="pills-shacharis" role="tabpanel" aria-labelledby="pills-shacharis-tab">
+                    <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
+                      <thead>
+                        <tr>
+                          <th scope="col">Time</th>
+                          <th scope="col">Minyan</th>
+                          <th scope="col">Location</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="minyan: ${shacharisMinyanim}">
+                          <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                          <td class="middle">
+                            <a role="button" class="btn btn-primary btn-sm"
+                              th:href="@{|/orgs/${minyan.getOrganizationId()}|}"
+                              th:text="${minyan.getOrganizationName()}"></a>
+                          </td>
+                          <td class="middle" th:text="${minyan.getLocationName()}"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
+                      <h5><small class="text-muted">Sorry, there aren't any shacharis minyanim scheduled.</small></h5>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="pills-mincha" role="tabpanel" aria-labelledby="pills-mincha-tab">
+                    <table class="table" th:if="${!minchaMinyanim.isEmpty()}">
+                      <thead>
+                        <tr>
+                          <th scope="col">Time</th>
+                          <th scope="col">Minyan</th>
+                          <th scope="col">Location</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="minyan: ${minchaMinyanim}">
+                          <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                          <td class="middle">
+                            <a role="button" class="btn btn-primary btn-sm"
+                              th:href="@{|/orgs/${minyan.getOrganizationId()}|}"
+                              th:text="${minyan.getOrganizationName()}"></a>
+                          </td>
+                          <td class="middle" th:text="${minyan.getLocationName()}"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="nominyan" th:if="${minchaMinyanim.isEmpty()}">
+                      <h5><small class="text-muted">Sorry, there aren't any mincha minyanim scheduled.</small></h5>
+                    </div>
+                  </div>
+
+                  <div class="tab-pane fade" id="pills-maariv" role="tabpanel" aria-labelledby="pills-maariv-tab">
+                    <table class="table" th:if="${!maarivMinyanim.isEmpty()}">
+                      <thead>
+                        <tr>
+                          <th scope="col">Time</th>
+                          <th scope="col">Minyan</th>
+                          <th scope="col">Location</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="minyan: ${maarivMinyanim}">
+                          <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                          <td class="middle">
+                            <a role="button" class="btn btn-primary btn-sm"
+                              th:href="@{|/orgs/${minyan.getOrganizationId()}|}"
+                              th:text="${minyan.getOrganizationName()}"></a>
+                          </td>
+                          <td class="middle" th:text="${minyan.getLocationName()}"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="nominyan" th:if="${maarivMinyanim.isEmpty()}">
+                      <h5><small class="text-muted">Sorry, there aren't any maariv minyanim scheduled.</small></h5>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- Array Pricing Ends -->
+        <div id="housing-housing">
+          <div class="mpt0 pb0" id="row-housing" style="padding: 1rem;">
+            <!-- Array Pricing Section -->
+            <div id="pricing" class="pricing-section text-center">
+              <div class="container">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="pricing-intro wow fadeInDown">
+                      <h1 th:text="${org.getName()}"></h1>
+                      <p>first pricing</p>
+                      <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}"
+                        th:target="_blank">
+                        <h6 th:text="${org.getAddress()}"></h6>
+                      </a>
+                      <p th:text="${org.getNusach().displayName()}"></p>
+                      <button class="btn-action" th:if="${org.getWebsiteURI() != null}"
+                        th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
+                    </div>
+                    <div class="row">
+                      <div class="col-lg-4 offset-lg-2 col-md-6">
+                        <div class="table-left wow">
+                          <div class="pricing-details">
+                            <h2 th:text="${org.getName()}"></h2>
+                            <!-- <img src="assets/icons/free.png" width="60" alt="Icon"> -->
 
-        <!-- CTA Signup Section -->
-        <div id="info" class="cta-sm">
-          <div class="container-m text-center">
-            <div class="cta-content">
-               <h4>Teaneck Minyanim is supported by volunteers and donations from people like you.</h4>
-               <h1>Drop us a line to learn how you can help support and maintain Teaneck Minyanim.</h1>
-               <div class="form wow fadeIn" data-wow-delay="0.2s">
-                <form id="chimp-form" class="subscribe-form wow zoomIn" action="assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
-                  <input class="mail" id="chimp-email" type="email" name="email" placeholder="Enter your email address" autocomplete="off">
-                  <input class="submit-button" type="submit" value="Sign up now">
-                </form>
-                <div id="response"></div>
-              </div>
-              <div class="form-note">
-                <p>Thank you!</p>
+                            <!-- <span>$0.00</span> -->
+                            <ul>
+                              <li>second</li>
+                              <li th:text="${org.getNusach().displayName()}"></li>
+                              <li th:text="${org.getAddress()}"
+                                th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}"
+                                th:target="_blank"></li>
+                              <!-- <li>Any other third feature</li> -->
+                            </ul>
+                            <button class="btn-action" th:if="${org.getWebsiteURI() != null}"
+                              th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4 col-md-6">
+                        <table class="table" th:if="${!allminyanim.isEmpty()}">
+                          <thead>
+                            <tr>
+                              <th scope="col">Type</th>
+                              <th scope="col">Time</th>
+                              <th scope="col">Location</th>
+                              <th scope="col">Nusach</th>
+                              <th scope="col">Notes</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr th:each="minyan: ${allminyanim}">
+                              <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
+                              <!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
+                              <!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
+                              <!--                                        </td>-->
+                              <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                              <td class="middle" th:text="${minyan.getInformation()}">
+                                <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
+                              </td>
+                              <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
+                              <td class="middle" th:text="${minyan.getNotes()}"></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <div class="nominyan" th:if="${allminyanim.isEmpty()}">
+                          <h5><small class="text-muted">Sorry, there aren't any minyanim scheduled.</small></h5>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-                  <!-- <div class="col-lg-3 col-md-4" id="org-box">
+            <!-- Array Pricing Ends -->
+
+            <!-- CTA Signup Section -->
+            <div id="info" class="cta-sm">
+              <div class="container-m text-center">
+                <div class="cta-content">
+                  <h4>Teaneck Minyanim is supported by volunteers and donations from people like you.</h4>
+                  <h1>Drop us a line to learn how you can help support and maintain Teaneck Minyanim.</h1>
+                  <div class="form wow fadeIn" data-wow-delay="0.2s">
+                    <form id="chimp-form" class="subscribe-form wow zoomIn" action="assets/php/subscribe.php"
+                      method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded"
+                      autocomplete="off" novalidate>
+                      <input class="mail" id="chimp-email" type="email" name="email"
+                        placeholder="Enter your email address" autocomplete="off">
+                      <input class="submit-button" type="submit" value="Sign up now">
+                    </form>
+                    <div id="response"></div>
+                  </div>
+                  <div class="form-note">
+                    <p>Thank you!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- <div class="col-lg-3 col-md-4" id="org-box">
                         <div class="card" style="border: 0;">
                             <div class="card-body">
                                 <h5 class="card-title" th:text="${org.getName()}"></h5>
@@ -367,57 +403,58 @@
                                 <a class="card-text" th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></a> 
                                 <a th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}" class="card-link">Visit the website</a>
                                 <a href="#" class="card-link">Another link</a>-->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                </div>
-                <!--/row-->
-            </main>
-            <!--/main col-->
+          </div>
         </div>
+      </div>
     </div>
-</div>
+  </div>
+  <!--/row-->
+  </main>
+  <!--/main col-->
+  </div>
+  </div>
+  </div>
+  </div>
+  <!--/.container-->
+  <!-- Array Footer Section -->
+  <div class="footer-sm">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <a class="footer-logo" href="#">TB Dev</a>
         </div>
-        <!--/.container-->
-        <!-- Array Footer Section -->
-        <div class="footer-sm">
-          <div class="container">
-            <div class="row">
-              <div class="col-md-4">
-                <a class="footer-logo" href="#">TB Dev</a>
-              </div>
-              <div class="col-md-4">
-                <h6>&copy; TB Dev and Teaneck Minyanim</h6>
-              </div>
-              <!-- <div class="col-md-4">
+        <div class="col-md-4">
+          <h6>&copy; TB Dev and Teaneck Minyanim</h6>
+        </div>
+        <!-- <div class="col-md-4">
                 <ul>
                   <li><a href="#">Facebook</a></li>
                   <li><a href="#">Twitter</a></li>
                   <li><a href="#">Linkedin</a></li>
                 </ul>
               </div> -->
-            </div>
-          </div>
-        </div>
+      </div>
+    </div>
+  </div>
 
 
-       <!-- Scroll To Top -->
-        <div id="back-top" class="bk-top">
-          <div class="bk-top-txt">
-             <a class="back-to-top js-scroll-trigger" href="#main">top</a>
-          </div>
-        </div>
-       <!-- Scroll To Top Ends-->
+  <!-- Scroll To Top -->
+  <div id="back-top" class="bk-top">
+    <div class="bk-top-txt">
+      <a class="back-to-top js-scroll-trigger" href="#main">top</a>
+    </div>
+  </div>
+  <!-- Scroll To Top Ends-->
 
-      </div> <!-- Main -->
-    </div><!-- Wrapper -->
+  </div> <!-- Main -->
+  </div><!-- Wrapper -->
 
 
-    <!-- Jquery and Js Plugins -->
-    <script type="text/javascript" src="/assets/js/jquery-2.1.1.js"></script>
-    <script type="text/javascript" src="/assets/js/jquery.validate.min.js"></script>
-    <script type="text/javascript" src="/assets/js/plugins.js"></script>
-    <script type="text/javascript" src="/assets/js/custom.js"></script>
-  </body>
+  <!-- Jquery and Js Plugins -->
+  <script type="text/javascript" src="/assets/js/jquery-2.1.1.js"></script>
+  <script type="text/javascript" src="/assets/js/jquery.validate.min.js"></script>
+  <script type="text/javascript" src="/assets/js/plugins.js"></script>
+  <script type="text/javascript" src="/assets/js/custom.js"></script>
+</body>
+
 </html>
