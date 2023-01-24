@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.organization;
+package com.tbdev.teaneckminyanim.admin.structure.organization;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,9 +6,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import com.reesedevelopment.greatneckzmanim.admin.structure.GNZSaveable;
-import com.reesedevelopment.greatneckzmanim.admin.structure.user.GNZUser;
-import com.reesedevelopment.greatneckzmanim.admin.structure.user.GNZUserMapper;
+import com.tbdev.teaneckminyanim.admin.structure.GNZSaveable;
+import com.tbdev.teaneckminyanim.admin.structure.user.GNZUser;
+import com.tbdev.teaneckminyanim.admin.structure.user.GNZUserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;

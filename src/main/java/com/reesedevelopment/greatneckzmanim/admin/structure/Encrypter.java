@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure;
+package com.tbdev.teaneckminyanim.admin.structure;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 

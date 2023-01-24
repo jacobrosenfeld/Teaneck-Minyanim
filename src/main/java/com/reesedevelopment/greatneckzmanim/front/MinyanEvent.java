@@ -1,11 +1,11 @@
-package com.reesedevelopment.greatneckzmanim.front;
+package com.tbdev.teaneckminyanim.front;
 
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.Minyan;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanTime;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanType;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
-import com.reesedevelopment.greatneckzmanim.global.Nusach;
+import com.tbdev.teaneckminyanim.admin.structure.location.Location;
+import com.tbdev.teaneckminyanim.admin.structure.minyan.Minyan;
+import com.tbdev.teaneckminyanim.admin.structure.minyan.MinyanTime;
+import com.tbdev.teaneckminyanim.admin.structure.minyan.MinyanType;
+import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
+import com.tbdev.teaneckminyanim.global.Nusach;
 
 //import javax.persistence.Id;
 import java.text.SimpleDateFormat;

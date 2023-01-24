@@ -1,6 +1,6 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.organization;
+package com.tbdev.teaneckminyanim.admin.structure.organization;
 
-import com.reesedevelopment.greatneckzmanim.global.Nusach;
+import com.tbdev.teaneckminyanim.global.Nusach;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.io.Serializable;

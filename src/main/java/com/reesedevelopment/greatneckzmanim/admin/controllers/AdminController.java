@@ -1,14 +1,14 @@
-package com.reesedevelopment.greatneckzmanim.admin.controllers;
+package com.tbdev.teaneckminyanim.admin.controllers;
 
-import com.reesedevelopment.greatneckzmanim.admin.structure.*;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.LocationDAO;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.*;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.OrganizationDAO;
-import com.reesedevelopment.greatneckzmanim.admin.structure.user.GNZUser;
-import com.reesedevelopment.greatneckzmanim.admin.structure.user.GNZUserDAO;
-import com.reesedevelopment.greatneckzmanim.global.Nusach;
+import com.tbdev.teaneckminyanim.admin.structure.*;
+import com.tbdev.teaneckminyanim.admin.structure.location.Location;
+import com.tbdev.teaneckminyanim.admin.structure.location.LocationDAO;
+import com.tbdev.teaneckminyanim.admin.structure.minyan.*;
+import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
+import com.tbdev.teaneckminyanim.admin.structure.organization.OrganizationDAO;
+import com.tbdev.teaneckminyanim.admin.structure.user.GNZUser;
+import com.tbdev.teaneckminyanim.admin.structure.user.GNZUserDAO;
+import com.tbdev.teaneckminyanim.global.Nusach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.reesedevelopment.greatneckzmanim.admin.structure.Role.ADMIN;
+import static com.tbdev.teaneckminyanim.admin.structure.Role.ADMIN;
 
 @Controller
 public class AdminController {

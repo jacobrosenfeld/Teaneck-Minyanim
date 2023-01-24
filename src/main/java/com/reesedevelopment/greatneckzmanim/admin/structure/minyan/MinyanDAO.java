@@ -1,10 +1,10 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.minyan;
+package com.tbdev.teaneckminyanim.admin.structure.minyan;
 
-import com.reesedevelopment.greatneckzmanim.admin.structure.GNZSaveable;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.LocationMapper;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.OrganizationMapper;
+import com.tbdev.teaneckminyanim.admin.structure.GNZSaveable;
+import com.tbdev.teaneckminyanim.admin.structure.location.Location;
+import com.tbdev.teaneckminyanim.admin.structure.location.LocationMapper;
+import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
+import com.tbdev.teaneckminyanim.admin.structure.organization.OrganizationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;

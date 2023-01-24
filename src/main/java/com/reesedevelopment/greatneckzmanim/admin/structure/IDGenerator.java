@@ -1,6 +1,6 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure;
+package com.tbdev.teaneckminyanim.admin.structure;
 
-import com.reesedevelopment.greatneckzmanim.tools.NumberTools;
+import com.tbdev.teaneckminyanim.tools.NumberTools;
 
 import java.util.Date;
 

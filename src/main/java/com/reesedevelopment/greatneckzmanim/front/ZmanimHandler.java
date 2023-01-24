@@ -1,11 +1,11 @@
-package com.reesedevelopment.greatneckzmanim.front;
+package com.tbdev.teaneckminyanim.front;
 
 import com.kosherjava.zmanim.ComplexZmanimCalendar;
 //import com.kosherjava.zmanim.hebrewcalendar.JewishCalendar;
 import com.kosherjava.zmanim.hebrewcalendar.HebrewDateFormatter;
 import com.kosherjava.zmanim.hebrewcalendar.JewishDate;
 import com.kosherjava.zmanim.util.GeoLocation;
-import com.reesedevelopment.greatneckzmanim.global.Zman;
+import com.tbdev.teaneckminyanim.global.Zman;
 
 import java.time.LocalDate;
 import java.util.Date;

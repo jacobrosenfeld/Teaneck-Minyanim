@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.global;
+package com.tbdev.teaneckminyanim.global;
 
 public enum Zman {
     ALOT_HASHACHAR("ALOT_HASHACHAR"),

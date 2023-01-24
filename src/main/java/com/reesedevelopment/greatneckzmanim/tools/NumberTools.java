@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.tools;
+package com.tbdev.teaneckminyanim.tools;
 
 public class NumberTools {
     public static int getRandomNumber(int min, int max) {

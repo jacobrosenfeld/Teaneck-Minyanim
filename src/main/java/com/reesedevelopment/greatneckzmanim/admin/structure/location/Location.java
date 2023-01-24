@@ -1,7 +1,7 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.location;
+package com.tbdev.teaneckminyanim.admin.structure.location;
 
-import com.reesedevelopment.greatneckzmanim.admin.structure.GNZObject;
-import com.reesedevelopment.greatneckzmanim.admin.structure.IDGenerator;
+import com.tbdev.teaneckminyanim.admin.structure.GNZObject;
+import com.tbdev.teaneckminyanim.admin.structure.IDGenerator;
 
 import javax.persistence.Column;
 import javax.persistence.Table;

@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.location;
+package com.tbdev.teaneckminyanim.admin.structure.location;
 
 import org.springframework.jdbc.core.RowMapper;
 

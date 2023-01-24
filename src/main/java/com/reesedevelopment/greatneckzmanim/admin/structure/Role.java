@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure;
+package com.tbdev.teaneckminyanim.admin.structure;
 
 public enum Role {
     ADMIN, USER;

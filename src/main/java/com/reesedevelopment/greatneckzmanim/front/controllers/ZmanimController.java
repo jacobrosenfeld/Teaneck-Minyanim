@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.front.controllers;
+package com.tbdev.teaneckminyanim.front.controllers;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -28,17 +28,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.kosherjava.zmanim.util.GeoLocation;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.Location;
-import com.reesedevelopment.greatneckzmanim.admin.structure.location.LocationDAO;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.Minyan;
-import com.reesedevelopment.greatneckzmanim.admin.structure.minyan.MinyanDAO;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.Organization;
-import com.reesedevelopment.greatneckzmanim.admin.structure.organization.OrganizationDAO;
-import com.reesedevelopment.greatneckzmanim.front.KolhaMinyanim;
-import com.reesedevelopment.greatneckzmanim.front.MinyanEvent;
-import com.reesedevelopment.greatneckzmanim.front.ZmanimHandler;
-import com.reesedevelopment.greatneckzmanim.global.Nusach;
-import com.reesedevelopment.greatneckzmanim.global.Zman;
+import com.tbdev.teaneckminyanim.admin.structure.location.Location;
+import com.tbdev.teaneckminyanim.admin.structure.location.LocationDAO;
+import com.tbdev.teaneckminyanim.admin.structure.minyan.Minyan;
+import com.tbdev.teaneckminyanim.admin.structure.minyan.MinyanDAO;
+import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
+import com.tbdev.teaneckminyanim.admin.structure.organization.OrganizationDAO;
+import com.tbdev.teaneckminyanim.front.KolhaMinyanim;
+import com.tbdev.teaneckminyanim.front.MinyanEvent;
+import com.tbdev.teaneckminyanim.front.ZmanimHandler;
+import com.tbdev.teaneckminyanim.global.Nusach;
+import com.tbdev.teaneckminyanim.global.Zman;
 
 @Controller
 public class ZmanimController {

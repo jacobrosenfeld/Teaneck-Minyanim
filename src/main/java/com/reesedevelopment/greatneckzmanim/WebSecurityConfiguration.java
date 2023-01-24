@@ -1,6 +1,6 @@
-package com.reesedevelopment.greatneckzmanim;
+package com.tbdev.teaneckminyanim;
 
-import com.reesedevelopment.greatneckzmanim.admin.structure.GNZUserDetailsService;
+import com.tbdev.teaneckminyanim.admin.structure.GNZUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

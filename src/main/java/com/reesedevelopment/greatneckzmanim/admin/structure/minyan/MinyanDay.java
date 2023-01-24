@@ -1,4 +1,4 @@
-package com.reesedevelopment.greatneckzmanim.admin.structure.minyan;
+package com.tbdev.teaneckminyanim.admin.structure.minyan;
 
 public enum MinyanDay {
     SUNDAY,
