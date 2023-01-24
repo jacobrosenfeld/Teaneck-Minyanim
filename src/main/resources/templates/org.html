@@ -60,7 +60,23 @@
                 <div id="housing-housing">
                     <div class="mpt0 pb0" id="row-housing" style="padding: 1rem;">
                 <div class="row my-4" style="margin-bottom: 40px!important;">
-                    <div class="col-lg-3 col-md-4" id="org-box">
+                  <div class="col-lg-4 offset-lg-2 col-md-6">
+                    <div class="table-left wow fadeInDown">
+                      <div class="pricing-details">
+                        <h2 th:text="${org.getName()}"></h2>
+                        <img src="assets/icons/free.png" width="60" alt="Icon">
+ 
+                        <span>$0.00</span>
+                           <ul>
+                            <li th:text="${org.getNusach().displayName()}"></li>
+                            <li th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></li>
+                            <li>Any other third feature</li>
+                            </ul>
+                          <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
+                       </div>
+                     </div>
+                   </div>
+                  <!-- <div class="col-lg-3 col-md-4" id="org-box">
                         <div class="card" style="border: 0;">
                             <div class="card-body">
                                 <h5 class="card-title" th:text="${org.getName()}"></h5>
@@ -70,16 +86,16 @@
 <!--                                <a href="#" class="card-link">Another link</a>-->
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="col-lg-9 col-md-8" id="minyanim-box">
                                 <table class="table" th:if="${!allminyanim.isEmpty()}">
                                     <thead>
                                     <tr>
                                         <th scope="col">Type</th>
                                         <th scope="col">Time</th>
-                                        <th scope="col">Information</th>
-<!--                                        <th scope="col">Nusach</th>-->
-<!--                                        <th scope="col">Notes</th>-->
+                                        <th scope="col">Location</th>
+                                        <th scope="col">Nusach</th>
+                                        <th scope="col">Notes</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -92,8 +108,8 @@
                                         <td class="middle" th:text="${minyan.getInformation()}">
 <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
                                         </td>
-<!--                                        <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>-->
-<!--                                        <td class="middle" th:text="${minyan.getNotes()}"></td>-->
+                                       <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
+                                       <td class="middle" th:text="${minyan.getNotes()}"></td>
                                     </tr>
                                     </tbody>
                                 </table>
