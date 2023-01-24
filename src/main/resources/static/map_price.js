@@ -10,7 +10,7 @@ function initMap() {
       const priceTag = document.createElement("div");
 
       priceTag.className = "price-tag";
-      priceTag.textContent = "Next Minyan: "+minyantype+" at"+minyantime;
+      priceTag.textContent = "Next Minyan: "+minyantype+" at "+minyantime;
 
       const markerView = new google.maps.marker.AdvancedMarkerView({
         map,
