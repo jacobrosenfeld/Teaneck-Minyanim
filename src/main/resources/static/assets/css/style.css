@@ -415,7 +415,8 @@ body {
 	background: #275ed8;
 	color: #FFFFFF;
 	border: 1px solid transparent !important;
-	outline: none !im
+	outline: none !important;
+}
 .btn-action {
 	font-family: 'Montserrat';
 	display: inline-block;
