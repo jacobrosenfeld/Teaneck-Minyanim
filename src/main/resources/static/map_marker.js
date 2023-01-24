@@ -19,7 +19,8 @@ function initMap() {
       // Create the markers.
       shul.forEach(({ position, title }, i) => {
         const pinView = new google.maps.marker.PinView({
-          glyphColor: "blue",
+          glyphColor: "white",
+          scale: 1.5,
         });
         const marker = new google.maps.marker.AdvancedMarkerView({
           position,
