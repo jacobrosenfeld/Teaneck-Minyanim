@@ -1,5 +1,5 @@
 var map;
-var marker;
+var markerView;
 
 function initMap() {
   var geocoder = new google.maps.Geocoder();
