@@ -7,7 +7,7 @@ function initMap() {
         mapId: `ab35d05ad627f5db`,
         center: results[0].geometry.location
       });
-      const shulname = [
+      const shul = [
         {
           position: results[0].geometry.location,
           title: shulname + "/n"+"Next Minyan: "+minyantype+" at "+minyantime,
@@ -17,7 +17,7 @@ function initMap() {
       const infoWindow = new google.maps.InfoWindow();
     
       // Create the markers.
-      shulname.forEach(({ position, title }, i) => {
+      shul.forEach(({ position, title }, i) => {
         const pinView = new google.maps.marker.PinView({
           glyph: `${i + 1}`,
         });
