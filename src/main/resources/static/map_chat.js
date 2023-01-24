@@ -23,13 +23,13 @@ function initMap() {
     content: minyantime
   });
   
-  marker.addListener('click', function() {
+  markerView.addListener('click', function() {
     infoWindow.open(map, marker);
   });
-  marker.addListener('mouseover', function() {
+  markerView.addListener('mouseover', function() {
     infoWindow.open(map, marker);
   });
-  marker.addListener('mouseout', function() {
+  markerView.addListener('mouseout', function() {
     infoWindow.close();
   });
 }
