@@ -114,14 +114,15 @@
                             // The data object returned from the API will contain an array of features
                             // representing the geocoded addresses that match the query
                             const coordinates = data.features[0].geometry.coordinates;
-                          });
+                            
                         const map = new mapboxgl.Map({
                           container: 'map',
                           // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
                           style: 'mapbox://styles/mapbox/light-v11',
-                          center: address,
+                          center: coordinates,
                           zoom: 11.15,
                         });
+                      });
 
                         map.on('load', () => {
                           map.addSource('places', {
