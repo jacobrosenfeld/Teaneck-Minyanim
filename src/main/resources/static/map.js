@@ -12,10 +12,6 @@ function initMap() {
         priceTag.className = "price-tag";
         priceTag.textContent = marker;
 
-        const markerView = new google.maps.marker.AdvancedMarkerView({
-          map,
-          position: results[0].geometry.location,
-          content: priceTag,
         });
       } else {
         alert('Geocode was not successful for the following reason: ' + status);
