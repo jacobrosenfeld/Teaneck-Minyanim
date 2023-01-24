@@ -67,6 +67,6 @@ function initMap() {
             address: address,
             type: "building",
           },]
-}
+})}
 
 window.initMap = initMap;
