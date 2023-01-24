@@ -117,7 +117,7 @@ public class ZmanimController {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date datenow = new Date();
         String timenow = dateFormat.format(datenow);
-        mv.getModel().put("timenow", dateFormat.format(timenow));
+        mv.getModel().put("timenow", timenow);
 
         Calendar c = Calendar.getInstance();
 
