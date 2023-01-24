@@ -1943,14 +1943,14 @@ body {
 	margin-top: 5px;
   }
   
-  .property .features {
+  .property .mapfeatures {
 	align-items: flex-end;
 	display: flex;
 	flex-direction: row;
 	gap: 10px;
   }
   
-  .property .features > div {
+  .property .mapfeatures > div {
 	align-items: center;
 	background: #F5F5F5;
 	border-radius: 5px;
