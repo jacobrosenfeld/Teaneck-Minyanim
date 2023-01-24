@@ -15,9 +15,9 @@ env:
   JAVA_VERSION: '17'                  # set this to the Java version to use
 
 on:
-  push:
-    branches:
-      - main
+#  push:
+#    branches:
+#      - main
   workflow_dispatch:
 
 jobs:
