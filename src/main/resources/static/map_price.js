@@ -17,13 +17,6 @@ function initMap() {
         position: results[0].geometry.location,
         content: priceTag,
       });
-      marker.addListener("click", ({ domEvent, latLng }) => {
-        const { target } = domEvent;
-  
-        infoWindow.close();
-        infoWindow.setContent(markerView.content);
-        infoWindow.open(markerView.map, marker);
-      });
     } else {
       alert('Geocode was not successful for the following reason: ' + status);
     }
