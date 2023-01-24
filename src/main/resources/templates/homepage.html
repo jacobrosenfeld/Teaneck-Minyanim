@@ -285,14 +285,7 @@
               <div class="col-md-12">
                 <div class="features-intro">
                   <h2>Shuls</h2>
-                  <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3" th:each="minyan: ${kolminyanim}" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                  <div th:with="uniqueList=${#lists.newArrayList()}">
-                    <div th:each="minyan: ${kolminyanim}">
-                      <div th:if="${!#lists.contains(uniqueList, minyan)}" th:text="${minyan}" th:remove="all"></div>
-                      <div th:unless="${!#lists.contains(uniqueList, minyan)}" th:text="${minyan}" th:remove="all" th:with="uniqueList=${#lists.add(uniqueList, minyan)}"></div>
-                    </div>
-                  </div>
-                  
+                  <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3" th:each="minyan: ${kolminyanim.distinct()}" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
                 </div>
               </div>
             </div>
