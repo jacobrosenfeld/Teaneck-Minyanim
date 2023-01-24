@@ -66,10 +66,8 @@
               <div class="col-sm-12">
                 <div class="pricing-intro wow fadeInDown">
                   <h1 th:text="${org.getName()}"></h1>
-                  <p th:text="${org.getNusach().displayName()}"></li>
-                           <p th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></li>
-                           <!-- <li>Any other third feature</li> -->
-                           </ul>
+                          <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"><h2 th:text="${org.getAddress()}"></h2></a>
+                          <p th:text="${org.getNusach().displayName()}"></p>
                          <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
                 </div>
                 <div class="row">
