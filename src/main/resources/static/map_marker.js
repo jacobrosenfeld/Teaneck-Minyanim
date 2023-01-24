@@ -7,15 +7,35 @@ function initMap() {
         mapId: `ab35d05ad627f5db`,
         center: results[0].geometry.location
       });
-      const priceTag = document.createElement("div");
-
-      priceTag.className = "price-tag";
-      priceTag.textContent = marker+ '\n' +"Next Minyan: "+minyantype+" at"+minyantime;
-
-      const markerView = new google.maps.marker.AdvancedMarkerView({
-        map,
-        position: results[0].geometry.location,
-        content: priceTag,
+      const shulname = [
+        {
+          position: results[0].geometry.location,
+          title: shulname + "/n"+"Next Minyan: "+minyantype+" at "+minyantime,
+        },
+      ];
+      // Create an info window to share between markers.
+      const infoWindow = new google.maps.InfoWindow();
+    
+      // Create the markers.
+      shulname.forEach(({ position, title }, i) => {
+        const pinView = new google.maps.marker.PinView({
+          glyph: `${i + 1}`,
+        });
+        const marker = new google.maps.marker.AdvancedMarkerView({
+          position,
+          map,
+          title: `${title}`,
+          content: pinView.element,
+        });
+    
+        // Add a click listener for each marker, and set up the info window.
+        marker.addListener("click", ({ domEvent, latLng }) => {
+          const { target } = domEvent;
+    
+          infoWindow.close();
+          infoWindow.setContent(marker.title);
+          infoWindow.open(marker.map, marker);
+        });
       });
     } else {
       alert('Geocode was not successful for the following reason: ' + status);
