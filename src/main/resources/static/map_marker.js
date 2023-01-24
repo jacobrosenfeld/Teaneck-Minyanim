@@ -7,6 +7,13 @@ function initMap() {
         mapId: `ab35d05ad627f5db`,
         center: results[0].geometry.location
       });
+        // Add a button for getting directions
+  var directionsButton = document.createElement('button');
+  directionsButton.innerHTML = 'Get Directions';
+  directionsButton.addEventListener('click', function() {
+    window.open('https://www.google.com/maps/dir/?api=1&destination=' + marker.getPosition().lat() + ',' + marker.getPosition().lng());
+  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(directionsButton);
+});
       const shul = [
         {
           position: results[0].geometry.location,
@@ -30,7 +37,7 @@ function initMap() {
         });
     
         // Add a click listener for each marker, and set up the info window.
-        marker.addListener("hover", ({ domEvent, latLng }) => {
+        marker.addListener("click", ({ domEvent, latLng }) => {
           const { target } = domEvent;
     
           infoWindow.close();
@@ -38,6 +45,7 @@ function initMap() {
           infoWindow.open(marker.map, marker);
         });
       });
+      
     } else {
       alert('Geocode was not successful for the following reason: ' + status);
     }
