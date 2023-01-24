@@ -386,7 +386,7 @@ body {
   text-align: center;
   font-size: calc(.75rem);
   font-weight: 600;
-  line-height: calc(1.5rem);
+  line-height: 36px;
   letter-spacing: 2px;
 	margin: 0;
   text-transform: uppercase;
