@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Teaneck Minyanim</title>
+    <link rel="icon" href="/assets/icons/favicon.png" type="image/png" sizes="16x16">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Zmanim and Minyanim for Teaneck New Jersey">
+    <meta name="keywords" content="Jewish,minyanim,zmanim,times,sechedule,teaneck,nj,07666">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/animate.css"> <!-- Resource style -->
+    <link rel="stylesheet" href="/assets/css/owl.carousel.css">
+    <link rel="stylesheet" href="/assets/css/owl.theme.css">
+    <link rel="stylesheet" href="/assets/css/ionicons.min.css"> <!-- Resource style -->
+    <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Navbar Section -->
+      <div class="horizontal-container d-flex" id="wrapper">
+        <th:block th:include="frontnavbar"></th:block>
+        <!-- Navbar End -->
+        <div class="container-fluid " id="main">
+          <div class="row row-offcanvas row-offcanvas-left">
+              <!-- <th:block th:include="admin/sidebar"></th:block> -->
+              <!--/col-->
+              <div class="horizontal-container d-flex" id="wrapper">
+    <th:block th:include="frontnavbar"></th:block>
+    <div class="container-fluid " id="main">
+        <div class="row row-offcanvas row-offcanvas-left vh-100" style="flex-direction: column;">
+<!--            <th:block th:include="admin/sidebar"></th:block>-->
+            <!--/col-->
+            <main class="col main pt-5 mt-3 overflow-auto" style="flex-shrink: 3; padding-bottom: 65px!important;">
+                                <!-- Date Nav Buttons -->
+                                <div class="d-flex justify-content-between">
+                                  <!-- <p class="col-md-4 h3 mt-3 mobile-hide" th:text="${'Schedule | ' + onlyDate}"></p> -->
+                                  <h4 class="col-md-4 mt-3" th:text="${onlyDate}"></h4>
+                                  <div class="col-md-4 btn-toolbar d-flex flex-nowrap justify-content-center p-2" role="toolbar" aria-label="Toolbar with button groups">
+                                    <div class="btn-group  me-2" style="align-self: center;" role="group">
+                                    <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">Today</button> -->
+                                      <button type="button" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">Today</button>
+                                   </div>
+                                    <div class="btn-group me-2" style="align-self: center;" role="group">
+                                    <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
+                                      <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button>
+                                      <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">></button>
+                                    </div>
+                                  </div>
+                                  <!-- <div class="col-md-4 mt-2 btn-group desktop-hide" style="height: 50%; align-self: center;" role="group">
+                                    <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn" style="width: 38%;" th:text="${yesterdayStrippedDay}">‹</button>
+                                    <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn" style="width: 38%;" th:text="${tommorowStrippedDay}">›</button>
+                                  </div> -->
+                                    <h4 class="col-md-4 mt-3 mobile-hide"  style="text-align: right; font-weight: 430;" th:text="${hebrewDate}"></h4>
+                                </div>
+                                <!-- End Date Nav Buttons -->
+                <hr>
+                <div id="housing-housing">
+                    <div class="mpt0 pb0" id="row-housing" style="padding: 1rem;">
+        <!-- Array Pricing Section -->
+        <div id="pricing" class="pricing-section text-center">
+          <div class="container">
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="pricing-intro wow fadeInDown">
+                  <h1 th:text="${org.getName()}"></h1>
+                          <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"><h6 th:text="${org.getAddress()}"></h6></a>
+                          <p th:text="${org.getNusach().displayName()}"></p>
+                         <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
+                </div>
+                <div class="row">
+                  <div class="col-lg-4 offset-lg-2 col-md-6">
+                   <div class="table-left wow">
+                     <div class="pricing-details">
+                       <h2 th:text="${org.getName()}"></h2>
+                       <!-- <img src="assets/icons/free.png" width="60" alt="Icon"> -->
+
+                       <!-- <span>$0.00</span> -->
+                          <ul>
+                           <li th:text="${org.getNusach().displayName()}"></li>
+                           <li th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></li>
+                           <!-- <li>Any other third feature</li> -->
+                           </ul>
+                         <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-4 col-md-6">
+                    <table class="table" th:if="${!allminyanim.isEmpty()}">
+                      <thead>
+                      <tr>
+                          <th scope="col">Type</th>
+                          <th scope="col">Time</th>
+                          <th scope="col">Location</th>
+                          <th scope="col">Nusach</th>
+                          <th scope="col">Notes</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      <tr th:each="minyan: ${allminyanim}">
+                          <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
+<!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
+<!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
+<!--                                        </td>-->
+                          <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                          <td class="middle" th:text="${minyan.getInformation()}">
+<!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
+                          </td>
+                         <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
+                         <td class="middle" th:text="${minyan.getNotes()}"></td>
+                      </tr>
+                      </tbody>
+                  </table>
+                  <div class="jumbotron" th:if="${allminyanim.isEmpty()}">
+                      <h4>Sorry, there aren't any minyanim scheduled.</h4>
+                  </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Array Pricing Ends -->
+
+        <!-- CTA Signup Section -->
+        <div id="info" class="cta-sm">
+          <div class="container-m text-center">
+            <div class="cta-content">
+               <h4>Teaneck Minyanim is supported by volunteers and donations from people like you.</h4>
+               <h1>Drop us a line to learn how you can help support and maintain Teaneck Minyanim.</h1>
+               <div class="form wow fadeIn" data-wow-delay="0.2s">
+                <form id="chimp-form" class="subscribe-form wow zoomIn" action="assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
+                  <input class="mail" id="chimp-email" type="email" name="email" placeholder="Enter your email address" autocomplete="off">
+                  <input class="submit-button" type="submit" value="Sign up now">
+                </form>
+                <div id="response"></div>
+              </div>
+              <div class="form-note">
+                <p>Thank you!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+                  <!-- <div class="col-lg-3 col-md-4" id="org-box">
+                        <div class="card" style="border: 0;">
+                            <div class="card-body">
+                                <h5 class="card-title" th:text="${org.getName()}"></h5>
+                                <h6 class="card-subtitle mb-2 text-muted" th:text="${org.getNusach().displayName()}"></h6>
+                                <a class="card-text" th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></a> 
+                                <a th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}" class="card-link">Visit the website</a>
+                                <a href="#" class="card-link">Another link</a>-->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-9 col-md-8" id="minyanim-box">
+
+                </div>
+                </div>
+                </div>
+                <!--/row-->
+            </main>
+            <!--/main col-->
+        </div>
+    </div>
+</div>
+        </div>
+        <!--/.container-->
+        <!-- Array Footer Section -->
+        <div class="footer-sm">
+          <div class="container">
+            <div class="row">
+              <div class="col-md-4">
+                <a class="footer-logo" href="#">TB Dev</a>
+              </div>
+              <div class="col-md-4">
+                <h6>&copy; TB Dev and Teaneck Minyanim</h6>
+              </div>
+              <!-- <div class="col-md-4">
+                <ul>
+                  <li><a href="#">Facebook</a></li>
+                  <li><a href="#">Twitter</a></li>
+                  <li><a href="#">Linkedin</a></li>
+                </ul>
+              </div> -->
+            </div>
+          </div>
+        </div>
+
+
+       <!-- Scroll To Top -->
+        <div id="back-top" class="bk-top">
+          <div class="bk-top-txt">
+             <a class="back-to-top js-scroll-trigger" href="#main">top</a>
+          </div>
+        </div>
+       <!-- Scroll To Top Ends-->
+
+      </div> <!-- Main -->
+    </div><!-- Wrapper -->
+
+
+    <!-- Jquery and Js Plugins -->
+    <script type="text/javascript" src="/assets/js/jquery-2.1.1.js"></script>
+    <script type="text/javascript" src="/assets/js/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/assets/js/plugins.js"></script>
+    <script type="text/javascript" src="/assets/js/custom.js"></script>
+  </body>
+</html>
