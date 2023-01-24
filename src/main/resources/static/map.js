@@ -10,7 +10,7 @@ function initMap() {
 
             const advancedMarkerView = new google.maps.marker.AdvancedMarkerView({
               map,
-              content: buildContent(property),
+            //   content: buildContent(property),
               position: results[0].geometry.location,
               title: marker,
             });
