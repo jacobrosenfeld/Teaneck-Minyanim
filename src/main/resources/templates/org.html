@@ -114,7 +114,7 @@
                             // The data object returned from the API will contain an array of features
                             // representing the geocoded addresses that match the query
                             const geocode = data.features[0].geometry.coordinates;
-                          });
+                          
                             const map = new mapboxgl.Map({
                               container: 'map',
                               // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
@@ -193,6 +193,7 @@
                             map.getCanvas().style.cursor = '';
                           });
                         });
+                      });
                       </script>
                     </div>
                   </div>
