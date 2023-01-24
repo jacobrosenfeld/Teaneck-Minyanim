@@ -1080,11 +1080,11 @@ body {
 	}
 
 	.pricing-details {
-		padding: 50px 0 0 0;
+		padding: 2rem 0 0 0;
 	}
 
 	.pricing-section .table-left, .pricing-section .table-right {
-		padding: 20px 20px 50px 20px;
+		padding: 20px 20px 20px 20px;
 		margin: 0 auto;
 		margin-bottom: 30px;
 		background-color: #FFFFFF;
