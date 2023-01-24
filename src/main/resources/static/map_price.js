@@ -21,8 +21,8 @@ function initMap() {
         const { target } = domEvent;
   
         infoWindow.close();
-        infoWindow.setContent(marker.title);
-        infoWindow.open(marker.map, marker);
+        infoWindow.setContent(markerView.content);
+        infoWindow.open(markerView.map, marker);
       });
     } else {
       alert('Geocode was not successful for the following reason: ' + status);
