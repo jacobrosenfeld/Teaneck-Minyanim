@@ -114,7 +114,7 @@ public class ZmanimController {
         mv.getModel().put("onlyDate", onlyDateFormat.format(date));
 
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMMM DD, yyyy HH:mm a");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM DD, yyyy h:mm a");
         Date datenow = new Date();
         String timenow = dateFormat.format(datenow);
         mv.getModel().put("timenow", timenow);
