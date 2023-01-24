@@ -10,21 +10,19 @@ function initMap() {
       const priceTag = document.createElement("div");
 
       priceTag.className = "price-tag";
-      priceTag.title = "Next Minyan: "+minyantype+" at "+minyantime;
-      priceTag.textContent = shulname;
+      priceTag.textContent = "Next Minyan: "+minyantype+" at "+minyantime;
 
       const markerView = new google.maps.marker.AdvancedMarkerView({
         map,
         position: results[0].geometry.location,
-        title: title,
-        content: textContent
+        content: priceTag,
       });
       markerView.addListener("click", ({ domEvent, latLng }) => {
         const { target } = domEvent;
   
         infoWindow.close();
-        infoWindow.setContent(markerView.title);
-        infoWindow.open(markerView.map, markerView);
+        infoWindow.setContent(marker.title);
+        infoWindow.open(marker.map, marker);
       });
       window.initMap = initMap;
     } else {
