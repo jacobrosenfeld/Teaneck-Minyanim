@@ -22,8 +22,8 @@ const start = urlParams.get('st');
 if (start == "sh") {
     Array.prototype.forEach.call(document.getElementsByClassName("nav-link"), e => e.classList.remove("active"));
     Array.prototype.forEach.call(document.getElementsByClassName("tab-pane"), e => e.classList.remove("active","show"));
-    document.getElementById("pills-shacharit-tab").classList.add("active");
-    document.getElementById("pills-shacharit").classList.add("active", "show");
+    document.getElementById("pills-shacharis-tab").classList.add("active");
+    document.getElementById("pills-shacharis").classList.add("active", "show");
 } else if (start == "mi") {
     Array.prototype.forEach.call(document.getElementsByClassName("nav-link"), e => e.classList.remove("active"));
     Array.prototype.forEach.call(document.getElementsByClassName("tab-pane"), e => e.classList.remove("active","show"));

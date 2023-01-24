@@ -48,7 +48,7 @@
                                         <a class="nav-link active" id="pills-all-tab" data-toggle="pill" href="#pills-all" role="tab" aria-controls="pills-all" aria-selected="true">All Minyanim</a>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <a class="nav-link" id="pills-shacharit-tab" data-toggle="pill" href="#pills-shacharit" role="tab" aria-controls="pills-shacharit" aria-selected="false">Shacharit</a>
+                                        <a class="nav-link" id="pills-shacharis-tab" data-toggle="pill" href="#pills-shacharis" role="tab" aria-controls="pills-shacharis" aria-selected="false">Shacharis</a>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <a class="nav-link" id="pills-mincha-tab" data-toggle="pill" href="#pills-mincha" role="tab" aria-controls="pills-mincha" aria-selected="false">Mincha</a>
@@ -88,8 +88,8 @@
                                             <h4>Sorry, there aren't any minyanim scheduled.</h4>
                                         </div>
                                     </div>
-                                    <div class="tab-pane fade" id="pills-shacharit" role="tabpanel" aria-labelledby="pills-shacharit-tab">
-                                        <table class="table" th:if="${!shacharitMinyanim.isEmpty()}">
+                                    <div class="tab-pane fade" id="pills-shacharis" role="tabpanel" aria-labelledby="pills-shacharis-tab">
+                                        <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
                                             <thead>
                                             <tr>
                                                 <th scope="col">Time</th>
@@ -98,7 +98,7 @@
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            <tr th:each="minyan: ${shacharitMinyanim}">
+                                            <tr th:each="minyan: ${shacharisMinyanim}">
                                                 <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
                                                 <td class="middle">
                                                     <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
@@ -107,8 +107,8 @@
                                             </tr>
                                             </tbody>
                                         </table>
-                                        <div class="jumbotron" th:if="${shacharitMinyanim.isEmpty()}">
-                                            <h4>Sorry, there aren't any shacharit minyanim scheduled.</h4>
+                                        <div class="jumbotron" th:if="${shacharisMinyanim.isEmpty()}">
+                                            <h4>Sorry, there aren't any shacharis minyanim scheduled.</h4>
                                         </div>
                                     </div>
                                     <div class="tab-pane fade" id="pills-mincha" role="tabpanel" aria-labelledby="pills-mincha-tab">
