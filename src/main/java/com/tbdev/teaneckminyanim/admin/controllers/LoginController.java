@@ -1,6 +1,6 @@
 package com.tbdev.teaneckminyanim.admin.controllers;
 
-import com.tbdev.teaneckminyanim.admin.structure.user.GNZUserMapper;
+import com.tbdev.teaneckminyanim.admin.structure.user.TNMUserMapper;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.security.core.context.SecurityContextHolder;

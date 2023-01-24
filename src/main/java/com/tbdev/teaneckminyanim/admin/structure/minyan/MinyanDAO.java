@@ -1,6 +1,6 @@
 package com.tbdev.teaneckminyanim.admin.structure.minyan;
 
-import com.tbdev.teaneckminyanim.admin.structure.GNZSaveable;
+import com.tbdev.teaneckminyanim.admin.structure.TNMSaveable;
 import com.tbdev.teaneckminyanim.admin.structure.location.Location;
 import com.tbdev.teaneckminyanim.admin.structure.location.LocationMapper;
 import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
@@ -22,7 +22,7 @@ import java.util.Map;
 
 @Repository
 @Transactional
-public class MinyanDAO extends JdbcDaoSupport implements GNZSaveable<Minyan> {
+public class MinyanDAO extends JdbcDaoSupport implements TNMSaveable<Minyan> {
 
     @Autowired
     public MinyanDAO(DataSource dataSource) {

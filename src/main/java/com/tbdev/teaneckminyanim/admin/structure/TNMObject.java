@@ -5,12 +5,12 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
-public abstract class GNZObject {
+public abstract class TNMObject {
     @Id
     @Column(name="ID", nullable = false, unique = true)
     protected String id;
 
-    public GNZObject() {
+    public TNMObject() {
     }
 
     public String getId() {

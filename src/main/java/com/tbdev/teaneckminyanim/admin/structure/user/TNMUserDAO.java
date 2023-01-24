@@ -1,6 +1,6 @@
 package com.tbdev.teaneckminyanim.admin.structure.user;
 
-import com.tbdev.teaneckminyanim.admin.structure.GNZSaveable;
+import com.tbdev.teaneckminyanim.admin.structure.TNMSaveable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.PreparedStatementSetter;
@@ -15,21 +15,21 @@ import java.util.*;
 
 @Repository
 @Transactional
-public class GNZUserDAO extends JdbcDaoSupport implements GNZSaveable<GNZUser> {
+public class TNMUserDAO extends JdbcDaoSupport implements TNMSaveable<TNMUser> {
 
     @Autowired
-    public GNZUserDAO(DataSource dataSource) {
+    public TNMUserDAO(DataSource dataSource) {
         this.setDataSource(dataSource);
     }
 
-    public GNZUser findByName(String username) {
-        String sql = GNZUserMapper.BASE_SQL + " WHERE u.USERNAME = ? ";
+    public TNMUser findByName(String username) {
+        String sql = TNMUserMapper.BASE_SQL + " WHERE u.USERNAME = ? ";
 
         Object[] params = new Object[] { username };
-        GNZUserMapper mapper = new GNZUserMapper();
+        TNMUserMapper mapper = new TNMUserMapper();
 
         try {
-            GNZUser userInfo = this.getJdbcTemplate().queryForObject(sql, params, mapper);
+            TNMUser userInfo = this.getJdbcTemplate().queryForObject(sql, params, mapper);
             return userInfo;
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -37,14 +37,14 @@ public class GNZUserDAO extends JdbcDaoSupport implements GNZSaveable<GNZUser> {
     }
 
     @Override
-    public GNZUser findById(String id) {
-        String sql = GNZUserMapper.BASE_SQL + " WHERE u.ID = ? ";
+    public TNMUser findById(String id) {
+        String sql = TNMUserMapper.BASE_SQL + " WHERE u.ID = ? ";
 
         Object[] params = new Object[] { id };
-        GNZUserMapper mapper = new GNZUserMapper();
+        TNMUserMapper mapper = new TNMUserMapper();
 
         try {
-            GNZUser userInfo = this.getJdbcTemplate().queryForObject(sql, params, mapper);
+            TNMUser userInfo = this.getJdbcTemplate().queryForObject(sql, params, mapper);
             return userInfo;
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -52,16 +52,16 @@ public class GNZUserDAO extends JdbcDaoSupport implements GNZSaveable<GNZUser> {
     }
 
     @Override
-    public List<GNZUser> getAll() {
+    public List<TNMUser> getAll() {
         String sql = "SELECT ID, USERNAME, EMAIL, ENCRYPTED_PASSWORD, ROLE_ID, ORGANIZATION_ID FROM ACCOUNT";
 
-        GNZUserMapper mapper = new GNZUserMapper();
+        TNMUserMapper mapper = new TNMUserMapper();
 
         List<Map<String, Object>> userMaps = this.getJdbcTemplate().queryForList(sql);
 
-        List<GNZUser> users = new ArrayList<GNZUser>();
+        List<TNMUser> users = new ArrayList<TNMUser>();
 
-//        iterate through the list and create an GNZUser object for each row
+//        iterate through the list and create an TNMUser object for each row
         for (Map<String, Object> userMap : userMaps) {
             users.add(mapper.mapRow(userMap));
         }
@@ -98,7 +98,7 @@ public class GNZUserDAO extends JdbcDaoSupport implements GNZSaveable<GNZUser> {
     }
 
     @Override
-    public boolean save(GNZUser user) {
+    public boolean save(TNMUser user) {
         String sql = String.format("INSERT INTO ACCOUNT VALUES ('%s', '%s', '%s', '%s', '%s', '%d')", user.getId(), user.getUsername(), user.getEmail(), user.getEncryptedPassword(), user.getOrganizationId(), user.getRoleId());
 
         try {
@@ -111,7 +111,7 @@ public class GNZUserDAO extends JdbcDaoSupport implements GNZSaveable<GNZUser> {
     }
 
     @Override
-    public boolean delete(GNZUser objectToDelete) {
+    public boolean delete(TNMUser objectToDelete) {
         String sql = String.format("DELETE FROM ACCOUNT WHERE ID='%s'", objectToDelete.getId());
 
         try {
@@ -124,7 +124,7 @@ public class GNZUserDAO extends JdbcDaoSupport implements GNZSaveable<GNZUser> {
     }
 
     @Override
-    public boolean update(GNZUser objectToUpdate) {
+    public boolean update(TNMUser objectToUpdate) {
         try {
             String sql = "UPDATE ACCOUNT SET USERNAME='%s', EMAIL='%s', ENCRYPTED_PASSWORD='%s', ORGANIZATION_ID='%s', ROLE_ID=%d WHERE ID='%s'";
 
@@ -137,7 +137,7 @@ public class GNZUserDAO extends JdbcDaoSupport implements GNZSaveable<GNZUser> {
 //                            preparedStatement.setInt(3, objectToUpdate.getRoleId().intValue());
 //                            preparedStatement.setString(4, objectToUpdate.getId());
 //                        }
-//                    }, new GNZUserMapper());
+//                    }, new TNMUserMapper());
 
 
             getConnection().createStatement().executeUpdate(String.format(sql, objectToUpdate.getUsername(), objectToUpdate.getEmail(), objectToUpdate.getEncryptedPassword(), objectToUpdate.getOrganizationId(), objectToUpdate.getRoleId(), objectToUpdate.getId()));
@@ -151,7 +151,7 @@ public class GNZUserDAO extends JdbcDaoSupport implements GNZSaveable<GNZUser> {
 //            stmt.setString(4, objectToUpdate.getId());
 //            stmt.executeUpdate();
 //            getConnection().commit();
-//            System.out.println("Successfully updated GNZUser");
+//            System.out.println("Successfully updated TNMUser");
             return true;
         } catch (Exception e) {
             e.printStackTrace();

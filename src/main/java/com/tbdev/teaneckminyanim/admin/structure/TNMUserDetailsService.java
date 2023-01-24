@@ -1,7 +1,7 @@
 package com.tbdev.teaneckminyanim.admin.structure;
 
-import com.tbdev.teaneckminyanim.admin.structure.user.GNZUser;
-import com.tbdev.teaneckminyanim.admin.structure.user.GNZUserDAO;
+import com.tbdev.teaneckminyanim.admin.structure.user.TNMUser;
+import com.tbdev.teaneckminyanim.admin.structure.user.TNMUserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,14 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class GNZUserDetailsService implements UserDetailsService {
+public class TNMUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private GNZUserDAO gnzUserDAO;
+    private TNMUserDAO TNMUserDAO;
 
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
-        GNZUser user = this.gnzUserDAO.findByName(userName);
+        TNMUser user = this.TNMUserDAO.findByName(userName);
 
         if (user == null) {
             System.out.println("User not found! " + userName);

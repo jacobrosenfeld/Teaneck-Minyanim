@@ -2,7 +2,7 @@ package com.tbdev.teaneckminyanim.admin.structure.minyan;
 
 import com.kosherjava.zmanim.hebrewcalendar.JewishCalendar;
 import com.kosherjava.zmanim.util.Time;
-import com.tbdev.teaneckminyanim.admin.structure.GNZObject;
+import com.tbdev.teaneckminyanim.admin.structure.TNMObject;
 import com.tbdev.teaneckminyanim.admin.structure.IDGenerator;
 import com.tbdev.teaneckminyanim.admin.structure.location.Location;
 import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.Date;
 
 @Table(name = "MINYAN")
-public class Minyan extends GNZObject implements IDGenerator {
+public class Minyan extends TNMObject implements IDGenerator {
     @Column(name = "TYPE", nullable = false)
     private String minyanTypeString;
 

@@ -2,7 +2,7 @@ package com.tbdev.teaneckminyanim.admin.structure;
 
 import java.util.List;
 
-public interface GNZSaveable<T extends GNZObject> {
+public interface TNMSaveable<T extends TNMObject> {
 //    T findByName(String name);
 
     T findById(String id);

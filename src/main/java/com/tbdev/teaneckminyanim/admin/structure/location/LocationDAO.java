@@ -1,6 +1,6 @@
 package com.tbdev.teaneckminyanim.admin.structure.location;
 
-import com.tbdev.teaneckminyanim.admin.structure.GNZSaveable;
+import com.tbdev.teaneckminyanim.admin.structure.TNMSaveable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Repository
 @Transactional
-public class LocationDAO extends JdbcDaoSupport implements GNZSaveable<Location> {
+public class LocationDAO extends JdbcDaoSupport implements TNMSaveable<Location> {
 
     @Autowired
     public LocationDAO(DataSource dataSource) {
@@ -76,7 +76,7 @@ public class LocationDAO extends JdbcDaoSupport implements GNZSaveable<Location>
 
         List<Location> locations = new ArrayList<>();
 
-//        iterate through the list and create an GNZUser object for each row
+//        iterate through the list and create an TNMUser object for each row
         for (Map<String, Object> locationMap : locationMaps) {
             locations.add(mapper.mapRow(locationMap));
         }
