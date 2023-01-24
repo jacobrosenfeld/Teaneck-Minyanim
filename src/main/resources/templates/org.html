@@ -63,13 +63,6 @@
 
                         </div>
                         <div class="col">
-                          <div id="list-example" class="list-group">
-                            <a class="list-group-item list-group-item-action" href="#shacharis">Shacharis</a>
-                            <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
-                            <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
-                          </div>
-                    </div>
-                        <div class="col">
                     <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0" class="scrollspy-example" tabindex="0">
                       <h4 id="shacharis">Shacharis</h4>
                       <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
@@ -104,6 +97,13 @@
                       <p>...</p>
                       <h4 id="maariv">Maariv</h4>
                       <p>...</p>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div id="list-example" class="list-group">
+                      <a class="list-group-item list-group-item-action" href="#shacharis">Shacharis</a>
+                      <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
+                      <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
                     </div>
                   </div>
                   </div>
