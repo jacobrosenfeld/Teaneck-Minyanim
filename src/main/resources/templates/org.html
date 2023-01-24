@@ -119,6 +119,7 @@
                               container: 'map',
                               // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
                               style: 'mapbox://styles/mapbox/light-v11',
+                              sprite: "mapbox://sprites/mapbox/bright-v8",
                               center: geocode,
                               zoom: 15,
                             });
@@ -140,8 +141,8 @@
                                 {
                                   'type': 'Feature',
                                   'properties': {
-                                    'description': "Next Minyan: "+minyantype+" at "+minyantime,
-                                    'icon': 'theatre'
+                                    'description': shulname+"/n"+"Next Minyan: "+minyantype+" at "+minyantime,
+                                    'icon': 'border-dot-13'
                                   },
                                   'geometry': {
                                     'type': 'Point',
