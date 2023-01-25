@@ -929,7 +929,7 @@ if (this.TNMUserDAO.delete(account)) {
         }
 
         List<Minyan> minyanim = minyanDAO.findMatching(oidToUse);
-//        minyanim.stream().filter(m -> m.getType() == MinyanType.SHACHARIT);
+//        minyanim.stream().filter(m -> m.getType() == MinyanType.SHACHARIS);
 
 //        get elements from list that are shacharis
 //        List<Minyan> shacharisMinyanim = new ArrayList<>();
@@ -938,7 +938,7 @@ if (this.TNMUserDAO.delete(account)) {
 //                shacharisMinyanim.add(m);
 //            }
 //        }
-        List<Minyan> shacharisMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SHACHARIT)).collect(Collectors.toList());
+        List<Minyan> shacharisMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SHACHARIS)).collect(Collectors.toList());
         mv.addObject("shacharisminyanim", shacharisMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> shacharisTimes = new HashMap<>();
         for (Minyan m : shacharisMinyanim) {
