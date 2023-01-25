@@ -97,7 +97,7 @@
                               <li th:text="${org.getNusach().displayName()}"></li>
                               <!-- <li>Any other third feature</li> -->
                             </ul>
-                            <button class="btn-action" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank">Get Directions</button>
+                            <button class="btn-action"><a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank">Get Directions</a></button>
                             <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
                           </div>
                         </div>
