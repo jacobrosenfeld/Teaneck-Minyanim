@@ -1905,6 +1905,7 @@ body {
 	height: 100%;
 	margin: 0;
 	padding: 0;
+	scroll-margin-top: 3em;
 }
 
 :root {
@@ -1922,6 +1923,7 @@ body {
 	height: 100%;
 	margin: 0;
 	padding: 0;
+
 }
 
 /*
@@ -1933,49 +1935,8 @@ body {
 	height: 400px;
 }
 
-/* 
-   * Optional: Makes the sample page fill the window. 
-   */
-html,
-body {
-	height: 100%;
-	margin: 0;
-	padding: 0;
-}
-
-/* HTML marker styles */
-.price-tag {
-	background-color: #4285F4;
-	border-radius: 8px;
-	color: #FFFFFF;
-	font-size: 14px;
-	padding: 10px 15px;
-	position: relative;
-}
-
-.price-tag::after {
-	content: "";
-	position: absolute;
-	left: 50%;
-	top: 100%;
-	transform: translate(-50%, 0);
-	width: 0;
-	height: 0;
-	border-left: 8px solid transparent;
-	border-right: 8px solid transparent;
-	border-top: 8px solid #4285F4;
-}
-
-[class$=api-load-alpha-banner] {
-	display: none;
-}
-
 /* mapbox */
 .mapboxgl-popup {
 	max-width: 400px;
 	font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-}
-
-.scroll-offset {
-	scroll-margin-top: 3em;
 }
