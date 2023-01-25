@@ -85,7 +85,7 @@
                             </tr>
                           </thead>
                           <tbody>
-                            <tr th:each="minyan: ${allminyanim}">
+                            <tr th:each="minyan, i : ${allminyanim} as minyans">
                               <td th:if="${i.index} < 10" class="align-middle">
                                 <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3"
                                   th:href="@{|/orgs/${minyan.getOrganizationId()}|}"
