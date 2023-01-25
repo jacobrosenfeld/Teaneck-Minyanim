@@ -1888,15 +1888,6 @@ body {
 	width: 100%;
 	/* The width is the width of the web page */
 }
-
-/* HTML marker styles */
-:root {
-	--building-color: #FF9800;
-	--house-color: #0288D1;
-	--shop-color: #7B1FA2;
-	--warehouse-color: #558B2F;
-}
-
 /*
    * Optional: Makes the sample page fill the window.
    */
@@ -1905,38 +1896,13 @@ body {
 	height: 100%;
 	margin: 0;
 	padding: 0;
-	scroll-margin-top: 3em;
-}
-
-:root {
-	--building-color: #FF9800;
-	--house-color: #0288D1;
-	--shop-color: #7B1FA2;
-	--warehouse-color: #558B2F;
-}
-
-/*
-   * Optional: Makes the sample page fill the window.
-   */
-html,
-body {
-	height: 100%;
-	margin: 0;
-	padding: 0;
-
-}
-
-/*
-/* 
- * Always set the map height explicitly to define the size of the div element
- * that contains the map. 
- */
-#map {
-	height: 400px;
 }
 
 /* mapbox */
 .mapboxgl-popup {
 	max-width: 400px;
 	font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+}
+.list-group {
+	scroll-margin-top: 3em;
 }
