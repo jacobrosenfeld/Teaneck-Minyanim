@@ -502,6 +502,8 @@ public class ZmanimController {
         }
 
         //upcoming minyanim for org
+        List<MinyanEvent> nextMinyan = new ArrayList<>();
+
         for (Minyan minyan : enabledMinyanim) {
             LocalDate ref = dateToLocalDate(date).plusMonths(1);
             Date startDate = minyan.getStartDate(ref);
@@ -548,8 +550,8 @@ public class ZmanimController {
             }
         }
     }
-        minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
-        mv.getModel().put("upcoming", minyanEvents);
+        nextMinyan.sort(Comparator.comparing(MinyanEvent::getStartTime));
+        mv.getModel().put("upcoming", nextMinyan);
         //end upcoming
 
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
