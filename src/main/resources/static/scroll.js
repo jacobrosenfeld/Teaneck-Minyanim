@@ -1,4 +1,4 @@
-$(function() {
+(function() {
     var $sidebar = $("#list-example.fixed-top"), 
         $window = $(window),
         rightOffset = $sidebar.offset(),
