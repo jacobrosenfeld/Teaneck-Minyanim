@@ -47,9 +47,7 @@
                 </div>
                 <div class="btn-group me-2" style="align-self: center;" role="group">
                   <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
-                  <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}"
-                    onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">
-                    << /button>
+                  <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}"onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button>
                       <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}"
                         onclick="location.href = this.getAttribute('data-url')"
                         class="btn btn-secondary switcher-btn">></button>
