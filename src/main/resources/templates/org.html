@@ -95,10 +95,8 @@
                             <ul>
                               <li>second</li>
                               <li th:text="${org.getNusach().displayName()}"></li>
-                              <a th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}"
-                                th:target="_blank">
-                                <li th:text="${org.getAddress()}"></li>
-                              </a>
+                              <button class="btn-action" th:if="${org.getWebsiteURI() != null}"
+                              th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank">Get Directions</button>
                               <!-- <li>Any other third feature</li> -->
                             </ul>
                             <button class="btn-action" th:if="${org.getWebsiteURI() != null}"
@@ -164,7 +162,7 @@
                                 'source': 'places',
                                 'paint': {
                                   'circle-color': '#275ed8',
-                                  'circle-radius': 30,
+                                  'circle-radius': 12,
                                   'circle-stroke-width': 2,
                                   'circle-stroke-color': '#ffffff'
                                 }
