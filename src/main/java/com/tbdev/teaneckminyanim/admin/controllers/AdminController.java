@@ -254,7 +254,7 @@ public class AdminController {
         Matcher m3 = passwordPattern.matcher(password);
         if (!m3.matches()) {
             System.out.println("Sorry, this password is not valid.");
-            return addOrganization(false, "The organization could not be created. The password must be at least 8 characters, contain at least one letter and one number.", "Sorry, the password must be at least 8 characters, contain at least one letter and one number.");
+            return addOrganization(false, "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.", "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
         }
 
         System.out.println("Creating organization...");
@@ -416,7 +416,7 @@ public class AdminController {
         Matcher m3 = passwordPattern.matcher(password);
         if (!m3.matches()) {
             System.out.println("Sorry, this password is not valid.");
-            return account(accountId, null, null, "Sorry, the password must be at least 8 characters, contain at least one letter and one number.");
+            return account(accountId, null, null, "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
         }
 
         try {
@@ -693,7 +693,7 @@ if (this.TNMUserDAO.delete(account)) {
         Matcher m3 = passwordPattern.matcher(password);
         if (!m3.matches()) {
             System.out.println("Sorry, this password is not valid.");
-            return organization(organizationId, null, null, null,"Sorry, the password must be at least 8 characters, contain at least one letter and one number.");
+            return organization(organizationId, null, null, null,"The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
         }
 
         Role role;
