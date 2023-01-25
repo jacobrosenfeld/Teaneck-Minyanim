@@ -157,6 +157,10 @@
                                   ]
                                 }
                               });
+                              const popup = new mapboxgl.Popup({ closeOnClick: false })
+                                  .setLngLat(coordinates)
+                                  .setHTML(description)
+                                  .addTo(map);
                               // Add a layer showing the places.
                               map.addLayer({
                                 'id': 'places',
@@ -184,7 +188,7 @@
                                   coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
                                 }
 
-                                new mapboxgl.Popup()
+                                new mapboxgl.Popup({ closeOnClick: false })
                                   .setLngLat(coordinates)
                                   .setHTML(description)
                                   .addTo(map);
