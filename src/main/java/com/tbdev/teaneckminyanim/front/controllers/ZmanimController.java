@@ -509,7 +509,7 @@ public class ZmanimController {
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3));
-            if (startDate != null && startDate.after(terminationDate)) {
+            if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))){
             if (startDate != null) {
                 String organizationName;
                 Nusach organizationNusach;
