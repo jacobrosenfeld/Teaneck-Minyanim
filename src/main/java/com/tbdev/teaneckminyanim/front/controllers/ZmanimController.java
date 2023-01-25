@@ -68,7 +68,6 @@ public class ZmanimController {
     @Autowired
     private LocationDAO locationDAO;
 
-
     @GetMapping("/")
     public ModelAndView home() {
         return todaysZmanim();
@@ -95,6 +94,7 @@ public class ZmanimController {
         calendar.setTimeZone(timeZone);
         return timeFormat.format(calendar.getTime());
     }
+
     private String timeFormatWithRoundingToSecond(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -109,10 +109,10 @@ public class ZmanimController {
 
         // adding dates to model data
         setTimeZone(timeZone);
-//        String month = calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, java.util.Locale.US);
+        // String month = calendar.getDisplayName(Calendar.MONTH, Calendar.LONG,
+        // java.util.Locale.US);
         mv.getModel().put("date", dateFormat.format(date));
         mv.getModel().put("onlyDate", onlyDateFormat.format(date));
-
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM DD, yyyy h:mm a");
         Date datenow = new Date();
@@ -138,18 +138,19 @@ public class ZmanimController {
 
         mv.getModel().put("dateString", date.toString());
 
-//        add today's hebrew date
+        // add today's hebrew date
         mv.getModel().put("hebrewDate", zmanimHandler.getHebrewDate(date));
 
         System.out.println("DEBUG: Fetching zmanim for model");
 
         LocalDate localDate = dateToLocalDate(date);
-        System.out.println("Showing zmanim for date: " + localDate.getMonth() + ":" + localDate.getMonthValue() + ":" + localDate.getMonth().getValue() + ":" + localDate.toString());
+        System.out.println("Showing zmanim for date: " + localDate.getMonth() + ":" + localDate.getMonthValue() + ":"
+                + localDate.getMonth().getValue() + ":" + localDate.toString());
 
         Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(localDate);
 
         System.out.println("DEBUG: Putting zmanim in model");
-        
+
         System.out.println("ALOT HASH: " + zmanim.get(Zman.ALOT_HASHACHAR));
         mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOT_HASHACHAR)));
         mv.getModel().put("sunrise", timeFormatWithRoundingToSecond(zmanim.get(Zman.NETZ)));
@@ -165,8 +166,8 @@ public class ZmanimController {
 
         System.out.println("DEBUG: Fetching minyanim");
 
-//        get minyanim closest in time to now
-//        todo: only get items with non null time for date
+        // get minyanim closest in time to now
+        // todo: only get items with non null time for date
         List<Minyan> enabledMinyanim = minyanDAO.getEnabled();
         List<MinyanEvent> minyanEvents = new ArrayList<>();
 
@@ -179,9 +180,12 @@ public class ZmanimController {
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
             System.out.println("SD: " + startDate);
             System.out.println("TD: " + terminationDate);
-            // if (startDate != null && (startDate.after(terminationDate) || now.getDate() != startDate.getDate())) {  
-            // if (startDate != null && (startDate.after(terminationDate))) {      
-            // start date must be valid AND (be after the termination date OR date must not be the same date as today, to disregard the termination time when the user is looking ahead)
+            // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
+            // != startDate.getDate())) {
+            // if (startDate != null && (startDate.after(terminationDate))) {
+            // start date must be valid AND (be after the termination date OR date must not
+            // be the same date as today, to disregard the termination time when the user is
+            // looking ahead)
             if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))) {
                 // show the minyan
                 String organizationName;
@@ -212,81 +216,100 @@ public class ZmanimController {
 
                 String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
                 if (dynamicDisplayName != null) {
-                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
+                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                            organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                            minyan.getNusach(), minyan.getNotes()));
                 } else {
-                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+                    minyanEvents
+                            .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
+                                    organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
                 }
-            } /*else {
-                if (startDate != null) {
-                    System.out.println("Skipping minyan with start date: " + startDate.toString());
+            } /*
+               * else {
+               * if (startDate != null) {
+               * System.out.println("Skipping minyan with start date: " +
+               * startDate.toString());
+               * } else {
+               * System.out.println("Skipping minyan with null start date.");
+               * }
+               * }
+               */
+        }
+        // KolhaMinyanim insertion
+        List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
+
+        for (Minyan minyan : enabledMinyanim) {
+            LocalDate ref = dateToLocalDate(date).plusMonths(1);
+            Date startDate = minyan.getStartDate(ref);
+            Date now = new Date();
+            System.out.println("SD: " + startDate);
+            if (startDate != null) {
+                String organizationName;
+                Nusach organizationNusach;
+                String organizationId;
+                Organization organization = minyan.getOrganization();
+                if (organization == null) {
+                    Organization temp = organizationDAO.findById(minyan.getOrganizationId());
+                    organizationName = temp.getName();
+                    organizationNusach = temp.getNusach();
+                    organizationId = temp.getId();
                 } else {
-                    System.out.println("Skipping minyan with null start date.");
+                    organizationName = organization.getName();
+                    organizationNusach = organization.getNusach();
+                    organizationId = organization.getId();
                 }
-            }*/
-        }
-// KolhaMinyanim insertion
-List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
-for (Minyan minyan : enabledMinyanim) {
-    LocalDate ref = dateToLocalDate(date).plusMonths(1);
-    Date startDate = minyan.getStartDate(ref);
-    Date now = new Date();
-    System.out.println("SD: " + startDate);
-    if (startDate != null) {      
-        String organizationName;
-        Nusach organizationNusach;
-        String organizationId;
-        Organization organization = minyan.getOrganization();
-        if (organization == null) {
-            Organization temp = organizationDAO.findById(minyan.getOrganizationId());
-            organizationName = temp.getName();
-            organizationNusach = temp.getNusach();
-            organizationId = temp.getId();
-        } else {
-            organizationName = organization.getName();
-            organizationNusach = organization.getNusach();
-            organizationId = organization.getId();
-        }
+                String locationName = null;
+                Location location = minyan.getLocation();
+                if (location == null) {
+                    location = locationDAO.findById(minyan.getLocationId());
+                    if (location != null) {
+                        locationName = location.getName();
+                    }
+                } else {
+                    locationName = location.getName();
+                }
 
-        String locationName = null;
-        Location location = minyan.getLocation();
-        if (location == null) {
-            location = locationDAO.findById(minyan.getLocationId());
-            if (location != null) {
-                locationName = location.getName();
-            }
-        } else {
-            locationName = location.getName();
+                String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
+                if (dynamicDisplayName != null) {
+                    kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName,
+                            organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                            minyan.getNusach(), minyan.getNotes()));
+                } else {
+                    kolhaMinyanims.add(
+                            new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
+                                    organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+                }
+            } /*
+               * else {
+               * if (startDate != null) {
+               * System.out.println("Skipping minyan with start date: " +
+               * startDate.toString());
+               * } else {
+               * System.out.println("Skipping minyan with null start date.");
+               * }
+               * }
+               */
         }
+        kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
+        mv.getModel().put("kolminyanim", kolhaMinyanims);
+        Stream<KolhaMinyanim> stream = kolhaMinyanims.stream();
 
-        String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
-        if (dynamicDisplayName != null) {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
-        } else {
-            kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
-        }
-    } /*else {
-        if (startDate != null) {
-            System.out.println("Skipping minyan with start date: " + startDate.toString());
-        } else {
-            System.out.println("Skipping minyan with null start date.");
-        }
-    }*/
-}
-kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
-mv.getModel().put("kolminyanim", kolhaMinyanims);
-Stream<KolhaMinyanim> stream = kolhaMinyanims.stream();
+        // Get the unique values based on the 'organizationId' property
+        List<KolhaMinyanim> uniqueKolhaMinyanims = stream.filter(distinctByKey(KolhaMinyanim::getOrganizationId))
+                .collect(Collectors.toList());
 
-// Get the unique values based on the 'organizationId' property
-List<KolhaMinyanim> uniqueKolhaMinyanims = stream.filter(distinctByKey(KolhaMinyanim::getOrganizationId)).collect(Collectors.toList());
+        mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
+        // end kol
 
-mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
-//end kol
-// //orgs
-// List<Organization> shulNames = new ArrayList<>();
-// for (Organization organization : shulNames)
-// mv.getModel().put("shuls", shulNames);
-// //end orgs
+        //orgs
+        
+        // List<Organization> shulNames = new ArrayList<>();
+        // for (Organization organization : shulNames)
+        // mv.getModel().put("shuls", shulNames);
+        
+        // end orgs
+        
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
         mv.getModel().put("allminyanim", minyanEvents);
 
@@ -315,7 +338,6 @@ mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
         return zonedDateTime.toLocalDate();
     }
 
-
     private static boolean sameDayOfMonth(Date date1, Date date2) {
         Calendar calendar1 = Calendar.getInstance();
         calendar1.setTime(date1);
@@ -323,32 +345,40 @@ mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
         calendar2.setTime(date2);
         return calendar1.get(Calendar.DAY_OF_MONTH) == calendar2.get(Calendar.DAY_OF_MONTH);
     }
+
     static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
         return t -> seen.add(keyExtractor.apply(t));
     }
+
     @GetMapping("/zmanim/next")
     public ModelAndView nextZmanimAfter(@RequestParam(value = "after", required = true) String dateString) {
         Date date = new Date(dateString);
-        return navigateZmanim(new Date(date.getYear(), date.getMonth(), date.getDate() + 1, date.getHours(), date.getMinutes(), date.getSeconds()));
+        return navigateZmanim(new Date(date.getYear(), date.getMonth(), date.getDate() + 1, date.getHours(),
+                date.getMinutes(), date.getSeconds()));
     }
 
     @GetMapping("/zmanim/last")
     public ModelAndView lastZmanimBefore(@RequestParam(value = "before", required = true) String dateString) {
         Date date = new Date(dateString);
-        return navigateZmanim(new Date(date.getYear(), date.getMonth(), date.getDate() - 1, date.getHours(), date.getMinutes(), date.getSeconds()));
+        return navigateZmanim(new Date(date.getYear(), date.getMonth(), date.getDate() - 1, date.getHours(),
+                date.getMinutes(), date.getSeconds()));
     }
 
     @GetMapping("/orgs/{id}/next")
-    public ModelAndView nextOrgAfter(@PathVariable String id, @RequestParam(value = "after", required = true) String dateString) throws Exception {
+    public ModelAndView nextOrgAfter(@PathVariable String id,
+            @RequestParam(value = "after", required = true) String dateString) throws Exception {
         Date date = new Date(dateString);
-        return navigateOrg(id, new Date(date.getYear(), date.getMonth(), date.getDate() + 1, date.getHours(), date.getMinutes(), date.getSeconds()));
+        return navigateOrg(id, new Date(date.getYear(), date.getMonth(), date.getDate() + 1, date.getHours(),
+                date.getMinutes(), date.getSeconds()));
     }
 
     @GetMapping("/orgs/{id}/last")
-    public ModelAndView lastOrgBefore(@PathVariable String id, @RequestParam(value = "before", required = true) String dateString) throws Exception {
+    public ModelAndView lastOrgBefore(@PathVariable String id,
+            @RequestParam(value = "before", required = true) String dateString) throws Exception {
         Date date = new Date(dateString);
-        return navigateOrg(id, new Date(date.getYear(), date.getMonth(), date.getDate() - 1, date.getHours(), date.getMinutes(), date.getSeconds()));
+        return navigateOrg(id, new Date(date.getYear(), date.getMonth(), date.getDate() - 1, date.getHours(),
+                date.getMinutes(), date.getSeconds()));
     }
 
     public ModelAndView navigateZmanim(Date date) {
@@ -365,7 +395,8 @@ mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
 
         dateFormat.setTimeZone(timeZone);
 
-//        String month = calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, java.util.Locale.US);
+        // String month = calendar.getDisplayName(Calendar.MONTH, Calendar.LONG,
+        // java.util.Locale.US);
         mv.getModel().put("date", dateFormat.format(date));
         mv.getModel().put("onlyDate", onlyDateFormat.format(date));
 
@@ -390,9 +421,9 @@ mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
         mv.getModel().put("isToday", onlyDateFormat.format(date).equals(onlyDateFormat.format(today)));
 
         mv.getModel().put("dateString", date.toString());
-//        mv.getModel(),put("longdate", )
+        // mv.getModel(),put("longdate", )
 
-//        add hebrew date
+        // add hebrew date
         mv.getModel().put("hebrewDate", zmanimHandler.getHebrewDate(date));
 
         try {
@@ -405,17 +436,17 @@ mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
 
         List<Minyan> enabledMinyanim = minyanDAO.findEnabledMatching(orgId);
         List<MinyanEvent> minyanEvents = new ArrayList<>();
-//        boolean usesLocations;
-//        boolean nusachChanges;
-//        Nusach lastNusach;
-//        boolean usesNotes;
+        // boolean usesLocations;
+        // boolean nusachChanges;
+        // Nusach lastNusach;
+        // boolean usesNotes;
 
         for (Minyan minyan : enabledMinyanim) {
             LocalDate ref = dateToLocalDate(date).plusMonths(1);
             Date startDate = minyan.getStartDate(ref);
-            //Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
-            //if (startDate != null && startDate.after(terminationDate)) {
-            if (startDate != null) {    
+            // Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
+            // if (startDate != null && startDate.after(terminationDate)) {
+            if (startDate != null) {
                 String organizationName;
                 Nusach organizationNusach;
                 String organizationId;
@@ -444,9 +475,13 @@ mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
 
                 String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
                 if (dynamicDisplayName != null) {
-                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, dynamicDisplayName, minyan.getNusach(), minyan.getNotes()));
+                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                            organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                            minyan.getNusach(), minyan.getNotes()));
                 } else {
-                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach, organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+                    minyanEvents
+                            .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
+                                    organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
                 }
             }
         }
@@ -465,11 +500,62 @@ mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
                 maarivMinyanim.add(me);
             }
         }
+
+        //upcoming minyanim for org
+        for (Minyan minyan : enabledMinyanim) {
+            LocalDate ref = dateToLocalDate(date).plusMonths(1);
+            Date startDate = minyan.getStartDate(ref);
+            Date terminationDate = new Date((new Date()).getTime() - (60000 * 3));
+            if (startDate != null && startDate.after(terminationDate)) {
+            if (startDate != null) {
+                String organizationName;
+                Nusach organizationNusach;
+                String organizationId;
+                Organization organization = minyan.getOrganization();
+                if (organization == null) {
+                    Organization temp = organizationDAO.findById(minyan.getOrganizationId());
+                    organizationName = temp.getName();
+                    organizationId = temp.getId();
+                    organizationNusach = temp.getNusach();
+                } else {
+                    organizationName = organization.getName();
+                    organizationId = organization.getId();
+                    organizationNusach = organization.getNusach();
+                }
+
+                String locationName = null;
+                Location location = minyan.getLocation();
+                if (location == null) {
+                    location = locationDAO.findById(minyan.getLocationId());
+                    if (location != null) {
+                        locationName = location.getName();
+                    }
+                } else {
+                    locationName = location.getName();
+                }
+
+                String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
+                if (dynamicDisplayName != null) {
+                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                            organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                            minyan.getNusach(), minyan.getNotes()));
+                } else {
+                    minyanEvents
+                            .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
+                                    organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+                }
+            }
+        }
+    }
+        minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
+        mv.getModel().put("upcoming", minyanEvents);
+        //end upcoming
+
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
 
-//        mv.getModel().put("usesLocations", minyanEvents.)
+        // mv.getModel().put("usesLocations", minyanEvents.)
 
         return mv;
     }
