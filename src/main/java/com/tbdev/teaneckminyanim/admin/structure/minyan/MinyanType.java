@@ -1,7 +1,7 @@
 package com.tbdev.teaneckminyanim.admin.structure.minyan;
 
 public enum MinyanType {
-    SHACHARIT("SHACHARIT"),
+    SHACHARIS("SHACHARIS"),
     MINCHA("MINCHA"),
     MAARIV("MAARIV"),
     SELICHOT("SELICHOT"),
@@ -32,8 +32,8 @@ public enum MinyanType {
     @Override
     public String toString() {
         switch (this) {
-            case SHACHARIT:
-                return "SHACHARIT";
+            case SHACHARIS:
+                return "SHACHARIS";
             case MINCHA:
                 return "MINCHA";
             case MAARIV:
@@ -49,7 +49,7 @@ public enum MinyanType {
 
     public String displayName() {
         switch (this) {
-            case SHACHARIT:
+            case SHACHARIS:
                 return "Shacharis";
             case MINCHA:
                 return "Mincha";
@@ -65,7 +65,7 @@ public enum MinyanType {
     }
 
     public boolean isShacharis() {
-        return this == SHACHARIT;
+        return this == SHACHARIS;
     }
 
     public boolean isMincha() {
