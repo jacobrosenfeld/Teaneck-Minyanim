@@ -99,7 +99,7 @@
                               <!-- <li>Any other third feature</li> -->
                             </ul>
                             <button type="button" class="btn btn-secondary" th:text="@{|Next Minyan: ${allminyanim.get(0).getType().displayName()} at ${allminyanim.get(0).getFormattedStartTime()}|}"></button>
-                            <a role="button" class="btn-shuls" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}">Get Directions</a>
+                            <a role="button" class="btn-shuls" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank">Get Directions</a>
                             <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
                           </div>
                         </div>
