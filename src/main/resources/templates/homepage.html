@@ -48,9 +48,9 @@
                 <div class="btn-group me-2" style="align-self: center;" role="group">
                   <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
                   <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}"onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button>
-                      <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}"
-                        onclick="location.href = this.getAttribute('data-url')"
-                        class="btn btn-secondary switcher-btn">></button>
+                  <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}"
+                    onclick="location.href = this.getAttribute('data-url')"
+                    class="btn btn-secondary switcher-btn">></button>
                 </div>
               </div>
               <!-- <div class="col-md-4 mt-2 btn-group desktop-hide" style="height: 50%; align-self: center;" role="group">
@@ -104,6 +104,11 @@
                         </table>
                         <div class="jumbotron alert alert-secondary" th:if="${allminyanim.isEmpty()}">
                           <h4 class="mb-1">Sorry, there aren't any upcoming minyanim today.</h4>
+                          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}"
+                            onclick="location.href = this.getAttribute('data-url')"
+                            class="btn btn-secondary switcher-btn">Tomorrow</button>
+                          </div>
                         </div>
                       </div>
                       <!-- <div class="tab-pane fade" id="pills-shacharis" role="tabpanel" aria-labelledby="pills-shacharis-tab">
