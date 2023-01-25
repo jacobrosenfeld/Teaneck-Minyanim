@@ -1,5 +1,5 @@
-var section = document.getElementsByName("minyanim");
-var listExample = document.getElementsByName("list-example");
+var section = document.getElementById("minyanim");
+var listExample = document.getElementById("list-example");
 
 window.addEventListener("scroll", function() {
   var rect = section.getBoundingClientRect();
