@@ -121,15 +121,15 @@
                     <div class="row">
                       <div class="col col-lg-2">
                         <div id="list-example" class="list-group">
-                          <a class="list-group-item list-group-item-action" href="#shacharis" style="scroll-margin-top: 4em;">Shacharis</a>
-                          <a class="list-group-item list-group-item-action" href="#mincha" style="scroll-margin-top: 4em;">Mincha</a>
-                          <a class="list-group-item list-group-item-action" href="#maariv" style="scroll-margin-top: 4em;">Maariv</a>
+                          <a class="list-group-item list-group-item-action" href="#shacharis">Shacharis</a>
+                          <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
+                          <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
                         </div>
                       </div>
                       <div class="col col-lg">
                         <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0"
                           class="scrollspy-example" tabindex="0">
-                          <h4 id="shacharis">Shacharis</h4>
+                          <h4 id="shacharis" style="scroll-margin-top: 4em;">Shacharis</h4>
                           <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
                             <thead>
                               <tr>
@@ -159,9 +159,9 @@
                             <h5><small class="text-muted">Sorry, there aren't any shacharis minyanim scheduled.</small>
                             </h5>
                           </div>
-                          <h4 id="mincha">Mincha</h4>
+                          <h4 id="mincha" style="scroll-margin-top: 4em;">Mincha</h4>
                           <p>...</p>
-                          <h4 id="maariv">Maariv</h4>
+                          <h4 id="maariv" style="scroll-margin-top: 4em;">Maariv</h4>
                           <p>...</p>
                         </div>
                       </div>
