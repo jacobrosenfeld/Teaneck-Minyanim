@@ -1905,7 +1905,7 @@ body {
 }
 
 /* floating menu */ 
-  #list-example.fixed-top {
+  #list-example {
     float:left; 
     background-color:#555;
 }
