@@ -1905,9 +1905,14 @@ body {
 }
 
 /* floating menu */
-#list-example.fixed-top {
-	position: fixed;
+#list-example-wrapper {
+	position: relative;
+  }
+  
+  #list-example.fixed-top {
+	position: absolute;
 	top: 0;
 	width: 100%;
 	z-index: 999;
   }
+  
