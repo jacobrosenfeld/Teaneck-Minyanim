@@ -1903,3 +1903,11 @@ body {
 	max-width: 400px;
 	font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
+
+/* floating menu */
+#list-example.fixed-top {
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 999;
+  }
