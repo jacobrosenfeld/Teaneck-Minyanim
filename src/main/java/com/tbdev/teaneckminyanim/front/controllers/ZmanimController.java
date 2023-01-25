@@ -505,7 +505,8 @@ public class ZmanimController {
         for (Minyan minyan : enabledMinyanim) {
             LocalDate ref = dateToLocalDate(date).plusMonths(1);
             Date startDate = minyan.getStartDate(ref);
-            Date terminationDate = new Date((new Date()).getTime() - (60000 * 3));
+            Date now = new Date();
+            Date terminationDate = new Date(now.getTime() - (60000 * 3));
             if (startDate != null && startDate.after(terminationDate)) {
             if (startDate != null) {
                 String organizationName;
