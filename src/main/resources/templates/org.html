@@ -18,8 +18,8 @@
     /*<![CDATA[*/
     var address = /*[[${org.getAddress()}]]*/ "";
     var shulname = /*[[${org.getName()}]]*/ "";
-    var minyantype = /*upcoming.isEmpty() || upcoming.get(0) == null ? "" : [[${upcoming.get(0).getType().displayName()}]]*/ "";
-    var minyantime = /*upcoming.isEmpty() || upcoming.get(0) == null ? "" : [[${upcoming.get(0).getFormattedStartTime()}]]*/ "";
+    var minyantype = /*[[${upcoming.get(0).getType().displayName()}]]*/ "";
+    var minyantime = /*[[${upcoming.get(0).getFormattedStartTime()}]]*/ "";
       /*]]>*/
   </script>
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
@@ -85,7 +85,7 @@
                 <!-- new scrollspy -->
                 <div class="container">
                   <div class="row align-items-start">
-                    <div class="col">
+                    <div class="col-md">
                       <div id="pricing" class="pricing-section text-center">
                         <div class="table-left wow">
                           <div class="pricing-details">
@@ -106,7 +106,7 @@
                       </div>
                     </div>
                     <!-- mapbox installation -->
-                    <div class="col">
+                    <div class="col-md">
                       <div id='map'></div>
                       <script>
                         mapboxgl.accessToken = mapboxaccesstoken;
