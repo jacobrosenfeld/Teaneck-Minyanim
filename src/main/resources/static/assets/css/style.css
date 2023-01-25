@@ -65,9 +65,9 @@ article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
 	display: block;
 }
-body {
+/* body {
 	line-height: 1;
-}
+} */
 ol, ul {
 	list-style: none;
 }
@@ -101,6 +101,7 @@ html * {
 	text-rendering: optimizeLegibility !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-padding-top: 1.5rem; 
 }
 
 body {
