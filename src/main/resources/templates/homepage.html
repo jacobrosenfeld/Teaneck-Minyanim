@@ -91,12 +91,12 @@
                                   th:href="@{|/orgs/${minyan.getOrganizationId()}|}"
                                   th:text="${minyan.getOrganizationName()}" style="width: 100%;"></a>
                               </td>
-                              <th scope="row" class="align-middle" th:text="${minyan.getType().displayName()}"></th>
+                              <th th:if="${i.index} < 10" scope="row" class="align-middle" th:text="${minyan.getType().displayName()}"></th>
                               <!-- <td th:if="${minyan.getLocationName() != null}" class="middle">
                                       <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>
                                     </td> -->
-                              <td class="align-middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                              <td class="align-middle" th:text="${minyan.getLocationName()}"></td>
+                              <td th:if="${i.index} < 10" class="align-middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                              <td th:if="${i.index} < 10" class="align-middle" th:text="${minyan.getLocationName()}"></td>
                               <!-- <td class="middle" th:text="${minyan.getNusach().displayName()}"></td> -->
                               <!-- <td class="middle" th:text="${minyan.getNotes()}"></td> -->
                             </tr>
