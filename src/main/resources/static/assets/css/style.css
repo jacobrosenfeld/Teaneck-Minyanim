@@ -101,7 +101,7 @@ html * {
 	text-rendering: optimizeLegibility !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scroll-padding-top: 1.5rem; 
+  scroll-padding-top: 80px; 
 }
 
 body {
