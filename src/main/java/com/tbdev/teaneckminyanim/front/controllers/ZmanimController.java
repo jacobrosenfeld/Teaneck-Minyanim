@@ -567,21 +567,4 @@ public class ZmanimController {
     public ModelAndView orgToday(@PathVariable String orgId) throws Exception {
         return org(orgId, new Date());
     }
-    public ModelAndView error(String orgId, Date date) throws Exception {
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("error");
-
-        dateFormat.setTimeZone(timeZone);
-
-        // String month = calendar.getDisplayName(Calendar.MONTH, Calendar.LONG,
-        // java.util.Locale.US);
-        mv.getModel().put("date", dateFormat.format(date));
-        mv.getModel().put("onlyDate", onlyDateFormat.format(date));
-
-        Calendar c = Calendar.getInstance();
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM DD, yyyy h:mm a");
-        Date datenow = new Date();
-        String timenow = dateFormat.format(datenow);
-        mv.getModel().put("timenow", timenow);
 }
