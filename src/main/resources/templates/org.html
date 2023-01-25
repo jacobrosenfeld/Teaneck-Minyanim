@@ -84,7 +84,7 @@
             <div id="housing-housing">
               <div class="mpt0" id="row-housing" style="padding: 1rem;">
                 <!-- new scrollspy -->
-                <div class="section" id="minyanim">
+                <div class="container" id="scroll">
                   <div class="row align-items-start">
                     <div class="col-md">
                       <div id="pricing" class="pricing-section text-center">
@@ -118,7 +118,7 @@
                     <!-- end mapbox -->
                   </div>
                   <hr>
-                  <div class="container">
+                  <div class="section" id="minyanim">
                     <div class="row">
                       <div class="col col-lg-2">
                         <div id="list-example" class="list-group">
@@ -135,7 +135,6 @@
                             <thead>
                               <tr>
                                 <th scope="col">Time</th>
-                                <th scope="col">Minyan</th>
                                 <th scope="col">Location</th>
                                 <th scope="col">Nusach</th>
                                 <th scope="col">Notes</th>
@@ -143,13 +142,8 @@
                             </thead>
                             <tbody>
                               <tr th:each="minyan: ${shacharisMinyanim}">
-                                <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
-                                <!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
-                                <!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
-                                <!--                                        </td>-->
                                 <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
                                 <td class="middle" th:text="${minyan.getInformation()}">
-                                  <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
                                 </td>
                                 <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
                                 <td class="middle" th:text="${minyan.getNotes()}"></td>
@@ -165,7 +159,6 @@
                             <thead>
                               <tr>
                                 <th scope="col">Time</th>
-                                <th scope="col">Minyan</th>
                                 <th scope="col">Location</th>
                                 <th scope="col">Nusach</th>
                                 <th scope="col">Notes</th>
@@ -173,10 +166,6 @@
                             </thead>
                             <tbody>
                               <tr th:each="minyan: ${minchaMinyanim}">
-                                <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
-                                <!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
-                                <!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
-                                <!--                                        </td>-->
                                 <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
                                 <td class="middle" th:text="${minyan.getInformation()}">
                                   <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
@@ -195,7 +184,6 @@
                             <thead>
                               <tr>
                                 <th scope="col">Time</th>
-                                <th scope="col">Minyan</th>
                                 <th scope="col">Location</th>
                                 <th scope="col">Nusach</th>
                                 <th scope="col">Notes</th>
@@ -203,10 +191,6 @@
                             </thead>
                             <tbody>
                               <tr th:each="minyan: ${maarivMinyanim}">
-                                <th scope="row" class="middle" th:text="${minyan.getType().displayName()}"></th>
-                                <!--                                        <td th:if="${minyan.getLocationName() != null}" class="middle">-->
-                                <!--                                            <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>-->
-                                <!--                                        </td>-->
                                 <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
                                 <td class="middle" th:text="${minyan.getInformation()}">
                                   <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
