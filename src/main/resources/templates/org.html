@@ -29,7 +29,7 @@
   <link rel="stylesheet"
     href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
   <script type="text/javascript" src="/mapbox.js"></script>
-   <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/animate.css"> <!-- Resource style -->
   <link rel="stylesheet" href="/assets/css/owl.carousel.css">
   <link rel="stylesheet" href="/assets/css/owl.theme.css">
@@ -47,7 +47,7 @@
   </style>
   <div class="wrapper">
     <!-- Navbar Section -->
-    <div id="wrapper" class="horizontal-container d-flex container-md" >
+    <div id="wrapper" class="horizontal-container d-flex container-md">
       <th:block th:include="frontnavbar"></th:block>
       <!-- Navbar End -->
       <div class="container-fluid " id="main">
@@ -98,9 +98,14 @@
                               <li th:text="${org.getNusach().displayName()}"></li>
                               <li th:text="${org.getAddress()}"></li>
                             </ul>
-                            <button type="button" class="btn btn-secondary" th:if="${upcoming.get(0).getType().displayName() != null}" th:text="@{|Next Minyan: ${upcoming.get(0).getType().displayName()} at ${upcoming.get(0).getFormattedStartTime()}|}"></button>
-                            <a role="button" class="btn-shuls" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank">Get Directions</a>
-                            <button class="btn-action" th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
+                            <button type="button" class="btn btn-secondary"
+                              th:if="${upcoming.get(0).getType().displayName() != null}"
+                              th:text="@{|Next Minyan: ${upcoming.get(0).getType().displayName()} at ${upcoming.get(0).getFormattedStartTime()}|}"></button>
+                            <a role="button" class="btn-shuls"
+                              th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}"
+                              th:target="_blank">Get Directions</a>
+                            <button class="btn-action" th:if="${org.getWebsiteURI() != null}"
+                              th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
                           </div>
                         </div>
                       </div>
@@ -120,7 +125,7 @@
                           <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
                           <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
                         </div>
-                        </div>
+                      </div>
                       <div class="col col-lg">
                         <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0"
                           class="scrollspy-example" tabindex="0">
@@ -159,7 +164,6 @@
                           <h4 id="maariv">Maariv</h4>
                           <p>...</p>
                         </div>
-                      </div>
                       </div>
                     </div>
                   </div>
