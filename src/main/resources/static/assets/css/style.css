@@ -1904,15 +1904,8 @@ body {
 	font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
 
-/* floating menu */
-#list-example-wrapper {
-	position: relative;
-  }
-  
+/* floating menu */ 
   #list-example.fixed-top {
-	position: absolute;
-	top: 0;
-	width: 100%;
-	z-index: 999;
-  }
-  
+    float:left; 
+    background-color:#555;
+}
