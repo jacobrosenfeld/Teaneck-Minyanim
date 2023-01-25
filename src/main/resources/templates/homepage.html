@@ -86,10 +86,10 @@
                           </thead>
                           <tbody>
                             <tr th:each="minyan: ${allminyanim}">
-                              <td class="align-middle">
+                              <td th:if="${i.index} < 10" class="align-middle">
                                 <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3"
                                   th:href="@{|/orgs/${minyan.getOrganizationId()}|}"
-                                  th:text="${minyan.getOrganizationName()}"></a>
+                                  th:text="${minyan.getOrganizationName()}" style="width: 100%;"></a>
                               </td>
                               <th scope="row" class="align-middle" th:text="${minyan.getType().displayName()}"></th>
                               <!-- <td th:if="${minyan.getLocationName() != null}" class="middle">
@@ -104,10 +104,10 @@
                         </table>
                         <div class="jumbotron alert alert-secondary" th:if="${allminyanim.isEmpty()}">
                           <h4 class="mb-1">Sorry, there aren't any upcoming minyanim today.</h4>
-                          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                          <div class="d-grid gap-2 d-md-flex justify-content-md-center">
                             <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}"
                             onclick="location.href = this.getAttribute('data-url')"
-                            class="btn btn-secondary switcher-btn">Tomorrow</button>
+                            class="btn btn-secondary switcher-btn">Tomorrow's Schedule</button>
                           </div>
                         </div>
                       </div>
