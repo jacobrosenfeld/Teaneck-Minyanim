@@ -47,7 +47,7 @@
   </style>
   <div class="wrapper">
     <!-- Navbar Section -->
-    <div class="horizontal-container d-flex" id="wrapper">
+    <div id="wrapper" class="horizontal-container d-flex container-md" >
       <th:block th:include="frontnavbar"></th:block>
       <!-- Navbar End -->
       <div class="container-fluid " id="main">
@@ -114,7 +114,13 @@
                   <hr>
                   <div class="container">
                     <div class="row">
-                      <div class="col col-lg order-2">
+                      <div class="col col-lg-2">
+                        <div id="list-example" class="list-group">
+                          <a class="list-group-item list-group-item-action" href="#shacharis">Shacharis</a>
+                          <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
+                          <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
+                        </div>
+                      <div class="col col-lg">
                         <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0"
                           class="scrollspy-example" tabindex="0">
                           <h4 id="shacharis">Shacharis</h4>
@@ -153,12 +159,6 @@
                           <p>...</p>
                         </div>
                       </div>
-                      <div class="col col-lg-2 order-1">
-                        <div id="list-example" class="list-group">
-                          <a class="list-group-item list-group-item-action" href="#shacharis">Shacharis</a>
-                          <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
-                          <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
-                        </div>
                       </div>
                     </div>
                   </div>
