@@ -539,11 +539,11 @@ public class ZmanimController {
 
                 String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
                 if (dynamicDisplayName != null) {
-                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                    nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                             organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                             minyan.getNusach(), minyan.getNotes()));
                 } else {
-                    minyanEvents
+                    nextMinyan
                             .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
                                     organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
                 }
