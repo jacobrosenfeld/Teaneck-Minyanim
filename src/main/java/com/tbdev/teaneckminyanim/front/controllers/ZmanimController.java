@@ -219,7 +219,7 @@ public class ZmanimController {
 
                 String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
                 if (dynamicDisplayName != null) {
-                    if(minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT))) {
+                    if(minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT)) && startDate.after(zmanim.get(Zman.ALOT_HASHACHAR))) {
                         minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                             organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                             minyan.getNusach(), minyan.getNotes()));
@@ -238,7 +238,7 @@ public class ZmanimController {
                 }
                 }
              } else {
-                    if(minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT))) {
+                    if(minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT)) && startDate.after(zmanim.get(Zman.ALOT_HASHACHAR))) {
                         minyanEvents
                             .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
                                     organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
