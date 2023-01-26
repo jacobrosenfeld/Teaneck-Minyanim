@@ -9,7 +9,7 @@
     <relativePath/>  
     <!-- lookup parent from repository --> 
   </parent>  
-  <groupId>com.reesedevelopment</groupId>  
+  <groupId>com.tbdev</groupId>  
   <artifactId>Teaneck-Minyanim</artifactId>  
   <version>1.0.0-SNAPSHOT</version>  
   <name>Teaneck-Minyanim</name>  
