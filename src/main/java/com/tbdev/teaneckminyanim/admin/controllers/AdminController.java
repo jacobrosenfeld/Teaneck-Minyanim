@@ -254,7 +254,7 @@ public class AdminController {
         Matcher m3 = passwordPattern.matcher(password);
         if (!m3.matches()) {
             System.out.println("Sorry, this password is not valid.");
-            return addOrganization(false, "The organization could not be created. The password must be at least 8 characters, contain at least one letter and one number.", "Sorry, the password must be at least 8 characters, contain at least one letter and one number.");
+            return addOrganization(false, "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.", "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
         }
 
         System.out.println("Creating organization...");
@@ -416,7 +416,7 @@ public class AdminController {
         Matcher m3 = passwordPattern.matcher(password);
         if (!m3.matches()) {
             System.out.println("Sorry, this password is not valid.");
-            return account(accountId, null, null, "Sorry, the password must be at least 8 characters, contain at least one letter and one number.");
+            return account(accountId, null, null, "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
         }
 
         try {
@@ -693,7 +693,7 @@ if (this.TNMUserDAO.delete(account)) {
         Matcher m3 = passwordPattern.matcher(password);
         if (!m3.matches()) {
             System.out.println("Sorry, this password is not valid.");
-            return organization(organizationId, null, null, null,"Sorry, the password must be at least 8 characters, contain at least one letter and one number.");
+            return organization(organizationId, null, null, null,"The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
         }
 
         Role role;
@@ -929,20 +929,20 @@ if (this.TNMUserDAO.delete(account)) {
         }
 
         List<Minyan> minyanim = minyanDAO.findMatching(oidToUse);
-//        minyanim.stream().filter(m -> m.getType() == MinyanType.SHACHARIT);
+//        minyanim.stream().filter(m -> m.getType() == MinyanType.SHACHARIS);
 
-//        get elements from list that are shacharit
-//        List<Minyan> shacharitMinyanim = new ArrayList<>();
+//        get elements from list that are shacharis
+//        List<Minyan> shacharisMinyanim = new ArrayList<>();
 //        for (Minyan m : minyanim) {
-//            if (m.getType().equals("shacharit")) {
-//                shacharitMinyanim.add(m);
+//            if (m.getType().equals("shacharis")) {
+//                shacharisMinyanim.add(m);
 //            }
 //        }
-        List<Minyan> shacharitMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SHACHARIT)).collect(Collectors.toList());
-        mv.addObject("shacharitminyanim", shacharitMinyanim);
-        Map<String, HashMap<MinyanDay, MinyanTime>> shacharitTimes = new HashMap<>();
-        for (Minyan m : shacharitMinyanim) {
-            shacharitTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
+        List<Minyan> shacharisMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SHACHARIS)).collect(Collectors.toList());
+        mv.addObject("shacharisminyanim", shacharisMinyanim);
+        Map<String, HashMap<MinyanDay, MinyanTime>> shacharisTimes = new HashMap<>();
+        for (Minyan m : shacharisMinyanim) {
+            shacharisTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
         List<Minyan> minchaMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.MINCHA)).collect(Collectors.toList());
@@ -973,7 +973,7 @@ if (this.TNMUserDAO.delete(account)) {
             megilaTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
-        mv.addObject("shacharittimes", shacharitTimes);
+        mv.addObject("shacharistimes", shacharisTimes);
         mv.addObject("minchatimes", minchaTimes);
         mv.addObject("maarivtimes", maarivTimes);
         mv.addObject("selichottimes", selichotTimes);
