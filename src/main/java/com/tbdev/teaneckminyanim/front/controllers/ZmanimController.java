@@ -492,8 +492,6 @@ public class ZmanimController {
         // add hebrew date
         mv.getModel().put("hebrewDate", zmanimHandler.getHebrewDate(date));
 
-        
-
         try {
             Organization org = organizationDAO.findById(orgId);
             mv.addObject("org", org);
@@ -676,7 +674,8 @@ public class ZmanimController {
                                 if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
                                         || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
                                     nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
-                                            organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                                            organizationNusach, organizationId, locationName, startDate,
+                                            dynamicDisplayName,
                                             minyan.getNusach(), minyan.getNotes()));
                                 }
                             }
@@ -709,7 +708,6 @@ public class ZmanimController {
                             }
                         }
                     }
-                }
                 }
             }
         }
