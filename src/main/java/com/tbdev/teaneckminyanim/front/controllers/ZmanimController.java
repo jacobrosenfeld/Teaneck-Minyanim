@@ -711,7 +711,12 @@ public class ZmanimController {
                 }
             }
         }
-        nextMinyan.sort(Comparator.comparing(MinyanEvent::getStartTime));
+        if (nextMinyan.isEmpty()) {
+            nextMinyan.add(new MinyanEvent("No minyanim found", null, null, null, null, null, null, null, null, null));
+        }
+        else{
+            nextMinyan.sort(Comparator.comparing(MinyanEvent::getStartTime));
+        }
         mv.getModel().put("upcoming", nextMinyan);
         // end upcoming
 
