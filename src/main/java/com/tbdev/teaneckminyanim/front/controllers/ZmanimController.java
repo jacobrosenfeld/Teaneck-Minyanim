@@ -711,17 +711,14 @@ public class ZmanimController {
                 }
             }
         }
-        nextMinyan.sort(Comparator.comparing(MinyanEvent::getStartTime));
-        mv.getModel().put("nextMinyan", nextMinyan);
-        // end nextminyan
-
-        List<MinyanEvent> upcoming = new ArrayList<>();
-        for (MinyanEvent minyan : nextMinyan) {
-        if (!nextMinyan.isEmpty()) {
-            upcoming.add(nextMinyan.get(0));
+        if (nextMinyan.isEmpty()) {
+            nextMinyan.add(new MinyanEvent("No minyanim found", null, null, null, null, null, null, null, null, null));
         }
-    }
-        mv.getModel().put("upcoming", upcoming);
+        else{
+            nextMinyan.sort(Comparator.comparing(MinyanEvent::getStartTime));
+        }
+        mv.getModel().put("upcoming", nextMinyan);
+        // end upcoming
 
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
