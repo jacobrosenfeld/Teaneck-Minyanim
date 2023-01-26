@@ -10,7 +10,6 @@ public enum Zman {
     MINCHA_KETANA("MINCHA_KETANA"),
     PLAG_HAMINCHA("PLAG_HAMINCHA"),
     SHEKIYA("SHEKIYA"),
-    SHEKIYASECOND("SHEKIYASECOND"),
     EARLIEST_SHEMA("EARLIEST_SHEMA"),
     TZET("TZET");
 
@@ -56,8 +55,7 @@ public enum Zman {
                 return "Plag HaMincha";
             case SHEKIYA:
                 return "Shekiya";
-            case SHEKIYASECOND:
-                return "Shekiya Second";
+
             case EARLIEST_SHEMA:
                 return "Earliest Shema";
             case TZET:
