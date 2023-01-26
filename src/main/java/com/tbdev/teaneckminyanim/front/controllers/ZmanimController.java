@@ -716,8 +716,8 @@ public class ZmanimController {
         // end nextminyan
 
         List<MinyanEvent> upcoming = new ArrayList<>();
-        if (!minyanEvents.isEmpty()) {
-            upcoming.add(minyanEvents.get(0));
+        if (!nextMinyan.isEmpty()) {
+            upcoming.add(nextMinyan.get(0));
         }
         mv.getModel().put("upcoming", upcoming);
 
