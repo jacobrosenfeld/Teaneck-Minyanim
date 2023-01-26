@@ -624,6 +624,12 @@ public class ZmanimController {
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3));
+            Calendar shekiyaMinusOneMinute = Calendar.getInstance();
+            shekiyaMinusOneMinute.setTime(zmanim.get(Zman.SHEKIYA));
+            shekiyaMinusOneMinute.add(Calendar.MINUTE, -1);
+            Calendar mgMinusOneMinute = Calendar.getInstance();
+            mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
+            mgMinusOneMinute.add(Calendar.MINUTE, -1);
             if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))) {
                 if (startDate != null) {
                     String organizationName;
@@ -654,16 +660,56 @@ public class ZmanimController {
 
                     String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
                     if (dynamicDisplayName != null) {
-                        nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
-                                organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                                minyan.getNusach(), minyan.getNotes()));
+                        if (minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT))
+                                && startDate.after(zmanim.get(Zman.ALOT_HASHACHAR))) {
+                            nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                    organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                                    minyan.getNusach(), minyan.getNotes()));
+                        } else {
+                            if (minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))
+                                    && (startDate.after(shekiyaMinusOneMinute.getTime())
+                                            || (startDate.equals(shekiyaMinusOneMinute.getTime())))) {
+                                nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                        organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                                        minyan.getNusach(), minyan.getNotes()));
+                            } else {
+                                if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
+                                        || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
+                                    nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                            organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                                            minyan.getNusach(), minyan.getNotes()));
+                                }
+                            }
+                        }
                     } else {
-                        nextMinyan
-                                .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
-                                        organizationNusach,
-                                        organizationId, locationName, startDate, minyan.getNusach(),
-                                        minyan.getNotes()));
+                        if (minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT))
+                                && startDate.after(zmanim.get(Zman.ALOT_HASHACHAR))) {
+                            nextMinyan
+                                    .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                            organizationNusach,
+                                            organizationId, locationName, startDate, minyan.getNusach(),
+                                            minyan.getNotes()));
+                        } else {
+                            if (minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))
+                                    && startDate.after(zmanim.get(Zman.MINCHA_GEDOLA))) {
+                                nextMinyan
+                                        .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                organizationNusach,
+                                                organizationId, locationName, startDate, minyan.getNusach(),
+                                                minyan.getNotes()));
+                            } else {
+                                if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
+                                        || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
+                                    nextMinyan
+                                            .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                    organizationNusach,
+                                                    organizationId, locationName, startDate, minyan.getNusach(),
+                                                    minyan.getNotes()));
+                                }
+                            }
+                        }
                     }
+                }
                 }
             }
         }
