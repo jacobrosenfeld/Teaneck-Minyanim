@@ -222,10 +222,12 @@ public class ZmanimController {
                             minyan.getNusach(), minyan.getNotes()));
                     }
                 } else {
+                    if(minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))) {
                     minyanEvents
                             .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
                                     organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
                 }
+            }
             } /*
                * else {
                * if (startDate != null) {
