@@ -55,6 +55,7 @@ public enum Zman {
                 return "Plag HaMincha";
             case SHEKIYA:
                 return "Shekiya";
+
             case EARLIEST_SHEMA:
                 return "Earliest Shema";
             case TZET:
