@@ -90,7 +90,7 @@ public class ZmanimController {
     private String timeFormatWithRoundingToMinute(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        calendar.add(Calendar.SECOND, 59);
+        calendar.add(Calendar.SECOND, 30);
         calendar.setTimeZone(timeZone);
         return timeFormat.format(calendar.getTime());
     }
@@ -160,8 +160,7 @@ public class ZmanimController {
         mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_GEDOLA)));
         mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_KETANA)));
         mv.getModel().put("plagHamincha", timeFormatWithRoundingToSecond(zmanim.get(Zman.PLAG_HAMINCHA)));
-        mv.getModel().put("shekiya", timeFormatWithRoundingToMinute(zmanim.get(Zman.SHEKIYA)));
-        mv.getModel().put("shekiyasecond", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
+        mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZET)));
 
@@ -181,6 +180,9 @@ public class ZmanimController {
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
             System.out.println("SD: " + startDate);
             System.out.println("TD: " + terminationDate);
+            Calendar shekiyaMinusOneMinute = Calendar.getInstance();
+            shekiyaMinusOneMinute.setTime(zmanim.get(Zman.SHEKIYA));
+            shekiyaMinusOneMinute.add(Calendar.MINUTE, -1);
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
             // if (startDate != null && (startDate.after(terminationDate))) {
@@ -228,14 +230,14 @@ public class ZmanimController {
                             minyan.getNusach(), minyan.getNotes()));
                     }
                  else {
-                     {if(minyan.getType().isMaariv() && (startDate.after(zmanim.get(Zman.SHEKIYA)) || startDate.equals(zmanim.get(Zman.SHEKIYA)))) {
+                    if(minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime()) || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
                     minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                             organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                             minyan.getNusach(), minyan.getNotes()));
                     }
                 }
                 }
-             }} else {
+             } else {
                     if(minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT))) {
                         minyanEvents
                             .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
@@ -245,7 +247,7 @@ public class ZmanimController {
                             .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
                                     organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
                     }
-                    else {if(minyan.getType().isMaariv() && (startDate.after(zmanim.get(Zman.SHEKIYA)) || startDate.equals(zmanim.get(Zman.SHEKIYA)))) {
+                    else {if(minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime()) || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
                     minyanEvents
                             .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
                                     organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
