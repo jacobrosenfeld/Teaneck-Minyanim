@@ -390,6 +390,7 @@ body {
 		-webkit-transition: 0.2s;
 		-moz-transition: 0.2s;
 		transition: 0.2s;
+		width: 100%;
 	}
 
 	.btn-shul:hover {
