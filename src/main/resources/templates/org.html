@@ -22,8 +22,8 @@
     /*<![CDATA[*/
     var address = /*[[${org.getAddress()}]]*/ "";
     var shulname = /*[[${org.getName()}]]*/ "";
-    var minyantype = /*[[${upcoming.get(0).getType().displayName()}]]*/ "";
-    var minyantime = /*[[${upcoming.get(0).getFormattedStartTime()}]]*/ "";
+    var minyantype = /*[[${upcoming.getType().displayName()}]]*/ "";
+    var minyantime = /*[[${upcoming.getFormattedStartTime()}]]*/ "";
       /*]]>*/
   </script>
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
@@ -96,9 +96,9 @@
                               <li th:text="${org.getNusach().displayName()}"></li>
                               <li th:text="${org.getAddress()}"></li>
                             </ul>
-                            <button type="button" class="btn btn-secondary"
+                            <!-- <button type="button" class="btn btn-shuls"
                               th:if="${upcoming.get(0).getType().displayName() != null}"
-                              th:text="@{|Next Minyan: ${upcoming.get(0).getType().displayName()} at ${upcoming.get(0).getFormattedStartTime()}|}"></button>
+                              th:text="@{|Next Minyan: ${upcoming.get(0).getType().displayName()} at ${upcoming.get(0).getFormattedStartTime()}|}"></button> -->
                             <a role="button" class="btn-shuls"
                               th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}"
                               th:target="_blank">Get Directions</a>
