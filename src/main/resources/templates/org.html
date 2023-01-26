@@ -19,10 +19,10 @@
     integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
     crossorigin="anonymous"></script>
   <script th:inline="javascript">
-    /*<![CDATA[*/
+     /*<![CDATA[*/ 
     var address = /*[[${org.getAddress()}]]*/ "";
     var shulname = /*[[${org.getName()}]]*/ "";
-    var minyantype = /*[[${upcoming.get(0).getType().displayName()}]]*/ "";
+    var minyantype = /*[[${upcoming.get(0).minyanType)}]]*/ "";
     var minyantime = /*[[${upcoming.get(0).getFormattedStartTime()}]]*/ "";
       /*]]>*/
   </script>
@@ -39,12 +39,6 @@
 </head>
 
 <body>
-  <style>
-    .mapboxgl-popup {
-      max-width: 400px;
-      font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-    }
-  </style>
   <div class="wrapper">
     <!-- Navbar Section -->
     <div id="wrapper" class="horizontal-container d-flex container-md">
@@ -96,7 +90,7 @@
                               <li th:text="${org.getNusach().displayName()}"></li>
                               <li th:text="${org.getAddress()}"></li>
                             </ul>
-                            <button type="button" class="btn btn-secondary"
+                            <button type="button" class="btn-shuls"
                               th:if="${upcoming.get(0).getType().displayName() != null}"
                               th:text="@{|Next Minyan: ${upcoming.get(0).getType().displayName()} at ${upcoming.get(0).getFormattedStartTime()}|}"></button>
                             <a role="button" class="btn-shuls"

@@ -327,16 +327,7 @@ public class ZmanimController {
                             new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
                                     organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
                 }
-            } /*
-               * else {
-               * if (startDate != null) {
-               * System.out.println("Skipping minyan with start date: " +
-               * startDate.toString());
-               * } else {
-               * System.out.println("Skipping minyan with null start date.");
-               * }
-               * }
-               */
+            } 
         }
         kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
         mv.getModel().put("kolminyanim", kolhaMinyanims);
@@ -348,14 +339,6 @@ public class ZmanimController {
 
         mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
         // end kol
-
-        // orgs
-
-        // List<Organization> shulNames = new ArrayList<>();
-        // for (Organization organization : shulNames)
-        // mv.getModel().put("shuls", shulNames);
-
-        // end orgs
 
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
         mv.getModel().put("allminyanim", minyanEvents);
@@ -442,8 +425,6 @@ public class ZmanimController {
 
         dateFormat.setTimeZone(timeZone);
 
-        // String month = calendar.getDisplayName(Calendar.MONTH, Calendar.LONG,
-        // java.util.Locale.US);
         mv.getModel().put("date", dateFormat.format(date));
         mv.getModel().put("onlyDate", onlyDateFormat.format(date));
 
@@ -487,12 +468,9 @@ public class ZmanimController {
         mv.getModel().put("isToday", onlyDateFormat.format(date).equals(onlyDateFormat.format(today)));
 
         mv.getModel().put("dateString", date.toString());
-        // mv.getModel(),put("longdate", )
 
         // add hebrew date
         mv.getModel().put("hebrewDate", zmanimHandler.getHebrewDate(date));
-
-        
 
         try {
             Organization org = organizationDAO.findById(orgId);
@@ -676,7 +654,8 @@ public class ZmanimController {
                                 if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
                                         || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
                                     nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
-                                            organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                                            organizationNusach, organizationId, locationName, startDate,
+                                            dynamicDisplayName,
                                             minyan.getNusach(), minyan.getNotes()));
                                 }
                             }
@@ -709,7 +688,6 @@ public class ZmanimController {
                             }
                         }
                     }
-                }
                 }
             }
         }
