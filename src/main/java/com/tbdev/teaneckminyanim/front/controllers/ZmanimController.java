@@ -183,6 +183,9 @@ public class ZmanimController {
             Calendar shekiyaMinusOneMinute = Calendar.getInstance();
             shekiyaMinusOneMinute.setTime(zmanim.get(Zman.SHEKIYA));
             shekiyaMinusOneMinute.add(Calendar.MINUTE, -1);
+            Calendar mgMinusOneMinute = Calendar.getInstance();
+            mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
+            mgMinusOneMinute.add(Calendar.MINUTE, -1);
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
             // if (startDate != null && (startDate.after(terminationDate))) {
@@ -224,7 +227,7 @@ public class ZmanimController {
                             organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                             minyan.getNusach(), minyan.getNotes()));
                     } else 
-                        { if(minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))) {
+                        { if(minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA)) && (startDate.after(shekiyaMinusOneMinute.getTime()) || (startDate.equals(shekiyaMinusOneMinute.getTime()) ))) {
                         minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                             organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                             minyan.getNusach(), minyan.getNotes()));
@@ -242,7 +245,7 @@ public class ZmanimController {
                         minyanEvents
                             .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
                                     organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
-                    } else { if(minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))) {
+                    } else { if(minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA)) && startDate.after(zmanim.get(Zman.MINCHA_GEDOLA))) {
                         minyanEvents
                             .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
                                     organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
