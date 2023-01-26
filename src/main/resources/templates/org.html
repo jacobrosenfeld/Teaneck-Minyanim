@@ -22,8 +22,8 @@
      /*<![CDATA[*/ 
     var address = /*[[${org.getAddress()}]]*/ "";
     var shulname = /*[[${org.getName()}]]*/ "";
-    var minyantype = /*[[${upcoming.minyanType)}]]*/ "";
-    var minyantime = /*[[${upcoming.getFormattedStartTime()}]]*/ "";
+    var minyantype = /*[[${upcoming.get(0).minyanType)}]]*/ "";
+    var minyantime = /*[[${upcoming.get(0).getFormattedStartTime()}]]*/ "";
       /*]]>*/
   </script>
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
