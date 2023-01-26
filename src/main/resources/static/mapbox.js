@@ -1,4 +1,8 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoiamFjb2Jyb3NlbmZlbGQiLCJhIjoiY2twbzVwNGJhMDdiNzJ4bzBtOGRzNjBjNSJ9.r8f10mthdHE69vYepqdq3Q';
+var address = /*[[${org.getAddress()}]]*/ "";
+var shulname = /*[[${org.getName()}]]*/ "";
+var minyantype = /*[[${upcoming.getType().displayName()}]]*/ "";
+var minyantime = /*[[${upcoming.getFormattedStartTime()}]]*/ "";
 
 // Make the GET request to the Mapbox Geocoding API
 fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_token=${mapboxgl.accessToken}`)
