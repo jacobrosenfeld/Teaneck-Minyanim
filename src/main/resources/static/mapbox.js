@@ -1,8 +1,4 @@
 mapboxgl.accessToken = mapboxaccesstoken;
-var address = /*[[${org.getAddress()}]]*/ "";
-var shulname = /*[[${org.getName()}]]*/ "";
-var minyantype = /*[[${upcoming.getType().displayName()}]]*/ "";
-var minyantime = /*[[${upcoming.getFormattedStartTime()}]]*/ "";
 
 // Make the GET request to the Mapbox Geocoding API
 fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_token=${mapboxgl.accessToken}`)
