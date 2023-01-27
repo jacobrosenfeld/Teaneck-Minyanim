@@ -692,7 +692,12 @@ public class ZmanimController {
             }
         }
         nextMinyan.sort(Comparator.comparing(MinyanEvent::getStartTime));
-        mv.getModel().put("upcoming", nextMinyan);
+        mv.getModel().put("nextMinyan", nextMinyan);
+
+        if(!nextMinyan.isEmpty()) {
+            MinyanEvent firstEvent = nextMinyan.get(0);
+            mv.getModel().put("upcoming", firstEvent);
+        }
         // end upcoming
 
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
