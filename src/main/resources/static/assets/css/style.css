@@ -430,9 +430,9 @@ body {
 		/* height: 38px; */
 		padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
 		text-align: center;
-		font-size: var(--bs-btn-font-size);
+		font-size: calc(.75rem);
 		font-weight: 600;
-		line-height: var(--bs-btn-line-height);
+		line-height: calc(1.5rem);
 		margin: 10px 10px 10px 10px;
 		text-transform: uppercase;
 		text-decoration: none !important;
