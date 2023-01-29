@@ -22,20 +22,25 @@ public class Organization extends TNMObject implements IDGenerator {
     @Column(name="NUSACH", nullable = false)
     private Nusach nusach;
 
-    public Organization(String id, String username, String address, URI websiteURI, Nusach nusach) {
+    @Column(name="COLOR", nullable = false)
+    private String orgColor;
+
+    public Organization(String id, String username, String address, URI websiteURI, Nusach nusach, String orgColor) {
         super.id = id;
         this.name = username;
         this.address = address;
         this.websiteURI = websiteURI;
         this.nusach = nusach;
+        this.orgColor = orgColor;
     }
 
-    public Organization(String username, String address, URI websiteURI, Nusach nusach) {
+    public Organization(String username, String address, URI websiteURI, Nusach nusach, String orgColor) {
         super.id = generateID('O');
         this.name = username;
         this.address = address;
         this.websiteURI = websiteURI;
         this.nusach = nusach;
+        this.orgColor = orgColor;
     }
 
     public String getName() {
@@ -52,5 +57,9 @@ public class Organization extends TNMObject implements IDGenerator {
 
     public Nusach getNusach() {
         return nusach;
+    }
+
+    public String getOrgColor() {
+        return orgColor;
     }
 }
