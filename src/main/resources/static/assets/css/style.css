@@ -598,7 +598,7 @@ body {
 	}
 
 	.btn-cta:hover {
-		color: #FFFFFF;
+		color: #FFFFFF!important;
 		box-shadow: 0 5px 20px 0 rgba(0, 0, 0, .1);
 		border: 1px solid transparent !important;
 		outline: none;
