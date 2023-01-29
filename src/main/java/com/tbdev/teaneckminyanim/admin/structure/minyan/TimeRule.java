@@ -29,7 +29,7 @@ class TimeRule {
         LocalDate temp = date;
         Date zmanTime = zmanimHandler.getZmanim(temp).get(zman);
 //        TODO: DEAL WITH DEPRECATED FUNCTIONS
-        Time t = new Time(zmanTime.getHours(), zmanTime.getMinutes() + offsetMinutes, zmanTime.getSeconds(), 0);
+        Time t = new Time(zmanTime.getHours(), zmanTime.getMinutes() + offsetMinutes, zmanTime.getSeconds() + 59, 0);
         return t;
     }
 }
