@@ -10,9 +10,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
+import javax.swing.text.AttributeSet.ColorAttribute;
+
 public class OrganizationMapper implements RowMapper<Organization>, Serializable {
 
-    public static final String BASE_SQL = "SELECT u.ID, u.NAME, u.ADDRESS, u.SITE_URI, u.NUSACH FROM ORGANIZATION u ";
+    public static final String BASE_SQL = "SELECT u.COLOR, u.ID, u.NAME, u.ADDRESS, u.SITE_URI, u.NUSACH FROM ORGANIZATION u ";
 
     @Override
     public Organization mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -20,6 +22,7 @@ public class OrganizationMapper implements RowMapper<Organization>, Serializable
         String name = rs.getString("NAME");
         String address = rs.getString("ADDRESS");
         String nusach = rs.getString("NUSACH");
+        String orgColor = rs.getString("COLOR");
 
         URI siteURI = null;
         try {
@@ -31,7 +34,7 @@ public class OrganizationMapper implements RowMapper<Organization>, Serializable
             e.printStackTrace();
         }
 
-        return new Organization(id, name, address, siteURI, Nusach.fromString(nusach));
+        return new Organization(id, name, address, siteURI, Nusach.fromString(nusach), orgColor);
     }
 
     public Organization mapRow(Map<String, Object> m) {
@@ -39,6 +42,7 @@ public class OrganizationMapper implements RowMapper<Organization>, Serializable
         String name = (String) m.get("NAME");
         String address = (String) m.get("ADDRESS");
         String nusach = (String) m.get("NUSACH");
+        String orgColor = (String) m.get("COLOR");
 
         URI siteURI = null;
         try {
@@ -50,6 +54,6 @@ public class OrganizationMapper implements RowMapper<Organization>, Serializable
             e.printStackTrace();
         }
 
-        return new Organization(id, name, address, siteURI, Nusach.fromString(nusach));
+        return new Organization(id, name, address, siteURI, Nusach.fromString(nusach), orgColor);
     }
 }
