@@ -297,6 +297,7 @@ public class ZmanimController {
                 String organizationName;
                 Nusach organizationNusach;
                 String organizationId;
+                String organizationColor = minyan.getOrgColor();
                 Organization organization = minyan.getOrganization();
                 if (organization == null) {
                     Organization temp = organizationDAO.findById(minyan.getOrganizationId());
@@ -307,6 +308,7 @@ public class ZmanimController {
                     organizationName = organization.getName();
                     organizationNusach = organization.getNusach();
                     organizationId = organization.getId();
+                    organizationColor = organization.getOrgColor();
                 }
 
                 String locationName = null;
@@ -324,11 +326,11 @@ public class ZmanimController {
                 if (dynamicDisplayName != null) {
                     kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName,
                             organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                            minyan.getNusach(), minyan.getNotes()));
+                            minyan.getNusach(), minyan.getNotes(), organizationColor));
                 } else {
                     kolhaMinyanims.add(
                             new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
-                                    organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes()));
+                                    organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes(), organizationColor));
                 }
             } 
         }
