@@ -98,6 +98,8 @@
                             <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
                               th:if="${upcoming != null}"
                               th:text="@{|Next Minyan: ${upcoming.getType().displayName()} at ${upcoming.getFormattedStartTime()}|}"></button>
+                              <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
+                              th:if="${upcoming = null}">There are no more minyanim scheduled for today.</button>
                             <a role="button" class="btn-shuls"
                               th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}"
                               th:target="_blank">Get Directions</a>
@@ -148,7 +150,7 @@
                             </tbody>
                           </table>
                           <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
-                            <h5><small class="text-muted">Sorry, there aren't any shacharis minyanim scheduled.</small>
+                            <h5><small class="text-muted">There are no more Shacharis minyanim scheduled for today.</small>
                             </h5>
                           </div>
                           <h4 id="mincha" style="scroll-margin-top: 4em;">Mincha</h4>
@@ -173,7 +175,7 @@
                             </tbody>
                           </table>
                           <div class="nominyan" th:if="${minchaMinyanim.isEmpty()}">
-                            <h5><small class="text-muted">Sorry, there aren't any mincha minyanim scheduled.</small>
+                            <h5><small class="text-muted">There are no more Mincha minyanim scheduled for today.</small>
                             </h5>
                           </div>
                           <h4 id="maariv" style="scroll-margin-top: 4em;">Maariv</h4>
@@ -198,7 +200,7 @@
                             </tbody>
                           </table>
                           <div class="nominyan" th:if="${maarivMinyanim.isEmpty()}">
-                            <h5><small class="text-muted">Sorry, there aren't any maariv minyanim scheduled.</small>
+                            <h5><small class="text-muted">There are no more Maariv minyanim scheduled for today.</small>
                             </h5>
                           </div>
                         </div>
