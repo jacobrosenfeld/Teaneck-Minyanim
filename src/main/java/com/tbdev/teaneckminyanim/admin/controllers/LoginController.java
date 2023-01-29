@@ -1,16 +1,10 @@
 package com.tbdev.teaneckminyanim.admin.controllers;
 
-import com.tbdev.teaneckminyanim.admin.structure.user.TNMUserMapper;
-import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 @Controller
 public class LoginController {
