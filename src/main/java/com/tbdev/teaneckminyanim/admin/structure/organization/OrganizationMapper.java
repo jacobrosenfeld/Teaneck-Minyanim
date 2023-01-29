@@ -10,8 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import javax.swing.text.AttributeSet.ColorAttribute;
-
 public class OrganizationMapper implements RowMapper<Organization>, Serializable {
 
     public static final String BASE_SQL = "SELECT u.COLOR, u.ID, u.NAME, u.ADDRESS, u.SITE_URI, u.NUSACH FROM ORGANIZATION u ";

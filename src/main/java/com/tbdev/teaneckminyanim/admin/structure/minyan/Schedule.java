@@ -1,7 +1,5 @@
 package com.tbdev.teaneckminyanim.admin.structure.minyan;
 
-import com.kosherjava.zmanim.util.Time;
-
 import java.util.HashMap;
 
 public class Schedule {
