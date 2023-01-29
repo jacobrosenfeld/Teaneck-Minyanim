@@ -504,7 +504,7 @@ public class AdminController {
                                            @RequestParam(value = "address", required = false) String address,
                                            @RequestParam(value = "site-url", required = false) String siteURIString,
                                            @RequestParam(value = "nusach", required = true) String nusachString,
-                                           @RequestParam(value = "color", required = true) String orgColor) throws Exception {
+                                           @RequestParam(value = "orgColor", required = true) String orgColor) throws Exception {
 
 //        validate input
         if (name == null || name.isEmpty()) {
@@ -525,8 +525,9 @@ public class AdminController {
         if (nusach == null) {
             return organization(id, null, null, "Invalid nusach type.", null);
         }
-        Organization organization = new Organization(id, name, address, siteURI, nusach, orgColor);
 
+
+        Organization organization = new Organization(id, name, address, siteURI, nusach, orgColor);
 //        check permissions
         if (isAdmin()) {
             if (this.organizationDAO.update(organization)) {
