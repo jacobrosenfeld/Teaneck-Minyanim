@@ -328,7 +328,7 @@ public class Minyan extends TNMObject implements IDGenerator {
         if (t == null) {
             return null;
         }
-        LocalDate temp = date.minusMonths(2).minusYears(1900);
+        LocalDate temp = date.minusMonths(1).minusYears(1900);
         return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
     }
 
@@ -347,7 +347,7 @@ public class Minyan extends TNMObject implements IDGenerator {
     }
 
     public MinyanTime getMinyanTime(LocalDate date) {
-        LocalDate temp = date.minusMonths(1);
+        LocalDate temp = date;
         JewishCalendar jc = new JewishCalendar(temp);
         if (jc.isRoshChodesh()) {
             if (jc.isChanukah()) {

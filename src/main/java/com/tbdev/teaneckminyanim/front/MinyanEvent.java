@@ -1,10 +1,6 @@
 package com.tbdev.teaneckminyanim.front;
 
-import com.tbdev.teaneckminyanim.admin.structure.location.Location;
-import com.tbdev.teaneckminyanim.admin.structure.minyan.Minyan;
-import com.tbdev.teaneckminyanim.admin.structure.minyan.MinyanTime;
 import com.tbdev.teaneckminyanim.admin.structure.minyan.MinyanType;
-import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
 import com.tbdev.teaneckminyanim.global.Nusach;
 
 //import javax.persistence.Id;
@@ -36,6 +32,7 @@ public class MinyanEvent {
     private String notes;
 
     private String orgColor;
+
 
     public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes, String orgColor) {
         this.parentMinyanId = parentMinyanId;

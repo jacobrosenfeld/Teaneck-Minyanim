@@ -74,9 +74,9 @@ public class OrganizationDAO extends JdbcDaoSupport implements TNMSaveable<Organ
     public boolean save(Organization organization) {
         String sql;
         if (organization.getWebsiteURI() != null) {
-            sql = String.format("INSERT INTO ORGANIZATION (ID, NAME, ADDRESS, SITE_URI, NUSACH) VALUES ('%s', '%s', '%s', '%s', '%s')", organization.getId(), organization.getName(), organization.getAddress(), organization.getWebsiteURI(), organization.getNusach().getText());
+            sql = String.format("INSERT INTO ORGANIZATION (ID, NAME, ADDRESS, SITE_URI, NUSACH, COLOR) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')", organization.getId(), organization.getName(), organization.getAddress(), organization.getWebsiteURI(), organization.getNusach().getText(), organization.getOrgColor());
         } else {
-            sql = String.format("INSERT INTO ORGANIZATION (ID, NAME, ADDRESS, SITE_URI, NUSACH) VALUES ('%s', '%s', '%s', NULL, '%s')", organization.getId(), organization.getName(), organization.getAddress(), organization.getNusach().getText());
+            sql = String.format("INSERT INTO ORGANIZATION (ID, NAME, ADDRESS, SITE_URI, NUSACH, COLOR) VALUES ('%s', '%s', '%s', NULL, '%s', '%s')", organization.getId(), organization.getName(), organization.getAddress(), organization.getNusach().getText(), organization.getOrgColor());
         }
 
         try {
@@ -114,9 +114,9 @@ public class OrganizationDAO extends JdbcDaoSupport implements TNMSaveable<Organ
     public boolean update(Organization organizationToUpdate) {
         String sql;
         if (organizationToUpdate.getWebsiteURI() != null) {
-            sql = String.format("UPDATE ORGANIZATION SET NAME='%s', ADDRESS='%s', SITE_URI='%s', NUSACH='%s' WHERE ID='%s'", organizationToUpdate.getName(), organizationToUpdate.getAddress(), organizationToUpdate.getWebsiteURI(), organizationToUpdate.getNusach().getText(), organizationToUpdate.getId());
+            sql = String.format("UPDATE ORGANIZATION SET NAME='%s', ADDRESS='%s', SITE_URI='%s', NUSACH='%s', COLOR='%s' WHERE ID='%s'", organizationToUpdate.getName(), organizationToUpdate.getAddress(), organizationToUpdate.getWebsiteURI(), organizationToUpdate.getNusach().getText(), organizationToUpdate.getOrgColor(), organizationToUpdate.getId());
         } else {
-            sql = String.format("UPDATE ORGANIZATION SET NAME='%s', ADDRESS='%s', SITE_URI=NULL, NUSACH='%s' WHERE ID='%s'", organizationToUpdate.getName(), organizationToUpdate.getAddress(), organizationToUpdate.getNusach().getText(), organizationToUpdate.getId());
+            sql = String.format("UPDATE ORGANIZATION SET NAME='%s', ADDRESS='%s', SITE_URI=NULL, NUSACH='%s', COLOR='%s' WHERE ID='%s'", organizationToUpdate.getName(), organizationToUpdate.getAddress(), organizationToUpdate.getNusach().getText(), organizationToUpdate.getOrgColor(), organizationToUpdate.getId());
         }
 
         try {

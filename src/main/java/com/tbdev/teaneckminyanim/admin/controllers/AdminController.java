@@ -195,14 +195,15 @@ public class AdminController {
                                            @RequestParam(value = "site-url", required = false) String siteURIString,
                                            @RequestParam(value = "nusach", required = false) String nusachString,
                                            @RequestParam(value = "password", required = true) String password,
-                                           @RequestParam(value = "cpassword", required = true) String cpassword) {
+                                           @RequestParam(value = "cpassword", required = true) String cpassword,
+                                           @RequestParam(value = "orgColor", required = true) String orgColor) {
         if (!isSuperAdmin()) {
             throw new AccessDeniedException("You are not authorized to access this page.");
         }
 
         System.out.println("Validating input data...");
 
-        if (name.isEmpty() || address.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty() || cpassword.isEmpty()) {
+        if (name.isEmpty() || address.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty() || cpassword.isEmpty() || orgColor.isEmpty()) {
             System.out.println("Sorry, fields cannot be left blank.");
             return addOrganization(false, "The organization could not be created. Required fields cannot be left blank.", "Sorry, required fields cannot be left blank.");
         }
@@ -265,7 +266,7 @@ public class AdminController {
             return addOrganization(false, "The organization could not be created.", "Sorry, the organization could not be created.");
         }
 
-        Organization organization = new Organization(name, address, siteURI, nusach);
+        Organization organization = new Organization(name, address, siteURI, nusach, orgColor);
 
         if  (this.organizationDAO.save(organization)) {
             System.out.println("Organization created successfully.");
@@ -502,7 +503,8 @@ public class AdminController {
                                            @RequestParam(value = "name", required = true) String name,
                                            @RequestParam(value = "address", required = false) String address,
                                            @RequestParam(value = "site-url", required = false) String siteURIString,
-                                           @RequestParam(value = "nusach", required = true) String nusachString) throws Exception {
+                                           @RequestParam(value = "nusach", required = true) String nusachString,
+                                           @RequestParam(value = "orgColor", required = true) String orgColor) throws Exception {
 
 //        validate input
         if (name == null || name.isEmpty()) {
@@ -523,8 +525,8 @@ public class AdminController {
         if (nusach == null) {
             return organization(id, null, null, "Invalid nusach type.", null);
         }
-        Organization organization = new Organization(id, name, address, siteURI, nusach);
 
+        Organization organization = new Organization(id, name, address, siteURI, nusach, orgColor);
 //        check permissions
         if (isAdmin()) {
             if (this.organizationDAO.update(organization)) {

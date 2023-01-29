@@ -56,7 +56,7 @@ fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_
                 'type': 'circle',
                 'source': 'places',
                 'paint': {
-                    'circle-color': '#275ed8',
+                    'circle-color': shulcolor,
                     'circle-radius': 12,
                     'circle-stroke-width': 2,
                     'circle-stroke-color': '#ffffff'

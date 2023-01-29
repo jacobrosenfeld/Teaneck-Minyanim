@@ -1,10 +1,6 @@
 package com.tbdev.teaneckminyanim.admin.structure.minyan;
 
 import com.tbdev.teaneckminyanim.admin.structure.TNMSaveable;
-import com.tbdev.teaneckminyanim.admin.structure.location.Location;
-import com.tbdev.teaneckminyanim.admin.structure.location.LocationMapper;
-import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
-import com.tbdev.teaneckminyanim.admin.structure.organization.OrganizationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;

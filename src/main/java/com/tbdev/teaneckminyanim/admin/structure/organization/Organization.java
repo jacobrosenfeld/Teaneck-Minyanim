@@ -6,6 +6,7 @@ import com.tbdev.teaneckminyanim.global.Nusach;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
+
 import java.net.URI;
 
 @Table(name="ORGANIZATION")
@@ -58,7 +59,7 @@ public class Organization extends TNMObject implements IDGenerator {
     public Nusach getNusach() {
         return nusach;
     }
-
+    
     public String getOrgColor() {
         return orgColor;
     }
