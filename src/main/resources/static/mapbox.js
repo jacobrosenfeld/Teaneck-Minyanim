@@ -1,4 +1,11 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoiamFjb2Jyb3NlbmZlbGQiLCJhIjoiY2twbzVwNGJhMDdiNzJ4bzBtOGRzNjBjNSJ9.r8f10mthdHE69vYepqdq3Q';
+let description;
+if (shulname) {
+  description = "<h2>" + shulname + "</h2><p>Next Minyan: " + minyantype + " at " + minyantime + "</p><p>" + address + "</p>";
+} else {
+  description = "<h2>There are no more minyanim scheduled for today.</h2>"
+}
+
 
 // Make the GET request to the Mapbox Geocoding API
 fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_token=${mapboxgl.accessToken}`)
@@ -33,7 +40,7 @@ fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_
                         {
                             'type': 'Feature',
                             'properties': {
-                                'description': "<h2>" + shulname + "</h2><p>Next Minyan: " + minyantype + " at " + minyantime + "</p><p>" + address + "</p>",
+                                'description': description,
                                 'icon': 'border-dot-13'
                             },
                             'geometry': {
