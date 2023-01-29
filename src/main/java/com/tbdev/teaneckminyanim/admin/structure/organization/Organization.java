@@ -24,7 +24,7 @@ public class Organization extends TNMObject implements IDGenerator {
     @Column(name="NUSACH", nullable = false)
     private Nusach nusach;
 
-    @Column(name="color", nullable = false)
+    @Column(name="COLOR", nullable = false)
     private String orgColor;
 
     public Organization(String id, String username, String address, URI websiteURI, Nusach nusach, String orgColor) {
