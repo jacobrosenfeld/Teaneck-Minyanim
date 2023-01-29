@@ -12,6 +12,7 @@ import java.util.Map;
 
 public class OrganizationMapper implements RowMapper<Organization>, Serializable {
 
+
     public static final String BASE_SQL = "SELECT u.ID, u.NAME, u.ADDRESS, u.SITE_URI, u.NUSACH, u.COLOR FROM ORGANIZATION u ";
 
     @Override
