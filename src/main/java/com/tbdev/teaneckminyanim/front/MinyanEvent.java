@@ -35,6 +35,8 @@ public class MinyanEvent {
 
     private String notes;
 
+    private String orgColor;
+
     public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes) {
         this.parentMinyanId = parentMinyanId;
         this.type = type;
@@ -45,6 +47,7 @@ public class MinyanEvent {
         this.startTime = startTime;
         this.nusach = nusach;
         this.notes = notes;
+        this.orgColor = orgColor;
     }
 
     public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes) {
@@ -58,6 +61,7 @@ public class MinyanEvent {
         this.dynamicTimeString = dynamicTimeString;
         this.nusach = nusach;
         this.notes = notes;
+        this.orgColor = orgColor;
     }
 
     public MinyanType getType() {
@@ -99,6 +103,10 @@ public class MinyanEvent {
 
     public String getNotes() {
         return notes;
+    }
+
+    public String getOrgcolor() {
+        return orgColor;
     }
 
     public String getInformation() {
