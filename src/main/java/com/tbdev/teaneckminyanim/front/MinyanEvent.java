@@ -33,7 +33,7 @@ public class MinyanEvent {
 
     private String orgColor;
 
-    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes) {
+    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes, String orgColor) {
         this.parentMinyanId = parentMinyanId;
         this.type = type;
         this.organizationName = organizationName;
@@ -46,7 +46,7 @@ public class MinyanEvent {
         this.orgColor = orgColor;
     }
 
-    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes) {
+    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes, String orgColor) {
         this.parentMinyanId = parentMinyanId;
         this.type = type;
         this.organizationName = organizationName;
