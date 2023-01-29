@@ -526,7 +526,6 @@ public class AdminController {
             return organization(id, null, null, "Invalid nusach type.", null);
         }
 
-
         Organization organization = new Organization(id, name, address, siteURI, nusach, orgColor);
 //        check permissions
         if (isAdmin()) {
