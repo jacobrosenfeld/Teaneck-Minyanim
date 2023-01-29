@@ -114,9 +114,9 @@ public class OrganizationDAO extends JdbcDaoSupport implements TNMSaveable<Organ
     public boolean update(Organization organizationToUpdate) {
         String sql;
         if (organizationToUpdate.getWebsiteURI() != null) {
-            sql = String.format("UPDATE ORGANIZATION SET NAME='%s', ADDRESS='%s', SITE_URI='%s', NUSACH='%s' WHERE ID='%s'", organizationToUpdate.getName(), organizationToUpdate.getAddress(), organizationToUpdate.getWebsiteURI(), organizationToUpdate.getNusach().getText(), organizationToUpdate.getId());
+            sql = String.format("UPDATE ORGANIZATION SET NAME='%s', ADDRESS='%s', SITE_URI='%s', NUSACH='%s', COLOR='%s' WHERE ID='%s'", organizationToUpdate.getName(), organizationToUpdate.getAddress(), organizationToUpdate.getWebsiteURI(), organizationToUpdate.getNusach().getText(), organizationToUpdate.getOrgColor(), organizationToUpdate.getId());
         } else {
-            sql = String.format("UPDATE ORGANIZATION SET NAME='%s', ADDRESS='%s', SITE_URI=NULL, NUSACH='%s' WHERE ID='%s'", organizationToUpdate.getName(), organizationToUpdate.getAddress(), organizationToUpdate.getNusach().getText(), organizationToUpdate.getId());
+            sql = String.format("UPDATE ORGANIZATION SET NAME='%s', ADDRESS='%s', SITE_URI=NULL, NUSACH='%s', COLOR='%s' WHERE ID='%s'", organizationToUpdate.getName(), organizationToUpdate.getAddress(), organizationToUpdate.getNusach().getText(), organizationToUpdate.getOrgColor(), organizationToUpdate.getId());
         }
 
         try {
