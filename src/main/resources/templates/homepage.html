@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="/assets/css/owl.theme.css">
     <link rel="stylesheet" href="/assets/css/ionicons.min.css"> <!-- Resource style -->
     <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
+    <script src="https://unpkg.com/counterup2@2.0.2/dist/index.js">	</script>
+    <script type="text/javascript" src="/assets/js/plugins.js"></script>
+    <script type="text/javascript" src="/assets/js/custom.js"></script>
   </head>
   <body>
       <!-- Navbar Section -->
@@ -35,12 +38,12 @@
                   <div class="col-md-4 btn-toolbar d-flex flex-nowrap justify-content-center p-2" role="toolbar" aria-label="Toolbar with button groups">
                     <div class="btn-group  me-2" style="align-self: center;" role="group">
                     <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">Today</button> -->
-                      <button type="button" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">Today</button>
+                      <button type="button" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn">Today</button>
                    </div>
                     <div class="btn-group me-2" style="align-self: center;" role="group">
                     <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
-                      <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button>
-                      <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">></button>
+                      <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn"><</button>
+                      <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn">></button>
                     </div>
                   </div>
                   <!-- <div class="col-md-4 mt-2 btn-group desktop-hide" style="height: 50%; align-self: center;" role="group">
@@ -74,7 +77,7 @@
                               <tbody>
                                 <tr th:each="minyan: ${allminyanim}">
                                   <td class="align-middle">
-                                    <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
+                                    <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}" th:style="'background: '+${minyan.getOrganizationName()}"></a>
                                   </td>      
                                   <th scope="row" class="align-middle" th:text="${minyan.getType().displayName()}"></th>
                                     <!-- <td th:if="${minyan.getLocationName() != null}" class="middle">
@@ -568,11 +571,5 @@
        <!-- Scroll To Top Ends-->
 
       </div> <!-- Main -->
-
-
-
-    <!-- Jquery and Js Plugins -->
-    <script type="text/javascript" src="/assets/js/plugins.js"></script>
-    <script type="text/javascript" src="/assets/js/custom.js"></script>
   </body>
 </html>

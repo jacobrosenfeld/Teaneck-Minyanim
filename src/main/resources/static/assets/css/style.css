@@ -586,8 +586,7 @@ body {
 		text-decoration: none !important;
 		white-space: nowrap;
 		cursor: pointer;
-		background-color: #387ed1;
-		background: #275ed8;
+		background-color: #275ed8!important;
 		color: #FFFFFF !important;
 		border: 1px solid transparent !important;
 		border-radius: 4px;
@@ -598,7 +597,7 @@ body {
 	}
 
 	.btn-cta:hover {
-		color: #FFFFFF;
+		color: #FFFFFF!important;
 		box-shadow: 0 5px 20px 0 rgba(0, 0, 0, .1);
 		border: 1px solid transparent !important;
 		outline: none;
@@ -931,7 +930,7 @@ body {
 		background: #275ed8;
 	}
 
-	.yd-stats .intro {}
+	/* .yd-stats .intro {} */
 
 	.yd-stats .intro h2 {
 		font-size: 28px;

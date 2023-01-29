@@ -22,6 +22,7 @@
      /*<![CDATA[*/ 
     var address = /*[[${org.getAddress()}]]*/ "";
     var shulname = /*[[${org.getName()}]]*/ "";
+    var shulcolor = /*[[${org.getOrgColor()}]]*/ "";
     /*]]>*/
   </script>
   <script th:if="${upcoming != null}" th:inline="javascript">
@@ -86,7 +87,7 @@
                       <div id="pricing" class="pricing-section text-center">
                         <div class="table-left wow">
                           <div class="pricing-details">
-                            <h2 th:text="${org.getName()}"></h2>
+                            <h2 th:style="'color: ' + ${org.getOrgColor()}" th:text="${org.getName()}"></h2>
                             <!-- <img src="assets/icons/free.png" width="60" alt="Icon"> -->
                             <!-- <span>$0.00</span> -->
                             <ul>
@@ -94,7 +95,7 @@
                               <li th:text="${org.getNusach().displayName()}"></li>
                               <li th:text="${org.getAddress()}"></li>
                             </ul>
-                            <button type="button" class="btn-next"
+                            <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
                               th:if="${upcoming != null}"
                               th:text="@{|Next Minyan: ${upcoming.getType().displayName()} at ${upcoming.getFormattedStartTime()}|}"></button>
                             <a role="button" class="btn-shuls"
