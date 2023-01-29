@@ -6,7 +6,6 @@ if (typeof shulname !== 'undefined') {
     description = "<h2>There are no more minyanim scheduled for today.</h2>"
 }
 
-
 // Make the GET request to the Mapbox Geocoding API
 fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_token=${mapboxgl.accessToken}`)
     .then(response => response.json())
