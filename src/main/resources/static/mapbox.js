@@ -3,7 +3,7 @@ let description;
 if (typeof shulname !== 'undefined' && typeof minyantype !== 'undefined' && typeof minyantime !== 'undefined' && typeof address !== 'undefined') {
     description = "<h2>" + shulname + "</h2><p>Next Minyan: " + minyantype + " at " + minyantime + "</p><p>" + address + "</p>";
 } else {
-    description = "<h2>There are no more minyanim scheduled for today.</h2>" + "<p>" + address + "</p>"
+    description = "<h2>" + shulname + "</h2><h5>There are no more minyanim scheduled for today.</h5><p>" + address + "</p>"
 }
 
 // Make the GET request to the Mapbox Geocoding API
@@ -65,23 +65,23 @@ fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_
 
             // When a click event occurs on a feature in the places layer, open a popup at the
             // location of the feature, with description HTML from its properties.
-            map.on('click', 'places', (e) => {
-                // Copy coordinates array.
-                const coordinates = e.features[0].geometry.coordinates.slice();
-                const description = e.features[0].properties.description;
+            // map.on('click', 'places', (e) => {
+            //     // Copy coordinates array.
+            //     const coordinates = e.features[0].geometry.coordinates.slice();
+            //     const description = e.features[0].properties.description;
 
-                // Ensure that if the map is zoomed out such that multiple
-                // copies of the feature are visible, the popup appears
-                // over the copy being pointed to.
-                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-                }
+            //     // Ensure that if the map is zoomed out such that multiple
+            //     // copies of the feature are visible, the popup appears
+            //     // over the copy being pointed to.
+            //     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            //         coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            //     }
 
-                new mapboxgl.Popup({ closeOnClick: false })
-                    .setLngLat(coordinates)
-                    .setHTML(description)
-                    .addTo(map);
-            });
+            //     new mapboxgl.Popup({ closeOnClick: false })
+            //         .setLngLat(coordinates)
+            //         .setHTML(description)
+            //         .addTo(map);
+            // });
 
             // Change the cursor to a pointer when the mouse is over the places layer.
             map.on('mouseenter', 'places', (e) => {
