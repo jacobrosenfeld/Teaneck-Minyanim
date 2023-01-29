@@ -1158,6 +1158,7 @@ if (this.TNMUserDAO.delete(account)) {
             return mv;
         }
 
+        String orgnazationColor = organization.getOrgColor();
 //        System.out.println("Notes: " + notes);
 
         boolean enabled;
@@ -1172,7 +1173,7 @@ if (this.TNMUserDAO.delete(account)) {
         }
 //        System.out.println("Enabled: " + enabled);
 
-        Minyan minyan = new Minyan(organization, minyanType, location, schedule, notes, nusach, enabled);
+        Minyan minyan = new Minyan(organization, minyanType, location, schedule, notes, nusach, enabled, orgnazationColor);
 
         try {
             minyanDAO.save(minyan);
@@ -1281,6 +1282,7 @@ if (this.TNMUserDAO.delete(account)) {
             throw new Exception("Minyan not found.");
         }
 
+        String organizationColor = organization.getOrgColor();
 
 //        verify minyan type
         MinyanType minyanType = MinyanType.fromString(type);
@@ -1338,7 +1340,7 @@ if (this.TNMUserDAO.delete(account)) {
 
         Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbatTime, ytTime, rcTime, chanukaTime, rccTime);
 
-        Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization, minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled());
+        Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization, minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled(), organizationColor));
 
         try {
             minyanDAO.update(updatedMinyan);
