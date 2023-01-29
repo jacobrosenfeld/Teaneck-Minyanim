@@ -506,9 +506,7 @@ public class ZmanimController {
                 Nusach organizationNusach;
                 String organizationId;
                 Organization organization = minyan.getOrganization();
-                if (minyan.getOrganization() != null){
-                    String organizationColor = minyan.getOrganization().getOrgColor();
-            }
+                String organizationColor = minyan.getOrganization().getOrgColor();
                 if (organization == null) {
                     Organization temp = organizationDAO.findById(minyan.getOrganizationId());
                     organizationName = temp.getName();
@@ -519,7 +517,6 @@ public class ZmanimController {
                     organizationName = organization.getName();
                     organizationId = organization.getId();
                     organizationNusach = organization.getNusach();
-                    organizationColor = organization.getOrgColor();
                 }
 
                 String locationName = null;
