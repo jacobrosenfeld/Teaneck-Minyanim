@@ -6,7 +6,6 @@ import com.tbdev.teaneckminyanim.global.Nusach;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
-import javax.swing.text.AttributeSet.ColorAttribute;
 
 import java.net.URI;
 
