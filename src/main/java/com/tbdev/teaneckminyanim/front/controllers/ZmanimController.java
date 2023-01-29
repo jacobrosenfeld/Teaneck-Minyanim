@@ -512,11 +512,11 @@ public class ZmanimController {
                     organizationName = temp.getName();
                     organizationId = temp.getId();
                     organizationNusach = temp.getNusach();
-                    organizationColor = temp.getOrgColor();
                 } else {
                     organizationName = organization.getName();
                     organizationId = organization.getId();
                     organizationNusach = organization.getNusach();
+                    organizationColor = organization.getOrgColor();
                 }
 
                 String locationName = null;
