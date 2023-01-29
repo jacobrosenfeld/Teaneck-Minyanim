@@ -101,7 +101,7 @@ public class MinyanEvent {
         return notes;
     }
 
-    public String getOrgcolor() {
+    public String getOrgColor() {
         return orgColor;
     }
 
