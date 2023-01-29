@@ -586,8 +586,7 @@ body {
 		text-decoration: none !important;
 		white-space: nowrap;
 		cursor: pointer;
-		background-color: #387ed1;
-		background: #275ed8;
+		background-color: #275ed8!important;
 		color: #FFFFFF !important;
 		border: 1px solid transparent !important;
 		border-radius: 4px;
