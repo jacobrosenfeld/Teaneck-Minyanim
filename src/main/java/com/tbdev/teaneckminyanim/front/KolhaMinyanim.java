@@ -29,7 +29,9 @@ public class KolhaMinyanim {
 
     private String notes;
 
-    public KolhaMinyanim(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes) {
+    private String orgColor;
+
+    public KolhaMinyanim(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes, String orgColor) {
         this.type = type;
         this.organizationName = organizationName;
         this.organizationNusach = organizationNusach;
@@ -38,9 +40,10 @@ public class KolhaMinyanim {
         this.startTime = startTime;
         this.nusach = nusach;
         this.notes = notes;
+        this.orgColor = orgColor;
     }
 
-    public KolhaMinyanim(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes) {
+    public KolhaMinyanim(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes, String orgColor) {
         this.type = type;
         this.organizationName = organizationName;
         this.organizationNusach = organizationNusach;
@@ -50,6 +53,7 @@ public class KolhaMinyanim {
         this.dynamicTimeString = dynamicTimeString;
         this.nusach = nusach;
         this.notes = notes;
+        this.orgColor = orgColor;
     }
 
 //    add getters
@@ -87,6 +91,10 @@ public class KolhaMinyanim {
 
     public String getNotes() {
         return notes;
+    }
+
+    public String getOrgColor() {
+        return orgColor;
     }
 
     public String getInformation() {
