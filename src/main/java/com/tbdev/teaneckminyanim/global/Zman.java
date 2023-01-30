@@ -2,6 +2,7 @@ package com.tbdev.teaneckminyanim.global;
 
 public enum Zman {
     ALOT_HASHACHAR("ALOT_HASHACHAR"),
+    ETT("ETT"),
     NETZ("NETZ"),
     SZKS("SZKS"),
     SZT("SZT"),
@@ -39,6 +40,8 @@ public enum Zman {
         switch (this) {
             case ALOT_HASHACHAR:
                 return "Alos HaShachar";
+            case ETT:
+                return "ETT";
             case NETZ:
                 return "Sunrise";
             case SZKS:
