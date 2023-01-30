@@ -27,51 +27,57 @@
     <script type="text/javascript" src="/assets/js/plugins.js"></script>
     <script type="text/javascript" src="/assets/js/custom.js"></script>
 </head>
-</head>
 
 <body>
-    <!-- Navbar Section -->
-    <div class="horizontal-container d-flex" id="wrapper">
-        <th:block th:include="frontnavbar"></th:block>
-        <!-- Navbar End -->
-        <div id="container">
-            <div class="row align-items-start" id="body" style="padding: 30px;">
-                <div class="col">
-                    <div class="dropdown-menu center" style="position: relative; display: block;">
-                        <form class="px-4 py-3" onsubmit="lowercase()" th:action="@{/j_spring_security_check}"
-                            method="post">
-                            <div class="form-group">
-                                <label for="username-field">Username</label>
-                                <input type="text" class="form-control" name="username" id="username-field"
-                                    placeholder="Username">
-                            </div>
-                            <div class="form-group">
-                                <label for="password-field">Password</label>
-                                <input type="password" class="form-control" name="password" id="password-field"
-                                    placeholder="Password">
-                            </div>
-                            <p>
-                                <input type="checkbox" name="remember-me" />&nbsp;Remember Me
-                            </p>
-                            <button type="submit" class="btn btn-primary">Sign in</button>
-                            <div class="login-msg-box" style="padding-top: 7px">
-                                <div class="form-msg-fatal" th:if="${param.error}">
-                                    Invalid credentials.
+    <div class="wrapper">
+        <!-- Navbar Section -->
+        <div id="wrapper" class="horizontal-container d-flex container-md">
+            <th:block th:include="frontnavbar"></th:block>
+            <!-- Navbar End -->
+            <div class="container-fluid " id="main">
+                <div class="row" style="flex-direction: column;">
+                    <main class="col main pt-5 mt-4 overflow-auto"
+                        style="flex-shrink: 3; padding-bottom: 65px!important;">
+                        <div id="housing-housing">
+                            <div class="mpt0" id="row-housing" style="padding: 1rem;">
+                                <!-- login box -->
+                                <div class="dropdown-menu center" style="position: relative; display: block;">
+                                    <form class="px-4 py-3" onsubmit="lowercase()"
+                                        th:action="@{/j_spring_security_check}" method="post">
+                                        <div class="form-group">
+                                            <label for="username-field">Username</label>
+                                            <input type="text" class="form-control" name="username" id="username-field"
+                                                placeholder="Username">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="password-field">Password</label>
+                                            <input type="password" class="form-control" name="password"
+                                                id="password-field" placeholder="Password">
+                                        </div>
+                                        <p>
+                                            <input type="checkbox" name="remember-me" />&nbsp;Remember Me
+                                        </p>
+                                        <button type="submit" class="btn btn-primary">Sign in</button>
+                                        <div class="login-msg-box" style="padding-top: 7px">
+                                            <div class="form-msg-fatal" th:if="${param.error}">
+                                                Invalid credentials.
+                                            </div>
+                                            <div class="form-msg-success" th:if="${param.logout}">
+                                                You have been logged out.
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <!--            <div class="dropdown-divider"></div>-->
+                                    <!--            <a class="dropdown-item" href="#">Forgot password?</a>-->
                                 </div>
-                                <div class="form-msg-success" th:if="${param.logout}">
-                                    You have been logged out.
-                                </div>
                             </div>
-                        </form>
-                        <!--            <div class="dropdown-divider"></div>-->
-                        <!--            <a class="dropdown-item" href="#">Forgot password?</a>-->
-                    </div>
+                        </div>
+                    </main>
                 </div>
             </div>
-
-            <th:block th:include="admin/footer"></th:block>
         </div>
-        <script th:src="@{/admin/login.js}"></script>
+    </div>
+    <script th:src="@{/admin/login.js}"></script>
 </body>
 
 </html>
