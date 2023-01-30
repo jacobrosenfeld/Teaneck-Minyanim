@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Accounts</title>
+    <title>Accounts - Teanaeck Minyanim</title>
 </head>
 <body>
 <div class="horizontal-container d-flex" id="wrapper">
@@ -43,11 +43,11 @@
                                     </thead>
                                     <tbody>
                                     <tr th:each="account: ${accounts}">
-                                        <td th:text="${account.id}" />
-                                        <td th:text="${account.username}" />
-                                        <td th:text="${account.email}" />
-                                        <td th:text="${account.getRoleDisplayName()}" />
-                                        <td th:text="${organizationNames.get(account.id)}" />
+                                        <td th:text="${account.id}">
+                                        <td th:text="${account.username}">
+                                        <td th:text="${account.email}">
+                                        <td th:text="${account.getRoleDisplayName()}">
+                                        <td th:text="${organizationNames.get(account.id)}">
                                         <td>
                                             <a role="button" class="btn btn-primary btn-sm" th:href="@{/admin/account?id=} + ${account.id}">Manage</a>
                                         </td>
@@ -68,7 +68,6 @@
                         </div>
                     </div>
                 </main>
-                <th:block th:include="admin/footer"></th:block>
             </div>
         </div>
     </div>
