@@ -25,7 +25,6 @@
     <link rel="stylesheet" href="/assets/css/ionicons.min.css"> <!-- Resource style -->
     <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
     <script type="text/javascript" src="/assets/js/plugins.js"></script>
-    <script type="text/javascript" src="/assets/js/custom.js"></script>
 </head>
 
 <body>
@@ -38,8 +37,8 @@
                 <div class="row" style="flex-direction: column;">
                     <main class="col main pt-5 mt-4 overflow-auto"
                         style="flex-shrink: 3; padding-bottom: 65px!important;">
-                        <div id="housing-housing">
-                            <div class="mpt0" id="row-housing" style="padding: 1rem;">
+                        <div class="row justify-content-center">
+                            <div class="col-4" id="row-housing" style="padding: 1rem;">
                                 <!-- login box -->
                                 <div class="dropdown-menu center" style="position: relative; display: block;">
                                     <form class="px-4 py-3" onsubmit="lowercase()"
@@ -57,7 +56,9 @@
                                         <p>
                                             <input type="checkbox" name="remember-me" />&nbsp;Remember Me
                                         </p>
-                                        <button type="submit" class="btn btn-primary">Sign in</button>
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                            <button type="submit" class="btn btn-cta">Sign in</button>
+                                        </div>
                                         <div class="login-msg-box" style="padding-top: 7px">
                                             <div class="form-msg-fatal" th:if="${param.error}">
                                                 Invalid credentials.
