@@ -45,6 +45,7 @@ public class ZmanimHandler {
 //        complexZmanimCalendar.getCalendar().
 
         dictionary.put(Zman.ALOT_HASHACHAR, complexZmanimCalendar.getAlosHashachar());
+        dictionary.put(Zman.ETT, complexZmanimCalendar.getMisheyakir7Point65Degrees());
         dictionary.put(Zman.NETZ, complexZmanimCalendar.getSunrise());
         dictionary.put(Zman.SZKS, complexZmanimCalendar.getSofZmanShmaGRA());
         dictionary.put(Zman.SZT, complexZmanimCalendar.getSofZmanTfilaGRA());
