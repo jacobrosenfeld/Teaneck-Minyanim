@@ -43,15 +43,16 @@
                                     <form class="px-4 py-3" onsubmit="lowercase()"
                                         th:action="@{/j_spring_security_check}" method="post">
                                         <div class="form-group">
-                                            <label for="username-field">Username</label>
+                                            <label for="username-field" class="h5">Username</label>
                                             <input type="text" class="form-control" name="username" id="username-field"
                                                 placeholder="Username">
                                         </div>
                                         <div class="form-group">
-                                            <label for="password-field">Password</label>
+                                            <label for="password-field" class="h5">Password</label>
                                             <input type="password" class="form-control" name="password"
                                                 id="password-field" placeholder="Password">
                                         </div>
+                                        <hr>
                                         <p>
                                             <input type="checkbox" name="remember-me" />&nbsp;Remember Me
                                         </p>
