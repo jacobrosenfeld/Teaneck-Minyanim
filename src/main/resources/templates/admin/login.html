@@ -7,18 +7,17 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
-    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css} " />
     <link th:rel="stylesheet" th:href="@{/styles.css}">
     <link th:rel="stylesheet" th:href="@{/admin/styles.css}">
+    <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
 </head>
 
 <body>
-
-    <div id="container">
-        <!-- Navbar Section -->
-        <div class="horizontal-container d-flex" id="wrapper">
-            <th:block th:include="frontnavbar"></th:block>
-            <!-- Navbar End -->
+    <!-- Navbar Section -->
+    <div class="horizontal-container d-flex" id="wrapper">
+        <th:block th:include="frontnavbar"></th:block>
+        <!-- Navbar End -->
+        <div id="container">
             <div class="center-container" id="body" style="padding: 30px;">
                 <div class="dropdown-menu center" style="position: relative; display: block;">
                     <form class="px-4 py-3" onsubmit="lowercase()" th:action="@{/j_spring_security_check}"
