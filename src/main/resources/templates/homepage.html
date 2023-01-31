@@ -72,31 +72,37 @@
                           <div class="tab-pane fade active show" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
                             <table class="table" th:if="${!allminyanim.isEmpty()}">
                               <thead>
-                               <tr>
-                                <th scope="col" class="th-sm">Shul</th>
-                                <th scope="col" class="th-sm">Type</th>
-                                <th scope="col" class="th-sm">Time</th>
-                                <th scope="col" class="th-sm">Room</th>
-                                <!-- <th scope="col">Nusach</th> -->
-                                <!-- <th scope="col">Notes</th> -->
-                              </tr>
+                                <tr>
+                                  <th scope="col" class="th-sm">Shul</th>
+                                  <th scope="col" class="th-sm">Type</th>
+                                  <th scope="col" class="th-sm">Time</th>
+                                  <th scope="col" class="th-sm">Room</th>
+                                </tr>
                               </thead>
                               <tbody>
-                                <tr th:each="minyan: ${allminyanim}">
+                                <tr th:each="minyan, index : ${allminyanim}"
+                                    th:if="${index < rowsToDisplay}">
                                   <td class="align-middle">
-                                    <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}" th:style="'background: '+${minyan.getOrgColor()}"></a>
-                                  </td>      
+                                    <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3"
+                                       th:href="@{|/orgs/${minyan.getOrganizationId()}|}"
+                                       th:text="${minyan.getOrganizationName()}"
+                                       th:style="'background: '+${minyan.getOrgColor()}"></a>
+                                  </td>
                                   <th scope="row" class="align-middle" th:text="${minyan.getType().displayName()}"></th>
-                                    <!-- <td th:if="${minyan.getLocationName() != null}" class="middle">
-                                      <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>
-                                    </td> -->
-                                    <td class="align-middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                    <td class="align-middle" th:text="${minyan.getLocationName()}"></td>
-                                    <!-- <td class="middle" th:text="${minyan.getNusach().displayName()}"></td> -->
-                                    <!-- <td class="middle" th:text="${minyan.getNotes()}"></td> -->
+                                  <td class="align-middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                                  <td class="align-middle" th:text="${minyan.getLocationName()}"></td>
                                 </tr>
                               </tbody>
                             </table>
+                            <button th:if="${rowsToDisplay < allminyanim.size()}" type="button" class="btn btn-primary" th:text="#{showMore}" onclick="showMoreRows()">Show More</button>
+                            
+                            <script>
+                              var rowsToDisplay = 10;
+                              function showMoreRows() {
+                                rowsToDisplay += 10;
+                              }
+                            </script>
+                            
                                         <div class="jumbotron alert alert-secondary" th:if="${allminyanim.isEmpty()}">
                                             <h4 class="mb-1">Sorry, there aren't any upcoming minyanim today.</h4>
                                         </div>
