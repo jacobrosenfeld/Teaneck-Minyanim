@@ -57,7 +57,7 @@
                 <div id="housing-housing">
                   <div class="mpt0" id="row-housing" style="padding: 1rem;">
                     <div class="row">
-                      <img src="assets/images/Leaderboard-728x90.jpg" class="img-fluid" alt="Advertisement">
+                      <img src="/assets/images/Leaderboard-728x90.jpg" class="img-fluid" alt="Advertisement">
                     </div>
                   </div>
                 </div>
@@ -72,37 +72,31 @@
                           <div class="tab-pane fade active show" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
                             <table class="table" th:if="${!allminyanim.isEmpty()}">
                               <thead>
-                                <tr>
-                                  <th scope="col" class="th-sm">Shul</th>
-                                  <th scope="col" class="th-sm">Type</th>
-                                  <th scope="col" class="th-sm">Time</th>
-                                  <th scope="col" class="th-sm">Room</th>
-                                </tr>
+                               <tr>
+                                <th scope="col" class="th-sm">Shul</th>
+                                <th scope="col" class="th-sm">Type</th>
+                                <th scope="col" class="th-sm">Time</th>
+                                <th scope="col" class="th-sm">Room</th>
+                                <!-- <th scope="col">Nusach</th> -->
+                                <!-- <th scope="col">Notes</th> -->
+                              </tr>
                               </thead>
                               <tbody>
-                                <tr th:each="minyan, index : ${allminyanim}"
-                                    th:if="${index < rowsToDisplay}">
+                                <tr th:each="minyan: ${allminyanim}">
                                   <td class="align-middle">
-                                    <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3"
-                                       th:href="@{|/orgs/${minyan.getOrganizationId()}|}"
-                                       th:text="${minyan.getOrganizationName()}"
-                                       th:style="'background: '+${minyan.getOrgColor()}"></a>
-                                  </td>
+                                    <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}" th:style="'background: '+${minyan.getOrgColor()}"></a>
+                                  </td>      
                                   <th scope="row" class="align-middle" th:text="${minyan.getType().displayName()}"></th>
-                                  <td class="align-middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                  <td class="align-middle" th:text="${minyan.getLocationName()}"></td>
+                                    <!-- <td th:if="${minyan.getLocationName() != null}" class="middle">
+                                      <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>
+                                    </td> -->
+                                    <td class="align-middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                                    <td class="align-middle" th:text="${minyan.getLocationName()}"></td>
+                                    <!-- <td class="middle" th:text="${minyan.getNusach().displayName()}"></td> -->
+                                    <!-- <td class="middle" th:text="${minyan.getNotes()}"></td> -->
                                 </tr>
                               </tbody>
                             </table>
-                            <button th:if="${rowsToDisplay < allminyanim.size()}" type="button" class="btn btn-primary" th:text="#{showMore}" onclick="showMoreRows()">Show More</button>
-                            
-                            <script>
-                              var rowsToDisplay = 10;
-                              function showMoreRows() {
-                                rowsToDisplay += 10;
-                              }
-                            </script>
-                            
                                         <div class="jumbotron alert alert-secondary" th:if="${allminyanim.isEmpty()}">
                                             <h4 class="mb-1">Sorry, there aren't any upcoming minyanim today.</h4>
                                         </div>
@@ -381,7 +375,7 @@
                 <ul>
                   <li>
                     <div class="ar-icon">
-                      <img src="assets/icons/f1.png" width="30" alt="Icon">
+                      <img src="/assets/icons/f1.png" width="30" alt="Icon">
                     </div>
                     <div class="ar-text">
                       <h3>Client Support</h3>
@@ -390,7 +384,7 @@
                   </li>
                   <li>
                     <div class="ar-icon">
-                      <img src="assets/icons/f4.png" width="30" alt="Icon">
+                      <img src="/assets/icons/f4.png" width="30" alt="Icon">
                     </div>
                     <div class="ar-text">
                       <h3>Secure Servers</h3>
@@ -399,7 +393,7 @@
                   </li>
                   <li>
                     <div class="ar-icon">
-                      <img src="assets/icons/f11.png" width="30" alt="Icon">
+                      <img src="/assets/icons/f11.png" width="30" alt="Icon">
                     </div>
                     <div class="ar-text">
                       <h3>Product Feedback</h3>
@@ -409,7 +403,7 @@
                 </ul>
               </div>
               <div class="ar-image">
-                <img class="ar-img img-fluid" src="assets/images/feature-2.png" alt="Hero Image">
+                <img class="ar-img img-fluid" src="/assets/images/feature-2.png" alt="Hero Image">
               </div>
             </div>
           </div>
@@ -439,7 +433,7 @@
                      </div>
                      <div class="review-attribution">
                        <div class="review-img">
-                         <img class="img-fluid rounded-circle" src="assets/icons/review-1.png" alt="Review">
+                         <img class="img-fluid rounded-circle" src="/assets/icons/review-1.png" alt="Review">
                        </div>
                        <i class="ion ion-star"></i>
                       <i class="ion ion-star"></i>
@@ -459,7 +453,7 @@
                      </div>
                      <div class="review-attribution">
                        <div class="review-img">
-                         <img class="img-fluid rounded-circle" src="assets/icons/review-2.png" alt="Review">
+                         <img class="img-fluid rounded-circle" src="/assets/icons/review-2.png" alt="Review">
                        </div>
                        <i class="ion ion-star"></i>
                       <i class="ion ion-star"></i>
@@ -479,7 +473,7 @@
                      </div>
                      <div class="review-attribution">
                        <div class="review-img">
-                         <img class="img-fluid rounded-circle" src="assets/icons/review-3.png" alt="Review">
+                         <img class="img-fluid rounded-circle" src="/assets/icons/review-3.png" alt="Review">
                        </div>
                        <i class="ion ion-star"></i>
                       <i class="ion ion-star"></i>
@@ -516,7 +510,7 @@
                    <div class="table-left wow fadeInDown">
                      <div class="pricing-details">
                        <h2>Freemium</h2>
-                       <img src="assets/icons/free.png" width="60" alt="Icon">
+                       <img src="/assets/icons/free.png" width="60" alt="Icon">
 
                        <span>$0.00</span>
                           <ul>
@@ -532,7 +526,7 @@
                     <div class="table-right wow fadeInDown">
                       <div class="pricing-details">
                          <h2>Beginner</h2>
-                         <img src="assets/icons/paid.png" width="60" alt="Icon">
+                         <img src="/assets/icons/paid.png" width="60" alt="Icon">
                          <span>$24.99</span>
                          <ul>
                            <li>First premium feature </li>
@@ -557,7 +551,7 @@
                <h4>Teaneck Minyanim is supported by volunteers and donations from people like you.</h4>
                <h1>Drop us a line to learn how you can help support and maintain Teaneck Minyanim.</h1>
                <div class="form wow fadeIn" data-wow-delay="0.2s">
-                <form id="chimp-form" class="subscribe-form wow zoomIn" action="assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
+                <form id="chimp-form" class="subscribe-form wow zoomIn" action="/assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
                   <input class="mail" id="chimp-email" type="email" name="email" placeholder="Enter your email address" autocomplete="off">
                   <input class="submit-button" type="submit" value="Sign up now">
                 </form>
