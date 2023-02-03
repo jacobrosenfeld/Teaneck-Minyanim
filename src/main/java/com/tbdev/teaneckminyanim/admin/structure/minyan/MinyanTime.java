@@ -78,7 +78,8 @@ public class MinyanTime {
     enum TimeType {
         NONE,
         FIXED,
-        DYNAMIC;
+        DYNAMIC, 
+        ROUNDED;
 
         public static TimeType fromString(String s) {
             if (s == null) {
