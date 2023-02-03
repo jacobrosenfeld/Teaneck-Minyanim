@@ -226,7 +226,7 @@ public class MinyanTime {
             } else if (rule.getOffsetMinutes() == 0) {
                 return rule.getZman().displayName();
             }  else if (rule.getOffsetMinutes() > 0) {
-                return String.format("%d minutes after %s ", rule.getOffsetMinutes(), rule.getZman().displayName().toLowerCase());
+                return String.format("%d minutes after %s", rule.getOffsetMinutes(), rule.getZman().displayName().toLowerCase());
             } else {
                 return "INVALID";
             }
