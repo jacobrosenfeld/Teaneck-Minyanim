@@ -28,7 +28,7 @@ public class ZmanimHandler {
         String locationName = "Teaneck, NJ";
         double latitude = 40.906871;
         double longitude = -74.020924;
-        double elevation = 0;
+        double elevation = 33;
         GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
         this.geoLocation = geoLocation;
     }
