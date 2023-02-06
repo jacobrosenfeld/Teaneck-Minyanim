@@ -84,6 +84,11 @@ fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_
             // });
 
             // Change the cursor to a pointer when the mouse is over the places layer.
+            const popup = new mapboxgl.Popup({
+                closeButton: false,
+                closeOnClick: false
+                });
+
             map.on('mouseenter', 'places', (e) => {
                 // Copy coordinates array.
                 const coordinates = e.features[0].geometry.coordinates.slice();
@@ -96,10 +101,12 @@ fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_
                     coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
                 }
 
-                new mapboxgl.popup()
-                    .setLngLat(coordinates)
-                    .setHTML(description)
-                    .addTo(map);
+                // new mapboxgl.Popup()
+                //     .setLngLat(coordinates)
+                //     .setHTML(description)
+                //     .addTo(map);
+                popup.setLngLat(coordinates).setHTML(description).addTo(map);
+
             });
 
             // Change it back to a pointer when it leaves.
