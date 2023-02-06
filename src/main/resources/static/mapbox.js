@@ -105,7 +105,7 @@ fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_
             // Change it back to a pointer when it leaves.
             map.on('mouseleave', 'places', () => {
                 map.getCanvas().style.cursor = '';
-                Popup.remove();
+                popup.remove();
             });
         });
     });
