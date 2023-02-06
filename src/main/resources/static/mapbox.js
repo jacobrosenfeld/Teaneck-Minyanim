@@ -96,7 +96,7 @@ fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_
                     coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
                 }
 
-                new mapboxgl.Popup()
+                new mapboxgl.popup()
                     .setLngLat(coordinates)
                     .setHTML(description)
                     .addTo(map);
