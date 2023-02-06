@@ -124,11 +124,11 @@ fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_
                     coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
                 }
 
-                // new mapboxgl.Popup()
-                //     .setLngLat(coordinates)
-                //     .setHTML(description)
-                //     .addTo(map);
-                popup.setLngLat(coordinates).setHTML(description).addTo(map);
+                new mapboxgl.Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(description)
+                    .addTo(map);
+                // popup.setLngLat(coordinates).setHTML(description).addTo(map);
 
             });
 
