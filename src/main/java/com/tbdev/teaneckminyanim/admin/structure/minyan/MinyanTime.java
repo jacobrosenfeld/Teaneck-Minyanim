@@ -90,6 +90,8 @@ public class MinyanTime {
                     return FIXED;
                 case "dynamic":
                     return DYNAMIC;
+                case "rounded":
+                    return ROUNDED;
                 case "nm":
                     return NONE;
                 default:
@@ -111,7 +113,6 @@ public class MinyanTime {
                     if (components.length != 2) {
                         return null;
                     }
-
                     return new MinyanTime(new Time(Integer.parseInt(components[0]), Integer.parseInt(components[1]), 0, 0));
                 }
             case DYNAMIC:
@@ -123,12 +124,25 @@ public class MinyanTime {
                     TimeRule rule = new TimeRule(zman, zmanOffset);
                     return new MinyanTime(rule);
                 }
+            case ROUNDED: 
+            if (zmanString == null || zmanString.isEmpty()) {
+                return null;
+            } else {
+                Zman zman = Zman.fromString(zmanString);
+                Boolean rounded= true; 
+                TimeRule rule = new TimeRule(zman, zmanOffset, rounded);
+                return new MinyanTime(rule);
+            }
             case NONE:
                 return new MinyanTime();
             default:
                 return null;
         }
     }
+
+
+
+
 
     @Override
     public String toString() {
