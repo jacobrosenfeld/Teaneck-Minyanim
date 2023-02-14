@@ -71,6 +71,10 @@ public class MinyanTime {
         return type() == TimeType.DYNAMIC;
     }
 
+    public boolean isRounded() {
+        return type() == TimeType.ROUNDED;
+    }
+
     public boolean isNone() {
         return type() == TimeType.NONE;
     }

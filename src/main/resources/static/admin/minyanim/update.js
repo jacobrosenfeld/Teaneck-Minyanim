@@ -25,16 +25,36 @@ function update(name) {
                             </div>
                         </div>
                         `;
-
+    var rounded = `<div class="form-row">
+                            <div class="col">
+                                <select class="custom-select" name="${name}-zman" id="${name}-zman" required>
+                                                                            <option disabled selected>Choose a zman</option>
+                                                                            <option value="netz">Netz</option>
+                                                                            <option value="chatzot">Chatzot</option>
+                                                                            <option value="mincha_gedola">Mincha Gedola</option>
+                                                                            <option value="mincha_ketana">Mincha Ketana</option>
+                                                                            <option value="plag_hamincha">Plag HaMincha</option>
+                                                                            <option value="shekiya">Shekiya</option>
+                                                                            <option value="tzet">Tzet Hakochavim</option>
+                                                                        </select>
+                            </div>
+                            <div class="col">
+                                <input type="number" class="form-control" name="${name}-zman-offset" id="${name}-zman-offset" value=0 required>
+                            </div>
+                        </div>
+                        `;
     var nmBox = document.getElementById(`nm-time-box-${name}`);
     var fixedBox = document.getElementById(`fixed-time-box-${name}`);
     var dynamicBox = document.getElementById(`dynamic-time-box-${name}`);
+    var roundedBox = document.getElementById(`rounded-time-box-${name}`);
 
     if (mode == "nm") {
         newBox.id = `nm-time-box-${name}`;
         newBox.innerHTML = nm;
         if (dynamicBox) {
             dynamicBox.replaceWith(newBox);
+        } else if(roundedBox) {
+            roundedBox.replaceWith(newBox);
         } else if (fixedBox) {
             fixedBox.replaceWith(newBox);
         } else if (nmBox) {
@@ -46,6 +66,8 @@ function update(name) {
         newBox.innerHTML = fixed;
         if (nmBox) {
             nmBox.replaceWith(newBox);
+        } else if(roundedBox) {
+            roundedBox.replaceWith(newBox);
         } else if (dynamicBox) {
             dynamicBox.replaceWith(newBox);
         } else if (fixedBox) {
@@ -57,6 +79,21 @@ function update(name) {
         newBox.innerHTML = dynamic;
         if (nmBox) {
             nmBox.replaceWith(newBox);
+        } else if(roundedBox) {
+            roundedBox.replaceWith(newBox);
+        } else if (fixedBox) {
+            fixedBox.replaceWith(newBox);
+        } else if (dynamicBox) {
+            dynamicBox.replaceWith(newBox);
+        }
+    } else if (mode == "rounded") {
+//        console.log("Removing static box");
+        newBox.id = `rounded-time-box-${name}`;
+        newBox.innerHTML = rounded;
+        if (nmBox) {
+            nmBox.replaceWith(newBox);
+        } else if(roundedBox) {
+            roundedBox.replaceWith(newBox);
         } else if (fixedBox) {
             fixedBox.replaceWith(newBox);
         } else if (dynamicBox) {
@@ -102,7 +139,7 @@ function applyMondayThroughFriday() {
         nameType.value = mondayMode;
         if (mondayMode === "nm") {
 
-        } else if (mondayMode === "dynamic") {
+        } else if (mondayMode === "dynamic" || mondayMode === "rounded") {
             nameZman.value = mondayZman;
             nameOffset.value = mondayOffset;
         } else if (mondayMode === "fixed") {
