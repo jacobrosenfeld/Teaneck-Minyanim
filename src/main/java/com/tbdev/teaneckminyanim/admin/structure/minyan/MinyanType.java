@@ -28,6 +28,7 @@ public enum MinyanType {
             throw new IllegalArgumentException("No constant with text " + text + " found");
     }
 
+
     @Override
     public String toString() {
         switch (this) {
