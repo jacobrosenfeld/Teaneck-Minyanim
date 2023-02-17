@@ -1130,13 +1130,14 @@ if (this.TNMUserDAO.delete(account)) {
             mv.addObject("errormessage", "Sorry, there was an error creating the minyan. Please try again. (M01)");
             return mv;
         }
+        
 
 //        System.out.println("Minyan type: " + minyanType);
 
 //        get and verify location
         Location location = getLocation(locationId);
 
-//        create minyan times
+  //    create minyan times
         MinyanTime sundayTime = MinyanTime.fromFormData(sundayTimeType, sundayTimeString, sundayZman, sundayZmanOffset);
         MinyanTime mondayTime = MinyanTime.fromFormData(mondayTimeType, mondayTimeString, mondayZman, mondayZmanOffset);
         MinyanTime tuesdayTime = MinyanTime.fromFormData(tuesdayTimeType, tuesdayTimeString, tuesdayZman, tuesdayZmanOffset);

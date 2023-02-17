@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 public class MinyanTime {
     private Time time;
-    private TimeRule rule;
+    private TimeRule rule; 
 
     public MinyanTime() {
         return;
@@ -23,12 +23,22 @@ public class MinyanTime {
                 throw new IllegalArgumentException("Invalid time");
             }
             time = new Time(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
-        } else if (rawTime.startsWith("R")) {
-            String[] parts = rawTime.substring(1).split(":");
+        } else if (rawTime.startsWith("R")) { //Example RSHEKIYA:10 - this is Dynamic, for shekiya zman, with offset of 10
+            String[] parts = rawTime.substring(1).split(":"); 
 //          TODO: VERIFY THIS WORKS WITH NEGATIVE OFFSETS
 //          TODO: FIX valueOf
             if (parts.length == 2) {
                 rule = new TimeRule(Zman.fromString(parts[0]), Integer.parseInt(parts[1]));
+            } else {
+                System.out.println("Invalid time rule: " + rawTime);
+                return;
+            }
+        } else if (rawTime.startsWith("Q")) {
+            String[] parts = rawTime.substring(1).split(":");
+//          TODO: VERIFY THIS WORKS WITH NEGATIVE OFFSETS
+//          TODO: FIX valueOf
+            if (parts.length == 2) {
+                rule = new TimeRule(Zman.fromString(parts[0]), Integer.parseInt(parts[1]), true);
             } else {
                 System.out.println("Invalid time rule: " + rawTime);
                 return;
@@ -55,8 +65,10 @@ public class MinyanTime {
     public TimeType type() {
         if (time != null) {
             return TimeType.FIXED;
-        } else if (rule != null) {
+        } else if (rule != null & !rule.rounded) { //made TimeRule.rounded protected instead of private as a "hack" here- not sure it need to be private though
             return TimeType.DYNAMIC;
+        } else if (rule!=null){
+            return TimeType.ROUNDED; 
         } else {
             return TimeType.NONE;
         }
@@ -157,6 +169,8 @@ public class MinyanTime {
             return String.format("T%d:%d:%d:%d", time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
         } else if (t == TimeType.DYNAMIC) {
             return String.format("R%s:%d", rule.getZman(), rule.getOffsetMinutes());
+        } else if (t == TimeType.ROUNDED) {
+            return String.format("Q%s:%d", rule.getZman(), rule.getOffsetMinutes());
         } else if (t == TimeType.NONE) {
             return "NM";
         } else {
