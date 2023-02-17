@@ -65,7 +65,7 @@ public class MinyanTime {
     public TimeType type() {
         if (time != null) {
             return TimeType.FIXED;
-        } else if (rule != null & !rule.rounded) { //made TimeRule.rounded protected instead of private as a "hack" here- not sure it need to be private though
+        } else if (rule != null && !rule.rounded) { //made TimeRule.rounded protected instead of private as a "hack" here- not sure it need to be private though
             return TimeType.DYNAMIC;
         } else if (rule!=null){
             return TimeType.ROUNDED; 
