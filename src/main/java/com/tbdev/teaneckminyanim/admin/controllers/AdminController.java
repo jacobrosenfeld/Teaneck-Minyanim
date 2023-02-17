@@ -1131,13 +1131,12 @@ if (this.TNMUserDAO.delete(account)) {
             return mv;
         }
         
-
 //        System.out.println("Minyan type: " + minyanType);
 
 //        get and verify location
         Location location = getLocation(locationId);
 
-  //    create minyan times
+  //        create minyan times
         MinyanTime sundayTime = MinyanTime.fromFormData(sundayTimeType, sundayTimeString, sundayZman, sundayZmanOffset);
         MinyanTime mondayTime = MinyanTime.fromFormData(mondayTimeType, mondayTimeString, mondayZman, mondayZmanOffset);
         MinyanTime tuesdayTime = MinyanTime.fromFormData(tuesdayTimeType, tuesdayTimeString, tuesdayZman, tuesdayZmanOffset);
