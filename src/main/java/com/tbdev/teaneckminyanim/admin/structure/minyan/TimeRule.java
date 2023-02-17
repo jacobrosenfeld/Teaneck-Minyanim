@@ -10,7 +10,7 @@ import java.util.Date;
 class TimeRule {
     private Zman zman;
     private Integer offsetMinutes;
-    private Boolean rounded; 
+    protected Boolean rounded; 
 
     public TimeRule(Zman zman, Integer offsetMinutes) {
         this.zman = zman;
