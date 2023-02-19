@@ -102,7 +102,7 @@
                               th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}"
                               th:target="_blank">Get Directions</a>
                             <button class="btn-action" th:if="${org.getWebsiteURI() != null}"
-                              th:href="${org.getWebsiteURI()}">Visit the website</button>
+                              th:href="@{|https://${org.getWebsiteURI()}|}">Visit the website</button>
                           </div>
                         </div>
                       </div>
