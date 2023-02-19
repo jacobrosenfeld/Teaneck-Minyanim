@@ -308,6 +308,8 @@ public class MinyanTime {
             return time;
         } else if (type() == TimeType.DYNAMIC) {
             return rule.getTime(date);
+        } else if (type() == TimeType.ROUNDED) {
+            return rule.getTime(date);
         } else {
             return null;
         }
