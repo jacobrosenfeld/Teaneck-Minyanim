@@ -230,7 +230,19 @@ public class MinyanTime {
             } else {
                 return "INVALID";
             }
-        } else {
+        } else if (t == TimeType.ROUNDED) {
+            //            return "Rounded";
+                        if (rule.getOffsetMinutes() < 0) {
+                            return String.format("%s minus %d minutes", rule.getZman().displayName(), Math.abs(rule.getOffsetMinutes()));
+                        } else if (rule.getOffsetMinutes() == 0) {
+                            return rule.getZman().displayName();
+                        }  else if (rule.getOffsetMinutes() > 0) {
+                            return String.format("%s plus %d minutes", rule.getZman().displayName(), rule.getOffsetMinutes());
+                        } else {
+                            return "INVALID";
+                        }
+                    }
+                    else {
             return "INVALID";
         }
     }
