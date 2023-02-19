@@ -225,6 +225,7 @@ public class ZmanimController {
                 }
 
                 String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
+                String roundedDisplayName = minyan.getMinyanTime().roundedDisplayName();
                 if (dynamicDisplayName != null) {
                     if (minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT))
                             && startDate.after(zmanim.get(Zman.ALOT_HASHACHAR))) {
@@ -255,57 +256,28 @@ public class ZmanimController {
                                         organizationNusach,
                                         organizationId, locationName, startDate, minyan.getNusach(),
                                         minyan.getNotes(), organizationColor));
-                    } else {
-                        if (minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))
-                                && startDate.after(zmanim.get(Zman.MINCHA_GEDOLA))) {
-                            minyanEvents
-                                    .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
-                                            organizationNusach,
-                                            organizationId, locationName, startDate, minyan.getNusach(),
-                                            minyan.getNotes(), organizationColor));
-                        } else {
-                            if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
-                                    || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
-                                minyanEvents
-                                        .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
-                                                organizationNusach,
-                                                organizationId, locationName, startDate, minyan.getNusach(),
-                                                minyan.getNotes(), organizationColor));
-                            }
-                        }
-                    }
-                }
-                String roundedDisplayName = minyan.getMinyanTime().roundedDisplayName();
-                if (roundedDisplayName != null) {
-                    if (minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT))
-                            && startDate.after(zmanim.get(Zman.ALOT_HASHACHAR))) {
-                        minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
-                                organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
-                                minyan.getNusach(), minyan.getNotes(), organizationColor));
-                    } else {
-                        if (minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))
-                                && (startDate.after(shekiyaMinusOneMinute.getTime())
-                                        || (startDate.equals(shekiyaMinusOneMinute.getTime())))) {
+                    } else if (roundedDisplayName != null) {
+                        if (minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT))
+                                && startDate.after(zmanim.get(Zman.ALOT_HASHACHAR))) {
                             minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                     organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                     minyan.getNusach(), minyan.getNotes(), organizationColor));
                         } else {
-                            if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
-                                    || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
+                            if (minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))
+                                    && (startDate.after(shekiyaMinusOneMinute.getTime())
+                                            || (startDate.equals(shekiyaMinusOneMinute.getTime())))) {
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
+                            } else {
+                                if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
+                                        || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                            organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
+                                            minyan.getNusach(), minyan.getNotes(), organizationColor));
+                                }
                             }
                         }
-                    }
-                } else {
-                    if (minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT))
-                            && startDate.after(zmanim.get(Zman.ALOT_HASHACHAR))) {
-                        minyanEvents
-                                .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
-                                        organizationNusach,
-                                        organizationId, locationName, startDate, minyan.getNusach(),
-                                        minyan.getNotes(), organizationColor));
                     } else {
                         if (minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))
                                 && startDate.after(zmanim.get(Zman.MINCHA_GEDOLA))) {
