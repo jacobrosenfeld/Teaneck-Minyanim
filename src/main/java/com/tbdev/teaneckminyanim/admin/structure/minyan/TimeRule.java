@@ -38,7 +38,7 @@ class TimeRule {
         Date zmanTime = zmanimHandler.getZmanim(temp).get(zman);
         Time t = null; 
 //        TODO: DEAL WITH DEPRECATED FUNCTIONS
-        if(rounded){
+        if(!rounded){
             t = new Time(zmanTime.getHours(), zmanTime.getMinutes() + offsetMinutes, zmanTime.getSeconds() + 59, 0);
         } else{
             LocalDate sunday = temp.with(DayOfWeek.SUNDAY);
