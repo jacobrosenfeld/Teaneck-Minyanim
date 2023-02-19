@@ -284,7 +284,7 @@ public class MinyanTime {
             if (rule.getOffsetMinutes() < 0) {
                 return String.format("%d minutes before %s rounded", Math.abs(rule.getOffsetMinutes()), rule.getZman().displayName().toLowerCase());
             } else if (rule.getOffsetMinutes() == 0) {
-                return rule.getZman().displayName();
+                return String.format("%s rounded", Math.abs(rule.getOffsetMinutes()), rule.getZman().displayName());
             }  else if (rule.getOffsetMinutes() > 0) {
                 return String.format("%d minutes after %s rounded", rule.getOffsetMinutes(), rule.getZman().displayName().toLowerCase());
             } else {
