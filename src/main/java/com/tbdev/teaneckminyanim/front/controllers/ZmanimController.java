@@ -51,7 +51,7 @@ public class ZmanimController {
     GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
 
     Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm aa");
+    SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy | h:mm aa");
     SimpleDateFormat onlyDateFormat = new SimpleDateFormat("EEEE, MMMM d");
     SimpleDateFormat strippedDayFormat = new SimpleDateFormat("MMMM d");
     SimpleDateFormat timeFormatSec = new SimpleDateFormat("h:mm:ss aa");
@@ -121,7 +121,7 @@ public class ZmanimController {
         mv.getModel().put("date", dateFormat.format(date));
         mv.getModel().put("onlyDate", onlyDateFormat.format(date));
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy h:mm a");
         Date datenow = new Date();
         String timenow = dateFormat.format(datenow);
         mv.getModel().put("timenow", timenow);
@@ -487,7 +487,7 @@ public class ZmanimController {
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZET)));
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy h:mm a");
         Date datenow = new Date();
         String timenow = dateFormat.format(datenow);
         mv.getModel().put("timenow", timenow);
