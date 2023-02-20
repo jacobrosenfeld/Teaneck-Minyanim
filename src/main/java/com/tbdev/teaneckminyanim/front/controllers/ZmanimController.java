@@ -661,7 +661,7 @@ public class ZmanimController {
         List<MinyanEvent> nextMinyan = new ArrayList<>();
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
+            LocalDate ref = dateToLocalDate(today);
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3));
