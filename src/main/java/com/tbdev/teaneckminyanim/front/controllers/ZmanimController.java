@@ -75,7 +75,7 @@ public class ZmanimController {
 
     @GetMapping("/subscription")
     public ModelAndView subscription() {
-        return null;
+        return subscription();
     }
 
     private void setTimeZone(TimeZone tz) {
