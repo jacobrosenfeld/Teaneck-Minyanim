@@ -136,7 +136,7 @@
                         <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0"
                           class="scrollspy-example" tabindex="0">
                           <h4 id="shacharis" style="scroll-margin-top: 4em;">Shacharis</h4>
-                          <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
+                          <table class="table d-none d-lg-block" th:if="${!shacharisMinyanim.isEmpty()}">
                             <thead>
                               <tr>
                                 <th scope="col">Time</th>
@@ -154,6 +154,18 @@
                                 <td class="middle d-none d-lg-table-cell" th:text="${minyan.getNotes()}"></td>
                               </tr>
                             </tbody>
+                          </table>
+                          <table class="table d-lg-none" th:if="${!shacharisMinyanim.isEmpty()}">
+                            <tbody>
+                              <tr th:each="minyan: ${shacharisMinyanim}">
+                                  <td class="middle">
+                                      <span th:utext="${minyan.getFormattedStartTime()}"></span><br />
+                                      <span th:utext="${minyan.getInformation()}"></span><br />
+                                      <span th:utext="${minyan.getNusach().displayName()}"></span><br />
+                                      <span class="d-none d-lg-inline" th:utext="${minyan.getNotes()}"></span>
+                                  </td>
+                              </tr>
+                          </tbody>
                           </table>
                           <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
                             <h5><small class="text-muted">There are no additional Shacharis minyanim scheduled for today.</small>
