@@ -233,11 +233,11 @@ public class MinyanTime {
         } else if (t == TimeType.ROUNDED) {
             //            return "Rounded";
                         if (rule.getOffsetMinutes() < 0) {
-                            return String.format("%s minus %d minutes rounded", rule.getZman().displayName(), Math.abs(rule.getOffsetMinutes()));
+                            return String.format("Approximately %s minus %d minutes", rule.getZman().displayName(), Math.abs(rule.getOffsetMinutes()));
                         } else if (rule.getOffsetMinutes() == 0) {
-                            return rule.getZman().displayName();
+                            return String.format("Approximately %s", rule.getZman().displayName());
                         }  else if (rule.getOffsetMinutes() > 0) {
-                            return String.format("%s plus %d minutes rounded", rule.getZman().displayName(), rule.getOffsetMinutes());
+                            return String.format("Approximately %s plus %d minutes", rule.getZman().displayName(), rule.getOffsetMinutes());
                         } else {
                             return "INVALID";
                         }
@@ -282,11 +282,11 @@ public class MinyanTime {
     public String roundedDisplayName() {
         if (isRounded()) {
             if (rule.getOffsetMinutes() < 0) {
-                return String.format("%d minutes before %s rounded", Math.abs(rule.getOffsetMinutes()), rule.getZman().displayName().toLowerCase());
+                return String.format("Approximately %d minutes before %s", Math.abs(rule.getOffsetMinutes()), rule.getZman().displayName().toLowerCase());
             } else if (rule.getOffsetMinutes() == 0) {
                 return String.format("%s rounded", rule.getZman().displayName());
             }  else if (rule.getOffsetMinutes() > 0) {
-                return String.format("%d minutes after %s rounded", rule.getOffsetMinutes(), rule.getZman().displayName().toLowerCase());
+                return String.format("Approximately %d minutes after %s", rule.getOffsetMinutes(), rule.getZman().displayName().toLowerCase());
             } else {
                 return "INVALID";
             }
