@@ -837,19 +837,6 @@ this.core.speed(0);var b,c=a.proxy(this.clear,this),d=this.core.$stage.children(
 
 
 
-
-
-
-/*!
-* jquery.counterup.js 1.0
-*
-* Copyright 2013, Benjamin Intal http://gambit.ph @bfintal
-* Released under the GPL v2 License
-*
-* Date: Nov 26, 2013
-
-
-
 /*
  * jQuery Easing v1.3 - http://gsgd.co.uk/sandbox/jquery/easing/
  *
