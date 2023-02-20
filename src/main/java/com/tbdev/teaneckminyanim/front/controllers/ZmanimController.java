@@ -671,7 +671,7 @@ public class ZmanimController {
             Calendar mgMinusOneMinute = Calendar.getInstance();
             mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
-            if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))) {
+            if (startDate != null && (startDate.after(terminationDate))) {
                 if (startDate != null) {
                     String organizationName;
                     Nusach organizationNusach;
