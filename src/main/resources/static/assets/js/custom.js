@@ -103,7 +103,7 @@ jQuery(function($) {
 
   /* ----- Counter Up ----- */
 
-  const counterUp = window.counterUp2.default;
+  const counterUp = window.counterUp.default;
 
   const callback = entries => {
     entries.forEach(entry => {
