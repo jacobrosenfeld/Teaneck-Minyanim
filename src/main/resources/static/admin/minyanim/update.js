@@ -138,7 +138,6 @@ function applyMondayThroughFriday() {
         var nameType = document.getElementById(`${name}-time-type`);
         nameType.value = mondayMode;
         if (mondayMode === "nm") {
-
         } else if (mondayMode === "dynamic" || mondayMode === "rounded") {
             nameZman.value = mondayZman;
             nameOffset.value = mondayOffset;
