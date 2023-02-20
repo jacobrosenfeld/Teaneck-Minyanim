@@ -734,7 +734,9 @@ public class ZmanimController {
                                     organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                     minyan.getNusach(), minyan.getNotes(), organizationColor));
                         } else {
-                            if (minyan.getType().isMincha()) {
+                            if (minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))
+                                    && (startDate.after(mgMinusOneMinute.getTime())
+                                            || (startDate.equals(mgMinusOneMinute.getTime())))) {
                                 nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
