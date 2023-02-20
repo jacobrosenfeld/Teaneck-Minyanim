@@ -73,6 +73,11 @@ public class ZmanimController {
         return todaysZmanim();
     }
 
+    @GetMapping("/subscription")
+    public ModelAndView subscription() {
+        return null;
+    }
+
     private void setTimeZone(TimeZone tz) {
         // set time format
         timeFormat.setTimeZone(tz);
