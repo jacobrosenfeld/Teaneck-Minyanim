@@ -1969,7 +1969,3 @@ body {
 .logo-icon {
     padding-right: 1%;
 }
-
-.col-table tr { display: none; }
-
-.col-table tr.active { display: table-row; }
