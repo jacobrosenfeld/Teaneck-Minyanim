@@ -663,7 +663,7 @@ public class ZmanimController {
         List<MinyanEvent> nextMinyan = new ArrayList<>();
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = LocalDate.now();
+            LocalDate ref = dateToLocalDate(today);
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3));
@@ -673,7 +673,7 @@ public class ZmanimController {
             Calendar mgMinusOneMinute = Calendar.getInstance();
             mgMinusOneMinute.setTime(zmanimtoday.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
-            if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))) {
+            if (startDate != null && (startDate.after(terminationDate))) {
                 if (startDate != null) {
                     String organizationName;
                     Nusach organizationNusach;
@@ -714,8 +714,8 @@ public class ZmanimController {
                                     minyan.getNusach(), minyan.getNotes(), organizationColor));
                         } else {
                             if (minyan.getType().isMincha() && startDate.before(zmanimtoday.get(Zman.SHEKIYA))
-                                    && (startDate.after(shekiyaMinusOneMinute.getTime())
-                                            || (startDate.equals(shekiyaMinusOneMinute.getTime())))) {
+                                    && (startDate.after(mgMinusOneMinute.getTime())
+                                            || (startDate.equals(mgMinusOneMinute.getTime())))) {
                                 nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
