@@ -551,10 +551,23 @@
                <h4>Teaneck Minyanim is supported by volunteers and donations from people like you.</h4>
                <h1>Drop us a line to learn how you can help support and maintain Teaneck Minyanim.</h1>
                <div class="form wow fadeIn" data-wow-delay="0.2s">
-                <form id="chimp-form" class="subscribe-form wow zoomIn" action="/assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
+                <form id="chimp-form" class="subscribe-form wow zoomIn" action="https://sendy.josephjacobs.org/subscribe" method="POST" accept-charset="utf-8">
+                  <label for="name">Name</label><br/>
+                  <input type="text" name="name" id="name"/>
+                  <br/>
+                  <label for="email">Email</label><br/>
+                  <input type="email" name="email" id="email"/><br/><div style="display:none;">
+                  <label for="hp">HP</label><br/>
+                  <input type="text" name="hp" id="hp"/>
+                  </div>
+                  <input type="hidden" name="list" value="2GTjv7L7dlk4MXC1SN9Lgg"/>
+                  <input type="hidden" name="subform" value="yes"/>
+                  <input class="submit-button" name="submit" id="Sign up now"/>
+                </form>
+                <!-- <form id="chimp-form" class="subscribe-form wow zoomIn" action="/assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
                   <input class="mail" id="chimp-email" type="email" name="email" placeholder="Enter your email address" autocomplete="off">
                   <input class="submit-button" type="submit" value="Sign up now">
-                </form>
+                </form> -->
                 <div id="response"></div>
               </div>
               <div class="form-note">
