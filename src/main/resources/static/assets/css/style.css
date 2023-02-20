@@ -992,7 +992,6 @@ body {
 		font-weight: 700;
 		color: #275ed8;
 		color: #FFFFFF;
-		margin: 100vh auto 40vh;
 	}
 	.counter:not(.is-visible) {
 		visibility: hidden;
