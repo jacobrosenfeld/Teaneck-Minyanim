@@ -73,7 +73,7 @@
                           <h3>Upcoming Minyanim</h3>
                         </div>
                         <div class="tab-content" id="pills-tabContent">
-                          <div class="tab-pane fade active show" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
+                          <div class="tab-pane fade active show text-center" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
                             <table class="table" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
                               <thead>
                                <tr>
@@ -101,7 +101,7 @@
                                 </tr>
                               </tbody>
                             </table>
-                            <button class="btn-cta" id="load-more-button">Load More</button>
+                            <button class="btn-shuls" id="load-more-button">Load More</button>
 
                                         <div class="jumbotron alert alert-secondary" th:if="${allminyanim.isEmpty()}">
                                             <h4 class="mb-1">Sorry, there aren't any upcoming minyanim today.</h4>
