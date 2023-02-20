@@ -1966,3 +1966,6 @@ body {
 	max-width: 400px;
 	font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
+.logo-icon {
+    padding-right: 1%;
+}
