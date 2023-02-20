@@ -142,7 +142,7 @@
                                 <th scope="col">Time</th>
                                 <th scope="col">Location</th>
                                 <th scope="col">Nusach</th>
-                                <th scope="col" class="d-none d-lg-table-cell">Notes</th>
+                                <th scope="col">Notes</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -151,18 +151,19 @@
                                 <td class="middle" th:text="${minyan.getInformation()}">
                                 </td>
                                 <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
-                                <td class="middle d-none d-lg-table-cell" th:text="${minyan.getNotes()}"></td>
+                                <td class="middle" th:text="${minyan.getNotes()}"></td>
                               </tr>
                             </tbody>
                           </table>
+                          <!-- Mobile Table -->
                           <table class="table d-lg-none" th:if="${!shacharisMinyanim.isEmpty()}">
                             <tbody>
                               <tr th:each="minyan: ${shacharisMinyanim}">
                                   <td class="middle">
-                                      <span th:utext="${minyan.getFormattedStartTime()}"></span><br />
+                                      <<h2 th:style="'color: ' + ${org.getOrgColor()}" th:utext="${minyan.getFormattedStartTime()}"></h2><br />
                                       <span th:utext="${minyan.getInformation()}"></span><br />
                                       <span th:utext="${minyan.getNusach().displayName()}"></span><br />
-                                      <span class="d-none d-lg-inline" th:utext="${minyan.getNotes()}"></span>
+                                      <span th:utext="${minyan.getNotes()}"></span>
                                   </td>
                               </tr>
                           </tbody>
@@ -178,7 +179,7 @@
                                 <th scope="col">Time</th>
                                 <th scope="col">Location</th>
                                 <th scope="col">Nusach</th>
-                                <th scope="col" class="d-none d-lg-table-cell">Notes</th>
+                                <th scope="col">Notes</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -188,7 +189,7 @@
                                   <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
                                 </td>
                                 <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
-                                <td class="middle d-none d-lg-table-cell" th:text="${minyan.getNotes()}"></td>
+                                <td class="middle" th:text="${minyan.getNotes()}"></td>
                               </tr>
                             </tbody>
                           </table>
@@ -203,7 +204,7 @@
                                 <th scope="col">Time</th>
                                 <th scope="col">Location</th>
                                 <th scope="col">Nusach</th>
-                                <th scope="col" class="d-none d-lg-table-cell">Notes</th>
+                                <th scope="col">Notes</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -213,7 +214,7 @@
                                   <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
                                 </td>
                                 <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
-                                <td class="middle d-none d-lg-table-cell" th:text="${minyan.getNotes()}"></td>
+                                <td class="middle" th:text="${minyan.getNotes()}"></td>
                               </tr>
                             </tbody>
                           </table>
