@@ -224,21 +224,32 @@
             </div>
         </div>
         </div>
+        </div>
+        </div>
         <!-- end scrollspy -->
 
         <!-- CTA Signup Section -->
+        <div id="main" class="main">
         <div id="info" class="cta-sm">
           <div class="container-m text-center">
             <div class="cta-content">
-              <h4>Teaneck Minyanim is supported by volunteers and donations from people like you.</h4>
-              <h1>Drop us a line to learn how you can help support and maintain Teaneck Minyanim.</h1>
-              <div class="form wow fadeIn" data-wow-delay="0.2s">
-                <form id="chimp-form" class="subscribe-form wow zoomIn" action="assets/php/subscribe.php" method="post"
-                  accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
-                  <input class="mail" id="chimp-email" type="email" name="email" placeholder="Enter your email address"
-                    autocomplete="off">
-                  <input class="submit-button" type="submit" value="Sign up now">
+               <h1>Subscribe now to stay up to date on Teaneck Minyanim updates and news!</h1>
+               <div class="form wow fadeIn" data-wow-delay="0.2s">
+                <form id="chimp-form" class="subscribe-form wow zoomIn" action="https://sendy.josephjacobs.org/subscribe" method="POST" accept-charset="utf-8">
+                  <input type="text" name="name" id="name" placeholder="Enter your name"/>
+                  <br/>
+                  <input type="email" name="email" id="email" placeholder="Enter your email address"/><br/><div style="display:none;">
+                  <label for="hp">HP</label><br/>
+                  <input type="text" name="hp" id="hp"/>
+                  </div>
+                  <input type="hidden" name="list" value="2GTjv7L7dlk4MXC1SN9Lgg"/>
+                  <input type="hidden" name="subform" value="yes"/>
+                  <input class="submit-button" name="submit" id="submit" type="submit" value="Sign up now"/>
                 </form>
+                <!-- <form id="chimp-form" class="subscribe-form wow zoomIn" action="/assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
+                  <input class="mail" id="chimp-email" type="email" name="email" placeholder="Enter your email address" autocomplete="off">
+                  <input class="submit-button" type="submit" value="Sign up now">
+                </form> -->
                 <div id="response"></div>
               </div>
               <div class="form-note">
@@ -255,19 +266,6 @@
                                 <a class="card-text" th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></a> 
                                 <a th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}" class="card-link">Visit the website</a>
                                 <a href="#" class="card-link">Another link</a>-->
-      </div>
-    </div>
-  </div>
-  </div>
-  </div>
-  <!--/row-->
-  </main>
-  <!--/main col-->
-  </div>
-  </div>
-  </div>
-  </div>
-  <!--/.container-->
   <!-- Array Footer Section -->
   <div class="footer-sm">
     <div class="container">
@@ -302,7 +300,6 @@
   <!-- Scroll To Top Ends-->
 
   </div> <!-- Main -->
-  </div><!-- Wrapper -->
 
 
   <!-- Jquery and Js Plugins -->
