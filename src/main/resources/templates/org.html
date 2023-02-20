@@ -160,8 +160,7 @@
                             <tbody>
                               <tr th:each="minyan: ${shacharisMinyanim}">
                                   <td class="middle">
-                                      <h5 th:style="'color: ' + ${org.getOrgColor()}" th:utext="@{|${minyan.getType().displayName()} at ${minyan.getFormattedStartTime()}|}"></h5>
-                                      <p th:utext="${minyan.getInformation()}"></p><br />
+                                      <h5 th:style="'color: ' + ${org.getOrgColor()}" th:utext="@{|${minyan.getType().displayName()} at ${minyan.getFormattedStartTime()} in the ${minyan.getInformation()}|}"></h5>
                                       <p th:utext="${minyan.getNusach().displayName()}"></p><br />
                                       <em><p style="color: #6C757D" th:utext="${minyan.getNotes()}"></p></em>
                                   </td>
