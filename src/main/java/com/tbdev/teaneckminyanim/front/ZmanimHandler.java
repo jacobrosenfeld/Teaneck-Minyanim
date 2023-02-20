@@ -33,7 +33,7 @@ public class ZmanimHandler {
     }
 
 
-    public Dictionary getZmanimForNow() {
+    public Dictionary<Zman, Date> getZmanimForNow() {
         return getZmanim(LocalDate.now());
     }
     public Dictionary<Zman, Date> getZmanim(LocalDate date) {
