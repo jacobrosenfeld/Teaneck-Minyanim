@@ -117,9 +117,15 @@ p {
 	font-family: 'Montserrat';
 	font-size: 14px;
 }
-.p-only {
+.p-nusach {
 	font-family: 'Montserrat';
 	font-size: 14px;
+}
+.p-notes {
+	font-family: 'Montserrat';
+	font-size: 14px;
+	font-style: italic;
+	color: #6C757D;
 }
 
 /*----- Helper Classes -----*/
