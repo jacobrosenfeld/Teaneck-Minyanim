@@ -69,7 +69,7 @@
                 <div class="col-md-4 btn-toolbar d-flex flex-nowrap justify-content-center p-2" role="toolbar" aria-label="Toolbar with button groups">
                   <div class="btn-group  me-2" style="align-self: center;" role="group">
                   <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">Today</button> -->
-                    <button type="button" th:data-url="@/orgs/${org.getId()}|}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn">Today</button>
+                    <button type="button" th:data-url="@{|/orgs/${org.getId()}|}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn">Today</button>
                  </div>
                   <div class="btn-group me-2" style="align-self: center;" role="group">
                   <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
