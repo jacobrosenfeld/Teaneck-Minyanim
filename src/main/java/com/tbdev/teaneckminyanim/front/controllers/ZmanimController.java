@@ -671,7 +671,7 @@ public class ZmanimController {
             Calendar mgMinusOneMinute = Calendar.getInstance();
             mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
-            if (startDate != null && (startDate.after(terminationDate))) {
+            if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))) {
                 if (startDate != null) {
                     String organizationName;
                     Nusach organizationNusach;
@@ -734,9 +734,7 @@ public class ZmanimController {
                                     organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                     minyan.getNusach(), minyan.getNotes(), organizationColor));
                         } else {
-                            if (minyan.getType().isMincha() && startDate.before(zmanim.get(Zman.SHEKIYA))
-                                    && (startDate.after(mgMinusOneMinute.getTime())
-                                            || (startDate.equals(mgMinusOneMinute.getTime())))) {
+                            if (minyan.getType().isMincha()) {
                                 nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
