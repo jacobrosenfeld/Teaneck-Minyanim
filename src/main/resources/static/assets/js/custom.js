@@ -156,14 +156,3 @@ jQuery(function($) {
 //  });
 
 });
-
-// 
-// Collapsable table
-$('.col-table tr:nth-child(n+1):nth-child(-n+8)').addClass('active');
-
-$('#minyan-load').on('click', function(e) {
-  e.preventDefault();  
-  var $rows = $('.minyan-table tr');
-  var lastActiveIndex = $rows.filter('.active:last').index();
-  $rows.filter(':lt(' + (lastActiveIndex + 10) + ')').addClass('active');
-});
