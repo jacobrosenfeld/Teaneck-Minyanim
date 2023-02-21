@@ -101,10 +101,6 @@
                                 </tr>
                               </tbody>
                             </table>
-                            <!-- Load More Button -->
-                            <div class="text-center">
-                              <button class="btn-shuls d-none d-lg-block" id="load-more-button">Load More</button>
-                            </div>
                             <!-- Mobile Table -->
                             <table class="table table-org d-lg-none" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
                               <tbody>
@@ -132,6 +128,9 @@
                                 </tr>
                               </tbody>
                             </table>
+                            <div class="text-center">
+                              <button class="btn-shuls d-none d-lg-block" id="load-more-button">Load More</button>
+                            </div>
                             <div class="jumbotron alert alert-secondary" th:if="${allminyanim.isEmpty()}">
                               <h4 class="mb-1">Sorry, there aren't any upcoming minyanim today.</h4>
                             </div>
