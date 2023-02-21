@@ -74,7 +74,7 @@
                         <div class="tab-content" id="pills-tabContent">
                           <div class="tab-pane fade active show text-center">
                             <!-- Desktop Table -->
-                            <table class="table d-none d-lg-block" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
+                            <table class="table mobile-hide" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
                               <thead>
                                <tr>
                                 <th scope="col" class="th-sm">Shul</th>
@@ -101,14 +101,16 @@
                                       <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
                                       <p class="p-nusach" th:utext="${minyan.dynamicTimeString()}"></p>
                                     </td>
-                                    <td class="align-middle" th:text="${minyan.getLocationName()}"></td>
+                                    <td class="align-middle">
+                                      <p class="p-nusach" th:utext="${minyan.getLocationName()}"></p>
+                                    </td>
                                     <!-- <td class="middle" th:text="${minyan.getNusach().displayName()}"></td> -->
                                     <!-- <td class="middle" th:text="${minyan.getNotes()}"></td> -->
                                 </tr>
                               </tbody>
                             </table>
                             <!-- Mobile Table -->
-                            <table class="table table-org d-lg-none" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
+                            <table class="table desktop-hide" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
                               <tbody>
                                 <tr th:each="minyan: ${allminyanim}">
                                   <td class="middle">
