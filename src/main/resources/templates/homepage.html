@@ -97,7 +97,10 @@
                                       <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>
                                     </td> -->
                                   </td>
-                                    <td class="align-middle" th:text="${minyan.getFormattedStartTime()}"></td>
+                                    <td class="align-middle">
+                                      <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
+                                      <p class="p-nusach" th:utext="${minyan.dynamicTimeString()}"></p>
+                                    </td>
                                     <td class="align-middle" th:text="${minyan.getLocationName()}"></td>
                                     <!-- <td class="middle" th:text="${minyan.getNusach().displayName()}"></td> -->
                                     <!-- <td class="middle" th:text="${minyan.getNotes()}"></td> -->
