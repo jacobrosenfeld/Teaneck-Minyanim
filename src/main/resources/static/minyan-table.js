@@ -2,6 +2,7 @@ let table = document.getElementById("minyan-table");
 let rows = table.rows;
 let rowNum = 10; // the number of rows to display initially
 let increment = 5; // the number of rows to add each time the load more button is clicked
+let loadMoreButton = document.getElementById("load-more-button");
 
 function loadMore() {
   let numRows = rows.length;
@@ -17,7 +18,7 @@ function loadMore() {
     for (let i = rowNum; i < numRows; i++) {
       rows[i].style.display = "";
     }
-    document.getElementById("load-more-button").style.display = "none";
+    loadMoreButton.style.display = "none";
   }
 }
 
@@ -26,5 +27,10 @@ for (let i = rowNum; i < rows.length; i++) {
   rows[i].style.display = "none";
 }
 
-// add event listener to the load more button
-document.getElementById("load-more-button").addEventListener("click", loadMore);
+// hide load more button if there are 5 or fewer rows
+if (rows.length <= 5) {
+  loadMoreButton.style.display = "none";
+} else {
+  // add event listener to the load more button
+  loadMoreButton.addEventListener("click", loadMore);
+}
