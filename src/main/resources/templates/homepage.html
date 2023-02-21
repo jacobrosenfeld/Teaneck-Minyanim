@@ -72,7 +72,7 @@
                           <h3>Upcoming Minyanim</h3>
                         </div>
                         <div class="tab-content" id="pills-tabContent">
-                          <div class="tab-pane fade active show text-center" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
+                          <div class="table-responsive">
                             <!-- Desktop Table -->
                             <table class="table d-none d-lg-block" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
                               <thead>
@@ -128,12 +128,14 @@
                                 </tr>
                               </tbody>
                             </table>
+                            <div class="text-center">
                             <button class="btn-shuls" id="load-more-button">Load More</button>
+                            </div>
                                         <div class="jumbotron alert alert-secondary" th:if="${allminyanim.isEmpty()}">
                                             <h4 class="mb-1">Sorry, there aren't any upcoming minyanim today.</h4>
                                         </div>
-                                    </div>
-                                </div>
+                          </div>
+                        </div>
                             </div>
                             <div class="col-lg-4" id="zmanim-box">
                               <div class="card-text">
