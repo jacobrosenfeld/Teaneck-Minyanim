@@ -99,7 +99,22 @@
                               </tbody>
                             </table>
                             <button class="btn-shuls" id="load-more-button">Load More</button>
-
+                            <table class="table table-org" th:if="${!allminyanim.isEmpty()}">
+                              <tbody>
+                                <tr th:each="minyan: ${allminyanim}">
+                                  <td class="middle">
+                                    <h5 th:style="'color: ' + ${org.getOrgColor()}"
+                                      th:utext="${minyan.getType().displayName()} "></h5>
+                                    <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
+                                    <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
+                                  </td>
+                                  <td class="middle">
+                                    <p class="p-time" th:utext="${minyan.getFormattedStartTime()}"></p>
+                                    <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
                                         <div class="jumbotron alert alert-secondary" th:if="${allminyanim.isEmpty()}">
                                             <h4 class="mb-1">Sorry, there aren't any upcoming minyanim today.</h4>
                                         </div>
