@@ -103,10 +103,26 @@ jQuery(function($) {
 
   /* ----- Counter Up ----- */
 
-$('.counter').counterUp({
-		delay: 10,
-		time: 1000
-});
+  const counterUp = window.counterUp.default;
+
+  const callback = entries => {
+    entries.forEach(entry => {
+      const el = entry.target;
+      if (entry.isIntersecting && !el.classList.contains('is-visible')) {
+        counterUp(el, {
+          duration: 2000,
+          delay: 16,
+        });
+        el.classList.add('is-visible');
+      }
+    });
+  };
+  
+  const IO = new IntersectionObserver(callback, { threshold: 1 });
+  
+  const counters = document.querySelectorAll('.counter');
+  counters.forEach(counter => IO.observe(counter));
+  
 
 /*----- Preloader ----- */
 
@@ -120,23 +136,23 @@ $('.counter').counterUp({
 
 /*----- Subscription Form ----- */
 
-$(document).ready(function() {
-     // jQuery Validation
-     $("#chimp-form").validate({
-         // if valid, post data via AJAX
-         submitHandler: function(form) {
-             $.post("assets/php/subscribe.php", { email: $("#chimp-email").val() }, function(data) {
-                 $('#response').html(data);
-             });
-         },
-         // all fields are required
-         rules: {
-             email: {
-                 required: true,
-                 email: true
-             }
-         }
-     });
- });
+// $(document).ready(function() {
+//      // jQuery Validation
+//      $("#chimp-form").validate({
+//          // if valid, post data via AJAX
+//          submitHandler: function(form) {
+//              $.post("assets/php/subscribe.php", { email: $("#chimp-email").val() }, function(data) {
+//                  $('#response').html(data);
+//              });
+//          },
+//          // all fields are required
+//          rules: {
+//              email: {
+//                  required: true,
+//                  email: true
+//              }
+//          }
+//      });
+//  });
 
 });

@@ -3,8 +3,17 @@
   <head>
     <meta charset="utf-8">
     <title>Teaneck Minyanim</title>
-    <link rel="icon" href="/assets/icons/favicon.png" type="image/png" sizes="16x16">
-    <meta name="viewport" content="width=device-width, initial-scale=.85">
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+    <link rel="manifest" href="/assets/icons/site.webmanifest">
+    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
+    <meta name="msapplication-TileColor" content="#275ed8">
+    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="Zmanim and Minyanim for Teaneck, New Jersey">
     <meta name="keywords" content="Jewish,minyanim,zmanim,times,sechedule,teaneck,nj,07666">
@@ -23,17 +32,13 @@
   </head>
   <body>
       <!-- Navbar Section -->
-      <div class="horizontal-container d-flex" id="wrapper">
+      <div class="horizontal-container d-flex container-xl" id="wrapper">
         <th:block th:include="frontnavbar"></th:block>
         <!-- Navbar End -->
         <div class="container-fluid " id="main">
-          <div class="row row-offcanvas row-offcanvas-left">
-              <!-- <th:block th:include="admin/sidebar"></th:block> -->
-              <!--/col-->
-              <main class="col main pt-5 mt-4 overflow-auto" style="flex-shrink: 3">
+              <main class="col main pt-5 mt-4 overflow-auto">
                 <!-- Date Nav Buttons -->
-                <div class="d-flex justify-content-between">
-                  <!-- <p class="col-md-4 h3 mt-3 mobile-hide" th:text="${'Schedule | ' + onlyDate}"></p> -->
+                <div class="d-sm-flex justify-content-between">
                   <h4 class="col-md-4 mt-3" th:text="${onlyDate}"></h4>
                   <div class="col-md-4 btn-toolbar d-flex flex-nowrap justify-content-center p-2" role="toolbar" aria-label="Toolbar with button groups">
                     <div class="btn-group  me-2" style="align-self: center;" role="group">
@@ -46,21 +51,17 @@
                       <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn">></button>
                     </div>
                   </div>
-                  <!-- <div class="col-md-4 mt-2 btn-group desktop-hide" style="height: 50%; align-self: center;" role="group">
-                    <button type="button" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn" style="width: 38%;" th:text="${yesterdayStrippedDay}">‹</button>
-                    <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn" style="width: 38%;" th:text="${tommorowStrippedDay}">›</button>
-                  </div> -->
                     <h4 class="col-md-4 mt-3 mobile-hide"  style="text-align: right; font-weight: 430;" th:text="${hebrewDate}"></h4>
                 </div>
                 <!-- End Date Nav Buttons -->
                 <hr>
-                <div id="housing-housing">
+                <!-- <div id="housing-housing">
                   <div class="mpt0" id="row-housing" style="padding: 1rem;">
                     <div class="row">
                       <img src="/assets/images/Leaderboard-728x90.jpg" class="img-fluid" alt="Advertisement">
                     </div>
                   </div>
-                </div>
+                </div> -->
                 <div id="housing-housing">
                   <div class="mpt0" id="row-housing" style="padding: 1rem;">
                     <div class="row">
@@ -69,8 +70,8 @@
                           <h3>Upcoming Minyanim</h3>
                         </div>
                         <div class="tab-content" id="pills-tabContent">
-                          <div class="tab-pane fade active show" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
-                            <table class="table" th:if="${!allminyanim.isEmpty()}">
+                          <div class="tab-pane fade active show text-center" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
+                            <table class="table" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
                               <thead>
                                <tr>
                                 <th scope="col" class="th-sm">Shul</th>
@@ -97,80 +98,12 @@
                                 </tr>
                               </tbody>
                             </table>
+                            <button class="btn-shuls" id="load-more-button">Load More</button>
+
                                         <div class="jumbotron alert alert-secondary" th:if="${allminyanim.isEmpty()}">
                                             <h4 class="mb-1">Sorry, there aren't any upcoming minyanim today.</h4>
                                         </div>
                                     </div>
-                                    <!-- <div class="tab-pane fade" id="pills-shacharit" role="tabpanel" aria-labelledby="pills-shacharit-tab">
-                                        <table class="table" th:if="${!shacharitMinyanim.isEmpty()}">
-                                            <thead>
-                                            <tr>
-                                                <th scope="col">Time</th>
-                                                <th scope="col">Minyan</th>
-                                                <th scope="col">Location</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr th:each="minyan: ${shacharitMinyanim}">
-                                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                                <td class="middle">
-                                                    <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                                </td>
-                                                <td class="middle" th:text="${minyan.getLocationName()}"></td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                        <div class="jumbotron" th:if="${shacharitMinyanim.isEmpty()}">
-                                            <h4>Sorry, there aren't any shacharit minyanim scheduled.</h4>
-                                        </div>
-                                    </div>
-                                    <div class="tab-pane fade" id="pills-mincha" role="tabpanel" aria-labelledby="pills-mincha-tab">
-                                        <table class="table" th:if="${!minchaMinyanim.isEmpty()}">
-                                            <thead>
-                                            <tr>
-                                                <th scope="col">Time</th>
-                                                <th scope="col">Minyan</th>
-                                                <th scope="col">Location</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr th:each="minyan: ${minchaMinyanim}">
-                                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                                <td class="middle">
-                                                    <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                                </td>
-                                                <td class="middle" th:text="${minyan.getLocationName()}"></td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                        <div class="jumbotron" th:if="${minchaMinyanim.isEmpty()}">
-                                            <h4>Sorry, there aren't any mincha minyanim scheduled.</h4>
-                                        </div>
-                                    </div>
-
-                                    <div class="tab-pane fade" id="pills-maariv" role="tabpanel" aria-labelledby="pills-maariv-tab">
-                                        <table class="table" th:if="${!maarivMinyanim.isEmpty()}">
-                                            <thead>
-                                            <tr>
-                                                <th scope="col">Time</th>
-                                                <th scope="col">Minyan</th>
-                                                <th scope="col">Location</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr th:each="minyan: ${maarivMinyanim}">
-                                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                                <td class="middle">
-                                                    <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}"></a>
-                                                </td>
-                                                <td class="middle" th:text="${minyan.getLocationName()}"></td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                            <div class="jumbotron" th:if="${maarivMinyanim.isEmpty()}">
-                                            <h4>Sorry, there aren't any maariv minyanim scheduled.</h4>
-                                        </div>
-                                    </div> -->
                                 </div>
                             </div>
                             <div class="col-lg-4" id="zmanim-box">
@@ -300,13 +233,10 @@
                         </div>
                     </div>
                 </div>
-                    <!--/row-->
                 </main>
-                <!--/main col-->
             </div>
         </div>
         <!--/.container-->
-        <!--    Welcome to the dashboard, [[${#httpServletRequest.remoteUser}]].-->
     </div>
       <div id="main" class="main">
         <div id="shuls" class="features wow fadeInDown">
@@ -351,7 +281,7 @@
                </div>
                <div class="col-sm-4">
                  <div class="counter-up">
-                    <h3><span class="counter">1000</span>+</h3>
+                    <h3 class="counter">1000+</h3>
                    <div class="counter-text">
                      <h2>Users</h2>
                    </div>
@@ -368,193 +298,29 @@
          </div>
         </div><!-- Counter Section Ends -->
 
-        <div class="ar-ft-single wow fadeIn">
-          <div class="container-m">
-            <div class="ar-feature">
-              <div class="ar-list">
-                <ul>
-                  <li>
-                    <div class="ar-icon">
-                      <img src="/assets/icons/f1.png" width="30" alt="Icon">
-                    </div>
-                    <div class="ar-text">
-                      <h3>Client Support</h3>
-                      <p>Team hangouts and instant text messaging right from the dashboard.</p>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="ar-icon">
-                      <img src="/assets/icons/f4.png" width="30" alt="Icon">
-                    </div>
-                    <div class="ar-text">
-                      <h3>Secure Servers</h3>
-                      <p>Team hangouts and instant text messaging right from the dashboard.</p>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="ar-icon">
-                      <img src="/assets/icons/f11.png" width="30" alt="Icon">
-                    </div>
-                    <div class="ar-text">
-                      <h3>Product Feedback</h3>
-                      <p>Team hangouts and instant text messaging right from the dashboard.</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <div class="ar-image">
-                <img class="ar-img img-fluid" src="/assets/images/feature-2.png" alt="Hero Image">
-              </div>
-            </div>
-          </div>
-        </div>
-
-
-
-         <div id="reviews" class="yd-reviews"><!-- Array Reviews -->
-           <div class="container">
-             <div class="row text-center">
-               <div class="col-sm-12 col-lg-8 offset-lg-2">
-                 <div class="intro wow fadeIn" data-wow-delay="0.1s">
-                   <h1>Customers say nice things</h1>
-                   <p>We have  very fair pricing policy that would benefit you and us at the same time.
-                      Get the free plan &amp; if you need more - pay.
-                   </p>
-                 </div>
-               </div>
-
-               <div class="col-sm-12 col-lg-8 offset-lg-2 text-center">
-                 <div class="review-cards owl-carousel owl-theme wow fadeInDown" data-wow-delay="0.2s">
-                   <div class="card-single">
-                     <div class="review-text">
-                       <h1>"We have very fair pricing policy that would benefit you and us at the same time.
-                         Choose what price you're willing to pay. Get the free plan & if you need more - pay."
-                       </h1>
-                     </div>
-                     <div class="review-attribution">
-                       <div class="review-img">
-                         <img class="img-fluid rounded-circle" src="/assets/icons/review-1.png" alt="Review">
-                       </div>
-                       <i class="ion ion-star"></i>
-                      <i class="ion ion-star"></i>
-                      <i class="ion ion-star"></i>
-                      <i class="ion ion-star"></i>
-                      <i class="ion ion-ios-star-half"></i>
-                       <h2> Albert Rossi</h2>
-                       <h6>Stack Developer</h6>
-                       <a href="#">Dropboxes Inc</a>
-                     </div>
-                   </div>
-                   <div class="card-single">
-                     <div class="review-text">
-                       <h1>"We have very fair pricing policy that would benefit you and us at the same time.
-                         Choose what price you're willing to pay. Get the free plan & if you need more - pay."
-                       </h1>
-                     </div>
-                     <div class="review-attribution">
-                       <div class="review-img">
-                         <img class="img-fluid rounded-circle" src="/assets/icons/review-2.png" alt="Review">
-                       </div>
-                       <i class="ion ion-star"></i>
-                      <i class="ion ion-star"></i>
-                      <i class="ion ion-star"></i>
-                      <i class="ion ion-star"></i>
-                      <i class="ion ion-ios-star-half"></i>
-                       <h2> Melissa Vanbergh</h2>
-                       <h6>Vice President</h6>
-                       <a href="#">Vestor Corp</a>
-                     </div>
-                   </div>
-                   <div class="card-single">
-                     <div class="review-text">
-                       <h1>"We have very fair pricing policy that would benefit you and us at the same time.
-                         Choose what price you're willing to pay. Get the free plan & if you need more - pay."
-                       </h1>
-                     </div>
-                     <div class="review-attribution">
-                       <div class="review-img">
-                         <img class="img-fluid rounded-circle" src="/assets/icons/review-3.png" alt="Review">
-                       </div>
-                       <i class="ion ion-star"></i>
-                      <i class="ion ion-star"></i>
-                      <i class="ion ion-star"></i>
-                      <i class="ion ion-star"></i>
-                      <i class="ion ion-star"></i>
-                       <h2> Joshua Peterson</h2>
-                       <h6>Product Developer</h6>
-                       <a href="#">Betabet Inc</a>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </div>
-         <!-- Array Reviews Ends -->
-
-
-        <!-- Array Pricing Section -->
-        <div id="pricing" class="pricing-section text-center">
-          <div class="container">
-            <div class="row">
-              <div class="col-sm-12">
-                <div class="pricing-intro wow fadeInDown">
-                  <h1>Pricing Plans.</h1>
-                  <p>
-                    Our plans are designed to meet the requirements of both beginners <br class="hidden-xs"> and players.
-                    Get the right plan that suits you.
-                  </p>
-                </div>
-                <div class="row">
-                  <div class="col-lg-4 offset-lg-2 col-md-6">
-                   <div class="table-left wow fadeInDown">
-                     <div class="pricing-details">
-                       <h2>Freemium</h2>
-                       <img src="/assets/icons/free.png" width="60" alt="Icon">
-
-                       <span>$0.00</span>
-                          <ul>
-                           <li>First basic feature </li>
-                           <li>Second feature goes here</li>
-                           <li>Any other third feature</li>
-                           </ul>
-                         <button class="btn-action">Get Plan</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-4 col-md-6">
-                    <div class="table-right wow fadeInDown">
-                      <div class="pricing-details">
-                         <h2>Beginner</h2>
-                         <img src="/assets/icons/paid.png" width="60" alt="Icon">
-                         <span>$24.99</span>
-                         <ul>
-                           <li>First premium feature </li>
-                           <li>Second premium one goes here</li>
-                           <li>Third premium feature here</li>
-                         </ul>
-                         <button class="btn-action">Buy Now</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Array Pricing Ends -->
-
         <!-- CTA Signup Section -->
         <div id="info" class="cta-sm">
           <div class="container-m text-center">
             <div class="cta-content">
-               <h4>Teaneck Minyanim is supported by volunteers and donations from people like you.</h4>
-               <h1>Drop us a line to learn how you can help support and maintain Teaneck Minyanim.</h1>
+              <h1>Bug? Question? Comment? Donation?</h1><h5><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h5>
+              <hr>
+              <h3>Subscribe now to stay up to date on Teaneck Minyanim updates and news!</h3>
                <div class="form wow fadeIn" data-wow-delay="0.2s">
-                <form id="chimp-form" class="subscribe-form wow zoomIn" action="/assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
+                <form id="chimp-form" class="subscribe-form wow zoomIn" action="https://sendy.josephjacobs.org/subscribe" method="POST" accept-charset="utf-8">
+                  <input type="text" name="name" id="name" placeholder="Enter your name"/>
+                  <br/>
+                  <input type="email" name="email" id="email" placeholder="Enter your email address"/><br/><div style="display:none;">
+                  <label for="hp">HP</label><br/>
+                  <input type="text" name="hp" id="hp"/>
+                  </div>
+                  <input type="hidden" name="list" value="2GTjv7L7dlk4MXC1SN9Lgg"/>
+                  <input type="hidden" name="subform" value="yes"/>
+                  <input class="submit-button" name="submit" id="submit" type="submit" value="Sign up now"/>
+                </form>
+                <!-- <form id="chimp-form" class="subscribe-form wow zoomIn" action="/assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
                   <input class="mail" id="chimp-email" type="email" name="email" placeholder="Enter your email address" autocomplete="off">
                   <input class="submit-button" type="submit" value="Sign up now">
-                </form>
+                </form> -->
                 <div id="response"></div>
               </div>
               <div class="form-note">
@@ -570,10 +336,13 @@
           <div class="container">
             <div class="row">
               <div class="col-md-4">
-                <a class="footer-logo" href="#">TB Dev</a>
+                <a class="footer-logo" href="https://teaneckminyanim.com">TB Dev</a>
               </div>
               <div class="col-md-4">
                 <h6>&copy; TB Dev and Teaneck Minyanim</h6>
+              </div>
+              <div class="col-md-4 text-end">
+                <h6><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h6>
               </div>
               <!-- <div class="col-md-4">
                 <ul>
@@ -596,5 +365,6 @@
        <!-- Scroll To Top Ends-->
 
       </div> <!-- Main -->
+      <script type="text/javascript" src="/minyan-table.js"></script>
   </body>
 </html>
