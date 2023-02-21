@@ -117,8 +117,9 @@
                                     <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
                                   </td>
                                   <td class="middle">
-                                    <p class="p-time" th:utext="${minyan.getFormattedStartTime()}"></p>
+                                    <p class="p-time" th:if th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
                                     <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
+                                    <p class="p-nusach" th:utext="${minyan.getFormattedStartTime()}"></p>
                                   </td>
                                 </tr>
                               </tbody>

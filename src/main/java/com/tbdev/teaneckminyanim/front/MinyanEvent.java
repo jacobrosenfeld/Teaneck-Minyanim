@@ -81,13 +81,13 @@ public class MinyanEvent {
         return startTime;
     }
 
-    public String getFormattedStartTime() {
+    public String getFormattedStartTimeOnly() {
 //        return startTime.toString();
         SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
             return timeFormat.format(startTime);
         }
 
-    public String getFormattedStartInfo() {
+    public String getFormattedStartTime() {
         //        return startTime.toString();
                 SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
                 if (dynamicTimeString != null) {
