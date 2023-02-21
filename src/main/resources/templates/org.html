@@ -11,7 +11,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
   <link rel="manifest" href="/assets/icons/site.webmanifest">
   <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
-  
+
   <meta name="msapplication-TileColor" content="#275ed8">
   <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
   <meta name="theme-color" content="#ffffff">
@@ -19,24 +19,22 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="description" content="Zmanim and Minyanim for Teaneck New Jersey">
   <meta name="keywords" content="Jewish,minyanim,zmanim,times,sechedule,teaneck,nj,07666">
-  <script
-    src="https://code.jquery.com/jquery-3.6.3.min.js"
-    integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU="
-    crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.3.min.js"
+    integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
     crossorigin="anonymous"></script>
   <script th:inline="javascript">
-     /*<![CDATA[*/ 
+    /*<![CDATA[*/
     var address = /*[[${org.getAddress()}]]*/ "";
     var shulname = /*[[${org.getName()}]]*/ "";
     var shulcolor = /*[[${org.getOrgColor()}]]*/ "";
     /*]]>*/
   </script>
   <script th:if="${upcoming != null}" th:inline="javascript">
-    /*<![CDATA[*/ 
+    /*<![CDATA[*/
     var minyantype = /*[[${upcoming.getType().displayName()}]]*/ "";
     var minyantime = /*[[${upcoming.getFormattedStartTime()}]]*/ "";
       /*]]>*/
@@ -63,23 +61,31 @@
         <div class="row" style="flex-direction: column;">
           <main class="col main pt-5 mt-4 overflow-auto">
             <!-- Date Nav header -->
-              <!-- Date Nav Buttons -->
-              <div class="d-sm-flex justify-content-between">
-                <h4 class="col-md-4 mt-3" th:text="${onlyDate}"></h4>
-                <div class="col-md-4 btn-toolbar d-flex flex-nowrap justify-content-center p-2" role="toolbar" aria-label="Toolbar with button groups">
-                  <div class="btn-group  me-2" style="align-self: center;" role="group">
+            <!-- Date Nav Buttons -->
+            <div class="d-sm-flex justify-content-between">
+              <h4 class="col-md-4 mt-3" th:text="${onlyDate}"></h4>
+              <div class="col-md-4 btn-toolbar d-flex flex-nowrap justify-content-center p-2" role="toolbar"
+                aria-label="Toolbar with button groups">
+                <div class="btn-group  me-2" style="align-self: center;" role="group">
                   <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn">Today</button> -->
-                    <button type="button" th:data-url="@{|/orgs/${org.getId()}|}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn">Today</button>
-                 </div>
-                  <div class="btn-group me-2" style="align-self: center;" role="group">
-                  <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
-                    <button type="button" th:data-url="@{|/orgs/${org.getId()}/last|(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn"><</button>
-                    <button type="button" th:data-url="@{|/orgs/${org.getId()}/next|(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn">></button>
-                  </div>
+                  <button type="button" th:data-url="@{|/orgs/${org.getId()}|}"
+                    onclick="location.href = this.getAttribute('data-url')"
+                    class="btn btn-cta switcher-btn">Today</button>
                 </div>
-                  <h4 class="col-md-4 mt-3 mobile-hide"  style="text-align: right; font-weight: 430;" th:text="${hebrewDate}"></h4>
+                <div class="btn-group me-2" style="align-self: center;" role="group">
+                  <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
+                  <button type="button" th:data-url="@{|/orgs/${org.getId()}/last|(before=${dateString})}"
+                    onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn">
+                    << /button>
+                      <button type="button" th:data-url="@{|/orgs/${org.getId()}/next|(after=${dateString})}"
+                        onclick="location.href = this.getAttribute('data-url')"
+                        class="btn btn-cta switcher-btn">></button>
+                </div>
               </div>
-              <!-- End Date Nav Buttons -->
+              <h4 class="col-md-4 mt-3 mobile-hide" style="text-align: right; font-weight: 430;"
+                th:text="${hebrewDate}"></h4>
+            </div>
+            <!-- End Date Nav Buttons -->
             <!-- End Date Nav header -->
             <hr>
             <div id="housing-housing">
@@ -100,12 +106,12 @@
                             <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
                               th:if="${upcoming != null}"
                               th:text="@{|Next Minyan: ${upcoming.getType().displayName()} at ${upcoming.getFormattedStartTime()}|}"></button>
-                              <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
+                            <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
                               th:if="${upcoming == null}">There are no additional minyanim scheduled for today.</button>
                             <a role="button" class="btn-shuls"
                               th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}"
                               th:target="_blank">Get Directions</a>
-                              <a role="button" class="btn-shuls" th:if="${org.getWebsiteURI() != null}"
+                            <a role="button" class="btn-shuls" th:if="${org.getWebsiteURI() != null}"
                               th:href="@{|https://${org.getWebsiteURI()}|}" th:target="_blank">Visit the website</a>
                           </div>
                         </div>
@@ -132,7 +138,8 @@
                           <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
                         </div>
                       </div> -->
-                      <div class="col col-lg">
+                      <!-- Old table -->
+                      <!-- <div class="col col-lg">
                         <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0"
                           class="scrollspy-example" tabindex="0">
                           <h4 id="shacharis" style="scroll-margin-top: 4em;">Shacharis</h4>
@@ -154,78 +161,74 @@
                                 <td class="middle" th:text="${minyan.getNotes()}"></td>
                               </tr>
                             </tbody>
-                          </table>
-                          <!-- Mobile Table -->
-                          <table class="table d-lg-none" th:if="${!shacharisMinyanim.isEmpty()}">
-                            <tbody>
-                              <tr th:each="minyan: ${shacharisMinyanim}">
-                                  <td class="middle">
-                                      <h5 th:style="'color: ' + ${org.getOrgColor()}" th:utext="${minyan.getType().displayName()} "></h5>
-                                      <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
-                                      <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
-                                  </td>
-                                  <td class="middle">
-                                  <p class="p-nusach" th:utext="${minyan.getFormattedStartTime()}"></p>
-                                  <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
-                                </td>
-                              </tr>
-                          </tbody>
-                          </table>
-                          <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
-                            <h5><small class="text-muted">There are no additional Shacharis minyanim scheduled for today.</small>
-                            </h5>
-                          </div>
-                          <h4 id="mincha" style="scroll-margin-top: 4em;">Mincha</h4>
-                          <table class="table" th:if="${!minchaMinyanim.isEmpty()}">
-                            <thead>
-                              <tr>
-                                <th scope="col">Time</th>
-                                <th scope="col">Location</th>
-                                <th scope="col">Nusach</th>
-                                <th scope="col">Notes</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr th:each="minyan: ${minchaMinyanim}">
-                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                <td class="middle" th:text="${minyan.getInformation()}">
-                                  <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
-                                </td>
-                                <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
-                                <td class="middle" th:text="${minyan.getNotes()}"></td>
-                              </tr>
-                            </tbody>
-                          </table>
-                          <div class="nominyan" th:if="${minchaMinyanim.isEmpty()}">
-                            <h5><small class="text-muted">There are no additional Mincha minyanim scheduled for today.</small>
-                            </h5>
-                          </div>
-                          <h4 id="maariv" style="scroll-margin-top: 4em;">Maariv</h4>
-                          <table class="table" th:if="${!maarivMinyanim.isEmpty()}">
-                            <thead>
-                              <tr>
-                                <th scope="col">Time</th>
-                                <th scope="col">Location</th>
-                                <th scope="col">Nusach</th>
-                                <th scope="col">Notes</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr th:each="minyan: ${maarivMinyanim}">
-                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                <td class="middle" th:text="${minyan.getInformation()}">
-                                  <!--                                            <a role="button" class="btn btn-primary btn-sm" th:href="@{|/orgs/${minyan.getOrganizationName()}|}" th:text="${minyan.getOrganizationName()}"></a>-->
-                                </td>
-                                <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
-                                <td class="middle" th:text="${minyan.getNotes()}"></td>
-                              </tr>
-                            </tbody>
-                          </table>
-                          <div class="nominyan" th:if="${maarivMinyanim.isEmpty()}">
-                            <h5><small class="text-muted">There are no additional Maariv minyanim scheduled for today.</small>
-                            </h5>
-                          </div>
-                        </div>
+                          </table> -->
+                      <!-- Mobile Table -->
+                      <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
+                        <tbody>
+                          <tr th:each="minyan: ${shacharisMinyanim}">
+                            <td class="middle">
+                              <h5 th:style="'color: ' + ${org.getOrgColor()}"
+                                th:utext="${minyan.getType().displayName()} "></h5>
+                              <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
+                              <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
+                            </td>
+                            <td class="middle">
+                              <p class="p-nusach" th:utext="${minyan.getFormattedStartTime()}"></p>
+                              <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
+                        <h5><small class="text-muted">There are no additional Shacharis minyanim scheduled for
+                            today.</small>
+                        </h5>
+                      </div>
+                      <h4 id="mincha" style="scroll-margin-top: 4em;">Mincha</h4>
+                      <!-- Mobile Table -->
+                      <table class="table" th:if="${!minchaMinyanim.isEmpty()}">
+                        <tbody>
+                          <tr th:each="minyan: ${minchaMinyanim}">
+                            <td class="middle">
+                              <h5 th:style="'color: ' + ${org.getOrgColor()}"
+                                th:utext="${minyan.getType().displayName()} "></h5>
+                              <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
+                              <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
+                            </td>
+                            <td class="middle">
+                              <p class="p-nusach" th:utext="${minyan.getFormattedStartTime()}"></p>
+                              <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div class="nominyan" th:if="${minchaMinyanim.isEmpty()}">
+                        <h5><small class="text-muted">There are no additional Mincha minyanim scheduled for
+                            today.</small>
+                        </h5>
+                      </div>
+                      <h4 id="maariv" style="scroll-margin-top: 4em;">Maariv</h4>
+                      <!-- Mobile Table -->
+                      <table class="table" th:if="${!maarivMinyanim.isEmpty()}">
+                        <tbody>
+                          <tr th:each="minyan: ${maarivMinyanim}">
+                            <td class="middle">
+                              <h5 th:style="'color: ' + ${org.getOrgColor()}"
+                                th:utext="${minyan.getType().displayName()} "></h5>
+                              <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
+                              <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
+                            </td>
+                            <td class="middle">
+                              <p class="p-nusach" th:utext="${minyan.getFormattedStartTime()}"></p>
+                              <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div class="nominyan" th:if="${maarivMinyanim.isEmpty()}">
+                        <h5><small class="text-muted">There are no additional Maariv minyanim scheduled for
+                            today.</small>
+                        </h5>
                       </div>
                     </div>
                   </div>
@@ -233,44 +236,49 @@
               </div>
             </div>
         </div>
-        </div>
-        </div>
-        </div>
-        <!-- end scrollspy -->
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+  <!-- end scrollspy -->
 
-        <!-- CTA Signup Section -->
-        <div id="main" class="main">
-        <div id="info" class="cta-sm">
-          <div class="container-m text-center">
-            <div class="cta-content">
-              <h1>Bug? Question? Comment? Donation?</h1><h5><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h5>
-              <hr>
-              <h3>Subscribe now to stay up to date on Teaneck Minyanim updates and news!</h3>
-              <div class="form wow fadeIn" data-wow-delay="0.2s">
-                <form id="chimp-form" class="subscribe-form wow zoomIn" action="https://sendy.josephjacobs.org/subscribe" method="POST" accept-charset="utf-8">
-                  <input type="text" name="name" id="name" placeholder="Enter your name"/>
-                  <br/>
-                  <input type="email" name="email" id="email" placeholder="Enter your email address"/><br/><div style="display:none;">
-                  <label for="hp">HP</label><br/>
-                  <input type="text" name="hp" id="hp"/>
-                  </div>
-                  <input type="hidden" name="list" value="2GTjv7L7dlk4MXC1SN9Lgg"/>
-                  <input type="hidden" name="subform" value="yes"/>
-                  <input class="submit-button" name="submit" id="submit" type="submit" value="Sign up now"/>
-                </form>
-                <!-- <form id="chimp-form" class="subscribe-form wow zoomIn" action="/assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
+  <!-- CTA Signup Section -->
+  <div id="main" class="main">
+    <div id="info" class="cta-sm">
+      <div class="container-m text-center">
+        <div class="cta-content">
+          <h1>Bug? Question? Comment? Donation?</h1>
+          <h5><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h5>
+          <hr>
+          <h3>Subscribe now to stay up to date on Teaneck Minyanim updates and news!</h3>
+          <div class="form wow fadeIn" data-wow-delay="0.2s">
+            <form id="chimp-form" class="subscribe-form wow zoomIn" action="https://sendy.josephjacobs.org/subscribe"
+              method="POST" accept-charset="utf-8">
+              <input type="text" name="name" id="name" placeholder="Enter your name" />
+              <br />
+              <input type="email" name="email" id="email" placeholder="Enter your email address" /><br />
+              <div style="display:none;">
+                <label for="hp">HP</label><br />
+                <input type="text" name="hp" id="hp" />
+              </div>
+              <input type="hidden" name="list" value="2GTjv7L7dlk4MXC1SN9Lgg" />
+              <input type="hidden" name="subform" value="yes" />
+              <input class="submit-button" name="submit" id="submit" type="submit" value="Sign up now" />
+            </form>
+            <!-- <form id="chimp-form" class="subscribe-form wow zoomIn" action="/assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
                   <input class="mail" id="chimp-email" type="email" name="email" placeholder="Enter your email address" autocomplete="off">
                   <input class="submit-button" type="submit" value="Sign up now">
                 </form> -->
-                <div id="response"></div>
-              </div>
-              <div class="form-note">
-                <p>Thank you!</p>
-              </div>
-            </div>
+            <div id="response"></div>
+          </div>
+          <div class="form-note">
+            <p>Thank you!</p>
           </div>
         </div>
-        <!-- <div class="col-lg-3 col-md-4" id="org-box">
+      </div>
+    </div>
+    <!-- <div class="col-lg-3 col-md-4" id="org-box">
                         <div class="card" style="border: 0;">
                             <div class="card-body">
                                 <h5 class="card-title" th:text="${org.getName()}"></h5>
@@ -278,38 +286,38 @@
                                 <a class="card-text" th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></a> 
                                 <a th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}" class="card-link">Visit the website</a>
                                 <a href="#" class="card-link">Another link</a>-->
-  <!-- Array Footer Section -->
-  <div class="footer-sm">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-4">
-          <a class="footer-logo" href="https://teaneckminyanim.com">TB Dev</a>
-        </div>
-        <div class="col-md-4">
-          <h6>&copy; TB Dev and Teaneck Minyanim</h6>
-        </div>
-        <div class="col-md-4 text-end">
-          <h6><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h6>
-        </div>
-        <!-- <div class="col-md-4">
+    <!-- Array Footer Section -->
+    <div class="footer-sm">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4">
+            <a class="footer-logo" href="https://teaneckminyanim.com">TB Dev</a>
+          </div>
+          <div class="col-md-4">
+            <h6>&copy; TB Dev and Teaneck Minyanim</h6>
+          </div>
+          <div class="col-md-4 text-end">
+            <h6><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h6>
+          </div>
+          <!-- <div class="col-md-4">
                 <ul>
                   <li><a href="#">Facebook</a></li>
                   <li><a href="#">Twitter</a></li>
                   <li><a href="#">Linkedin</a></li>
                 </ul>
               </div> -->
+        </div>
       </div>
     </div>
-  </div>
 
 
-  <!-- Scroll To Top -->
-  <div id="back-top" class="bk-top">
-    <div class="bk-top-txt">
-      <a class="back-to-top js-scroll-trigger" href="#main">top</a>
+    <!-- Scroll To Top -->
+    <div id="back-top" class="bk-top">
+      <div class="bk-top-txt">
+        <a class="back-to-top js-scroll-trigger" href="#main">top</a>
+      </div>
     </div>
-  </div>
-  <!-- Scroll To Top Ends-->
+    <!-- Scroll To Top Ends-->
 
   </div> <!-- Main -->
 
