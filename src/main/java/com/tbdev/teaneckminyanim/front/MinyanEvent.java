@@ -98,18 +98,10 @@ public class MinyanEvent {
                     return timeFormat.format(startTime);
                 }
             }
-    public String getStartInfo() {
-        //        return startTime.toString();
-                SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
-                if (dynamicTimeString != null) {
-                    timeFormat.setTimeZone(timeZone);
-                    return dynamicTimeString;
-                } else {
-        //            time zone already set in db
-                    return null;
-                }
-            }
-
+    public String dynamicTimeString() {
+        return dynamicTimeString;
+    }
+    
     public Nusach getNusach() {
         return nusach;
     }
