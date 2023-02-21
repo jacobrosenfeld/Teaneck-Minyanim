@@ -28,7 +28,7 @@ for (let i = rowNum; i < rows.length; i++) {
 }
 
 // hide load more button if there are 5 or fewer rows
-if (rows.length <= 5) {
+if (rows.length <= 10) {
   loadMoreButton.style.display = "none";
 } else {
   // add event listener to the load more button
