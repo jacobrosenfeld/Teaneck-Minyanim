@@ -53,12 +53,12 @@ public class Minyan extends TNMObject implements IDGenerator {
 
     @Column(name = "START_TIME_7")
     private String startTime7;
-
-    @Column(name = "START_TIME_YT")
-    private String startTimeYT;
     
     @Column(name = "START_TIME_RC")
     private String startTimeRC;
+
+    @Column(name = "START_TIME_YT")
+    private String startTimeYT;
 
     @Column(name = "START_TIME_CH")
     private String startTimeCH;
@@ -93,8 +93,8 @@ public class Minyan extends TNMObject implements IDGenerator {
                   String startTime5,
                   String startTime6,
                   String startTime7,
-                  String startTimeYT,
                   String startTimeRC,
+                  String startTimeYT,
                   String startTimeCH,
                   String startTimeCHRC,
                   String notes,
@@ -114,11 +114,11 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.startTime5 = startTime5;
         this.startTime6 = startTime6;
         this.startTime7 = startTime7;
-        this.startTimeYT = startTimeYT;
         this.startTimeRC = startTimeRC;
+        this.startTimeYT = startTimeYT;
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
-        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeCH, startTimeCHRC, startTimeYT);
+        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeYT, startTimeCH, startTimeCHRC);
         this.notes = notes;
         this.nusachString = nusach;
         this.nusach = Nusach.fromString(nusach);
@@ -157,11 +157,11 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.startTime5 = startTime5;
         this.startTime6 = startTime6;
         this.startTime7 = startTime7;
-        this.startTimeYT = startTimeYT;
         this.startTimeRC = startTimeRC;
+        this.startTimeYT = startTimeYT;
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
-        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeYT, startTimeRC, startTimeCH, startTimeCHRC);
+        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeYT, startTimeCH, startTimeCHRC);
         this.notes = notes;
         this.nusachString = nusach;
         this.nusach = Nusach.fromString(nusach);
@@ -213,8 +213,8 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.startTime5 = schedule.getThursday().toString();
         this.startTime6 = schedule.getFriday().toString();
         this.startTime7 = schedule.getShabbat().toString();
-        this.startTimeYT = schedule.getYomTov().toString();
         this.startTimeRC = schedule.getRoshChodesh().toString();
+        this.startTimeYT = schedule.getYomTov().toString();
         this.startTimeCH = schedule.getChanuka().toString();
         this.startTimeCHRC = schedule.getRoshChodeshChanuka().toString();
         this.schedule = schedule;
@@ -287,6 +287,10 @@ public class Minyan extends TNMObject implements IDGenerator {
         return startTimeRC;
     }
 
+    public String getStartTimeYT() {
+        return startTimeYT;
+    }
+
     public String getStartTimeCH() {
         return startTimeCH;
     }
@@ -295,9 +299,6 @@ public class Minyan extends TNMObject implements IDGenerator {
         return startTimeCHRC;
     }
 
-    public String getStartTimeYT() {
-        return startTimeYT;
-    }
 
     public Schedule getSchedule() {
         return schedule;
