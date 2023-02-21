@@ -24,7 +24,6 @@ public class ZmanimHandler {
 
     public ZmanimHandler() {
         TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
-
         String locationName = "Teaneck, NJ";
         double latitude = 40.906871;
         double longitude = -74.020924;
@@ -34,7 +33,7 @@ public class ZmanimHandler {
     }
 
 
-    public Dictionary getZmanimForNow() {
+    public Dictionary<Zman, Date> getZmanimForNow() {
         return getZmanim(LocalDate.now());
     }
     public Dictionary<Zman, Date> getZmanim(LocalDate date) {
