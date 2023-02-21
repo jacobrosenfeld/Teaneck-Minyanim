@@ -9,9 +9,9 @@ public enum MinyanDay {
     FRIDAY,
     SHABBAT,
     ROSH_CHODESH,
+    YOM_TOV,
     CHANUKA,
-    ROSH_CHODESH_CHANUKA,
-    YOM_TOV;
+    ROSH_CHODESH_CHANUKA;
 
 //    public LocalDate nextDate() {
 //        switch (this) {
