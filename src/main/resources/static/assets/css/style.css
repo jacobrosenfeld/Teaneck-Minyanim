@@ -117,6 +117,18 @@ p {
 	font-family: 'Montserrat';
 	font-size: 14px;
 }
+.p-nusach {
+	font-family: 'Montserrat';
+	font-size: 14px;
+	margin-bottom: 0px;
+}
+.p-notes {
+	font-family: 'Montserrat';
+	font-size: 14px;
+	font-style: italic;
+	color: #6C757D;
+	margin-bottom: 0px;
+}
 
 /*----- Helper Classes -----*/
 
@@ -986,6 +998,15 @@ body {
 		color: #364655;
 		color: #FFFFFF;
 
+	}
+	.counter {
+		font-size: 42px;
+		font-weight: 700;
+		color: #275ed8;
+		color: #FFFFFF;
+	}
+	.counter:not(.is-visible) {
+		visibility: hidden;
 	}
 
 	.yd-link {
@@ -1956,4 +1977,12 @@ body {
 .mapboxgl-popup {
 	max-width: 400px;
 	font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+}
+/* end mapbox */
+.logo-icon {
+    padding-right: 1%;
+}
+
+.table-org {
+	table-layout: fixed;
 }

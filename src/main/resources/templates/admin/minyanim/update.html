@@ -7,6 +7,16 @@
     <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css} "/>
     <link th:rel="stylesheet" th:href="@{/styles.css}">
     <link th:rel="stylesheet" th:href="@{/admin/dashboard.css}">
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+    <link rel="manifest" href="/assets/icons/site.webmanifest">
+    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
+    <meta name="msapplication-TileColor" content="#275ed8">
+    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
 </head>
 <body>
 <div class="horizontal-container d-flex" id="wrapper">
@@ -69,6 +79,7 @@
                                                     <option value="nm" th:selected="${minyan.getSchedule().getSunday().isNone()}">No Minyan</option>
                                                     <option value="fixed" th:selected="${minyan.getSchedule().getSunday().isFixed()}">Fixed</option>
                                                     <option value="dynamic" th:selected="${minyan.getSchedule().getSunday().isDynamic()}">Dynamic</option>
+                                                    <option value="rounded" th:selected="${minyan.getSchedule().getSunday().isRounded()}">Rounded</option>
                                                 </select>
                                             </div>
                                             <div th:if="${minyan.getSchedule().getSunday().isDynamic()}" class="col" id="dynamic-time-box-sunday">
@@ -76,13 +87,32 @@
                                                     <div class="col">
                                                         <select class="custom-select" name="sunday-zman" id="sunday-zman" required>
                                                             <option disabled>Choose a zman</option>
-                                                            <option value="netz" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
-                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
-                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLAH')}">Mincha Gedola</option>
-                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
-                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
-                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
-                                                            <option value="tzet" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
+                                                            <option value="netz" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
+                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
+                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLAH')}">Mincha Gedola</option>
+                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
+                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
+                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
+                                                            <option value="tzet" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <input type="number" class="form-control" name="sunday-zman-offset" id="sunday-zman-offset" th:value="${minyan.getSchedule().getSunday().getRule().getOffsetMinutes()}" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div th:if="${minyan.getSchedule().getSunday().isRounded()}" class="col" id="rounded-time-box-sunday">
+                                                <div class="form-row">
+                                                    <div class="col">
+                                                        <select class="custom-select" name="sunday-zman" id="sunday-zman" required>
+                                                            <option disabled>Choose a zman</option>
+                                                            <option value="netz" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
+                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
+                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLAH')}">Mincha Gedola</option>
+                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
+                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
+                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
+                                                            <option value="tzet" th:selected="${minyan.getSchedule().getSunday().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
                                                         </select>
                                                     </div>
                                                     <div class="col">
@@ -113,13 +143,13 @@
                                                     <div class="col">
                                                         <select class="custom-select" name="monday-zman" id="monday-zman" required>
                                                             <option disabled>Choose a zman</option>
-                                                            <option value="netz" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
-                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
-                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLA')}">Mincha Gedola</option>
-                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
-                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
-                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
-                                                            <option value="tzet" th:selected="${minyan.getSchedule().getTuesday().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
+                                                            <option value="netz" th:selected="${minyan.getSchedule().getMonday().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
+                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getMonday().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
+                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getMonday().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLA')}">Mincha Gedola</option>
+                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getMonday().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
+                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getMonday().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
+                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getMonday().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
+                                                            <option value="tzet" th:selected="${minyan.getSchedule().getMonday().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
                                                         </select>
                                                     </div>
                                                     <div class="col">
