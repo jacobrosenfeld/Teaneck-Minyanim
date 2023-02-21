@@ -106,9 +106,9 @@ public class MinyanDAO extends JdbcDaoSupport implements TNMSaveable<Minyan> {
                 objectToSave.getStartTime6(),
                 objectToSave.getStartTime7(),
                 objectToSave.getStartTimeRC(),
+                objectToSave.getStartTimeYT(),
                 objectToSave.getStartTimeCH(),
                 objectToSave.getStartTimeCHRC(),
-                objectToSave.getStartTimeYT(),
                 objectToSave.getNotes(),
                 objectToSave.getNusachString()
         );
