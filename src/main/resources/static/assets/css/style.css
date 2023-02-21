@@ -128,17 +128,18 @@ p {
 	font-style: italic;
 	color: #6C757D;
 	margin-bottom: 0px;
+	margin-top: .5rem;
 }
 .p-time {
 	font-family: 'Montserrat';
 	font-size: 1.1rem;
 	font-weight: 600;
-	margin-bottom: .5rem;
+	margin-bottom: 0px;
 }
 
 .p-location {
 	font-family: 'Montserrat';
-	font-size: 1;
+	font-size: 1.1rem;
 	margin-bottom: 0px;
 }
 
