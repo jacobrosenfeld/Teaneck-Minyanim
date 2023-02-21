@@ -119,20 +119,20 @@ p {
 }
 .p-nusach {
 	font-family: 'Montserrat';
-	font-size: 1rem;
+	font-size: .8rem;
 	margin-bottom: 0px;
 }
 .p-notes {
 	font-family: 'Montserrat';
-	font-size: 1rem;
+	font-size: .8rem;
 	font-style: italic;
 	color: #6C757D;
 	margin-bottom: 0px;
 }
 .p-time {
 	font-family: 'Montserrat';
-	font-size: 1.5rem;
-	font-weight: 700;
+	font-size: 1.1rem;
+	font-weight: 600;
 	margin-bottom: 0px;
 }
 
