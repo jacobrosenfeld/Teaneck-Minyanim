@@ -128,8 +128,8 @@ public class Schedule {
         System.out.println("Thursday minyan time: " + thursday);
         System.out.println("Friday minyan time: " + friday);
         System.out.println("Shabbat minyan time: " + shabbat);
-        System.out.println("Yom Tov minyan time: " + yomTov);
         System.out.println("Rosh Chodesh minyan time: " + roshChodesh);
+        System.out.println("Yom Tov minyan time: " + yomTov);
         System.out.println("Chanuka minyan time: " + chanuka);
         System.out.println("RCC minyan time: " + roshChodeshChanuka);
     }
