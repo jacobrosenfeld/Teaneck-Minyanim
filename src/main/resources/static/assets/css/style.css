@@ -120,12 +120,14 @@ p {
 .p-nusach {
 	font-family: 'Montserrat';
 	font-size: 14px;
+	margin-bottom: 0px;
 }
 .p-notes {
 	font-family: 'Montserrat';
 	font-size: 14px;
 	font-style: italic;
 	color: #6C757D;
+	margin-bottom: 0px;
 }
 
 /*----- Helper Classes -----*/

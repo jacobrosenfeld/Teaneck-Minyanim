@@ -161,7 +161,7 @@
                               <tr th:each="minyan: ${shacharisMinyanim}">
                                   <td class="middle">
                                       <h5 th:style="'color: ' + ${org.getOrgColor()}" th:utext="${minyan.getType().displayName()} "></h5>
-                                      <p class="p-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
+                                      <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
                                       <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
                                   </td>
                                   <td class="middle">
