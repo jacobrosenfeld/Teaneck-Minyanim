@@ -119,7 +119,7 @@
                                   <td class="middle">
                                     <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
                                     <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
-                                    <p class="p-nusach" th:if="${!minyan.getStartInfo.isEmpty()}" th:utext="${minyan.getStartInfo()}"></p>
+                                    <p class="p-nusach" th:if="${!minyan.dynamicTimeString.isEmpty()}" th:utext="${minyan.dynamicTimeString()}"></p>
                                   </td>
                                 </tr>
                               </tbody>
