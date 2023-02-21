@@ -74,9 +74,7 @@
                 </div>
                 <div class="btn-group me-2" style="align-self: center;" role="group">
                   <!-- REMOVING IF TODAY LOGIC <button type="button" th:if="${!isToday}" th:data-url="@{/zmanim/last(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-secondary switcher-btn"><</button> -->
-                  <button type="button" th:data-url="@{|/orgs/${org.getId()}/last|(before=${dateString})}"
-                    onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn">
-                    << /button>
+                  <button type="button" th:data-url="@{|/orgs/${org.getId()}/last|(before=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn"><</button>
                       <button type="button" th:data-url="@{|/orgs/${org.getId()}/next|(after=${dateString})}"
                         onclick="location.href = this.getAttribute('data-url')"
                         class="btn btn-cta switcher-btn">></button>
@@ -161,7 +159,7 @@
                           </table> -->
                         <h4 id="shacharis">Shacharis</h4>
                         <!-- Mobile Table -->
-                        <table class="table" th:if="${!shacharisMinyanim.isEmpty()}">
+                        <table class="table table-org" th:if="${!shacharisMinyanim.isEmpty()}">
                           <tbody>
                             <tr th:each="minyan: ${shacharisMinyanim}">
                               <td class="middle">
@@ -184,7 +182,7 @@
                         </div>
                         <h4 id="mincha">Mincha</h4>
                         <!-- Mobile Table -->
-                        <table class="table" th:if="${!minchaMinyanim.isEmpty()}">
+                        <table class="table table-org" th:if="${!minchaMinyanim.isEmpty()}">
                           <tbody>
                             <tr th:each="minyan: ${minchaMinyanim}">
                               <td class="middle">
