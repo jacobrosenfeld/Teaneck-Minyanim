@@ -110,13 +110,13 @@
                                     <table class="table table-org table-nested" th:if="${!allminyanim.isEmpty()}">
                                       <tbody>
                                         <tr>
-                                          <td class="middle">
+                                          <td class="middle table-nested">
                                             <h5 th:style="'color: ' + ${minyan.getOrgColor()}"
                                               th:utext="${minyan.getType().displayName()} "></h5>
                                             <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
                                             <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
                                           </td>
-                                          <td class="middle">
+                                          <td class="middle table-nested">
                                             <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
                                             <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
                                             <p class="p-nusach" th:utext="${minyan.dynamicTimeString()}"></p>
