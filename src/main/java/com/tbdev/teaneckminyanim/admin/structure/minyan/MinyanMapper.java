@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class MinyanMapper implements RowMapper<Minyan>, Serializable {
 
-    public static final String BASE_SQL = "SELECT m.ID, m.TYPE, m.LOCATION_ID, m.ORGANIZATION_ID, m.ENABLED, m.START_TIME_1, m.START_TIME_2, m.START_TIME_3, m.START_TIME_4, m.START_TIME_5, m.START_TIME_6, m.START_TIME_7, m.START_TIME_RC, m.START_TIME_CH, m.START_TIME_CHRC, m.START_TIME_YT, m.NOTES, m.NUSACH FROM MINYAN m";
+    public static final String BASE_SQL = "SELECT m.ID, m.TYPE, m.LOCATION_ID, m.ORGANIZATION_ID, m.ENABLED, m.START_TIME_1, m.START_TIME_2, m.START_TIME_3, m.START_TIME_4, m.START_TIME_5, m.START_TIME_6, m.START_TIME_7, m.START_TIME_RC, m.START_TIME_YT, m.START_TIME_CH, m.START_TIME_CHRC, m.NOTES, m.NUSACH FROM MINYAN m";
 
     @Override
     public Minyan mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -24,9 +24,9 @@ public class MinyanMapper implements RowMapper<Minyan>, Serializable {
         String startTime6 = rs.getString("START_TIME_6");
         String startTime7 = rs.getString("START_TIME_7");
         String startTimeRC = rs.getString("START_TIME_RC");
+        String startTimeYT = rs.getString("START_TIME_YT");
         String startTimeCH = rs.getString("START_TIME_CH");
         String startTimeCHRC = rs.getString("START_TIME_CHRC");
-        String startTimeYT = rs.getString("START_TIME_YT");
         String notes = rs.getString("NOTES");
         String nusach = rs.getString("NUSACH");
         String orgColor = "#275ed8";
@@ -48,9 +48,9 @@ public class MinyanMapper implements RowMapper<Minyan>, Serializable {
         String startTime6 = (String) m.get("START_TIME_6");
         String startTime7 = (String) m.get("START_TIME_7");
         String startTimeRC = (String) m.get("START_TIME_RC");
+        String startTimeYT = (String) m.get("START_TIME_YT");
         String startTimeCH = (String) m.get("START_TIME_CH");
         String startTimeCHRC = (String) m.get("START_TIME_CHRC");
-        String startTimeYT = (String) m.get("START_TIME_YT");
         String notes = (String) m.get("NOTES");
         String nusach = (String) m.get("NUSACH");
         String orgColor = "#275ed8";
