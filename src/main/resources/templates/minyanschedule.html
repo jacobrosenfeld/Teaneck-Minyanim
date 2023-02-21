@@ -133,14 +133,14 @@
                                                     <td th:with="roshchodeshtime=${minyantimes.get(Day.ROSH_CHODESH)}">
                                                         <div th:text="${roshchodeshtime.displayTime()}"></div>
                                                     </td>
+                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
+                                                        <div th:text="${yomtovtime.displayTime()}"></div>
+                                                    </td>
                                                     <td th:with="chanukatime=${minyantimes.get(Day.CHANUKA)}">
                                                         <div th:text="${chanukatime.displayTime()}"></div>
                                                     </td>
                                                     <td th:with="roshchodeshchanukatime=${minyantimes.get(Day.ROSH_CHODESH_CHANUKA)}">
                                                         <div th:text="${roshchodeshchanukatime.displayTime()}"></div>
-                                                    </td>
-                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
-                                                        <div th:text="${yomtovtime.displayTime()}"></div>
                                                     </td>
                                                     <td th:text="${minyan.getNusach().displayName()}" />
                                                     <td th:text="${minyan.getNotes()}" />
@@ -172,9 +172,9 @@
                                                     <th>Friday</th>
                                                     <th>Shabbat</th>
                                                     <th>Rosh Chodesh</th>
+                                                    <th>Yom Tov</th>
                                                     <th>Chanuka</th>
                                                     <th>Rosh Chodesh Chanuka</th>
-                                                    <th>Yom Tov</th>
                                                     <th>Nusach</th>
                                                     <th>Notes</th>
                                                 </tr>
@@ -225,14 +225,14 @@
                                                     <td th:with="roshchodeshtime=${minyantimes.get(Day.ROSH_CHODESH)}">
                                                         <div th:text="${roshchodeshtime.displayTime()}"></div>
                                                     </td>
+                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
+                                                        <div th:text="${yomtovtime.displayTime()}"></div>
+                                                    </td>
                                                     <td th:with="chanukatime=${minyantimes.get(Day.CHANUKA)}">
                                                         <div th:text="${chanukatime.displayTime()}"></div>
                                                     </td>
                                                     <td th:with="roshchodeshchanukatime=${minyantimes.get(Day.ROSH_CHODESH_CHANUKA)}">
                                                         <div th:text="${roshchodeshchanukatime.displayTime()}"></div>
-                                                    </td>
-                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
-                                                        <div th:text="${yomtovtime.displayTime()}"></div>
                                                     </td>
                                                     <td th:text="${minyan.getNusach().displayName()}" />
                                                     <td th:text="${minyan.getNotes()}" />
@@ -318,14 +318,14 @@
                                                     <td th:with="roshchodeshtime=${minyantimes.get(Day.ROSH_CHODESH)}">
                                                         <div th:text="${roshchodeshtime.displayTime()}"></div>
                                                     </td>
+                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
+                                                        <div th:text="${yomtovtime.displayTime()}"></div>
+                                                    </td>
                                                     <td th:with="chanukatime=${minyantimes.get(Day.CHANUKA)}">
                                                         <div th:text="${chanukatime.displayTime()}"></div>
                                                     </td>
                                                     <td th:with="roshchodeshchanukatime=${minyantimes.get(Day.ROSH_CHODESH_CHANUKA)}">
                                                         <div th:text="${roshchodeshchanukatime.displayTime()}"></div>
-                                                    </td>
-                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
-                                                        <div th:text="${yomtovtime.displayTime()}"></div>
                                                     </td>
                                                     <td th:text="${minyan.getNusach().displayName()}" />
                                                     <td th:text="${minyan.getNotes()}" />
@@ -358,9 +358,9 @@
                                                     <th>Friday</th>
                                                     <th>Shabbat</th>
                                                     <th>Rosh Chodesh</th>
+                                                    <th>Yom Tov</th>
                                                     <th>Chanuka</th>
                                                     <th>Rosh Chodesh Chanuka</th>
-                                                    <th>Yom Tov</th>
                                                     <th>Nusach</th>
                                                     <th>Notes</th>
                                                 </tr>
@@ -411,14 +411,14 @@
                                                     <td th:with="roshchodeshtime=${minyantimes.get(Day.ROSH_CHODESH)}">
                                                         <div th:text="${roshchodeshtime.displayTime()}"></div>
                                                     </td>
+                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
+                                                        <div th:text="${yomtovtime.displayTime()}"></div>
+                                                    </td>
                                                     <td th:with="chanukatime=${minyantimes.get(Day.CHANUKA)}">
                                                         <div th:text="${chanukatime.displayTime()}"></div>
                                                     </td>
                                                     <td th:with="roshchodeshchanukatime=${minyantimes.get(Day.ROSH_CHODESH_CHANUKA)}">
                                                         <div th:text="${roshchodeshchanukatime.displayTime()}"></div>
-                                                    </td>
-                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
-                                                        <div th:text="${yomtovtime.displayTime()}"></div>
                                                     </td>
                                                     <td th:text="${minyan.getNusach().displayName()}" />
                                                     <td th:text="${minyan.getNotes()}" />
@@ -451,9 +451,9 @@
                                                     <th>Friday</th>
                                                     <th>Shabbat</th>
                                                     <th>Rosh Chodesh</th>
+                                                    <th>Yom Tov</th>
                                                     <th>Chanuka</th>
                                                     <th>Rosh Chodesh Chanuka</th>
-                                                    <th>Yom Tov</th>
                                                     <th>Nusach</th>
                                                     <th>Notes</th>
                                                 </tr>
@@ -504,14 +504,14 @@
                                                     <td th:with="roshchodeshtime=${minyantimes.get(Day.ROSH_CHODESH)}">
                                                         <div th:text="${roshchodeshtime.displayTime()}"></div>
                                                     </td>
+                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
+                                                        <div th:text="${yomtovtime.displayTime()}"></div>
+                                                    </td>
                                                     <td th:with="chanukatime=${minyantimes.get(Day.CHANUKA)}">
                                                         <div th:text="${chanukatime.displayTime()}"></div>
                                                     </td>
                                                     <td th:with="roshchodeshchanukatime=${minyantimes.get(Day.ROSH_CHODESH_CHANUKA)}">
                                                         <div th:text="${roshchodeshchanukatime.displayTime()}"></div>
-                                                    </td>
-                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
-                                                        <div th:text="${yomtovtime.displayTime()}"></div>
                                                     </td>
                                                     <td th:text="${minyan.getNusach().displayName()}" />
                                                     <td th:text="${minyan.getNotes()}" />
