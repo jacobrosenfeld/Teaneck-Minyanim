@@ -103,7 +103,7 @@
                               <tbody>
                                 <tr th:each="minyan: ${allminyanim}">
                                   <td class="middle">
-                                    <h5 th:style="'color: ' + ${org.getOrgColor()}"
+                                    <h5 th:style="'color: ' + ${minyan.getOrgColor()}"
                                       th:utext="${minyan.getType().displayName()} "></h5>
                                     <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
                                     <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
