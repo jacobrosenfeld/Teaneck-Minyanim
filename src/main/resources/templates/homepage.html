@@ -73,7 +73,7 @@
                         </div>
                         <div class="tab-content" id="pills-tabContent">
                           <div class="tab-pane fade active show text-center" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
-                            <table class="table" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
+                            <table class="table d-lg-none" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
                               <thead>
                                <tr>
                                 <th scope="col" class="th-sm">Shul</th>
@@ -101,7 +101,8 @@
                               </tbody>
                             </table>
                             <button class="btn-shuls" id="load-more-button">Load More</button>
-                            <table class="table table-org" th:if="${!allminyanim.isEmpty()}">
+                            <!-- Mobile Table -->
+                            <table class="table table-org d-none d-lg-block" th:if="${!allminyanim.isEmpty()}">
                               <tbody>
                                 <tr th:each="minyan: ${allminyanim}">
                                   <td class="middle">
