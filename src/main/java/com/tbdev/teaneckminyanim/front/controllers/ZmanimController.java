@@ -336,6 +336,7 @@ public class ZmanimController {
                     organizationName = temp.getName();
                     organizationNusach = temp.getNusach();
                     organizationId = temp.getId();
+                    organizationColor = temp.getOrgColor();
                 } else {
                     organizationName = organization.getName();
                     organizationNusach = organization.getNusach();
