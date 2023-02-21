@@ -352,6 +352,43 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
+                                        <label for="rc-box">Rosh Chodesh</label>
+                                        <div class="form-row" id="rc-box">
+                                            <div class="col">
+                                                <select class="custom-select" name="rc-time-type" id="rc-time-type" onchange="update('rc')" required>
+                                                    <option value="nm" th:selected="${minyan.getSchedule().getRoshChodesh().isNone()}">No Minyan</option>
+                                                    <option value="fixed" th:selected="${minyan.getSchedule().getRoshChodesh().isFixed()}">Fixed</option>
+                                                    <option value="dynamic" th:selected="${minyan.getSchedule().getRoshChodesh().isDynamic()}">Dynamic</option>
+                                                </select>
+                                            </div>
+                                            <div th:if="${minyan.getSchedule().getRoshChodesh().isDynamic()}" class="col" id="dynamic-time-box-rc">
+                                                <div class="form-row">
+                                                    <div class="col">
+                                                        <select class="custom-select" name="rc-zman" id="rc-zman" required>
+                                                            <option disabled>Choose a zman</option>
+                                                            <option value="netz" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
+                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
+                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLAH')}">Mincha Gedola</option>
+                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
+                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
+                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
+                                                            <option value="tzet" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <input type="number" class="form-control" name="rc-zman-offset" id="rc-zman-offset" th:value="${minyan.getSchedule().getRoshChodesh().getRule().getOffsetMinutes()}" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div th:if="${minyan.getSchedule().getRoshChodesh().isFixed()}" class="col" id="fixed-time-box-rc">
+                                                <input type="time" class="form-control" name="rc-fixed-time" id="rc-fixed-time" required th:value="${minyan.getSchedule().getRoshChodesh().getFixedTimeShort()}">
+                                            </div>
+                                            <div th:if="${minyan.getSchedule().getRoshChodesh().isNone()}" class="col" id="nm-time-box-rc">
+                                                <input type="text" class="form-control" name="rc-fixed-time" id="rc-fixed-time" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
                                         <label for="yt-box">Yom Tov</label>
                                         <div class="form-row" id="yt-box">
                                             <div class="col">
@@ -388,43 +425,6 @@
                                             </div>
                                         </div>
                                         <small id="yom-tov-help" class="form-text text-muted">This will override times for Yomim Tovim with an issur melacha (excluding chol hamoed).</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="rc-box">Rosh Chodesh</label>
-                                        <div class="form-row" id="rc-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="rc-time-type" id="rc-time-type" onchange="update('rc')" required>
-                                                    <option value="nm" th:selected="${minyan.getSchedule().getRoshChodesh().isNone()}">No Minyan</option>
-                                                    <option value="fixed" th:selected="${minyan.getSchedule().getRoshChodesh().isFixed()}">Fixed</option>
-                                                    <option value="dynamic" th:selected="${minyan.getSchedule().getRoshChodesh().isDynamic()}">Dynamic</option>
-                                                </select>
-                                            </div>
-                                            <div th:if="${minyan.getSchedule().getRoshChodesh().isDynamic()}" class="col" id="dynamic-time-box-rc">
-                                                <div class="form-row">
-                                                    <div class="col">
-                                                        <select class="custom-select" name="rc-zman" id="rc-zman" required>
-                                                            <option disabled>Choose a zman</option>
-                                                            <option value="netz" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
-                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
-                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLAH')}">Mincha Gedola</option>
-                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
-                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
-                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
-                                                            <option value="tzet" th:selected="${minyan.getSchedule().getRoshChodesh().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col">
-                                                        <input type="number" class="form-control" name="rc-zman-offset" id="rc-zman-offset" th:value="${minyan.getSchedule().getRoshChodesh().getRule().getOffsetMinutes()}" required>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div th:if="${minyan.getSchedule().getRoshChodesh().isFixed()}" class="col" id="fixed-time-box-rc">
-                                                <input type="time" class="form-control" name="rc-fixed-time" id="rc-fixed-time" required th:value="${minyan.getSchedule().getRoshChodesh().getFixedTimeShort()}">
-                                            </div>
-                                            <div th:if="${minyan.getSchedule().getRoshChodesh().isNone()}" class="col" id="nm-time-box-rc">
-                                                <input type="text" class="form-control" name="rc-fixed-time" id="rc-fixed-time" disabled>
-                                            </div>
-                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="chanuka-box">Chanuka</label>
