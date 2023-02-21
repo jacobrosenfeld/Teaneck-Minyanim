@@ -114,15 +114,16 @@
                                             <h5 th:style="'color: ' + ${minyan.getOrgColor()}"
                                               th:utext="${minyan.getType().displayName()} "></h5>
                                             <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
-                                            <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
                                           </td>
                                           <td class="middle table-nested">
                                             <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
-                                            <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>                                          </td>
+                                            <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
+                                          </td>
                                         </tr>
                                       </tbody>
                                     </table>
                                     <p class="p-nusach" th:utext="${minyan.dynamicTimeString()}"></p>
+                                    <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
                                   </td>
                                 </tr>
                               </tbody>
