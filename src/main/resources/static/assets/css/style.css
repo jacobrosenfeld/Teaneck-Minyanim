@@ -121,7 +121,6 @@ p {
 	font-family: 'Montserrat';
 	font-size: .8rem;
 	margin-bottom: 0px;
-	margin-top: .5rem;
 }
 .p-notes {
 	font-family: 'Montserrat';
@@ -134,7 +133,7 @@ p {
 	font-family: 'Montserrat';
 	font-size: 1.1rem;
 	font-weight: 600;
-	margin-bottom: 0px;
+	margin-bottom: 0;
 }
 
 .p-location {
