@@ -84,7 +84,35 @@ fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_
             // });
 
             // Change the cursor to a pointer when the mouse is over the places layer.
+            const popup = new mapboxgl.Popup({
+            });
+
             map.on('mouseenter', 'places', (e) => {
+                // Copy coordinates array.
+                const coordinates = e.features[0].geometry.coordinates.slice();
+                const description = e.features[0].properties.description;
+
+                // Ensure that if the map is zoomed out such that multiple
+                // copies of the feature are visible, the popup appears
+                // over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+
+                // new mapboxgl.Popup()
+                //     .setLngLat(coordinates)
+                //     .setHTML(description)
+                //     .addTo(map);
+                popup.setLngLat(coordinates).setHTML(description).addTo(map);
+
+            });
+
+            // Change it back to a pointer when it leaves.
+            map.on('mouseleave', 'places', () => {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+            });
+            map.on('click', 'places', (e) => {
                 // Copy coordinates array.
                 const coordinates = e.features[0].geometry.coordinates.slice();
                 const description = e.features[0].properties.description;
@@ -100,12 +128,17 @@ fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_
                     .setLngLat(coordinates)
                     .setHTML(description)
                     .addTo(map);
+                // popup.setLngLat(coordinates).setHTML(description).addTo(map);
+
+            });
+
+            map.on('mouseenter', 'places', () => {
+                map.getCanvas().style.cursor = 'pointer';
             });
 
             // Change it back to a pointer when it leaves.
             map.on('mouseleave', 'places', () => {
                 map.getCanvas().style.cursor = '';
-                Popup.remove();
             });
         });
     });
