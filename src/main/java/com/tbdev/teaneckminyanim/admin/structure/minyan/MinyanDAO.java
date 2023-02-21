@@ -150,9 +150,9 @@ public class MinyanDAO extends JdbcDaoSupport implements TNMSaveable<Minyan> {
                 "START_TIME_6 = ?, " +
                 "START_TIME_7 = ?, " +
                 "START_TIME_RC = ?, " +
+                "START_TIME_YT = ?, " +
                 "START_TIME_CH = ?, " +
                 "START_TIME_CHRC = ?, " +
-                "START_TIME_YT = ?, " +
                 "NOTES = ?, " +
                 "NUSACH = ? " +
                 "WHERE ID = ?";
