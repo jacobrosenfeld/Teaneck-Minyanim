@@ -111,19 +111,22 @@
                                       <tbody>
                                         <tr>
                                           <td class="middle">
-                                    <h5 th:style="'color: ' + ${minyan.getOrgColor()}"
-                                      th:utext="${minyan.getType().displayName()} "></h5>
-                                    <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
-                                    <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
+                                            <h5 th:style="'color: ' + ${minyan.getOrgColor()}"
+                                              th:utext="${minyan.getType().displayName()} "></h5>
+                                            <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
+                                            <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
+                                          </td>
+                                          <td class="middle">
+                                            <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
+                                            <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
                                   </td>
-                                  <td class="middle">
-                                    <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
-                                    <p class="p-nusach" th:utext="${minyan.getInformation()}"></p>
+                                  <td class="middle" th:if="${!minyan.dynamicTimeString.isEmpty()}">
                                     <p class="p-nusach" th:utext="${minyan.dynamicTimeString()}"></p>
                                   </td>
-                                </tr>
-                              </tbody>
-                            </table>
                                 </tr>
                               </tbody>
                             </table>
