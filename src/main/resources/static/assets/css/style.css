@@ -121,6 +121,7 @@ p {
 	font-family: 'Montserrat';
 	font-size: .8rem;
 	margin-bottom: 0px;
+	margin-top: .5rem;
 }
 .p-notes {
 	font-family: 'Montserrat';
@@ -128,7 +129,6 @@ p {
 	font-style: italic;
 	color: #6C757D;
 	margin-bottom: 0px;
-	margin-top: .5rem;
 }
 .p-time {
 	font-family: 'Montserrat';
