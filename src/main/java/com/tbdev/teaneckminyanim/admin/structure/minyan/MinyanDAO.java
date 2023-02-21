@@ -91,7 +91,7 @@ public class MinyanDAO extends JdbcDaoSupport implements TNMSaveable<Minyan> {
     @Override
     public boolean save(Minyan objectToSave) {
         String sql = String.format("INSERT INTO MINYAN " +
-                "(ID, TYPE, LOCATION_ID, ORGANIZATION_ID, ENABLED, START_TIME_1, START_TIME_2, START_TIME_3, START_TIME_4, START_TIME_5, START_TIME_6, START_TIME_7, START_TIME_RC, START_TIME_CH, START_TIME_CHRC, START_TIME_YT, NOTES, NUSACH) " +
+                "(ID, TYPE, LOCATION_ID, ORGANIZATION_ID, ENABLED, START_TIME_1, START_TIME_2, START_TIME_3, START_TIME_4, START_TIME_5, START_TIME_6, START_TIME_7, START_TIME_RC, START_TIME_YT, START_TIME_CH, START_TIME_CHRC, NOTES, NUSACH) " +
                 "VALUES ('%s', '%s', '%s', '%s', %b, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
                 objectToSave.getId(),
                 objectToSave.getMinyanTypeString(),
@@ -169,9 +169,9 @@ public class MinyanDAO extends JdbcDaoSupport implements TNMSaveable<Minyan> {
             statement.setString(10, objectToUpdate.getStartTime6());
             statement.setString(11, objectToUpdate.getStartTime7());
             statement.setString(12, objectToUpdate.getStartTimeRC());
-            statement.setString(13, objectToUpdate.getStartTimeCH());
-            statement.setString(14, objectToUpdate.getStartTimeCHRC());
-            statement.setString(15, objectToUpdate.getStartTimeYT());
+            statement.setString(13, objectToUpdate.getStartTimeYT());
+            statement.setString(14, objectToUpdate.getStartTimeCH());
+            statement.setString(15, objectToUpdate.getStartTimeCHRC());
             statement.setString(16, objectToUpdate.getNotes());
             statement.setString(17, objectToUpdate.getNusachString());
             statement.setString(18, objectToUpdate.getId());
