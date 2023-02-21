@@ -136,6 +136,12 @@ p {
 	margin-bottom: .5rem;
 }
 
+.p-location {
+	font-family: 'Montserrat';
+	font-size: 1;
+	margin-bottom: 0px;
+}
+
 /*----- Helper Classes -----*/
 
 html * {
