@@ -135,7 +135,12 @@ p {
 	font-weight: 600;
 	margin-bottom: 0;
 }
-
+.p-dts {
+	font-family: 'Montserrat';
+	font-size: .8rem;
+	margin-bottom: 0px;
+	margin-top: .5rem;
+}
 .p-location {
 	font-family: 'Montserrat';
 	font-size: 1.1rem;
