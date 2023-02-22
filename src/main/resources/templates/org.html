@@ -206,15 +206,23 @@
                           <tbody>
                             <tr th:each="minyan: ${maarivMinyanim}">
                               <td class="middle">
-                                <h5 th:style="'color: ' + ${org.getOrgColor()}"
-                                  th:utext="${minyan.getType().displayName()} "></h5>
-                                <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
-                                <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
-                              </td>
-                              <td class="middle">
-                                <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
-                                <p class="p-dts" th:utext="${minyan.getInformation()}"></p>
+                                <table class="table table-org table-nested">
+                                  <tbody>
+                                    <tr>
+                                      <td class="middle table-nested">
+                                        <h5 th:style="'color: ' + ${org.getOrgColor()}"
+                                          th:utext="${minyan.getType().displayName()} "></h5>
+                                        <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
+                                      </td>
+                                      <td class="middle table-nested">
+                                        <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
+                                        <p class="p-dts" th:utext="${minyan.getInformation()}"></p>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
                                 <p class="p-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
+                                <p class="p-notes" th:if="${not #strings.isEmpty(minyan.getNotes())}" th:utext="${minyan.getNotes()}"></p>
                               </td>
                             </tr>
                           </tbody>
