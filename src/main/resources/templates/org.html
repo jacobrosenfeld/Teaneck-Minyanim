@@ -136,7 +136,7 @@
                         <!-- Shacharis Table -->
                         <table class="table table-org" th:if="${!shacharisMinyanim.isEmpty()}">
                           <tbody>
-                            <tr th:each="minyan: ${minchaMinyanim}">
+                            <tr th:each="minyan: ${shacharisMinyanim}">
                               <td class="middle">
                                 <table class="table table-org table-nested">
                                   <tbody>
@@ -204,7 +204,7 @@
                         <h4 id="maariv">Maariv</h4>
                         <table class="table table-org" th:if="${!maarivMinyanim.isEmpty()}">
                           <tbody>
-                            <tr th:each="minyan: ${minchaMinyanim}">
+                            <tr th:each="minyan: ${maarivMinyanim}">
                               <td class="middle">
                                 <table class="table table-org table-nested">
                                   <tbody>
