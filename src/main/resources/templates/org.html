@@ -130,34 +130,6 @@
                   <!-- <hr> -->
                   <div class="section" id="minyanim">
                     <div class="row">
-                      <!-- <div class="col col-lg-2">
-                        <div id="list-example" class="list-group">
-                          <a class="list-group-item list-group-item-action" href="#shacharis">Shacharis</a>
-                          <a class="list-group-item list-group-item-action" href="#mincha">Mincha</a>
-                          <a class="list-group-item list-group-item-action" href="#maariv">Maariv</a>
-                        </div>
-                      </div> -->
-                      <!-- Old table -->
-                      <!-- <div class="col col-lg">
-                          <table class="table d-none d-lg-block" th:if="${!shacharisMinyanim.isEmpty()}">
-                            <thead>
-                              <tr>
-                                <th scope="col">Time</th>
-                                <th scope="col">Location</th>
-                                <th scope="col">Nusach</th>
-                                <th scope="col">Notes</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr th:each="minyan: ${shacharisMinyanim}">
-                                <td class="middle" th:text="${minyan.getFormattedStartTime()}"></td>
-                                <td class="middle" th:text="${minyan.getInformation()}">
-                                </td>
-                                <td class="middle" th:text="${minyan.getNusach().displayName()}"></td>
-                                <td class="middle" th:text="${minyan.getNotes()}"></td>
-                              </tr>
-                            </tbody>
-                          </table> -->
                           <div class="col-lg">
                         <h4 id="shacharis">Shacharis</h4>
                         <!-- Mobile Table -->
@@ -270,10 +242,6 @@
               <input type="hidden" name="subform" value="yes" />
               <input class="submit-button" name="submit" id="submit" type="submit" value="Sign up now" />
             </form>
-            <!-- <form id="chimp-form" class="subscribe-form wow zoomIn" action="/assets/php/subscribe.php" method="post" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" autocomplete="off" novalidate>
-                  <input class="mail" id="chimp-email" type="email" name="email" placeholder="Enter your email address" autocomplete="off">
-                  <input class="submit-button" type="submit" value="Sign up now">
-                </form> -->
             <div id="response"></div>
           </div>
           <div class="form-note">
@@ -282,14 +250,6 @@
         </div>
       </div>
     </div>
-    <!-- <div class="col-lg-3 col-md-4" id="org-box">
-                        <div class="card" style="border: 0;">
-                            <div class="card-body">
-                                <h5 class="card-title" th:text="${org.getName()}"></h5>
-                                <h6 class="card-subtitle mb-2 text-muted" th:text="${org.getNusach().displayName()}"></h6>
-                                <a class="card-text" th:text="${org.getAddress()}" th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}" th:target="_blank"></a> 
-                                <a th:if="${org.getWebsiteURI() != null}" th:href="@{|https://${org.getWebsiteURI()}|}" class="card-link">Visit the website</a>
-                                <a href="#" class="card-link">Another link</a>-->
     <!-- Array Footer Section -->
     <div class="footer-sm">
       <div class="container">
