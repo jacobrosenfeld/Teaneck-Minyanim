@@ -165,27 +165,27 @@
                             <tr th:each="minyan: ${minchaMinyanim}">
                               <table class="table table-org">
                                 <tbody>
-                              <td class="middle table-nested">
-                                <h5 th:style="'color: ' + ${org.getOrgColor()}"
-                                  th:utext="${minyan.getType().displayName()} "></h5>
-                                <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
-                                <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
-                              </td>
-                              <td class="middle table-nested">
-                                <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
-                                <p class="p-dts" th:utext="${minyan.getInformation()}"></p>
-                                <p class="p-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
-                              </td>
+                                  <td class="middle table-nested">
+                                    <h5 th:style="'color: ' + ${org.getOrgColor()}"
+                                      th:utext="${minyan.getType().displayName()} "></h5>
+                                    <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
+                                    <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
+                                  </td>
+                                  <td class="middle table-nested">
+                                    <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
+                                    <p class="p-dts" th:utext="${minyan.getInformation()}"></p>
+                                    <p class="p-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
+                                  </td>
+                                </tbody>
+                              </table>
+                              <p class="p-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
+                              <p class="p-notes" th:if="${not #strings.isEmpty(minyan.getNotes())}" th:utext="${minyan.getNotes()}"></p>
+                            </tr>
                           </tbody>
-                          </table>
-                          <p class="p-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
-                          <p class="p-notes" th:if="${not #strings.isEmpty(minyan.getNotes())}" th:utext="${minyan.getNotes()}"></p>
-                        </tr>
-                        </tbody>
                         </table>
                         <div class="nominyan" th:if="${minchaMinyanim.isEmpty()}">
-                          <h5><small class="text-muted">There are no additional Mincha minyanim scheduled for
-                              today.</small>
+                          <h5>
+                            <small class="text-muted">There are no additional Mincha minyanim scheduled for today.</small>
                           </h5>
                         </div>
                       </div>
