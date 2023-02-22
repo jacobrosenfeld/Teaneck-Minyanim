@@ -179,9 +179,9 @@
                                     </td>
                                   </tbody>
                                 </table>
+                                <p class="p-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
+                                <p class="p-notes" th:if="${not #strings.isEmpty(minyan.getNotes())}" th:utext="${minyan.getNotes()}"></p>
                               </td>
-                              <p class="p-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
-                              <p class="p-notes" th:if="${not #strings.isEmpty(minyan.getNotes())}" th:utext="${minyan.getNotes()}"></p>
                             </tr>
                           </tbody>
                         </table>
