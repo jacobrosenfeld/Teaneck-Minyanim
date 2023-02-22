@@ -153,6 +153,12 @@ p {
 	color: #6C757D;
 	margin-bottom: 0px;
 }
+.mobile-location {
+	font-family: 'Montserrat';
+	font-size: .8rem;
+	margin-top: .5rem;
+
+}
 
 /*----- Helper Classes -----*/
 
