@@ -71,6 +71,13 @@
                                         </select>
                                         <small id="location-help" class="form-text text-muted">Choose the place inside the shul that the minyan will take place. To add more options, jump to <a th:href="@{|/admin/${organization.id}/locations|}">manage locations</a>.</small>
                                     </div>
+                                    <div class="Round" role="group" aria-label="Round down to nearest five minutes">
+                                        <label for="location">Round Down Dynamic Times to Nearest 5</label>
+                                        <input type="radio" class="btn-check" name="btnradio" id="rounddown5off" autocomplete="off" checked>
+                                        <label class="btn btn-outline-primary" for="btnradio1">No</label>
+                                        <input type="radio" class="btn-check" name="btnradio" id="rounddown5on" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="btnradio2">Yes</label>
+                                      </div>
                                     <div class="form-group">
                                         <label for="sunday-box">Sunday</label>
                                         <div class="form-row" id="sunday-box">
