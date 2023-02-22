@@ -163,15 +163,15 @@
                         <table class="table table-org" th:if="${!minchaMinyanim.isEmpty()}">
                           <tbody>
                             <tr th:each="minyan: ${minchaMinyanim}">
-                              <table class="table table-org table-nested">
+                              <table class="table table-org">
                                 <tbody>
-                              <td class="middle">
+                              <td class="middle table-nested">
                                 <h5 th:style="'color: ' + ${org.getOrgColor()}"
                                   th:utext="${minyan.getType().displayName()} "></h5>
                                 <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
                                 <p class="p-notes" th:utext="${minyan.getNotes()}"></p>
                               </td>
-                              <td class="middle">
+                              <td class="middle table-nested">
                                 <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
                                 <p class="p-dts" th:utext="${minyan.getInformation()}"></p>
                                 <p class="p-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
