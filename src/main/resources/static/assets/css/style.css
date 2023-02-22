@@ -146,6 +146,13 @@ p {
 	font-size: .9rem;
 	margin-bottom: 0px;
 }
+.mobile-nusach {
+	font-family: 'Montserrat';
+	font-size: .8rem;
+	font-style: italic;
+	color: #6C757D;
+	margin-bottom: 0px;
+}
 
 /*----- Helper Classes -----*/
 
