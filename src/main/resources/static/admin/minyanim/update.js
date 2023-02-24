@@ -112,7 +112,7 @@ function updateAll() {
     update("wednesday");
     update("thursday");
     update("friday");
-    update("shabbat");
+    update("shabbos");
     update("rc")
     update("yt")
     update("chanuka")

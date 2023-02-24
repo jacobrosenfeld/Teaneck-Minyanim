@@ -7,7 +7,7 @@ public enum MinyanDay {
     WEDNESDAY,
     THURSDAY,
     FRIDAY,
-    SHABBAT,
+    SHABBOS,
     ROSH_CHODESH,
     YOM_TOV,
     CHANUKA,
@@ -27,7 +27,7 @@ public enum MinyanDay {
 //                return LocalDate.now().with( next(java.time.DayOfWeek.THURSDAY) );
 //            case FRIDAY:
 //                return LocalDate.now().with( next(java.time.DayOfWeek.FRIDAY) );
-//            case SHABBAT:
+//            case SHABBOS:
 //                return LocalDate.now().with( next(java.time.DayOfWeek.SATURDAY) );
 //            case ROSH_CHODESH:
 //                return new Date();

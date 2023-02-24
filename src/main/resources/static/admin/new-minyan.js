@@ -118,7 +118,7 @@ function updateAll() {
     update("wednesday");
     update("thursday");
     update("friday");
-    update("shabbat");
+    update("shabbos");
     update("rc")
     update("yt")
     update("chanuka")
@@ -188,7 +188,7 @@ function branch() {
     updateTime('wednesday', BRANCH_MINYAN.schedule.wednesday);
     updateTime('thursday', BRANCH_MINYAN.schedule.thursday);
     updateTime('friday', BRANCH_MINYAN.schedule.friday);
-    updateTime('shabbat', BRANCH_MINYAN.schedule.shabbat);
+    updateTime('shabbos', BRANCH_MINYAN.schedule.shabbos);
     updateTime('rc', BRANCH_MINYAN.schedule.roshChodesh);
     updateTime('yt', BRANCH_MINYAN.schedule.yomTov);
     updateTime('chanuka', BRANCH_MINYAN.schedule.chanuka);
