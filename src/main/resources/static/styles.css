@@ -127,13 +127,13 @@ vertical-align: middle;
 }
 
 .btn-primary {
-    background-color: #035174;
-    border-color: #035174;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .btn-primary:hover {
-    background-color: #033A62;
-    border-color: #033A62;
+    background-color: var(--focus-color);
+    border-color: var(--focus-color);
 }
 
 @media screen and (max-width: 600px) {
