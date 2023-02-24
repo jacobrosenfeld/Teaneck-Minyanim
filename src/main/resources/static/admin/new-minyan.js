@@ -44,6 +44,7 @@ function update(name) {
     var nmBox = document.getElementById(`nm-time-box-${name}`);
     var fixedBox = document.getElementById(`fixed-time-box-${name}`);
     var dynamicBox = document.getElementById(`dynamic-time-box-${name}`);
+    var roundedBox = document.getElementById(`rounded-time-box-${name}`);
 
     if (mode == "nm") {
         newBox.id = `nm-time-box-${name}`;
@@ -66,6 +67,15 @@ function update(name) {
 //        console.log("Removing static box");
         newBox.id = `dynamic-time-box-${name}`;
         newBox.innerHTML = dynamic;
+        if (nmBox) {
+            nmBox.replaceWith(newBox);
+        } else if (fixedBox) {
+            fixedBox.replaceWith(newBox);
+        }
+    } else if (mode == "rounded") {
+//        console.log("Removing static box");
+        newBox.id = `rounded-time-box-${name}`;
+        newBox.innerHTML = rounded;
         if (nmBox) {
             nmBox.replaceWith(newBox);
         } else if (fixedBox) {
