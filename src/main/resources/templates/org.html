@@ -106,7 +106,7 @@
                               th:if="${upcoming != null}"
                               th:text="@{|Next Minyan: ${upcoming.getType().displayName()} at ${upcoming.getFormattedStartTime()}|}"></button>
                             <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
-                              th:if="${upcoming == null}">There are no additional minyanim scheduled for today.</button>
+                              th:if="${upcoming == null}">There are no minyanim scheduled for today.</button>
                             <a role="button" class="btn-shuls"
                               th:href="@{|https://www.google.com/maps/search/?api=1&query=${org.getAddress()}|}"
                               th:target="_blank">Get Directions</a>
@@ -160,7 +160,7 @@
                           </tbody>
                         </table>
                         <div class="nominyan" th:if="${shacharisMinyanim.isEmpty()}">
-                          <h5><small class="text-muted">There are no additional Shacharis minyanim scheduled for
+                          <h5><small class="text-muted">There are no Shacharis minyanim scheduled for
                               today.</small>
                           </h5>
                         </div>
@@ -195,7 +195,7 @@
                         </table>
                         <div class="nominyan" th:if="${minchaMinyanim.isEmpty()}">
                           <h5>
-                            <small class="text-muted">There are no additional Mincha minyanim scheduled for today.</small>
+                            <small class="text-muted">There are no Mincha minyanim scheduled for today.</small>
                           </h5>
                         </div>
                       </div>
@@ -228,7 +228,7 @@
                           </tbody>
                         </table>
                         <div class="nominyan" th:if="${maarivMinyanim.isEmpty()}">
-                          <h5><small class="text-muted">There are no additional Maariv minyanim scheduled for
+                          <h5><small class="text-muted">There are no Maariv minyanim scheduled for
                               today.</small>
                           </h5>
                           </div>
