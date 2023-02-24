@@ -415,59 +415,59 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="shabbat-box">Shabbat</label>
-                                        <div class="form-row" id="shabbat-box">
+                                        <label for="shabbos-box">Shabbos</label>
+                                        <div class="form-row" id="shabbos-box">
                                             <div class="col">
-                                                <select class="custom-select" name="shabbat-time-type" id="shabbat-time-type" onchange="update('shabbat')" required>
-                                                    <option value="nm" th:selected="${minyan.getSchedule().getShabbat().isNone()}">No Minyan</option>
-                                                    <option value="fixed" th:selected="${minyan.getSchedule().getShabbat().isFixed()}">Fixed</option>
-                                                    <option value="dynamic" th:selected="${minyan.getSchedule().getShabbat().isDynamic()}">Dynamic</option>
-                                                    <option value="rounded" th:selected="${minyan.getSchedule().getShabbat().isRounded()}">Rounded</option>
+                                                <select class="custom-select" name="shabbos-time-type" id="shabbos-time-type" onchange="update('shabbos')" required>
+                                                    <option value="nm" th:selected="${minyan.getSchedule().getShabbos().isNone()}">No Minyan</option>
+                                                    <option value="fixed" th:selected="${minyan.getSchedule().getShabbos().isFixed()}">Fixed</option>
+                                                    <option value="dynamic" th:selected="${minyan.getSchedule().getShabbos().isDynamic()}">Dynamic</option>
+                                                    <option value="rounded" th:selected="${minyan.getSchedule().getShabbos().isRounded()}">Rounded</option>
                                                 </select>
                                             </div>
-                                            <div th:if="${minyan.getSchedule().getShabbat().isDynamic()}" class="col" id="dynamic-time-box-shabbat">
+                                            <div th:if="${minyan.getSchedule().getShabbos().isDynamic()}" class="col" id="dynamic-time-box-shabbos">
                                                 <div class="form-row">
                                                     <div class="col">
-                                                        <select class="custom-select" name="shabbat-zman" id="shabbat-zman" required>
+                                                        <select class="custom-select" name="shabbos-zman" id="shabbos-zman" required>
                                                             <option disabled>Choose a zman</option>
-                                                            <option value="netz" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
-                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
-                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLAH')}">Mincha Gedola</option>
-                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
-                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
-                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
-                                                            <option value="tzet" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
+                                                            <option value="netz" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
+                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
+                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLAH')}">Mincha Gedola</option>
+                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
+                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
+                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
+                                                            <option value="tzet" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
                                                         </select>
                                                     </div>
                                                     <div class="col">
-                                                        <input type="number" class="form-control" name="shabbat-zman-offset" id="shabbat-zman-offset" th:value="${minyan.getSchedule().getShabbat().getRule().getOffsetMinutes()}" required>
+                                                        <input type="number" class="form-control" name="shabbos-zman-offset" id="shabbos-zman-offset" th:value="${minyan.getSchedule().getShabbos().getRule().getOffsetMinutes()}" required>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div th:if="${minyan.getSchedule().getShabbat().isRounded()}" class="col" id="rounded-time-box-shabbat">
+                                            <div th:if="${minyan.getSchedule().getShabbos().isRounded()}" class="col" id="rounded-time-box-shabbos">
                                                 <div class="form-row">
                                                     <div class="col">
-                                                        <select class="custom-select" name="shabbat-zman" id="shabbat-zman" required>
+                                                        <select class="custom-select" name="shabbos-zman" id="shabbos-zman" required>
                                                             <option disabled>Choose a zman</option>
-                                                            <option value="netz" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
-                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
-                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLAH')}">Mincha Gedola</option>
-                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
-                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
-                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
-                                                            <option value="tzet" th:selected="${minyan.getSchedule().getShabbat().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
+                                                            <option value="netz" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('NETZ')}">Netz</option>
+                                                            <option value="chatzot" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('CHATZOT')}">Chatzot</option>
+                                                            <option value="mincha_gedola" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('MINCHA_GEDOLAH')}">Mincha Gedola</option>
+                                                            <option value="mincha_ketana" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('MINCHA_KETANA')}">Mincha Ketana</option>
+                                                            <option value="plag_hamincha" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('PLAG_HAMINCHA')}">Plag HaMincha</option>
+                                                            <option value="shekiya" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('SHEKIYA')}">Shekiya</option>
+                                                            <option value="tzet" th:selected="${minyan.getSchedule().getShabbos().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
                                                         </select>
                                                     </div>
                                                     <div class="col">
-                                                        <input type="number" class="form-control" name="shabbat-zman-offset" id="shabbat-zman-offset" th:value="${minyan.getSchedule().getShabbat().getRule().getOffsetMinutes()}" required>
+                                                        <input type="number" class="form-control" name="shabbos-zman-offset" id="shabbos-zman-offset" th:value="${minyan.getSchedule().getShabbos().getRule().getOffsetMinutes()}" required>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div th:if="${minyan.getSchedule().getShabbat().isFixed()}" class="col" id="fixed-time-box-shabbat">
-                                                <input type="time" class="form-control" name="shabbat-fixed-time" id="shabbat-fixed-time" required th:value="${minyan.getSchedule().getShabbat().getFixedTimeShort()}">
+                                            <div th:if="${minyan.getSchedule().getShabbos().isFixed()}" class="col" id="fixed-time-box-shabbos">
+                                                <input type="time" class="form-control" name="shabbos-fixed-time" id="shabbos-fixed-time" required th:value="${minyan.getSchedule().getShabbos().getFixedTimeShort()}">
                                             </div>
-                                            <div th:if="${minyan.getSchedule().getShabbat().isNone()}" class="col" id="nm-time-box-shabbat">
-                                                <input type="text" class="form-control" name="shabbat-fixed-time" id="shabbat-fixed-time" disabled>
+                                            <div th:if="${minyan.getSchedule().getShabbos().isNone()}" class="col" id="nm-time-box-shabbos">
+                                                <input type="text" class="form-control" name="shabbos-fixed-time" id="shabbos-fixed-time" disabled>
                                             </div>
                                         </div>
                                     </div>
