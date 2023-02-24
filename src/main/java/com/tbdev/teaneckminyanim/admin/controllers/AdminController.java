@@ -1094,10 +1094,10 @@ if (this.TNMUserDAO.delete(account)) {
                                      @RequestParam(value = "friday-fixed-time", required = false) String fridayTimeString,
                                      @RequestParam(value = "friday-zman", required = false) String fridayZman,
                                      @RequestParam(value = "friday-zman-offset", required = false) Integer fridayZmanOffset,
-                                     @RequestParam(value = "shabbat-time-type", required = true) String shabbatTimeType,
-                                     @RequestParam(value = "shabbat-fixed-time", required = false) String shabbatTimeString,
-                                     @RequestParam(value = "shabbat-zman", required = false) String shabbatZman,
-                                     @RequestParam(value = "shabbat-zman-offset", required = false) Integer shabbatZmanOffset,
+                                     @RequestParam(value = "shabbos-time-type", required = true) String shabbosTimeType,
+                                     @RequestParam(value = "shabbos-fixed-time", required = false) String shabbosTimeString,
+                                     @RequestParam(value = "shabbos-zman", required = false) String shabbosZman,
+                                     @RequestParam(value = "shabbos-zman-offset", required = false) Integer shabbosZmanOffset,
                                      @RequestParam(value = "rc-time-type", required = true) String rcTimeType,
                                      @RequestParam(value = "rc-fixed-time", required = false) String rcTimeString,
                                      @RequestParam(value = "rc-zman", required = false) String rcZman,
@@ -1143,13 +1143,13 @@ if (this.TNMUserDAO.delete(account)) {
         MinyanTime wednesdayTime = MinyanTime.fromFormData(wednesdayTimeType, wednesdayTimeString, wednesdayZman, wednesdayZmanOffset);
         MinyanTime thursdayTime = MinyanTime.fromFormData(thursdayTimeType, thursdayTimeString, thursdayZman, thursdayZmanOffset);
         MinyanTime fridayTime = MinyanTime.fromFormData(fridayTimeType, fridayTimeString, fridayZman, fridayZmanOffset);
-        MinyanTime shabbatTime = MinyanTime.fromFormData(shabbatTimeType, shabbatTimeString, shabbatZman, shabbatZmanOffset);
+        MinyanTime shabbosTime = MinyanTime.fromFormData(shabbosTimeType, shabbosTimeString, shabbosZman, shabbosZmanOffset);
         MinyanTime rcTime = MinyanTime.fromFormData(rcTimeType, rcTimeString, rcZman, rcZmanOffset);
         MinyanTime ytTime = MinyanTime.fromFormData(ytTimeType, ytTimeString, ytZman, ytZmanOffset);
         MinyanTime chanukaTime = MinyanTime.fromFormData(chanukaTimeType, chanukaTimeString, chanukaZman, chanukaZmanOffset);
         MinyanTime rccTime = MinyanTime.fromFormData(rccTimeType, rccTimeString, rccZman, rccZmanOffset);
 
-        Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbatTime, ytTime, rcTime, chanukaTime, rccTime);
+        Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, ytTime, rcTime, chanukaTime, rccTime);
 
 //        validate nusach
         Nusach nusach = Nusach.fromString(nusachString);
@@ -1239,10 +1239,10 @@ if (this.TNMUserDAO.delete(account)) {
                                      @RequestParam(value = "friday-fixed-time", required = false) String fridayTimeString,
                                      @RequestParam(value = "friday-zman", required = false) String fridayZman,
                                      @RequestParam(value = "friday-zman-offset", required = false) Integer fridayZmanOffset,
-                                     @RequestParam(value = "shabbat-time-type", required = true) String shabbatTimeType,
-                                     @RequestParam(value = "shabbat-fixed-time", required = false) String shabbatTimeString,
-                                     @RequestParam(value = "shabbat-zman", required = false) String shabbatZman,
-                                     @RequestParam(value = "shabbat-zman-offset", required = false) Integer shabbatZmanOffset,
+                                     @RequestParam(value = "shabbos-time-type", required = true) String shabbosTimeType,
+                                     @RequestParam(value = "shabbos-fixed-time", required = false) String shabbosTimeString,
+                                     @RequestParam(value = "shabbos-zman", required = false) String shabbosZman,
+                                     @RequestParam(value = "shabbos-zman-offset", required = false) Integer shabbosZmanOffset,
                                      @RequestParam(value = "rc-time-type", required = true) String rcTimeType,
                                      @RequestParam(value = "rc-fixed-time", required = false) String rcTimeString,
                                      @RequestParam(value = "rc-zman", required = false) String rcZman,
@@ -1309,7 +1309,7 @@ if (this.TNMUserDAO.delete(account)) {
         MinyanTime wednesdayTime = MinyanTime.fromFormData(wednesdayTimeType, wednesdayTimeString, wednesdayZman, wednesdayZmanOffset);
         MinyanTime thursdayTime = MinyanTime.fromFormData(thursdayTimeType, thursdayTimeString, thursdayZman, thursdayZmanOffset);
         MinyanTime fridayTime = MinyanTime.fromFormData(fridayTimeType, fridayTimeString, fridayZman, fridayZmanOffset);
-        MinyanTime shabbatTime = MinyanTime.fromFormData(shabbatTimeType, shabbatTimeString, shabbatZman, shabbatZmanOffset);
+        MinyanTime shabbosTime = MinyanTime.fromFormData(shabbosTimeType, shabbosTimeString, shabbosZman, shabbosZmanOffset);
         MinyanTime rcTime = MinyanTime.fromFormData(rcTimeType, rcTimeString, rcZman, rcZmanOffset);
         MinyanTime ytTime = MinyanTime.fromFormData(ytTimeType, ytTimeString, ytZman, ytZmanOffset);
         MinyanTime chanukaTime = MinyanTime.fromFormData(chanukaTimeType, chanukaTimeString, chanukaZman, chanukaZmanOffset);
@@ -1321,7 +1321,7 @@ if (this.TNMUserDAO.delete(account)) {
         System.out.println("Wednesday minyan time: " + wednesdayTime);
         System.out.println("Thursday minyan time: " + thursdayTime);
         System.out.println("Friday minyan time: " + fridayTime);
-        System.out.println("Shabbat minyan time: " + shabbatTime);
+        System.out.println("Shabbos minyan time: " + shabbosTime);
         System.out.println("Rosh Chodesh minyan time: " + rcTime);
         System.out.println("Yom Tov minyan time: " + ytTime);
         System.out.println("Chanuka minyan time: " + chanukaTime);
@@ -1338,7 +1338,7 @@ if (this.TNMUserDAO.delete(account)) {
 
         System.out.println("Notes: " + notes);
 
-        Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbatTime, rcTime, ytTime, chanukaTime, rccTime);
+        Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, rcTime, ytTime, chanukaTime, rccTime);
 
         Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization, minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled(), organizationColor);
 

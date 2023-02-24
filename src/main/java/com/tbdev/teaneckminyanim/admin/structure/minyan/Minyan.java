@@ -184,7 +184,7 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.startTime4 = schedule.getWednesday().toString();
         this.startTime5 = schedule.getThursday().toString();
         this.startTime6 = schedule.getFriday().toString();
-        this.startTime7 = schedule.getShabbat().toString();
+        this.startTime7 = schedule.getShabbos().toString();
         this.startTimeRC = schedule.getRoshChodesh().toString();
         this.startTimeYT = schedule.getYomTov().toString();
         this.startTimeCH = schedule.getChanuka().toString();
@@ -212,7 +212,7 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.startTime4 = schedule.getWednesday().toString();
         this.startTime5 = schedule.getThursday().toString();
         this.startTime6 = schedule.getFriday().toString();
-        this.startTime7 = schedule.getShabbat().toString();
+        this.startTime7 = schedule.getShabbos().toString();
         this.startTimeRC = schedule.getRoshChodesh().toString();
         this.startTimeYT = schedule.getYomTov().toString();
         this.startTimeCH = schedule.getChanuka().toString();
@@ -380,7 +380,7 @@ public class Minyan extends TNMObject implements IDGenerator {
                 case WEDNESDAY -> schedule.getWednesday();
                 case THURSDAY -> schedule.getThursday();
                 case FRIDAY -> schedule.getFriday();
-                case SATURDAY -> schedule.getShabbat();
+                case SATURDAY -> schedule.getShabbos();
             };
         }
     }
