@@ -53,7 +53,7 @@
                                     <div class="form-group">
                                         <label for="type">Minyan Type</label>
                                         <select class="custom-select" name="type" id="type" required>
-                                            <option value="" disabled>Choose a type</option>
+                                            <option value="" selected disabled>Choose a type</option>
                                             <option value="shacharis">Shacharis</option>
                                             <option value="mincha">Mincha</option>
                                             <option value="maariv">Maariv</option>
@@ -64,7 +64,7 @@
                                     <div class="form-group">
                                         <label for="location">Location</label>
                                         <select class="custom-select" name="location" id="location" required>
-                                            <option value="null" selected>None specified</option>
+                                            <option value="" selected disabled>None specified</option>
                                             <div th:each="location: ${locations}">
                                                 <option th:value="${location.id}" th:text="${location.name}"></option>
                                             </div>
