@@ -176,6 +176,7 @@
                                                         <input type="number" class="form-control" name="monday-zman-offset" id="monday-zman-offset" th:value="${minyan.getSchedule().getMonday().getRule().getOffsetMinutes()}" required>
                                                     </div>
                                                 </div>
+                                            </div>
                                             <div th:if="${minyan.getSchedule().getMonday().isFixed()}" class="col" id="fixed-time-box-monday">
                                                 <input type="time" class="form-control" name="monday-fixed-time" id="monday-fixed-time" required th:value="${minyan.getSchedule().getMonday().getFixedTimeShort()}">
                                             </div>
@@ -233,9 +234,7 @@
                                                         <input type="number" class="form-control" name="tuesday-zman-offset" id="tuesday-zman-offset" th:value="${minyan.getSchedule().getTuesday().getRule().getOffsetMinutes()}" required>
                                                     </div>
                                                 </div>
-                                                <div class="form-row">
-                                                    <div class="col">
-                                                        <select class="custom-select" name="tuesday-rounding" id="tuesday
+                                            </div>
                                             <div th:if="${minyan.getSchedule().getTuesday().isFixed()}" class="col" id="fixed-time-box-tuesday">
                                                 <input type="time" class="form-control" name="tuesday-fixed-time" id="tuesday-fixed-time" required th:value="${minyan.getSchedule().getTuesday().getFixedTimeShort()}">
                                             </div>
@@ -292,24 +291,12 @@
                                                         <input type="number" class="form-control" name="wednesday-zman-offset" id="wednesday-zman-offset" th:value="${minyan.getSchedule().getWednesday().getRule().getOffsetMinutes()}" required>
                                                     </div>
                                                 </div>
-                                                <div class="form-row">
-                                                    <div class="col">
-                                                        <select class="custom-select" name="wednesday-rounding" id="wednesday-rounding" required>
-                                                            <option disabled>Choose a rounding</option>
-                                                            <option value="5" th:selected="${minyan.getSchedule().getWednesday().getRule().getRoundingMinutes() == 5}">5 minutes</option>
-                                                            <option value="10" th:selected="${minyan.getSchedule().getWednesday().getRule().getRoundingMinutes() == 10}">10 minutes</option>
-                                                            <option value="15" th:selected="${minyan.getSchedule().getWednesday().getRule().getRoundingMinutes() == 15}">15 minutes</option>
-                                                            <option value="20" th:selected="${minyan.getSchedule().getWednesday().getRule().getRoundingMinutes() == 20}">20 minutes</option>
-                                                            <option value="30" th:selected="${minyan.getSchedule().getWednesday().getRule().getRoundingMinutes() == 30}">30 minutes</option>
-                                                            <option value="60" th:selected="${minyan.getSchedule().getWednesday().getRule().getRoundingMinutes() == 60}">60 minutes</option>
-                                                        </select>
-                                                    </div>
+                                                <div th:if="${minyan.getSchedule().getWednesday().isFixed()}" class="col" id="fixed-time-box-wednesday">
+                                                    <input type="time" class="form-control" name="wednesday-fixed-time" id="wednesday-fixed-time" required th:value="${minyan.getSchedule().getWednesday().getFixedTimeShort()}">
                                                 </div>
-                                            <div th:if="${minyan.getSchedule().getWednesday().isFixed()}" class="col" id="fixed-time-box-wednesday">
-                                                <input type="time" class="form-control" name="wednesday-fixed-time" id="wednesday-fixed-time" required th:value="${minyan.getSchedule().getWednesday().getFixedTimeShort()}">
-                                            </div>
-                                            <div th:if="${minyan.getSchedule().getWednesday().isNone()}" class="col" id="nm-time-box-wednesday">
-                                                <input type="text" class="form-control" name="wednesday-fixed-time" id="wednesday-fixed-time" disabled>
+                                                <div th:if="${minyan.getSchedule().getWednesday().isNone()}" class="col" id="nm-time-box-wednesday">
+                                                    <input type="text" class="form-control" name="wednesday-fixed-time" id="wednesday-fixed-time" disabled>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
