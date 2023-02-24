@@ -72,8 +72,8 @@
                                         <small id="location-help" class="form-text text-muted">Choose the place inside the shul that the minyan will take place. To add more options, jump to <a th:href="@{|/admin/${organization.id}/locations|}">manage locations</a>.</small>
                                     </div>
                                     <div class="custom-control custom-switch" style="z-index: auto;">
-                                        <input type="checkbox" class="custom-control-input" name="enabled" id="enabled">
-                                        <label class="custom-control-label" for="enabled">Round Dynamic Times</label>
+                                        <input type="checkbox" class="custom-control-input" name="rounded" id="rounded">
+                                        <label class="custom-control-label" for="rounded">Round Dynamic Times</label>
                                     </div>
                                     <div class="form-group">
                                         <label for="sunday-box">Sunday</label>
@@ -83,6 +83,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-sunday"></div>
@@ -96,6 +97,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-monday"></div>
@@ -110,6 +112,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-tuesday"></div>
@@ -123,6 +126,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-wednesday"></div>
@@ -136,6 +140,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-thursday"></div>
@@ -149,6 +154,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-friday"></div>
@@ -162,6 +168,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-shabbat"></div>
@@ -175,6 +182,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-rc"></div>
@@ -188,6 +196,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-yt"></div>
@@ -202,6 +211,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-chanuka"></div>
@@ -215,6 +225,7 @@
                                                     <option value="nm" selected>No Minyan</option>
                                                     <option value="fixed">Fixed</option>
                                                     <option value="dynamic">Dynamic</option>
+                                                    <option value="rounded">Rounded</option>
                                                 </select>
                                             </div>
                                             <div class="col" id="dynamic-time-box-rcc"></div>
