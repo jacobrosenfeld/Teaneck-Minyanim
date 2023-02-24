@@ -31,7 +31,7 @@
                 <a class="nav-link" href="/admin/dashboard">Admin Panel <span class="sr-only">Admin Panel</span></a>
             </li>
             <li class="nav-item ">
-                <a class="nav-link">${organization.name}<span class="sr-only">${organization.name}</span></a>
+                <a class="nav-link" th:text="${organization.name}"><span class="sr-only" th:text="${organization.name}"></span></a>
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
