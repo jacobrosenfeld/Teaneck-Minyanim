@@ -64,7 +64,7 @@
                                     <div class="form-group">
                                         <label for="location">Location</label>
                                         <select class="custom-select" name="location" id="location" required>
-                                            <option value="" selected disabled>None specified</option>
+                                            <option value="" selected disabled>Choose a location</option>
                                             <div th:each="location: ${locations}">
                                                 <option th:value="${location.id}" th:text="${location.name}"></option>
                                             </div>
