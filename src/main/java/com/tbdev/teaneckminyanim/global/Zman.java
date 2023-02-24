@@ -43,7 +43,7 @@ public enum Zman {
             case ETT:
                 return "ETT";
             case NETZ:
-                return "Sunrise";
+                return "Netz";
             case SZKS:
                 return "Sof Zman Krias Shma";
             case SZT:
