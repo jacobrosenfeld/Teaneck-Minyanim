@@ -150,6 +150,10 @@ function applyMondayThroughFriday() {
             var mondayZman = document.getElementById(`monday-zman`).value;
             var mondayOffset = document.getElementById(`monday-zman-offset`).value;
             updateDynamicTime(name, mondayZman, mondayOffset);
+        } else if (mondayMode == "rounded") {
+            var mondayZman = document.getElementById(`monday-zman`).value;
+            var mondayOffset = document.getElementById(`monday-zman-offset`).value;
+            updateRoundedTime(name, mondayZman, mondayOffset);
         } else if (mondayMode == "fixed") {
             var mondayTime = document.getElementById(`monday-fixed-time`).value;
             updateFixedTime(name, mondayTime);
