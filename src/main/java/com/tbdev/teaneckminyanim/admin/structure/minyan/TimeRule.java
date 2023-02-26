@@ -53,7 +53,7 @@ class TimeRule {
 
             for (LocalDate ld : ldArray){
                 cur = zmanimHandler.getZmanim(ld).get(zman);
-                if(cur.compareTo(min)>0) min=cur; //compareTo return negative value if first date is before
+                if(cur.compareTo(min)<0) min=cur; //compareTo return negative value if first date is before
             }
             int minutes =  ((min.getMinutes() + offsetMinutes)/5) * 5; //rounds down to the nearest 5
             t = new Time(min.getHours(), minutes, 0, 0);
