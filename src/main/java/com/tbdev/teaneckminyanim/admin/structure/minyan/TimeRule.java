@@ -5,7 +5,9 @@ import com.tbdev.teaneckminyanim.front.ZmanimHandler;
 import com.tbdev.teaneckminyanim.global.Zman;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.WeekFields;
 import java.util.Date;
+import java.util.Locale;
 
 class TimeRule {
     private Zman zman;
@@ -41,7 +43,7 @@ class TimeRule {
         if(!rounded){
             t = new Time(zmanTime.getHours(), zmanTime.getMinutes() + offsetMinutes, zmanTime.getSeconds() + 59, 0);
         } else {
-            LocalDate sunday = temp.with(DayOfWeek.SUNDAY);
+            LocalDate sunday = temp.with(WeekFields.of(Locale.US).dayOfWeek(), 1L);
             LocalDate monday = temp.with(DayOfWeek.MONDAY);
             LocalDate tuesday = temp.with(DayOfWeek.TUESDAY);
             LocalDate wednesday = temp.with(DayOfWeek.WEDNESDAY);
