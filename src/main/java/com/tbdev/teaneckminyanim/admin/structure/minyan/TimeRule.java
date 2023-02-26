@@ -42,7 +42,7 @@ class TimeRule {
             t = new Time(zmanTime.getHours(), zmanTime.getMinutes() + offsetMinutes, zmanTime.getSeconds() + 59, 0);
         } else {
             LocalDate sunday = temp.with(DayOfWeek.SUNDAY);
-            LocalDate monday = sunday.plusDays(1);
+            LocalDate monday = temp.with(DayOfWeek.MONDAY);
             LocalDate tuesday = sunday.plusDays(2);
             LocalDate wednesday = sunday.plusDays(3);
             LocalDate thursday = sunday.plusDays(4);
