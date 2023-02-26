@@ -43,12 +43,12 @@ class TimeRule {
         if(!rounded){
             t = new Time(zmanTime.getHours(), zmanTime.getMinutes() + offsetMinutes, zmanTime.getSeconds() + 59, 0);
         } else {
-            LocalDate sunday = temp.with(WeekFields.of(Locale.US).dayOfWeek(), 1L);
-            LocalDate monday = temp.with(DayOfWeek.MONDAY);
-            LocalDate tuesday = temp.with(DayOfWeek.TUESDAY);
-            LocalDate wednesday = temp.with(DayOfWeek.WEDNESDAY);
-            LocalDate thursday = temp.with(DayOfWeek.THURSDAY);
-            LocalDate friday = temp.with(DayOfWeek.FRIDAY);
+            LocalDate sunday = temp.with(WeekFields.of(Locale.US).dayOfWeek(), 1);
+            LocalDate monday = temp.with(WeekFields.of(Locale.US).dayOfWeek(), 2);
+            LocalDate tuesday = temp.with(WeekFields.of(Locale.US).dayOfWeek(), 3);
+            LocalDate wednesday = temp.with(WeekFields.of(Locale.US).dayOfWeek(), 4);
+            LocalDate thursday = temp.with(WeekFields.of(Locale.US).dayOfWeek(), 5);
+            LocalDate friday = temp.with(WeekFields.of(Locale.US).dayOfWeek(), 6);
             LocalDate[] ldArray = {sunday, monday, tuesday, wednesday, thursday, friday}; 
             Date min = zmanimHandler.getZmanim(temp).get(zman); 
             Date cur = null; 
