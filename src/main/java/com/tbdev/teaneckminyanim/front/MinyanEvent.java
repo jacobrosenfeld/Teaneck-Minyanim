@@ -98,7 +98,7 @@ public class MinyanEvent {
                     return timeFormat.format(startTime);
                 }
             }
-    public String dynamicTimeString() {
+    public String getdynamicTimeString() {
         return dynamicTimeString;
     }
     
