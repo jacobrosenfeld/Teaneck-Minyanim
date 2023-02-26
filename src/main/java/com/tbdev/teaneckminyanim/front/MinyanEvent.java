@@ -102,7 +102,7 @@ public class MinyanEvent {
         if (dynamicTimeString != null) {
             return dynamicTimeString;
         } else {
-            return "";
+            return null;
         }
     }
     
