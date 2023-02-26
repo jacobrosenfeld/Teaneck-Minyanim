@@ -99,7 +99,11 @@ public class MinyanEvent {
                 }
             }
     public String dynamicTimeString() {
-        return dynamicTimeString;
+        if (dynamicTimeString != null) {
+            return dynamicTimeString;
+        } else {
+            return "";
+        }
     }
     
     public Nusach getNusach() {
