@@ -3,7 +3,7 @@ let description;
 if (typeof shulname !== 'undefined' && typeof minyantype !== 'undefined' && typeof minyantime !== 'undefined' && typeof address !== 'undefined') {
     description = "<h2>" + shulname + "</h2><p>Next Minyan: " + minyantype + " at " + minyantime + "</p><p>" + address + "</p>";
 } else {
-    description = "<h2>" + shulname + "</h2><h5>There are no additional minyanim scheduled for today.</h5><p>" + address + "</p>"
+    description = "<h2>" + shulname + "</h2><h5>There are no upcoming minyanim today.</h5><p>" + address + "</p>"
 }
 
 // Make the GET request to the Mapbox Geocoding API
