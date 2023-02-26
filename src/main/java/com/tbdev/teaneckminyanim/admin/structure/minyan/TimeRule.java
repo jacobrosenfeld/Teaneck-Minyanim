@@ -3,7 +3,6 @@ package com.tbdev.teaneckminyanim.admin.structure.minyan;
 import com.kosherjava.zmanim.util.Time;
 import com.tbdev.teaneckminyanim.front.ZmanimHandler;
 import com.tbdev.teaneckminyanim.global.Zman;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.Date;
