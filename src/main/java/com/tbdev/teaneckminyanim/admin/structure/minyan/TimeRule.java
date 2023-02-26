@@ -46,7 +46,7 @@ class TimeRule {
             LocalDate wednesday = monday.plusDays(2);
             LocalDate thursday = monday.plusDays(3);
             LocalDate friday = monday.plusDays(4);
-            LocalDate sunday = monday.plusDays(6);
+            LocalDate sunday = monday.minusDays(1);
             LocalDate[] ldArray = {sunday, monday, tuesday, wednesday, thursday, friday}; 
             Date min = zmanimHandler.getZmanim(temp).get(zman); 
             Date cur = null; 
