@@ -187,7 +187,7 @@
                                     </tr>
                                   </tbody>
                                 </table>
-                                <p class="mobile-nusach" th:if="${not #strings.isEmpty(minyan.dynamicDisplayName())}" th:utext="${minyan.dynamicDisplayName()}"></p>
+                                <p class="mobile-nusach" th:if="${not #strings.isEmpty(minyan.getdynamicTimeString())}" th:utext="${minyan.getdynamicTimeString()}"></p>
                                 <p class="p-notes" th:if="${not #strings.isEmpty(minyan.getNotes())}" th:utext="${minyan.getNotes()}"></p>
                               </td>
                             </tr>
