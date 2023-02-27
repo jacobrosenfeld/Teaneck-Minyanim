@@ -11,7 +11,7 @@ import java.util.Locale;
 class TimeRule {
     private Zman zman;
     private Integer offsetMinutes;
-    protected Boolean rounded; 
+    public Boolean rounded; 
 
     public TimeRule(Zman zman, Integer offsetMinutes) {
         this.zman = zman;
