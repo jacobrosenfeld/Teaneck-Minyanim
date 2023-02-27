@@ -28,7 +28,7 @@ public class MinyanTime {
 //          TODO: VERIFY THIS WORKS WITH NEGATIVE OFFSETS
 //          TODO: FIX valueOf
             if (parts.length == 2) {
-                rule = new TimeRule(Zman.fromString(parts[0]), Integer.parseInt(parts[1]));
+                rule = new TimeRule(Zman.fromString(parts[0]), Integer.parseInt(parts[1]), false);
             } else {
                 System.out.println("Invalid time rule: " + rawTime);
                 return;
@@ -137,7 +137,7 @@ public class MinyanTime {
                     return null;
                 } else {
                     Zman zman = Zman.fromString(zmanString);
-                    TimeRule rule = new TimeRule(zman, zmanOffset);
+                    TimeRule rule = new TimeRule(zman, zmanOffset, false);
                     return new MinyanTime(rule);
                 }
             case ROUNDED: 
