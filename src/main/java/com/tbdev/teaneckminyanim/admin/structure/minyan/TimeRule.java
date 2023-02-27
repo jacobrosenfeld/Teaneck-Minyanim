@@ -13,11 +13,11 @@ class TimeRule {
     private Integer offsetMinutes;
     public Boolean rounded; 
 
-    // public TimeRule(Zman zman, Integer offsetMinutes) {
-    //     this.zman = zman;
-    //     this.offsetMinutes = offsetMinutes;
-    //     this.rounded = false; //if used the "old" constrctor we are going to assume that classic offset minyan
-    // }
+    public TimeRule(Zman zman, Integer offsetMinutes) {
+        this.zman = zman;
+        this.offsetMinutes = offsetMinutes;
+        this.rounded = false; //if used the "old" constrctor we are going to assume that classic offset minyan
+    }
 
     public TimeRule(Zman zman, Integer offsetMinutes, Boolean rounded) {
         this.zman = zman;
