@@ -50,7 +50,7 @@
                             <div class="col-md-5" id="row-housing" style="padding: 1rem;">
                                 <!-- login box -->
                                 <div class="dropdown-menu center" style="position: relative; display: block;">
-                                    <form class="px-4 py-3" onsubmit="lowercase()" th:action="@{/j_spring_security_check}" method="post">
+                                    <form class="px-4 py-3" onsubmit="event.preventDefault(); lowercase()" th:action="@{/j_spring_security_check}" method="post">
                                         <div class="form-group">
                                             <label for="username-field" class="h5">Username</label>
                                             <input type="username" class="form-control" name="username" id="username-field"
@@ -67,7 +67,7 @@
                                             <input type="checkbox" name="remember-me" />&nbsp;Remember Me
                                         </p>
                                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                            <button type="submit" class="btn btn-cta">Sign in</button>
+                                            <button type="submit" class="btn btn-cta" id="submit-button">Sign in</button>
                                         </div>
                                         <div class="login-msg-box" style="padding-top: 7px">
                                             <div class="form-msg-fatal" th:if="${param.error}">
@@ -81,7 +81,7 @@
                                     
                                     <script src="https://www.google.com/recaptcha/api.js?render=6LdRd7skAAAAAEn13T7BqL39qcC8FYxsOZ12ZhQp"></script>
                                     <script>
-                                        document.querySelector('form').addEventListener('submit', function(event) {
+                                        document.getElementById('submit-button').addEventListener('click', function(event) {
                                             event.preventDefault();
                                             grecaptcha.execute();
                                         });
