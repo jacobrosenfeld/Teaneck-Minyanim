@@ -22,7 +22,7 @@ class TimeRule {
     public TimeRule(Zman zman, Integer offsetMinutes, Boolean rounded) {
         this.zman = zman;
         this.offsetMinutes = offsetMinutes;
-        this.rounded = true; 
+        this.rounded = rounded; 
     }
 
     public Zman getZman() {
