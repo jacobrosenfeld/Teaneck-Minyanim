@@ -276,7 +276,7 @@ public class MinyanTime {
                 return "INVALID";
             }
         } else {
-            return "jacob";
+            return "dynamic";
         }
     }
     public String roundedDisplayName() {
