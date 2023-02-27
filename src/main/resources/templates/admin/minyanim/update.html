@@ -40,7 +40,7 @@
                     <p th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')" class="lead d-none d-sm-block">Update minyan data for [(${organization.name})]. To create a new minyan, click <a th:href="@{|/admin/${organization.id}/minyanim/new|}">here</a>.</p>
                     <p th:if="${!user.isSuperAdmin()}" class="lead d-none d-sm-block">Update this minyan with all its related information. To create a new minyan, click <a th:href="@{|/admin/${organization.id}/minyanim/new|}">here</a>.</p>
 
-                    <hr class="">
+                    <hr>
 
                     <p class="lead d-none">
                         The minyan defined below will be created with automatically be enabled and show on the public Teaneck Minyanim site.
