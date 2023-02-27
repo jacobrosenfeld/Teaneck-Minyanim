@@ -50,8 +50,7 @@
                             <div class="col-md-5" id="row-housing" style="padding: 1rem;">
                                 <!-- login box -->
                                 <div class="dropdown-menu center" style="position: relative; display: block;">
-                                    <form class="px-4 py-3" onsubmit="lowercase()"
-                                        th:action="@{/j_spring_security_check}" method="post">
+                                    <form class="px-4 py-3" onsubmit="lowercase()" th:action="@{/j_spring_security_check}" method="post">
                                         <div class="form-group">
                                             <label for="username-field" class="h5">Username</label>
                                             <input type="username" class="form-control" name="username" id="username-field"
@@ -62,6 +61,7 @@
                                             <input type="password" class="form-control" name="password"
                                                 id="password-field" placeholder="Password">
                                         </div>
+                                        <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
                                         <hr>
                                         <p>
                                             <input type="checkbox" name="remember-me" />&nbsp;Remember Me
@@ -78,6 +78,26 @@
                                             </div>
                                         </div>
                                     </form>
+                                    
+                                    <script src="https://www.google.com/recaptcha/api.js?render=6LdRd7skAAAAAEn13T7BqL39qcC8FYxsOZ12ZhQp"></script>
+                                    <script>
+                                        document.querySelector('form').addEventListener('submit', function(event) {
+                                            event.preventDefault();
+                                            grecaptcha.execute();
+                                        });
+                                        
+                                        function onSubmit(token) {
+                                            document.getElementById("g-recaptcha-response").value = token;
+                                            document.querySelector('form').submit();
+                                        }
+                                        
+                                        grecaptcha.ready(function() {
+                                            grecaptcha.execute('6LdRd7skAAAAAEn13T7BqL39qcC8FYxsOZ12ZhQp', {action: 'submit'}).then(function(token) {
+                                                onSubmit(token);
+                                            });
+                                        });
+                                    </script>
+                                    
                                     <!--            <div class="dropdown-divider"></div>-->
                                     <!--            <a class="dropdown-item" href="#">Forgot password?</a>-->
                                 </div>
