@@ -275,16 +275,6 @@ public class MinyanTime {
             } else {
                 return "INVALID";
             }
-        } else if (isRounded()) {
-            if (rule.getOffsetMinutes() < 0) {
-                return String.format("Approx. %d minutes before %s", Math.abs(rule.getOffsetMinutes()), rule.getZman().displayName().toLowerCase());
-            } else if (rule.getOffsetMinutes() == 0) {
-                return String.format("%s rounded", rule.getZman().displayName());
-            }  else if (rule.getOffsetMinutes() > 0) {
-                return String.format("Approx. %d minutes after %s", rule.getOffsetMinutes(), rule.getZman().displayName().toLowerCase());
-            } else {
-                return "INVALID";
-            }
         } else {
             return null;
         }
@@ -301,7 +291,7 @@ public class MinyanTime {
                 return "INVALID";
             }
         } else {
-            return "jacob";
+            return null;
         }
     }
 
