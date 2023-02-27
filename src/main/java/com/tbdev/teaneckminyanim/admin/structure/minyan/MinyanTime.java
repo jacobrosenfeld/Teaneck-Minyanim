@@ -181,7 +181,7 @@ public class MinyanTime {
     public String displayTime() {
         TimeType t = type();
         if (t == TimeType.NONE) {
-            return null;
+            return "";
         } else if (time != null && rule != null) {
             return "INVALID";
         } else if (t == TimeType.FIXED) {
@@ -276,7 +276,7 @@ public class MinyanTime {
                 return "INVALID";
             }
         } else {
-            return null;
+            return "jacob";
         }
     }
     public String roundedDisplayName() {
@@ -291,7 +291,7 @@ public class MinyanTime {
                 return "INVALID";
             }
         } else {
-            return null;
+            return "jacob";
         }
     }
 
