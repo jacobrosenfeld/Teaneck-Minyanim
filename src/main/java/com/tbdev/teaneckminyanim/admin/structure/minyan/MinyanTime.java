@@ -276,7 +276,7 @@ public class MinyanTime {
                 return "INVALID";
             }
         } else {
-            return "";
+            return null;
         }
     }
     public String roundedDisplayName() {
@@ -291,7 +291,7 @@ public class MinyanTime {
                 return "INVALID";
             }
         } else {
-            return "";
+            return null;
         }
     }
 
