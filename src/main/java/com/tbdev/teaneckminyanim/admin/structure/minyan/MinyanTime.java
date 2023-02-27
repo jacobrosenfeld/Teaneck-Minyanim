@@ -181,7 +181,7 @@ public class MinyanTime {
     public String displayTime() {
         TimeType t = type();
         if (t == TimeType.NONE) {
-            return "";
+            return null;
         } else if (time != null && rule != null) {
             return "INVALID";
         } else if (t == TimeType.FIXED) {
