@@ -94,7 +94,7 @@ public class MinyanTime {
     enum TimeType {
         NONE,
         FIXED,
-        DYNAMIC,
+        DYNAMIC, 
         ROUNDED;
 
         public static TimeType fromString(String s) {
@@ -141,14 +141,14 @@ public class MinyanTime {
                     return new MinyanTime(rule);
                 }
             case ROUNDED: 
-                if (zmanString == null || zmanString.isEmpty()) {
-                    return null;
-                } else {
+                // if (zmanString == null || zmanString.isEmpty()) {
+                //     return null;
+                // } else {
                     Zman zman = Zman.fromString(zmanString);
                     Boolean rounded= true; 
                     TimeRule rule = new TimeRule(zman, zmanOffset, rounded);
                     return new MinyanTime(rule);
-                }
+                // }
             case NONE:
                 return new MinyanTime();
             default:
