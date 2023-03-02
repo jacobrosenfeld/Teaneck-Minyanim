@@ -687,6 +687,9 @@
                                                             <option value="tzet" th:selected="${minyan.getSchedule().getRoshChodeshChanuka().getRule().getZman().getText().equalsIgnoreCase('TZET')}">Tzet Hakochavim</option>
                                                         </select>
                                                     </div>
+                                                    <div class="col">
+                                                        <input type="number" class="form-control" name="rcc-zman-offset" id="rcc-zman-offset" th:value="${minyan.getSchedule().getRoshChodeshChanuka().getRule().getOffsetMinutes()}" required>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div th:if="${minyan.getSchedule().getRoshChodeshChanuka().isFixed()}" class="col" id="fixed-time-box-rcc">
