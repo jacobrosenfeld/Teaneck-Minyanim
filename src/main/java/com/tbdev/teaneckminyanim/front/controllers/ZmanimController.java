@@ -271,7 +271,7 @@ public class ZmanimController {
                                     minyan.getNusach(), minyan.getNotes(), organizationColor));
                         } else {
                             if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
-                                    || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
+                                    || startDate.equals((shekiyaMinusOneMinute.getTime())) || roundedDisplayName.contains("plag"))) {
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -607,7 +607,7 @@ public class ZmanimController {
                                     minyan.getNusach(), minyan.getNotes(), organizationColor));
                         } else {
                             if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
-                                    || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
+                                    || startDate.equals((shekiyaMinusOneMinute.getTime())) || roundedDisplayName.contains("plag"))) {
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -745,7 +745,7 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             } else {
                                 if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
-                                        || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
+                                    || startDate.equals((shekiyaMinusOneMinute.getTime())) || roundedDisplayName.contains("plag"))) {
                                     nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                             organizationNusach, organizationId, locationName, startDate,
                                             roundedDisplayName,
