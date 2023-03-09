@@ -291,12 +291,12 @@
                                                         <input type="number" class="form-control" name="wednesday-zman-offset" id="wednesday-zman-offset" th:value="${minyan.getSchedule().getWednesday().getRule().getOffsetMinutes()}" required>
                                                     </div>
                                                 </div>
-                                                <div th:if="${minyan.getSchedule().getWednesday().isFixed()}" class="col" id="fixed-time-box-wednesday">
-                                                    <input type="time" class="form-control" name="wednesday-fixed-time" id="wednesday-fixed-time" required th:value="${minyan.getSchedule().getWednesday().getFixedTimeShort()}">
-                                                </div>
-                                                <div th:if="${minyan.getSchedule().getWednesday().isNone()}" class="col" id="nm-time-box-wednesday">
-                                                    <input type="text" class="form-control" name="wednesday-fixed-time" id="wednesday-fixed-time" disabled>
-                                                </div>
+                                            </div>
+                                            <div th:if="${minyan.getSchedule().getWednesday().isFixed()}" class="col" id="fixed-time-box-wednesday">
+                                                <input type="time" class="form-control" name="wednesday-fixed-time" id="wednesday-fixed-time" required th:value="${minyan.getSchedule().getWednesday().getFixedTimeShort()}">
+                                            </div>
+                                            <div th:if="${minyan.getSchedule().getWednesday().isNone()}" class="col" id="nm-time-box-wednesday">
+                                                <input type="text" class="form-control" name="wednesday-fixed-time" id="wednesday-fixed-time" disabled>
                                             </div>
                                         </div>
                                     </div>
