@@ -33,46 +33,94 @@
                             <div class="alert alert-danger" role="alert" th:text="${errormessage}"></div>
                         </div>
                         <h1 class="display-4 d-none d-sm-block">
-                            Organizations
+                            Settings
                         </h1>
-                        <p class="lead">Manage the data and accounts for all organizations on the Teaneck Minyanim
-                            platform.</p>
+                        <p class="lead">Manage the settings across the Minyanim platform.</p>
 
                         <!--                <hr>-->
 
                         <div class="row my-4 footer-pusher">
                             <div class="col-lg-9 col-md-8">
-                                <div class="table-responsive">
-                                    <table class="table">
-                                        <thead class="thead-inverse">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Name</th>
-                                                <th>Website</th>
-                                                <th>Minyan Schedule</th>
-                                                <th>Profile & Accounts</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr th:each="organization: ${organizations}">
-                                                <td th:text="${organization.id}" />
-                                                <td th:text="${organization.name}" />
-                                                <td>
-                                                    <a th:if="${organization.websiteURI}"
-                                                        th:href="@{'https://' + ${organization.websiteURI}}"
-                                                        th:text="${organization.websiteURI}"></a>
-                                                </td>
-                                                <td>
-                                                    <a role="button" class="btn btn-primary btn-sm"
-                                                        th:href="@{|/admin/${organization.id}/minyanim|}">Manage</a>
-                                                </td>
-                                                <td>
-                                                    <a role="button" class="btn btn-dark btn-sm"
-                                                        th:href="@{/admin/organization(id=${organization.id})}">Manage</a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                <div class="row my-4 footer-pusher">
+                                    <div class="col-lg-9 col-md-8">
+                                        <div class="table-responsive">
+                                            <form onsubmit="validateData()" th:action="@{|/admin/${organization.id}/minyanim/create|}" method="post" style="overflow-x: hidden;">
+                                                <div class="form-group">
+                                                    <label for="type">Minyan Type</label>
+                                                    <select class="custom-select" name="type" id="type" required>
+                                                        <option value="" selected disabled>Choose a type</option>
+                                                        <option value="shacharis">Shacharis</option>
+                                                        <option value="mincha">Mincha</option>
+                                                        <option value="maariv">Maariv</option>
+                                                        <option value="selichot">Selichot</option>
+                                                        <option value="megilareading">Megila Reading</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="location">Location</label>
+                                                    <select class="custom-select" name="location" id="location" required>
+                                                        <option value="" selected disabled>Choose a location</option>
+                                                        <div th:each="location: ${locations}">
+                                                            <option th:value="${location.id}" th:text="${location.name}"></option>
+                                                        </div>
+                                                    </select>
+                                                    <small id="location-help" class="form-text text-muted">Choose the place inside the shul that the minyan will take place. To add more options, jump to <a th:href="@{|/admin/${organization.id}/locations|}">manage locations</a>.</small>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="sunday-box">Sunday</label>
+                                                    <div class="form-row" id="sunday-box">
+                                                        <div class="col">
+                                                            <select class="custom-select" name="sunday-time-type" id="sunday-time-type" onchange="update('sunday')" required>
+                                                                <option value="nm" selected>No Minyan</option>
+                                                                <option value="fixed">Fixed</option>
+                                                                <option value="dynamic">Dynamic</option>
+                                                                <option value="rounded">Rounded</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col" id="dynamic-time-box-sunday"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="nusach">Nusach</label>
+                                                    <select class="custom-select" name="nusach" id="nusach">
+                                                        <option value="unspecified">None specified</option>
+                                                        <option value="edot_hamizrach">Edot HaMizrach</option>
+                                                        <option value="sefard">Sefard</option>
+                                                        <option value="ashkenaz" selected>Ashkenaz</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="notes">Notes</label>
+                                                    <input type="text" class="form-control" name="notes" id="notes" aria-describedby="notes-help">
+                                                </div>
+                                                <div class="custom-control custom-switch" style="z-index: auto;">
+                                                    <input type="checkbox" class="custom-control-input" name="enabled" id="enabled" checked>
+                                                    <label class="custom-control-label" for="enabled">Display this minyan immediately</label>
+                                                </div>
+                                                <div class="login-msg-box" th:if="${inputerrormessage}">
+                                                    <div class="form-msg-fatal" th:text="${inputerrormessage}"></div>
+                                                </div>
+                                                <hr>
+                                                <button type="submit" class="btn btn-primary">Create</button>
+                                            </form>
+                                        </div>
+                                    </div>
+            
+                                    <div class="col-lg-3 col-md-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h4 class="card-title">Minyanim</h4>
+                                                <p class="card-text" th:text="${'View and manage all minyanim for ' + organization.name + '.'}"></p>
+                                                <a th:href="@{|/admin/${organization.id}/minyanim|}" class="btn btn-primary">Go</a>
+                                            </div>
+                                        </div>
+                                        <div class="card card-inverse bg-inverse mt-3">
+                                            <div class="card-body">
+                                                <h4 class="card-title">Need help?</h4>
+                                                <p class="card-text">Click <a href="#" data-toggle="modal" data-target="#dynamic-time-help-modal">here</a> for an explanation of how to use the minyan time settings.</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
