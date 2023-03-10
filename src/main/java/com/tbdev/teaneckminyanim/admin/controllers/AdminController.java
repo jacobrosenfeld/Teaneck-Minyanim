@@ -177,7 +177,7 @@ public class AdminController {
         }
 
         ModelAndView mv = new ModelAndView();
-        mv.setViewName("admin/seettings");
+        mv.setViewName("admin/settings");
 
         addStandardPageData(mv);
 
