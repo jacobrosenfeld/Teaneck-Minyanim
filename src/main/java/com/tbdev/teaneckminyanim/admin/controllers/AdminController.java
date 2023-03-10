@@ -170,6 +170,22 @@ public class AdminController {
         return mv;
     }
 
+    @GetMapping("/admin/settings")
+    public ModelAndView settings(String successMessage, String errorMessage) {
+        if (!isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to access this page");
+        }
+
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("admin/seettings");
+
+        addStandardPageData(mv);
+
+        mv.getModel().put("success", successMessage);
+        mv.getModel().put("error", errorMessage);
+        return mv;
+    }
+
     @RequestMapping(value = "/admin/new-organization", method = RequestMethod.GET)
     public ModelAndView addOrganization(boolean success, String error, String inputErrorMessage) {
         if (!isSuperAdmin()) {
