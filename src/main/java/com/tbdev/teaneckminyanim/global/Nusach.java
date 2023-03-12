@@ -4,6 +4,7 @@ public enum Nusach {
     EDOT_HAMIZRACH("EDOT_HAMIZRACH"),
     SEFARD("SEFARD"),
     ASHKENAZ("ASHKENAZ"),
+    ARIZAL("ARIZAL"),
     UNSPECIFIED("UNSPECIFIED");
 
     private String text;
@@ -38,6 +39,8 @@ public enum Nusach {
                 return "Sefard";
             case ASHKENAZ:
                 return "Ashkenaz";
+            case ARIZAL:
+                return "Arizal";
             case UNSPECIFIED:
                 return "Unspecified";
             default:
@@ -59,5 +62,9 @@ public enum Nusach {
 
     public boolean isAshkenaz() {
         return this == ASHKENAZ;
+    }
+    
+    public boolean isArizal() {
+        return this == ARIZAL;
     }
 }
