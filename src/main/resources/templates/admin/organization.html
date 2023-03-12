@@ -54,6 +54,7 @@
                                         <label for="nusach">Nusach</label>
                                         <select class="custom-select" name="nusach" id="nusach">
                                             <option value="unspecified" th:selected="${organization.getNusach().isUnspecified()}">None specified</option>
+                                            <option value="arizal" th:selected="${organization.getNusach().isArizal()}">Arizal</option>
                                             <option value="edot_hamizrach" th:selected="${organization.getNusach().isEdotHamizrach()}">Edot HaMizrach</option>
                                             <option value="sefard" th:selected="${organization.getNusach().isSefard()}">Sefard</option>
                                             <option value="ashkenaz" th:selected="${organization.getNusach().isAshkenaz()}">Ashkenaz</option>

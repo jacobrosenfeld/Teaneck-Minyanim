@@ -704,6 +704,7 @@
                                         <label for="nusach">Nusach</label>
                                         <select class="custom-select" name="nusach" id="nusach">
                                             <option value="unspecified" th:selected="${minyan.getNusach().isUnspecified()}">None specified</option>
+                                            <option value="arizal" th:selected="${organization.getNusach().isArizal()}">Arizal</option>
                                             <option value="edot_hamizrach" th:selected="${minyan.getNusach().isEdotHamizrach()}">Edot HaMizrach</option>
                                             <option value="sefard" th:selected="${minyan.getNusach().isSefard()}">Sefard</option>
                                             <option value="ashkenaz" th:selected="${minyan.getNusach().isAshkenaz()}">Ashkenaz</option>
