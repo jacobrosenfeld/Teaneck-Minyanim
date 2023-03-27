@@ -341,7 +341,7 @@ public class Minyan extends TNMObject implements IDGenerator {
         if (t == null) {
             return null;
         }
-        LocalDate temp = date;
+        LocalDate temp = LocalDate.now();
         return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
     }
 
