@@ -158,7 +158,7 @@ jQuery(function($) {
 });
 
 // Shabbos 
-function replaceSaturdayWithShabbat() {
+function replaceSaturdayWithShabbos() {
   // Get the root node of the document
   const root = document.documentElement;
 
@@ -170,8 +170,8 @@ function replaceSaturdayWithShabbat() {
   while (node = treeWalker.nextNode()) {
     const text = node.textContent;
 
-    // Replace 'Saturday' with 'Shabbat' in the text content
-    const replacedText = text.replace(/\bSaturday\b/g, 'Shabbat');
+    // Replace 'Saturday' with 'Shabbos' in the text content
+    const replacedText = text.replace(/\bSaturday\b/g, 'Shabbos');
 
     // If the text content was modified, update the node
     if (text !== replacedText) {
@@ -180,4 +180,4 @@ function replaceSaturdayWithShabbat() {
   }
 }
 
-replaceSaturdayWithShabbat();
+replaceSaturdayWithShabbos();
