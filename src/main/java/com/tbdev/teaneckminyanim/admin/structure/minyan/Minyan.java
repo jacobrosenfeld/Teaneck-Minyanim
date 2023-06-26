@@ -330,7 +330,7 @@ public class Minyan extends TNMObject implements IDGenerator {
 
 //    public [Date] getStartTimes(int next)
 
-    public Date getStartDateFromNow(LocalDate ref) {
+    public Date getStartDateFromNow() {
         return getStartDate(LocalDate.now());
     }
 
@@ -339,7 +339,7 @@ public class Minyan extends TNMObject implements IDGenerator {
         MinyanTime mt = getMinyanTime(date);
         Time t = mt.getTime(date);
         if (t == null) {
-            return null;
+            return null; 
         }
         LocalDate temp = date.minusMonths(1).minusYears(1900);
         return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());

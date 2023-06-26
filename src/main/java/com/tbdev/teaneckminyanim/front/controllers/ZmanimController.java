@@ -1,10 +1,7 @@
 package com.tbdev.teaneckminyanim.front.controllers;
 
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -39,6 +36,9 @@ import com.tbdev.teaneckminyanim.front.MinyanEvent;
 import com.tbdev.teaneckminyanim.front.ZmanimHandler;
 import com.tbdev.teaneckminyanim.global.Nusach;
 import com.tbdev.teaneckminyanim.global.Zman;
+
+import net.bytebuddy.asm.Advice.Local;
+import org.codehaus.groovy.runtime.powerassert.SourceText;
 
 @Controller
 public class ZmanimController {
@@ -182,8 +182,8 @@ public class ZmanimController {
         System.out.println("DEBUG: Filtering through minyanim");
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDateFromNow(ref);
+            LocalDate ref = dateToLocalDate(date).plusMonths(1);
+            Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
             System.out.println("SD: " + startDate);
