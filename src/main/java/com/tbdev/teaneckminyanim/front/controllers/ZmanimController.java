@@ -152,7 +152,7 @@ public class ZmanimController {
 
         LocalDate localDate = dateToLocalDate(date);
         System.out.println("Showing zmanim for date: " + localDate.getMonth() + " " + localDate.getMonthValue() + "/"
-                + localDate.getMonth().getValue() + "/" + localDate.toString());
+                + localDate.getDayOfMonth() + "/" + localDate.toString());
 
         Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(localDate);
         Dictionary<Zman, Date> zmanimtoday = zmanimHandler.getZmanimForNow();
