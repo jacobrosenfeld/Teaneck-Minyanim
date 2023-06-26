@@ -10,11 +10,7 @@ import com.tbdev.teaneckminyanim.global.Nusach;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
-
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 
 @Table(name = "MINYAN")
@@ -338,27 +334,16 @@ public class Minyan extends TNMObject implements IDGenerator {
         return getStartDate(LocalDate.now());
     }
 
-//     public Date getStartDate(LocalDate date) {
-// //        need to check if that date is a special day
-//         MinyanTime mt = getMinyanTime(date);
-//         Time t = mt.getTime(date);
-//         if (t == null) {
-//             return null; 
-//         }
-//         LocalDate temp = date;
-//         return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
-//     }
     public Date getStartDate(LocalDate date) {
-    MinyanTime mt = getMinyanTime(date);
-    Time t = mt.getTime(date);
-    if (t == null) {
-        return null;
+//        need to check if that date is a special day
+        MinyanTime mt = getMinyanTime(date);
+        Time t = mt.getTime(date);
+        if (t == null) {
+            return null; 
+        }
+        LocalDate temp = date;
+        return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
     }
-    LocalDateTime dateTime = date.atTime(t.getHours(), t.getMinutes(), t.getSeconds());
-    // Instant instant = dateTime.atZone(ZoneId.systemDefault()).toInstant();
-    return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
-    }
-
 
     public Time getStartTime() {
         return getStartTime(LocalDate.now());
