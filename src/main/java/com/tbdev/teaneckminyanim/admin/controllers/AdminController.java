@@ -326,7 +326,6 @@ public class AdminController {
                                 String errorMessage, String changePasswordError) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("account");
-//        TODO: ENSURE SECURITY
         if (isSuperAdmin()) {
             TNMUser queriedUser = this.TNMUserDAO.findById(id);
             System.out.println("Queried user: " + queriedUser);
