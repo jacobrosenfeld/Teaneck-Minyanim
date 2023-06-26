@@ -200,7 +200,7 @@ public class ZmanimController {
             // start date must be valid AND (be after the termination date OR date must not
             // be the same date as today, to disregard the termination time when the user is
             // looking ahead)
-            if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))) {
+            if (startDate != null && (startDate.after(terminationDate) || !sameDay(now, date))) {
                 // show the minyan
                 String organizationName;
                 Nusach organizationNusach;
@@ -413,7 +413,12 @@ public class ZmanimController {
         calendar2.setTime(date2);
         return calendar1.get(Calendar.DAY_OF_MONTH) == calendar2.get(Calendar.DAY_OF_MONTH);
     }
-
+ private static boolean sameDay(LocalDate date1, Date date2) {
+        LocalDate date2LD = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return date1.getDayOfMonth() == date2LD.getDayOfMonth() &&
+                date1.getMonth() == date2LD.getMonth() &&
+                date1.getYear() == date2LD.getYear();
+    }
     static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
         return t -> seen.add(keyExtractor.apply(t));
