@@ -455,7 +455,7 @@ public class ZmanimController {
         // mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
         // mv.getModel().put("minchaMinyanim", minchaMinyanim);
         // mv.getModel().put("maarivMinyanim", maarivMinyanim);
-            return (List<MinyanEvent>) mv;
+            return minyanEvents;
     }
 
     private static LocalDate dateToLocalDate(Date date) {
