@@ -182,8 +182,8 @@ public class ZmanimController {
         System.out.println("DEBUG: Filtering through minyanim");
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDate(ref);
+            // LocalDate ref = dateToLocalDate(date);
+            Date startDate = minyan.getStartDate(dateToLocalDate(date));
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
             System.out.println("SD: " + startDate);
@@ -320,8 +320,8 @@ public class ZmanimController {
         List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDate(ref);
+            // LocalDate ref = dateToLocalDate(date);
+            Date startDate = minyan.getStartDate(dateToLocalDate(date));
             Date now = new Date();
             System.out.println("SD: " + startDate);
             if (startDate != null) {
@@ -533,8 +533,8 @@ public class ZmanimController {
         // boolean usesNotes;
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDate(ref);
+            // LocalDate ref = dateToLocalDate(date);
+            Date startDate = minyan.getStartDate(dateToLocalDate(date));
             // Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
             // if (startDate != null && startDate.after(terminationDate)) {
             Calendar shekiyaMinusOneMinute = Calendar.getInstance();
@@ -668,8 +668,8 @@ public class ZmanimController {
         List<MinyanEvent> nextMinyan = new ArrayList<>();
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(today);
-            Date startDate = minyan.getStartDate(ref);
+            // LocalDate ref = dateToLocalDate(date);
+            Date startDate = minyan.getStartDate(dateToLocalDate(date));
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3));
             Calendar shekiyaMinusOneMinute = Calendar.getInstance();
