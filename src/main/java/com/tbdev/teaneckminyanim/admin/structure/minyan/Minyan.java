@@ -343,9 +343,9 @@ public class Minyan extends TNMObject implements IDGenerator {
         if (t == null) {
             return null;
         }
-        LocalDateTime dateTime = date.atTime(t.getHours(), t.getMinutes(), t.getSeconds());
-        // Instant instant = dateTime.atZone(ZoneId.systemDefault()).toInstant();
-        return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+        LocalDateTime dateTime = date.atTime(t.getHours(), t.getMinutes(), 0);
+        Instant instant = dateTime.atZone(ZoneId.systemDefault()).toInstant();
+        return Date.from(instant);
     }
 
 
