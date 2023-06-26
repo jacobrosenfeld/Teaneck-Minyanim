@@ -2,6 +2,7 @@ package com.tbdev.teaneckminyanim.admin.structure;
 
 import com.tbdev.teaneckminyanim.admin.structure.user.TNMUser;
 import com.tbdev.teaneckminyanim.admin.structure.user.TNMUserDAO;
+import com.tbdev.teaneckminyanim.LoginAttemptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +22,18 @@ public class TNMUserDetailsService implements UserDetailsService {
     @Autowired
     private TNMUserDAO TNMUserDAO;
 
+    @Autowired
+    private HttpServletRequest request;
+
+    @Autowired
+    private LoginAttemptService loginAttemptService;
+
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
+        final String ip = getClientIP();
+        if (loginAttemptService.isBlocked(ip)) {
+            throw new RuntimeException("blocked");
+        }
         TNMUser user = this.TNMUserDAO.findByName(userName);
 
         if (user == null) {
@@ -47,5 +59,11 @@ public class TNMUserDetailsService implements UserDetailsService {
 
         return userDetails;
     }
-
+ private String getClientIP() {
+        final String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader != null) {
+            return xfHeader.split(",")[0];
+        }
+        return request.getRemoteAddr();
+    }
 }
