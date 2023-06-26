@@ -438,25 +438,26 @@ public class ZmanimController {
         // end kol
 
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
-        // mv.getModel().put("allminyanim", minyanEvents);
+        mv.getModel().put("allminyanim", minyanEvents);
 
-        // List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
-        // List<MinyanEvent> minchaMinyanim = new ArrayList<>();
-        // List<MinyanEvent> maarivMinyanim = new ArrayList<>();
-        // for (MinyanEvent me : minyanEvents) {
-        //     if (me.getType().isShacharis()) {
-        //         shacharisMinyanim.add(me);
-        //     } else if (me.getType().isMincha()) {
-        //         minchaMinyanim.add(me);
-        //     } else if (me.getType().isMaariv()) {
-        //         maarivMinyanim.add(me);
-        //     }
-        // }
-        // mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
-        // mv.getModel().put("minchaMinyanim", minchaMinyanim);
-        // mv.getModel().put("maarivMinyanim", maarivMinyanim);
+        List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
+        List<MinyanEvent> minchaMinyanim = new ArrayList<>();
+        List<MinyanEvent> maarivMinyanim = new ArrayList<>();
+        for (MinyanEvent me : minyanEvents) {
+            if (me.getType().isShacharis()) {
+                shacharisMinyanim.add(me);
+            } else if (me.getType().isMincha()) {
+                minchaMinyanim.add(me);
+            } else if (me.getType().isMaariv()) {
+                maarivMinyanim.add(me);
+            }
+        }
+        mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
+        mv.getModel().put("minchaMinyanim", minchaMinyanim);
+        mv.getModel().put("maarivMinyanim", maarivMinyanim);
             return minyanEvents;
     }
+
 
     private static LocalDate dateToLocalDate(Date date) {
         Instant instant = date.toInstant();
