@@ -154,7 +154,6 @@ public class ZmanimController {
         System.out.println("Showing zmanim for date: " + localDate.getMonth() + " " + localDate.getDayOfMonth() + " " + localDate.toString());
 
         Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(localDate);
-        Dictionary<Zman, Date> zmanimtoday = zmanimHandler.getZmanimForNow();
 
         System.out.println("DEBUG: Putting zmanim in model");
 
@@ -174,16 +173,76 @@ public class ZmanimController {
 
         System.out.println("DEBUG: Fetching minyanim");
 
+        List<MinyanEvent> upcomingMinyanim = getMinyanEventsOnDate(localDate.plusMonths(1), true);
+        mv.getModel().put("allminyanim", upcomingMinyanim);
+
+        List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
+        List<MinyanEvent> minchaMinyanim = new ArrayList<>();
+        List<MinyanEvent> maarivMinyanim = new ArrayList<>();
+        for (MinyanEvent me : upcomingMinyanim) {
+            if (me.getType().isShacharis()) {
+                shacharisMinyanim.add(me);
+            } else if (me.getType().isMincha()) {
+                minchaMinyanim.add(me);
+            } else if (me.getType().isMaariv()) {
+                maarivMinyanim.add(me);
+            }
+        }
+
+        return mv;
+    }
         // get minyanim closest in time to now
         // todo: only get items with non null time for date
+    private List<MinyanEvent> getMinyanEventsOnDate(LocalDate date, boolean skipMinyanimThatAlreadyPassed) {
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("homepage");
+
+        System.out.println("DEBUG: Adding dates to model");
+
+        // adding dates to model data
+        setTimeZone(timeZone);
+        // String month = calendar.getDisplayName(Calendar.MONTH, Calendar.LONG,
+        // java.util.Locale.US);
+        mv.getModel().put("date", dateFormat.format(date));
+        mv.getModel().put("onlyDate", onlyDateFormat.format(date));
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a");
+        Date datenow = new Date();
+        String timenow = dateFormat.format(datenow);
+        mv.getModel().put("timenow", timenow);
+
+        Calendar c = Calendar.getInstance();
+
+        System.out.println("DEBUG: Fetching zmanim for model");
+
+        LocalDate localDate = date;
+        System.out.println("Showing zmanim for date: " + localDate.getMonth() + " " + localDate.getDayOfMonth() + " " + localDate.toString());
+
+        Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(localDate);
+
+        System.out.println("DEBUG: Putting zmanim in model");
+
+        System.out.println("ALOT HASH: " + zmanim.get(Zman.ALOT_HASHACHAR));
+        mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOT_HASHACHAR)));
+        mv.getModel().put("ett", timeFormatWithRoundingToSecond(zmanim.get(Zman.ETT)));
+        mv.getModel().put("netz", timeFormatWithRoundingToSecond(zmanim.get(Zman.NETZ)));
+        mv.getModel().put("szks", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZKS)));
+        mv.getModel().put("szt", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZT)));
+        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOT)));
+        mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_GEDOLA)));
+        mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_KETANA)));
+        mv.getModel().put("plagHamincha", timeFormatWithRoundingToSecond(zmanim.get(Zman.PLAG_HAMINCHA)));
+        mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
+        mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
+        mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZET)));
         List<Minyan> enabledMinyanim = minyanDAO.getEnabled();
         List<MinyanEvent> minyanEvents = new ArrayList<>();
 
         System.out.println("DEBUG: Filtering through minyanim");
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDate(ref);
+            // LocalDate ref = dateToLocalDate(date);
+            Date startDate = minyan.getStartDate(date);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
             System.out.println("SD: " + startDate);
@@ -200,7 +259,7 @@ public class ZmanimController {
             // start date must be valid AND (be after the termination date OR date must not
             // be the same date as today, to disregard the termination time when the user is
             // looking ahead)
-            if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))) {
+            if (startDate != null && (startDate.after(terminationDate) || !sameDay(date, now) || !skipMinyanimThatAlreadyPassed)) {
                 // show the minyan
                 String organizationName;
                 Nusach organizationNusach;
@@ -320,8 +379,8 @@ public class ZmanimController {
         List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
         for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDate(ref);
+            // LocalDate ref = dateToLocalDate(date);
+            Date startDate = minyan.getStartDate(date);
             Date now = new Date();
             System.out.println("SD: " + startDate);
             if (startDate != null) {
@@ -379,25 +438,24 @@ public class ZmanimController {
         // end kol
 
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
-        mv.getModel().put("allminyanim", minyanEvents);
+        // mv.getModel().put("allminyanim", minyanEvents);
 
-        List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
-        List<MinyanEvent> minchaMinyanim = new ArrayList<>();
-        List<MinyanEvent> maarivMinyanim = new ArrayList<>();
-        for (MinyanEvent me : minyanEvents) {
-            if (me.getType().isShacharis()) {
-                shacharisMinyanim.add(me);
-            } else if (me.getType().isMincha()) {
-                minchaMinyanim.add(me);
-            } else if (me.getType().isMaariv()) {
-                maarivMinyanim.add(me);
-            }
-        }
-        mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
-        mv.getModel().put("minchaMinyanim", minchaMinyanim);
-        mv.getModel().put("maarivMinyanim", maarivMinyanim);
-
-        return mv;
+        // List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
+        // List<MinyanEvent> minchaMinyanim = new ArrayList<>();
+        // List<MinyanEvent> maarivMinyanim = new ArrayList<>();
+        // for (MinyanEvent me : minyanEvents) {
+        //     if (me.getType().isShacharis()) {
+        //         shacharisMinyanim.add(me);
+        //     } else if (me.getType().isMincha()) {
+        //         minchaMinyanim.add(me);
+        //     } else if (me.getType().isMaariv()) {
+        //         maarivMinyanim.add(me);
+        //     }
+        // }
+        // mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
+        // mv.getModel().put("minchaMinyanim", minchaMinyanim);
+        // mv.getModel().put("maarivMinyanim", maarivMinyanim);
+            return (List<MinyanEvent>) mv;
     }
 
     private static LocalDate dateToLocalDate(Date date) {
@@ -413,7 +471,12 @@ public class ZmanimController {
         calendar2.setTime(date2);
         return calendar1.get(Calendar.DAY_OF_MONTH) == calendar2.get(Calendar.DAY_OF_MONTH);
     }
-
+    private static boolean sameDay(LocalDate date1, Date date2) {
+        LocalDate date2LD = date2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return date1.getDayOfMonth() == date2LD.getDayOfMonth() &&
+                date1.getMonth() == date2LD.getMonth() &&
+                date1.getYear() == date2LD.getYear();
+    }
     static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
         return t -> seen.add(keyExtractor.apply(t));
