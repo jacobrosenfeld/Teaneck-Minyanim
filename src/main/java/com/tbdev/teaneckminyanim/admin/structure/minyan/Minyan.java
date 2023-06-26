@@ -337,15 +337,26 @@ public class Minyan extends TNMObject implements IDGenerator {
     public Date getStartDateFromNow() {
         return getStartDate(LocalDate.now());
     }
+
+//     public Date getStartDate(LocalDate date) {
+// //        need to check if that date is a special day
+//         MinyanTime mt = getMinyanTime(date);
+//         Time t = mt.getTime(date);
+//         if (t == null) {
+//             return null; 
+//         }
+//         LocalDate temp = date;
+//         return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
+//     }
     public Date getStartDate(LocalDate date) {
-        MinyanTime mt = getMinyanTime(date);
-        Time t = mt.getTime(date);
-        if (t == null) {
-            return null;
-        }
-        LocalDateTime dateTime = date.atTime(t.getHours(), t.getMinutes(), 0);
-        Instant instant = dateTime.atZone(ZoneId.systemDefault()).toInstant();
-        return Date.from(instant);
+    MinyanTime mt = getMinyanTime(date);
+    Time t = mt.getTime(date);
+    if (t == null) {
+        return null;
+    }
+    LocalDateTime dateTime = date.atTime(t.getHours(), t.getMinutes(), t.getSeconds());
+    // Instant instant = dateTime.atZone(ZoneId.systemDefault()).toInstant();
+    return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
 
