@@ -159,18 +159,18 @@ public class ZmanimController {
         System.out.println("DEBUG: Putting zmanim in model");
 
         System.out.println("ALOT HASH: " + zmanim.get(Zman.ALOT_HASHACHAR));
-        mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOT_HASHACHAR)));
-        mv.getModel().put("ett", timeFormatWithRoundingToSecond(zmanim.get(Zman.ETT)));
-        mv.getModel().put("netz", timeFormatWithRoundingToSecond(zmanim.get(Zman.NETZ)));
-        mv.getModel().put("szks", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZKS)));
-        mv.getModel().put("szt", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZT)));
-        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOT)));
-        mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_GEDOLA)));
-        mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_KETANA)));
-        mv.getModel().put("plagHamincha", timeFormatWithRoundingToSecond(zmanim.get(Zman.PLAG_HAMINCHA)));
-        mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
-        mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
-        mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZET)));
+        mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.ALOT_HASHACHAR)));
+        mv.getModel().put("ett", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.ETT)));
+        mv.getModel().put("netz", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.NETZ)));
+        mv.getModel().put("szks", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.SZKS)));
+        mv.getModel().put("szt", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.SZT)));
+        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.CHATZOT)));
+        mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.MINCHA_GEDOLA)));
+        mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.MINCHA_KETANA)));
+        mv.getModel().put("plagHamincha", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.PLAG_HAMINCHA)));
+        mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.SHEKIYA)));
+        mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.EARLIEST_SHEMA)));
+        mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanimtoday.get(Zman.TZET)));
 
         System.out.println("DEBUG: Fetching minyanim");
 
