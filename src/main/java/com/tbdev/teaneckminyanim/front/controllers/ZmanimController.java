@@ -200,7 +200,7 @@ List<MinyanEvent> upcomingMinyanim = getMinyanEventsOnDate(minyanDAO.getEnabled(
         System.out.println("DEBUG: Filtering through minyanim");
 
         for (Minyan minyan : minyanim) {
-            Date startDate = minyan.getStartDate(date);
+            Date startDate = localDateToDate(minyan.getStartDate(date));
 
             Date now = new Date();
 
@@ -339,6 +339,11 @@ List<MinyanEvent> upcomingMinyanim = getMinyanEventsOnDate(minyanDAO.getEnabled(
         ZonedDateTime zonedDateTime = instant.atZone(ZoneId.systemDefault());
         return zonedDateTime.toLocalDate();
     }
+private static Date localDateToDate(LocalDate localDate) {
+    Instant instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+    return Date.from(instant);
+}
+
 
 /**
  * Tests two Date objects to see if they occur on the same date of the month.
@@ -463,7 +468,7 @@ List<MinyanEvent> upcomingMinyanim = getMinyanEventsOnDate(minyanDAO.getEnabled(
 //        boolean usesNotes;
         for (Minyan minyan : enabledMinyanim) {
             // TODO: check if this is an accurate line
-            Date startDate = minyan.getStartDate(localDate);
+            Date startDate = localDateToDate(minyan.getStartDate(localDate));
             Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
             if (startDate != null && startDate.after(terminationDate)) {
                 Calendar shekiyaMinusOneMinute = Calendar.getInstance();
