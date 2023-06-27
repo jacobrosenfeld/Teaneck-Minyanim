@@ -53,18 +53,18 @@ public class Minyan extends TNMObject implements IDGenerator {
 
     @Column(name = "START_TIME_7")
     private String startTime7;
-    
+
     @Column(name = "START_TIME_RC")
     private String startTimeRC;
-
-    @Column(name = "START_TIME_YT")
-    private String startTimeYT;
 
     @Column(name = "START_TIME_CH")
     private String startTimeCH;
 
     @Column(name = "START_TIME_CHRC")
     private String startTimeCHRC;
+
+    @Column(name = "START_TIME_YT")
+    private String startTimeYT;
 
     private Schedule schedule;
 
@@ -75,8 +75,6 @@ public class Minyan extends TNMObject implements IDGenerator {
     private String nusachString;
 
     private Nusach nusach;
-
-    private String orgColor;
 
 //    @Autowired
 //    private OrganizationDAO organizationDAO;
@@ -94,12 +92,11 @@ public class Minyan extends TNMObject implements IDGenerator {
                   String startTime6,
                   String startTime7,
                   String startTimeRC,
-                  String startTimeYT,
                   String startTimeCH,
                   String startTimeCHRC,
+                  String startTimeYT,
                   String notes,
-                  String nusach,
-                  String orgColor
+                  String nusach
     ) {
         super.id = id;
         this.minyanTypeString = minyanTypeString;
@@ -115,14 +112,13 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.startTime6 = startTime6;
         this.startTime7 = startTime7;
         this.startTimeRC = startTimeRC;
-        this.startTimeYT = startTimeYT;
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
-        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeYT, startTimeCH, startTimeCHRC);
+        this.startTimeYT = startTimeYT;
+        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeCH, startTimeCHRC, startTimeYT);
         this.notes = notes;
         this.nusachString = nusach;
         this.nusach = Nusach.fromString(nusach);
-        this.orgColor = orgColor;
     }
 
     public Minyan(String minyanTypeString,
@@ -137,12 +133,11 @@ public class Minyan extends TNMObject implements IDGenerator {
                   String startTime6,
                   String startTime7,
                   String startTimeRC,
-                  String startTimeYT,
                   String startTimeCH,
                   String startTimeCHRC,
+                  String startTimeYT,
                   String notes,
-                  String nusach,
-                  String orgColor
+                  String nusach
     ) {
         super.id = generateID('M');
         this.minyanTypeString = minyanTypeString;
@@ -158,17 +153,16 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.startTime6 = startTime6;
         this.startTime7 = startTime7;
         this.startTimeRC = startTimeRC;
-        this.startTimeYT = startTimeYT;
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
-        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeYT, startTimeCH, startTimeCHRC);
+        this.startTimeYT = startTimeYT;
+        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeCH, startTimeCHRC, startTimeYT);
         this.notes = notes;
         this.nusachString = nusach;
         this.nusach = Nusach.fromString(nusach);
-        this.orgColor = orgColor;
     }
 
-    public Minyan(Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor) {
+    public Minyan(Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled) {
         super.id = generateID('M');
         this.minyanTypeString = type.toString();
         this.minyanType = type;
@@ -185,18 +179,17 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.startTime5 = schedule.getThursday().toString();
         this.startTime6 = schedule.getFriday().toString();
         this.startTime7 = schedule.getShabbos().toString();
-        this.startTimeRC = schedule.getRoshChodesh().toString();
         this.startTimeYT = schedule.getYomTov().toString();
+        this.startTimeRC = schedule.getRoshChodesh().toString();
         this.startTimeCH = schedule.getChanuka().toString();
         this.startTimeCHRC = schedule.getRoshChodeshChanuka().toString();
         this.schedule = schedule;
         this.enabled = enabled;
         this.notes = notes;
         this.nusachString = nusach.toString();
-        this.orgColor = orgColor;
     }
 
-    public Minyan(String id, Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor) {
+    public Minyan(String id, Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled) {
         super.id = id;
         this.minyanTypeString = type.toString();
         this.minyanType = type;
@@ -213,15 +206,14 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.startTime5 = schedule.getThursday().toString();
         this.startTime6 = schedule.getFriday().toString();
         this.startTime7 = schedule.getShabbos().toString();
-        this.startTimeRC = schedule.getRoshChodesh().toString();
         this.startTimeYT = schedule.getYomTov().toString();
+        this.startTimeRC = schedule.getRoshChodesh().toString();
         this.startTimeCH = schedule.getChanuka().toString();
         this.startTimeCHRC = schedule.getRoshChodeshChanuka().toString();
         this.schedule = schedule;
         this.enabled = enabled;
         this.notes = notes;
         this.nusachString = nusach.toString();
-        this.orgColor = orgColor;
     }
 
     public String getMinyanTypeString() {
@@ -287,10 +279,6 @@ public class Minyan extends TNMObject implements IDGenerator {
         return startTimeRC;
     }
 
-    public String getStartTimeYT() {
-        return startTimeYT;
-    }
-
     public String getStartTimeCH() {
         return startTimeCH;
     }
@@ -299,6 +287,9 @@ public class Minyan extends TNMObject implements IDGenerator {
         return startTimeCHRC;
     }
 
+    public String getStartTimeYT() {
+        return startTimeYT;
+    }
 
     public Schedule getSchedule() {
         return schedule;
@@ -320,10 +311,6 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.enabled = enabled;
     }
 
-    public String getOrgColor() {
-        return orgColor;
-    }
-
     public void setOrganization(Organization organization) {
         this.organization = organization;
     }
@@ -334,14 +321,20 @@ public class Minyan extends TNMObject implements IDGenerator {
         return getStartDate(LocalDate.now());
     }
 
+    /**
+     * Gets the time that the next instance of this minyan will take place.
+     * @param date
+     * @return the date and time that the next minyan will take place at.
+     */
     public Date getStartDate(LocalDate date) {
 //        need to check if that date is a special day
         MinyanTime mt = getMinyanTime(date);
         Time t = mt.getTime(date);
         if (t == null) {
-            return null; 
+            return null;
         }
         LocalDate temp = date.minusMonths(1).minusYears(1900);
+        //  return new
         return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
     }
 
@@ -359,6 +352,11 @@ public class Minyan extends TNMObject implements IDGenerator {
         return getMinyanTime(LocalDate.now());
     }
 
+    /**
+     * Gets the proper minyan time, taking into account holidays and special times, for this date.
+     * @param date
+     * @return the minyan time object
+     */
     public MinyanTime getMinyanTime(LocalDate date) {
         LocalDate temp = date;
         JewishCalendar jc = new JewishCalendar(temp);
