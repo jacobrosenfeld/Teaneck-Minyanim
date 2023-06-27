@@ -465,7 +465,6 @@ List<MinyanEvent> upcomingMinyanim = getMinyanEventsOnDate(minyanDAO.getEnabled(
 //        boolean usesNotes;
         for (Minyan minyan : enabledMinyanim) {
             // TODO: check if this is an accurate line
-            Date now = new Date();
             Date startDate = minyan.getStartDate(localDate);
             Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
             if (startDate != null && startDate.after(terminationDate)) {
