@@ -13,7 +13,6 @@ import javax.persistence.Table;
 import java.time.LocalDate;
 import java.util.Date;
 
-
 @Table(name = "MINYAN")
 public class Minyan extends TNMObject implements IDGenerator {
     @Column(name = "TYPE", nullable = false)
@@ -331,19 +330,19 @@ public class Minyan extends TNMObject implements IDGenerator {
 
 //    public [Date] getStartTimes(int next)
 
-    public LocalDate getStartDateFromNow() {
+    public Date getStartDateFromNow() {
         return getStartDate(LocalDate.now());
     }
 
-    public LocalDate getStartDate(LocalDate date) {
+    public Date getStartDate(LocalDate date) {
 //        need to check if that date is a special day
         MinyanTime mt = getMinyanTime(date);
         Time t = mt.getTime(date);
         if (t == null) {
             return null;
         }
-        return date;
-        // return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
+        LocalDate temp = date;
+        return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
     }
 
     public Time getStartTime() {
