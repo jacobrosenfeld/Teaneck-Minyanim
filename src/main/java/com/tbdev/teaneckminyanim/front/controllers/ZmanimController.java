@@ -193,8 +193,6 @@ List<MinyanEvent> upcomingMinyanim = getMinyanEventsOnDate(minyanDAO.getEnabled(
      */
     private List<MinyanEvent> getMinyanEventsOnDate(Collection<Minyan> minyanim, LocalDate date, boolean skipMinyanimThatAlreadyPassed) {
         // get minyanim closest in time to the date
-        ModelAndView mv = new ModelAndView();
-        mv.getModel().put("date", dateFormat.format(date));
         Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(date);
 
         List<MinyanEvent> minyanEvents = new ArrayList<>();
