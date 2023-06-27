@@ -11,6 +11,7 @@ import com.tbdev.teaneckminyanim.global.Nusach;
 import javax.persistence.Column;
 import javax.persistence.Table;
 import java.time.LocalDate;
+import java.util.Date;
 
 
 @Table(name = "MINYAN")
@@ -341,8 +342,8 @@ public class Minyan extends TNMObject implements IDGenerator {
         if (t == null) {
             return null;
         }
-        LocalDate temp = date;
-        return getStartDate(date);
+        return date;
+        // return new Date(temp.getYear(), temp.getMonthValue(), temp.getDayOfMonth(), t.getHours(), t.getMinutes(), t.getSeconds());
     }
 
     public Time getStartTime() {
