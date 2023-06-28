@@ -1,7 +1,7 @@
 mapboxgl.accessToken = mapboxaccesstoken;
 let description;
 if (typeof shulname !== 'undefined' && typeof minyantype !== 'undefined' && typeof minyantime !== 'undefined' && typeof address !== 'undefined') {
-    description = "<h4>" + shulname + "</h4><p>Next Minyan: " + minyantype + " at " + minyantime + "</p><p>" + address + "</p>";
+    description = "<h4>" + shulname + "</h4><p>Next Minyan Today: " + minyantype + " at " + minyantime + "</p><p>" + address + "</p>";
 } else {
     description = "<h4>" + shulname + "</h4><h5>There are no upcoming minyanim today.</h5><p>" + address + "</p>"
 }
