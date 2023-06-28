@@ -669,7 +669,7 @@ public class ZmanimController {
 
         for (Minyan minyan : enabledMinyanim) {
             // LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDate(localDate);
+            Date startDate = minyan.getStartDate(dateToLocalDate(datenow));
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3));
             Calendar shekiyaMinusOneMinute = Calendar.getInstance();
