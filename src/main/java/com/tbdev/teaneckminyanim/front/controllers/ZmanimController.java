@@ -321,7 +321,7 @@ public class ZmanimController {
 
         for (Minyan minyan : enabledMinyanim) {
             // LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDate(dateToLocalDate(date));
+            Date startDate = minyan.getStartDate(localDate);
             Date now = new Date();
             System.out.println("SD: " + startDate);
             if (startDate != null) {
@@ -534,7 +534,7 @@ public class ZmanimController {
 
         for (Minyan minyan : enabledMinyanim) {
             // LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDate(dateToLocalDate(date));
+            Date startDate = minyan.getStartDate(localDate);
             // Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
             // if (startDate != null && startDate.after(terminationDate)) {
             Calendar shekiyaMinusOneMinute = Calendar.getInstance();
@@ -669,7 +669,7 @@ public class ZmanimController {
 
         for (Minyan minyan : enabledMinyanim) {
             // LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDate(dateToLocalDate(date));
+            Date startDate = minyan.getStartDate(localDate);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3));
             Calendar shekiyaMinusOneMinute = Calendar.getInstance();
