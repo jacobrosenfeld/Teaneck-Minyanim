@@ -104,7 +104,7 @@
                             </ul>
                             <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
                               th:if="${upcoming != null}"
-                              th:text="@{|Next Minyan: ${upcoming.getType().displayName()} at ${upcoming.getFormattedStartTime()}|}"></button>
+                              th:text="@{|Next Minyan Today: ${upcoming.getType().displayName()} at ${upcoming.getFormattedStartTime()}|}"></button>
                             <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
                               th:if="${upcoming == null}">TThere are no upcoming minyanim today.
                             </button>
