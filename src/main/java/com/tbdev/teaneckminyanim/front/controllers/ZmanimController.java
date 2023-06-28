@@ -183,7 +183,7 @@ public class ZmanimController {
 
         for (Minyan minyan : enabledMinyanim) {
             // LocalDate ref = dateToLocalDate(date);
-            Date startDate = minyan.getStartDate(dateToLocalDate(date));
+            Date startDate = minyan.getStartDate(localDate);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
             System.out.println("SD: " + startDate);
