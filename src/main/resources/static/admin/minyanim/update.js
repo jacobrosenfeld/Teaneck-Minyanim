@@ -12,7 +12,7 @@ function update(name) {
                                 <select class="custom-select" name="${name}-zman" id="${name}-zman" required>
                                                                             <option disabled selected>Choose a zman</option>
                                                                             <option value="netz">Netz</option>
-                                                                            <option value="chatzot">Chatzot</option>
+                                                                            <option value="chatzos">Chatzos</option>
                                                                             <option value="mincha_gedola">Mincha Gedola</option>
                                                                             <option value="mincha_ketana">Mincha Ketana</option>
                                                                             <option value="plag_hamincha">Plag HaMincha</option>
@@ -30,7 +30,7 @@ function update(name) {
                                 <select class="custom-select" name="${name}-zman" id="${name}-zman" required>
                                                                             <option disabled selected>Choose a zman</option>
                                                                             <option value="netz">Netz</option>
-                                                                            <option value="chatzot">Chatzot</option>
+                                                                            <option value="chatzos">Chatzos</option>
                                                                             <option value="mincha_gedola">Mincha Gedola</option>
                                                                             <option value="mincha_ketana">Mincha Ketana</option>
                                                                             <option value="plag_hamincha">Plag HaMincha</option>

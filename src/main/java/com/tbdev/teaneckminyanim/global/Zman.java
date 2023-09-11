@@ -6,7 +6,7 @@ public enum Zman {
     NETZ("NETZ"),
     SZKS("SZKS"),
     SZT("SZT"),
-    CHATZOT("CHATZOT"),
+    CHATZOS("CHATZOS"),
     MINCHA_GEDOLA("MINCHA_GEDOLA"),
     MINCHA_KETANA("MINCHA_KETANA"),
     PLAG_HAMINCHA("PLAG_HAMINCHA"),
@@ -48,7 +48,7 @@ public enum Zman {
                 return "Sof Zman Krias Shma";
             case SZT:
                 return "Sof Zman Tefilla";   
-            case CHATZOT:
+            case CHATZOS:
                 return "Chatzos";
             case MINCHA_GEDOLA:
                 return "Mincha Gedola";
