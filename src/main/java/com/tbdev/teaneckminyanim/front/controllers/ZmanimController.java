@@ -110,6 +110,7 @@ public class ZmanimController {
 
     private String chatzosLaila(Date date) {
         Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR, 12);
         calendar.setTime(date);
         return timeFormatSec.format(calendar.getTime());
     }
@@ -178,7 +179,7 @@ public class ZmanimController {
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
-        mv.getModel().put("chatzosLaila", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
+        mv.getModel().put("chatzosLaila", chatzosLaila(zmanim.get(Zman.CHATZOS)));
 
         System.out.println("DEBUG: Fetching minyanim");
 
@@ -530,7 +531,7 @@ public class ZmanimController {
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
-        mv.getModel().put("chatzosLaila", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
+        mv.getModel().put("chatzosLaila", chatzosLaila(zmanim.get(Zman.CHATZOS)));
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a");
         Date datenow = new Date();
