@@ -180,7 +180,7 @@ public class ZmanimController {
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
-        mv.getModel().put("chatzosLaila", chatzosLaila(zmanim.get(Zman.CHATZOS)));
+        mv.getModel().put("chatzosLaila", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
 
         System.out.println("DEBUG: Fetching minyanim");
 
