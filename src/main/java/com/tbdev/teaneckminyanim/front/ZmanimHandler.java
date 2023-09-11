@@ -54,7 +54,7 @@ public class ZmanimHandler {
         dictionary.put(Zman.PLAG_HAMINCHA, complexZmanimCalendar.getPlagHamincha());
         dictionary.put(Zman.SHEKIYA, complexZmanimCalendar.getSunset());
         dictionary.put(Zman.EARLIEST_SHEMA, complexZmanimCalendar.getTzaisGeonim5Point88Degrees());
-        dictionary.put(Zman.TZET, complexZmanimCalendar.getTzais());
+        dictionary.put(Zman.TZES, complexZmanimCalendar.getTzais());
 
         return dictionary;
     }
