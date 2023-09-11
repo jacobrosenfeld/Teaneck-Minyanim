@@ -108,22 +108,6 @@ public class ZmanimController {
         return timeFormatSec.format(calendar.getTime());
     }
 
-    private String chatzosLaila(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        if (calendar.get(Calendar.HOUR_OF_DAY) < 12) {
-            calendar.setTime(date);
-            calendar.add(Calendar.HOUR_OF_DAY, 12);
-            return timeFormatSec.format(calendar.getTime());
-        } else {
-            calendar.setTime(date);
-            calendar.add(Calendar.HOUR_OF_DAY, -12);
-            return timeFormatSec.format(calendar.getTime());
-        }
-        // calendar.setTime(date);
-        // return timeFormatSec.format(calendar.getTime());
-    }
-
-
     public ModelAndView zmanim(Date date) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("homepage");
@@ -187,7 +171,7 @@ public class ZmanimController {
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
-        mv.getModel().put("chatzosLaila", chatzosLaila(zmanim.get(Zman.CHATZOS)));
+        mv.getModel().put("chatzosLaila", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
 
         System.out.println("DEBUG: Fetching minyanim");
 
@@ -211,6 +195,13 @@ public class ZmanimController {
             Calendar mgMinusOneMinute = Calendar.getInstance();
             mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
+            Calendar chatzosLaila = Calendar.getInstance();
+            chatzosLaila.setTime(zmanim.get(Zman.CHATZOS));
+            if (chatzosLaila.get(Calendar.AM_PM) == Calendar.AM) {
+                chatzosLaila.set(Calendar.AM_PM, 1);
+            } else {
+                chatzosLaila.set(Calendar.AM_PM, 0);
+            }
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
             // if (startDate != null && (startDate.after(terminationDate))) {
@@ -302,9 +293,9 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                             else {
-                                        if (minyan.getType().isSelichos()) {
+                                        if (minyan.getType().isSelichos() && roundedDisplayName.contains("Laila")) {
                                             minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
-                                                    organizationNusach, organizationId, locationName, startDate,
+                                                    organizationNusach, organizationId, locationName, chatzosLaila.getTime(),
                                                     roundedDisplayName,
                                                     minyan.getNusach(), minyan.getNotes(), organizationColor));
                                         }
@@ -539,7 +530,7 @@ public class ZmanimController {
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
-        mv.getModel().put("chatzosLaila", chatzosLaila(zmanim.get(Zman.CHATZOS)));
+        mv.getModel().put("chatzosLaila", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a");
         Date datenow = new Date();
