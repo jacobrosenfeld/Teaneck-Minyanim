@@ -110,13 +110,13 @@ public class ZmanimController {
 
     private String chatzosLaila(Date date) {
         Calendar calendar = Calendar.getInstance();
-        if (calendar.get(Calendar.HOUR_OF_DAY) < 12) {
+        if (calendar.get(Calendar.AM_PM) == Calendar.AM) {
             calendar.setTime(date);
-            calendar.add(Calendar.HOUR_OF_DAY, 12);
+            calendar.add(Calendar.AM_PM, 1);
             return timeFormatSec.format(calendar.getTime());
         } else {
             calendar.setTime(date);
-            calendar.add(Calendar.HOUR_OF_DAY, -12);
+            calendar.add(Calendar.AM_PM, -1);
             return timeFormatSec.format(calendar.getTime());
         }
         // calendar.setTime(date);
