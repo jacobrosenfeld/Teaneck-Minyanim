@@ -108,6 +108,14 @@ public class ZmanimController {
         return timeFormatSec.format(calendar.getTime());
     }
 
+    private String chatzosLaila(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.HOUR_OF_DAY, 12);
+        return timeFormatSec.format(calendar.getTime());
+    }
+
+
     public ModelAndView zmanim(Date date) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("homepage");
@@ -171,6 +179,7 @@ public class ZmanimController {
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
+        mv.getModel().put("chatzosLaila", chatzosLaila(zmanim.get(Zman.CHATZOS)));
 
         System.out.println("DEBUG: Fetching minyanim");
 
@@ -522,6 +531,7 @@ public class ZmanimController {
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
+        mv.getModel().put("chatzosLaila", chatzosLaila(zmanim.get(Zman.CHATZOS)));
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a");
         Date datenow = new Date();

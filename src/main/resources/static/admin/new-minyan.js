@@ -33,6 +33,7 @@ function update(name) {
                                                                             <option value="plag_hamincha">Plag HaMincha</option>
                                                                             <option value="shekiya">Shekiya</option>
                                                                             <option value="tzes">Tzes Hakochavim</option>
+                                                                            <option value="chatzos_laila">Chatzos Laila</option>
                                                                         </select>
                             </div>
                             <div class="col">
@@ -51,6 +52,7 @@ function update(name) {
                                                                     <option value="plag_hamincha">Plag HaMincha</option>
                                                                     <option value="shekiya">Shekiya</option>
                                                                     <option value="tzes">Tzes Hakochavim</option>
+                                                                    <option value="chatzos_laila">Chatzos Laila</option>
                                                                 </select>
                     </div>
                     <div class="col">
