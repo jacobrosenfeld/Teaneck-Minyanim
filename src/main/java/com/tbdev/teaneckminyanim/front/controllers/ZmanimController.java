@@ -108,15 +108,6 @@ public class ZmanimController {
         return timeFormatSec.format(calendar.getTime());
     }
 
-    private String chatzosLaila(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        // calendar.set(Calendar.AM_PM, Calendar.PM);
-        // calendar.add(Calendar.DAY_OF_MONTH, 1);
-        return timeFormatSec.format(calendar.getTime());
-    }
-
-
     public ModelAndView zmanim(Date date) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("homepage");
@@ -180,7 +171,7 @@ public class ZmanimController {
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
-        mv.getModel().put("chatzosLaila", chatzosLaila(zmanim.get(Zman.CHATZOS)));
+        // mv.getModel().put("chatzosLaila", chatzosLaila(zmanim.get(Zman.CHATZOS)));
 
         System.out.println("DEBUG: Fetching minyanim");
 
