@@ -320,8 +320,7 @@ public class ZmanimController {
                                                 minyan.getNotes(), organizationColor));
                             }
                             else {
-                            if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
-                                    || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
+                            if (minyan.getType().isSelichos()) {
                                 minyanEvents
                                         .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach,
