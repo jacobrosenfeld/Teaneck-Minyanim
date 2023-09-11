@@ -111,8 +111,8 @@ public class ZmanimController {
     private String chatzosLaila(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        calendar.add(Calendar.HOUR_OF_DAY, 12);
-        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        calendar.set(Calendar.AM_PM, Calendar.PM);
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
         return timeFormatSec.format(calendar.getTime());
     }
 
