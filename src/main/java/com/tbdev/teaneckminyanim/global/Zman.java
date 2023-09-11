@@ -12,7 +12,8 @@ public enum Zman {
     PLAG_HAMINCHA("PLAG_HAMINCHA"),
     SHEKIYA("SHEKIYA"),
     EARLIEST_SHEMA("EARLIEST_SHEMA"),
-    TZES("TZES");
+    TZES("TZES"),
+    CHATZOS_LAILA("CHATZOS_LAILA");
 
     private String text;
 
@@ -62,6 +63,8 @@ public enum Zman {
                 return "Earliest Shema";
             case TZES:
                 return "Tzes";
+            case CHATZOS_LAILA:
+                return "Chatzos Laila";
             default:
                 return null;
         }
