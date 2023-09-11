@@ -293,9 +293,9 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                             else {
-                                        if (minyan.getType().isSelichos() && roundedDisplayName.contains("Laila")) {
+                                        if (minyan.getType().isSelichos() ) {
                                             minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
-                                                    organizationNusach, organizationId, locationName, chatzosLaila.getTime(),
+                                                    organizationNusach, organizationId, locationName, startDate,
                                                     roundedDisplayName,
                                                     minyan.getNusach(), minyan.getNotes(), organizationColor));
                                         }
