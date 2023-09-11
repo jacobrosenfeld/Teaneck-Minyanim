@@ -48,7 +48,7 @@ public class ZmanimHandler {
         dictionary.put(Zman.NETZ, complexZmanimCalendar.getSunrise());
         dictionary.put(Zman.SZKS, complexZmanimCalendar.getSofZmanShmaGRA());
         dictionary.put(Zman.SZT, complexZmanimCalendar.getSofZmanTfilaGRA());
-        dictionary.put(Zman.CHATZOT, complexZmanimCalendar.getChatzos());
+        dictionary.put(Zman.CHATZOS, complexZmanimCalendar.getChatzos());
         dictionary.put(Zman.MINCHA_GEDOLA, complexZmanimCalendar.getMinchaGedola());
         dictionary.put(Zman.MINCHA_KETANA, complexZmanimCalendar.getMinchaKetana());
         dictionary.put(Zman.PLAG_HAMINCHA, complexZmanimCalendar.getPlagHamincha());
