@@ -112,7 +112,7 @@ public class ZmanimController {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.set(Calendar.AM_PM, Calendar.PM);
-        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        // calendar.add(Calendar.DAY_OF_MONTH, 1);
         calendar.setTimeZone(timeZone);
         return timeFormatSec.format(calendar.getTime());
     }
