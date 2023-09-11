@@ -4,7 +4,7 @@ public enum MinyanType {
     SHACHARIS("SHACHARIS"),
     MINCHA("MINCHA"),
     MAARIV("MAARIV"),
-    SELICHOT("SELICHOT"),
+    SELICHOS("SELICHOS"),
     MEGILA_READING("MEGILAREADING");
 
     private String text;
@@ -38,8 +38,8 @@ public enum MinyanType {
                 return "MINCHA";
             case MAARIV:
                 return "MAARIV";
-            case SELICHOT:
-                return "SELICHOT";
+            case SELICHOS:
+                return "SELICHOS";
             case MEGILA_READING:
                 return "MEGILAREADING";
             default:
@@ -55,8 +55,8 @@ public enum MinyanType {
                 return "Mincha";
             case MAARIV:
                 return "Maariv";
-            case SELICHOT:
-                return "Selichot";
+            case SELICHOS:
+                return "Selichos";
             case MEGILA_READING:
                 return "Megila Reading";
             default:
@@ -76,8 +76,8 @@ public enum MinyanType {
         return this == MAARIV;
     }
 
-    public boolean isSelichot() {
-        return this == SELICHOT;
+    public boolean isSelichos() {
+        return this == SELICHOS;
     }
 
     public boolean isMegilaReading() {

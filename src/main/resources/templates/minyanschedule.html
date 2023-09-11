@@ -57,7 +57,7 @@
                                         <a class="nav-link" id="pills-maariv-tab" data-toggle="pill" href="#pills-maariv" role="tab" aria-controls="pills-maariv" aria-selected="false">Maariv</a>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <a class="nav-link" id="pills-selichot-tab" data-toggle="pill" href="#pills-selichot" role="tab" aria-controls="pills-selichot" aria-selected="false">Selichot</a>
+                                        <a class="nav-link" id="pills-selichos-tab" data-toggle="pill" href="#pills-selichos" role="tab" aria-controls="pills-selichos" aria-selected="false">Selichos</a>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <a class="nav-link" id="pills-megila-tab" data-toggle="pill" href="#pills-megila" role="tab" aria-controls="pills-megila" aria-selected="false">Megila Reading</a>
@@ -342,8 +342,8 @@
                                         </div>
                                     </div>
 
-                                    <div class="tab-pane fade" id="pills-selichot" role="tabpanel" aria-labelledby="pills-selichot-tab">
-                                        <div th:if="${!selichotminyanim.isEmpty()}" class="table-responsive">
+                                    <div class="tab-pane fade" id="pills-selichos" role="tabpanel" aria-labelledby="pills-selichos-tab">
+                                        <div th:if="${!selichosminyanim.isEmpty()}" class="table-responsive">
                                             <table class="table">
                                                 <thead class="thead-inverse">
                                                 <tr>
@@ -366,7 +366,7 @@
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-                                                <tr th:each="minyan: ${selichotminyanim}" th:with="minyantimes=${selichottimes.get(minyan.getId())}">
+                                                <tr th:each="minyan: ${selichosminyanim}" th:with="minyantimes=${selichostimes.get(minyan.getId())}">
                                                     <td>
                                                         <div>
                                                             <a role="button" class="btn btn-dark btn-sm" th:href="@{|/admin/minyanim/${minyan.getId()}/view|}">
@@ -426,9 +426,9 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div th:if="${selichotminyanim.isEmpty()}" class="jumbotron jumbotron-fluid">
+                                        <div th:if="${selichosminyanim.isEmpty()}" class="jumbotron jumbotron-fluid">
                                             <div class="container">
-                                                <h3>You don't have any selichot minyanim saved.</h3>
+                                                <h3>You don't have any selichos minyanim saved.</h3>
                                                 <hr>
                                                 <a th:href="@{|/admin/${organization.id}/minyanim/new?st=se|}" role="button" class="btn btn-primary">Add a Minyan</a>
                                             </div>

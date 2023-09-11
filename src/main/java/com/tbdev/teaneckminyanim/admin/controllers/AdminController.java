@@ -960,11 +960,11 @@ if (this.TNMUserDAO.delete(account)) {
             maarivTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
-        List<Minyan> selichotMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SELICHOT)).collect(Collectors.toList());
-        mv.addObject("selichotminyanim", selichotMinyanim);
-        Map<String, HashMap<MinyanDay, MinyanTime>> selichotTimes = new HashMap<>();
-        for (Minyan m : selichotMinyanim) {
-            selichotTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
+        List<Minyan> selichosMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SELICHOS)).collect(Collectors.toList());
+        mv.addObject("selichosminyanim", selichosMinyanim);
+        Map<String, HashMap<MinyanDay, MinyanTime>> selichosTimes = new HashMap<>();
+        for (Minyan m : selichosMinyanim) {
+            selichosTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
         List<Minyan> megilaMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.MEGILA_READING)).collect(Collectors.toList());
@@ -977,7 +977,7 @@ if (this.TNMUserDAO.delete(account)) {
         mv.addObject("shacharistimes", shacharisTimes);
         mv.addObject("minchatimes", minchaTimes);
         mv.addObject("maarivtimes", maarivTimes);
-        mv.addObject("selichottimes", selichotTimes);
+        mv.addObject("selichostimes", selichosTimes);
         mv.addObject("megilatimes", megilaTimes);
 
         mv.addObject("Day", MinyanDay.class);
