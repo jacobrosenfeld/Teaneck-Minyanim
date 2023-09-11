@@ -252,8 +252,17 @@ public class ZmanimController {
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
-                            }
-                        }
+                            
+                                    }
+                                else {
+                                        if (minyan.getType().isSelichos()) {
+                                            minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                    organizationNusach, organizationId, locationName, startDate,
+                                                    roundedDisplayName,
+                                                    minyan.getNusach(), minyan.getNotes(), organizationColor));
+                                        }
+                                    }
+                                }
                     }
                 } else if (roundedDisplayName != null) {
                     if (minyan.getType().isShacharis() && startDate.before(zmanim.get(Zman.SZT))
@@ -275,6 +284,14 @@ public class ZmanimController {
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
+                            else {
+                                        if (minyan.getType().isSelichos()) {
+                                            minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                    organizationNusach, organizationId, locationName, startDate,
+                                                    roundedDisplayName,
+                                                    minyan.getNusach(), minyan.getNotes(), organizationColor));
+                                        }
+                                    }
                         }
                     }
                 } else {
@@ -302,6 +319,16 @@ public class ZmanimController {
                                                 organizationId, locationName, startDate, minyan.getNusach(),
                                                 minyan.getNotes(), organizationColor));
                             }
+                            else {
+                            if (minyan.getType().isMaariv() && (startDate.after(shekiyaMinusOneMinute.getTime())
+                                    || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
+                                minyanEvents
+                                        .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                organizationNusach,
+                                                organizationId, locationName, startDate, minyan.getNusach(),
+                                                minyan.getNotes(), organizationColor));
+                            }
+                        }
                         }
                     }
                 }
@@ -384,6 +411,7 @@ public class ZmanimController {
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
+        List<MinyanEvent> selichosMinyanim = new ArrayList<>();
         for (MinyanEvent me : minyanEvents) {
             if (me.getType().isShacharis()) {
                 shacharisMinyanim.add(me);
@@ -391,6 +419,8 @@ public class ZmanimController {
                 minchaMinyanim.add(me);
             } else if (me.getType().isMaariv()) {
                 maarivMinyanim.add(me);
+            } else if (me.getType().isSelichos()) {
+               selichosMinyanim.add(me);
             }
         }
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
@@ -594,6 +624,13 @@ public class ZmanimController {
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
+                        else {
+                            if (minyan.getType().isSelichos()) {
+                                minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                        organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                                        minyan.getNusach(), minyan.getNotes(), organizationColor));
+                            }
+                        }
                         }
                     }
                 } else if (roundedDisplayName != null) {
@@ -616,6 +653,13 @@ public class ZmanimController {
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
+                        else {
+                            if (minyan.getType().isSelichos()) {
+                                minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                        organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                                        minyan.getNusach(), minyan.getNotes(), organizationColor));
+                            }
+                        }
                         }
                     }
                 } else {
@@ -643,6 +687,13 @@ public class ZmanimController {
                                                 organizationId, locationName, startDate, minyan.getNusach(),
                                                 minyan.getNotes(), organizationColor));
                             }
+                            else {
+                            if (minyan.getType().isSelichos()) {
+                                minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                        organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                                        minyan.getNusach(), minyan.getNotes(), organizationColor));
+                            }
+                        }
                         }
                     }
                 }
@@ -654,6 +705,7 @@ public class ZmanimController {
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
+        List<MinyanEvent> selichosMinyanim = new ArrayList<>();
         for (MinyanEvent me : minyanEvents) {
             if (me.getType().isShacharis()) {
                 shacharisMinyanim.add(me);
@@ -661,6 +713,8 @@ public class ZmanimController {
                 minchaMinyanim.add(me);
             } else if (me.getType().isMaariv()) {
                 maarivMinyanim.add(me);
+            } else if(me.getType().isSelichos()) {
+                selichosMinyanim.add(me);
             }
         }
 
@@ -732,6 +786,13 @@ public class ZmanimController {
                                             dynamicDisplayName,
                                             minyan.getNusach(), minyan.getNotes(), organizationColor));
                                 }
+                                else {
+                            if (minyan.getType().isSelichos()) {
+                                minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                        organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
+                                        minyan.getNusach(), minyan.getNotes(), organizationColor));
+                            }
+                        }
                             }
                         }
                     } else if (roundedDisplayName != null) {
@@ -755,7 +816,15 @@ public class ZmanimController {
                                             roundedDisplayName,
                                             minyan.getNusach(), minyan.getNotes(), organizationColor));
                                 }
-                            }
+                                else {
+                                    if (minyan.getType().isSelichos()) {
+                                        nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                organizationNusach, organizationId, locationName, startDate,
+                                                roundedDisplayName,
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor));
+                                    }
+                                }
+                            } 
                         }
                     } else {
                         if (minyan.getType().isShacharis() && startDate.before(zmanimtoday.get(Zman.SZT))
@@ -779,6 +848,14 @@ public class ZmanimController {
                                                     organizationId, locationName, startDate, minyan.getNusach(),
                                                     minyan.getNotes(), organizationColor));
                                 }
+                                else {
+                                    if (minyan.getType().isSelichos()) {
+                                        nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                organizationNusach, organizationId, locationName, startDate,
+                                                roundedDisplayName,
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor));
+                                    }
+                                }
                             }
                         }
                     }
@@ -797,6 +874,7 @@ public class ZmanimController {
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
+        mv.getModel().put("selichosMinyanim", selichosMinyanim);
 
         // mv.getModel().put("usesLocations", minyanEvents.)
 

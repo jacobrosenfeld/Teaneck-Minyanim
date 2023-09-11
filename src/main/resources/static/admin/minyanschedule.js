@@ -37,8 +37,8 @@ if (start == "sh") {
 } else if (start == "se") {
     Array.prototype.forEach.call(document.getElementsByClassName("nav-link"), e => e.classList.remove("active"));
     Array.prototype.forEach.call(document.getElementsByClassName("tab-pane"), e => e.classList.remove("active","show"));
-    document.getElementById("pills-selichot-tab").classList.add("active");
-    document.getElementById("pills-selichot").classList.add("active", "show");
+    document.getElementById("pills-selichos-tab").classList.add("active");
+    document.getElementById("pills-selichos").classList.add("active", "show");
 } else if (start == "mr") {
     Array.prototype.forEach.call(document.getElementsByClassName("nav-link"), e => e.classList.remove("active"));
     Array.prototype.forEach.call(document.getElementsByClassName("tab-pane"), e => e.classList.remove("active","show"));
