@@ -110,19 +110,14 @@ public class ZmanimController {
 
     private String chatzosLaila(Date date) {
         Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
         if (calendar.get(Calendar.AM_PM) == Calendar.AM) {
-            calendar.setTime(date);
-            calendar.add(Calendar.AM_PM, 1);
-            return timeFormatSec.format(calendar.getTime());
+            calendar.add(Calendar.HOUR_OF_DAY, 12);
         } else {
-            calendar.setTime(date);
-            calendar.add(Calendar.AM_PM, -1);
-            return timeFormatSec.format(calendar.getTime());
+            calendar.add(Calendar.HOUR_OF_DAY, -12);
         }
-        // calendar.setTime(date);
-        // return timeFormatSec.format(calendar.getTime());
-    }
-
+        return timeFormatSec.format(calendar.getTime());
+    }    
 
     public ModelAndView zmanim(Date date) {
         ModelAndView mv = new ModelAndView();
