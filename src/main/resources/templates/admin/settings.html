@@ -36,7 +36,7 @@
                                 <form th:action="@{/admin/update-settings}" method="post">
                                     <div class="form-group">
                                         <label for="username">Setting</label>
-                                        <input type="text" class="form-control" th:name="${settings.setting} th:id="${settings.setting}  th:value="${settings.enabled}">
+                                        <input type="text" class="form-control" th:name="${settings.setting}" th:id="${settings.setting}"  th:value="${settings.enabled}">
                                     </div>
                                     <div class="form-group" th:if="${user.isAdmin() && !queriedaccount.isSuperAdmin()}">
                                         <label for="privileges">Privileges</label>
