@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 public class TNMSettingsMapper implements RowMapper<TNMSettings>, Serializable {
 
-    public static final String BASE_SQL = "SELECT SETTING, ENABLED, SETTING_ID FROM SETTINGS ";
+    public static final String BASE_SQL = "SELECT SETTING, ENABLED, ID FROM SETTINGS ";
 
     @Override
     public TNMSettings mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -25,7 +25,7 @@ public class TNMSettingsMapper implements RowMapper<TNMSettings>, Serializable {
 
         String setting = (String) m.get("SETTING");
         Boolean enabled = Boolean.valueOf(m.get("ENABLED").toString());
-        String id = (String) m.get("SETTING_ID");
+        String id = (String) m.get("ID");
 
 
         return new TNMSettings(setting, enabled, id);
