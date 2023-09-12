@@ -1,12 +1,13 @@
 package com.tbdev.teaneckminyanim.admin.structure.user;
 
 import com.tbdev.teaneckminyanim.admin.structure.TNMSaveable;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import javax.servlet.http.HttpServletRequest;
+
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -63,34 +64,6 @@ public class TNMUserDAO extends JdbcDaoSupport implements TNMSaveable<TNMUser> {
         for (Map<String, Object> userMap : userMaps) {
             users.add(mapper.mapRow(userMap));
         }
-
-
-
-
-
-//        System.out.println(users);
-        /*
-        try {
-//            Class.forName("org.h2.Driver");
-//            String url = "jdbc:h2:file:./data/demo";
-//            Connection con = DriverManager.getConnection(url);
-            Statement stmt = this.getConnection().createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                System.out.println("rs = " + rs.getString("NAME"));
-            }
-            stmt.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        */
-
-
-//        List<Map<String, Object>> users = this.getJdbcTemplate().queryForList(sql, mapper);
-
-//        mapper.mapRow()
-
-//        System.out.println("Users: " + users);
 
         return users;
     }

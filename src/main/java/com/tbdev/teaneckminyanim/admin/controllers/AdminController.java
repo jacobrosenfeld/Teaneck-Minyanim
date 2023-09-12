@@ -6,10 +6,13 @@ import com.tbdev.teaneckminyanim.admin.structure.location.LocationDAO;
 import com.tbdev.teaneckminyanim.admin.structure.minyan.*;
 import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
 import com.tbdev.teaneckminyanim.admin.structure.organization.OrganizationDAO;
+import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettings;
+import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettingsDAO;
 import com.tbdev.teaneckminyanim.admin.structure.user.TNMUser;
 import com.tbdev.teaneckminyanim.admin.structure.user.TNMUserDAO;
 import com.tbdev.teaneckminyanim.global.Nusach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.h2.H2ConsoleProperties.Settings;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +43,9 @@ public class AdminController {
 
     @Autowired
     private MinyanDAO minyanDAO;
+
+    @Autowired
+    private TNMSettingsDAO TNMsettingsDAO;
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | hh:mm aa");
     TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
@@ -148,6 +154,7 @@ public class AdminController {
         }
     }
 
+
     @GetMapping("/admin/logout")
     public ModelAndView logout(@RequestParam(value = "error", required = false) String error) {
         return new LoginController().login(error, true);
@@ -169,6 +176,28 @@ public class AdminController {
         mv.getModel().put("error", errorMessage);
         return mv;
     }
+
+    @GetMapping("/admin/settings")
+    public ModelAndView settings(String successMessage, String errorMessage) {
+        if (!isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to access this page");
+        }
+
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("admin/settings");
+
+        List<TNMSettings> settings = this.TNMsettingsDAO.getAll();
+        mv.addObject("settings", settings);
+
+        mv.addObject("organizations", organizationDAO.getAll());
+
+        addStandardPageData(mv);
+
+        mv.getModel().put("success", successMessage);
+        mv.getModel().put("error", errorMessage);
+        return mv;
+    }
+
 
     @RequestMapping(value = "/admin/new-organization", method = RequestMethod.GET)
     public ModelAndView addOrganization(boolean success, String error, String inputErrorMessage) {
@@ -777,7 +806,6 @@ if (this.TNMUserDAO.delete(account)) {
         TNMUser userToUpdate = TNMUserDAO.findById(id);
         TNMUser currentUser = getCurrentUser();
 
-
         if (!currentUser.isSuperAdmin()) {
             if (!currentUser.getOrganizationId().equals(userToUpdate.getOrganizationId())) {
                 System.out.println("Exiting at break 1");
@@ -830,6 +858,17 @@ if (this.TNMUserDAO.delete(account)) {
         } else {
             throw new AccessDeniedException("You do not have permission to update this information.");
         }
+    }
+
+    @RequestMapping(value = "/admin/update-settings", method = RequestMethod.POST)
+    public ModelAndView updateSettings(
+            @RequestParam(value = "setting", required = true) String setting,
+            @RequestParam(value = "enabled", required = true) Boolean newEnabled,
+            @RequestParam(value = "setting_id", required = true) String id
+    ) {
+        System.out.println("IM IN THE FUNCTION");
+            TNMSettings updatedSetting = new TNMSettings(setting, newEnabled, id);
+            return settings ("Successfully updated setting with name '" + updatedSetting.getSetting() + "'.", null);
     }
 
     @RequestMapping(value = "/admin/{oid}/locations", method = RequestMethod.GET)
