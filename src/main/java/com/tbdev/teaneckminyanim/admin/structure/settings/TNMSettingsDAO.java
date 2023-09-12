@@ -21,7 +21,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
     }
 
     public TNMSettings findByName(String setting) {
-        String sql = TNMSettingsMapper.BASE_SQL + " WHERE u.SETTING = ? ";
+        String sql = TNMSettingsMapper.BASE_SQL + " WHERE SETTING = ? ";
 
         Object[] params = new Object[] { setting };
         TNMSettingsMapper mapper = new TNMSettingsMapper();
@@ -36,7 +36,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
 
     @Override
     public TNMSettings findById(String id) {
-        String sql = TNMSettingsMapper.BASE_SQL + " WHERE u.SETTING_ID = ? ";
+        String sql = TNMSettingsMapper.BASE_SQL + " WHERE SETTING_ID = ? ";
 
         Object[] params = new Object[] { id };
         TNMSettingsMapper mapper = new TNMSettingsMapper();
