@@ -862,10 +862,10 @@ if (this.TNMUserDAO.delete(account)) {
     public ModelAndView updateSettings(
             @RequestParam(value = "setting", required = true) String setting,
             @RequestParam(value = "enabled", required = true) Boolean newEnabled,
-            @RequestParam(value = "ID", required = true) String ID
+            @RequestParam(value = "ID", required = true) String id
     ) {
         System.out.println("IM IN THE FUNCTION");
-            TNMSettings updatedSetting = new TNMSettings(setting, newEnabled, ID);
+            TNMSettings updatedSetting = new TNMSettings(setting, newEnabled, id);
             return settings ("Successfully updated setting with name '" + updatedSetting.getSetting() + "'.", null);
     }
 
