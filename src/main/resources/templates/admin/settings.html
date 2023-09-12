@@ -33,6 +33,9 @@
                     <div class="row my-4" style="padding-bottom: 60px">
                         <div class="col-lg-9 col-md-8">
                             <div class="table-responsive">
+                                <tr class="form-group" th:each="settings: ${setting}">
+                                    <td th:text="${settings.setting}"></td>
+                                </tr>
                                 <form th:action="@{/admin/update-settings}" method="post">
                                     <div class="form-group" th:each="settings: ${setting}">
                                         <label for="username">Setting</label>
