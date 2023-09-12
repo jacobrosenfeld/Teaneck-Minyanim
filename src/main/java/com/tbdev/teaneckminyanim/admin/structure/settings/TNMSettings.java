@@ -10,7 +10,7 @@ public class TNMSettings extends TNMObject implements IDGenerator {
     @Column(name="Setting", nullable = false, unique = true)
     private String setting;
 
-    @Column(name="Enabled", nullable = true)
+    @Column(name="ENABLED", nullable = true)
     private boolean enable;
 
     @Column(name="SETTING_ID")
