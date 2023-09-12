@@ -185,7 +185,6 @@ public class AdminController {
 
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/settings");
-
         List<TNMSettings> settings = this.TNMsettingsDAO.getAll();
         mv.addObject("settings", settings);
 
