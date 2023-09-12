@@ -38,40 +38,8 @@
                                         <label for="username">Setting</label>
                                         <input type="text" class="form-control" th:name="${settings.setting}" th:id="${settings.setting}"  th:value="${settings.enabled}">
                                     </div>
-                                    <div class="form-group" th:if="${user.isAdmin() && !queriedaccount.isSuperAdmin()}">
-                                        <label for="privileges">Privileges</label>
-                                        <div>
-                                        <div class="btn-group btn-group-toggle" id="privileges" data-toggle="buttons" aria-describedby="privileges-help">
-                                            <label th:class="${'btn btn-secondary' + ((queriedaccount.isAdmin()) ? ' active' : '')}">
-                                                <input type="radio" name="privileges" id="admin" value="1" th:checked="${(queriedaccount.isAdmin())}"> Manager
-                                            </label>
-                                            <label th:class="${'btn btn-secondary' + ((queriedaccount.isUser() && !queriedaccount.isAdmin()) ? ' active' : '')}">
-                                                <input type="radio" name="privileges" id="user" value="2" th:checked="${(queriedaccount.isUser() && !queriedaccount.isAdmin())}"> User
-                                            </label>
-                                        </div>
-                                        </div>
-                                        <small id="privileges-help" class="form-text text-muted">Manager permissions allow the user to add and edit other accounts. To change this user's privileges, toggle the switch and click the update button.</small>
-<!--                                        <label for="privileges">Privileges</label>-->
-<!--                                        <input type="text" class="form-control" name="email" id="email" aria-describedby="email-help" th:value="${queriedaccount.email}">-->
-<!--                                        <small id="email-help" class="form-text text-muted">This email will be used for password recovery.</small>-->
-                                    </div>
-                                    <div class="form-group" hidden th:if="${!(user.isAdmin() && !queriedaccount.isSuperAdmin())}">
-                                        <label for="privileges">Privileges</label>
-                                        <div>
-                                            <div class="btn-group btn-group-toggle" id="privileges" data-toggle="buttons" aria-describedby="privileges-help">
-                                                <label th:class="${'btn btn-secondary' + ((queriedaccount.isAdmin()) ? ' active' : '')}">
-                                                    <input type="radio" name="privileges" id="admin" value="1" th:checked="${(queriedaccount.isAdmin())}"> Manager
-                                                </label>
-                                                <label th:class="${'btn btn-secondary' + ((queriedaccount.isUser() && !queriedaccount.isAdmin()) ? ' active' : '')}">
-                                                    <input type="radio" name="privileges" id="user" value="2" th:checked="${(queriedaccount.isUser() && !queriedaccount.isAdmin())}"> User
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <small id="privileges-help" class="form-text text-muted">Manager permissions allow the user to add and edit other accounts. To change this user's privileges, toggle the switch and click the update button.</small>
-                                        <!--                                        <label for="privileges">Privileges</label>-->
-                                        <!--                                        <input type="text" class="form-control" name="email" id="email" aria-describedby="email-help" th:value="${queriedaccount.email}">-->
-                                        <!--                                        <small id="email-help" class="form-text text-muted">This email will be used for password recovery.</small>-->
-                                    </div>
+                                    
+                                    
                                     <hr>
                                     <!--                                    <div class="form-group">-->
                                     <!--                                        <label for="site-url">Website</label>-->
@@ -158,7 +126,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
-                    <a th:href="@{/admin/delete-account} + '?id=' + ${queriedaccount.id}" class="btn btn-danger">Delete</a>
+                    <!-- <a th:href="@{/admin/delete-account} + '?id=' + ${queriedaccount.id}" class="btn btn-danger">Delete</a> -->
                 </div>
             </div>
         </div>
@@ -180,7 +148,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
-                        <a th:href="@{/admin/disable-account} + '?id=' + ${queriedaccount.id}" class="btn btn-warning">Disable</a>
+                        <!-- <a th:href="@{/admin/disable-account} + '?id=' + ${queriedaccount.id}" class="btn btn-warning">Disable</a> -->
                     </div>
                 </div>
             </div>
@@ -195,25 +163,6 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">×</span>
                 </button>
-            </div>
-            <div class="modal-body">
-                <form method="post" th:action="${'/admin/accounts/' + queriedaccount.id + '/changepassword'}">
-                    <div class="form-group">
-                        <label for="new-password">Password</label>
-                        <input type="password" class="form-control" name="password" id="new-password" required="">
-                    </div>
-                    <div class="form-group">
-                        <label for="new-cpassword">Confirm Password</label>
-                        <input type="password" class="form-control" name="cpassword" id="new-cpassword" required="">
-                    </div>
-
-                    <div class="login-msg-box" th:if="${changePasswordError}" style="padding-bottom: 8px">
-                        <div class="form-msg-fatal" th:text="${changePasswordError}"></div>
-                    </div>
-
-                    <hr>
-                    <button type="submit" class="btn btn-primary">Update</button>
-                </form>
             </div>
         </div>
     </div>
