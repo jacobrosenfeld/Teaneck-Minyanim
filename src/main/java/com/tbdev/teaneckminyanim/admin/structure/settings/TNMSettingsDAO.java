@@ -36,7 +36,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
 
     @Override
     public TNMSettings findById(String id) {
-        String sql = TNMSettingsMapper.BASE_SQL + " WHERE SETTING_ID = ? ";
+        String sql = TNMSettingsMapper.BASE_SQL + " WHERE ID = ? ";
 
         Object[] params = new Object[] { id };
         TNMSettingsMapper mapper = new TNMSettingsMapper();
@@ -51,7 +51,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
 
     @Override
     public List<TNMSettings> getAll() {
-        String sql = "SELECT SETTING, ENABLED, SETTING_ID FROM SETTINGS";
+        String sql = "SELECT SETTING, ENABLED, ID FROM SETTINGS";
         
         TNMSettingsMapper mapper = new TNMSettingsMapper();
 
@@ -96,7 +96,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
     @Override
     public boolean update(TNMSettings objectToUpdate) {
         try {
-            String sql = "UPDATE SETTINGS SET SETTING='%s', ENABLED='%D', SETTING_ID='%s' WHERE SETTING_ID='%s';";
+            String sql = "UPDATE SETTINGS SET SETTING='%s', ENABLED='%D', ID='%s' WHERE ID='%s';";
 
 
             getConnection().createStatement().executeUpdate(String.format(sql, objectToUpdate.getSetting(), objectToUpdate.getEnabled(), objectToUpdate.getId()));
