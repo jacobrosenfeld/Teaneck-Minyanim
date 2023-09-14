@@ -14,13 +14,13 @@ public class TNMSettings extends TNMObject implements IDGenerator {
     private boolean enable;
 
     @Column(name="ID")
-    private String ID;
+    private String id;
 
     @Column(name="TEXT", nullable = true)
     private String text;
 
-    public TNMSettings(String setting, boolean enable, String ID, String text) {
-        super.id = ID;
+    public TNMSettings(String setting, boolean enable, String id, String text) {
+        super.id = id;
         this.setting = setting;
         this.enable = enable;
         this.text = text;
@@ -42,7 +42,7 @@ public class TNMSettings extends TNMObject implements IDGenerator {
     }
 
     public String getID() {
-        return ID;
+        return id;
     }
 
     public String getText() {
