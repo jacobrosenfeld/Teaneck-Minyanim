@@ -7,13 +7,13 @@ import com.tbdev.teaneckminyanim.admin.structure.TNMObject;
 
 @Table(name="SETTINGS")
 public class TNMSettings extends TNMObject implements IDGenerator {
-    @Column(name="Setting", nullable = false, unique = true)
+    @Column(name="Setting", nullable = false)
     private String setting;
 
     @Column(name="ENABLED", nullable = true)
     private boolean enable;
 
-    @Column(name="ID")
+    @Column(name="ID", nullable = false, unique = true)
     private String id;
 
     @Column(name="TEXT", nullable = true)
