@@ -47,7 +47,7 @@
                                                 <td th:text="${settings.setting}"></td>
                                                 <td>
                                                     <div class="form-group" th:each="settings: ${settings}">
-                                                        <input type="text" name="id" th:value="${settings.getID}" disabled>
+                                                        <input type="text" class="form-control" name="id" id="id" aria-describedby="id" th:value="${settings.getID}" disabled>
                                                     </div>
                                                 </td>
                                                 <td>
