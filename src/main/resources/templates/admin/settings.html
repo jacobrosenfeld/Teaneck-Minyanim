@@ -40,7 +40,7 @@
                                 </tr>
                                 <form th:action="@{/admin/update-settings}" method="post">
                                     <div class="custom-control custom-switch" th:each="settings: ${settings}">
-                                        <input type="checkbox" class="custom-control-input" id="enableSetting" th:checked="${minyan.enabled}">
+                                        <input type="checkbox" class="custom-control-input" id="enableSetting" th:checked="${settings.enabled}">
                                         <label class="custom-control-label" for="enableSetting">Enable</label>
                                     </div>
                                     
