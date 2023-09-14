@@ -54,6 +54,7 @@
                                                     <div class="form-group">
                                                         <div class="custom-control custom-switch" th:each="settings: ${settings}">
                                                             <input type="checkbox" class="custom-control-input" id="enableSetting" th:checked="${settings.enabled}">
+                                                            <label class="custom-control-label" for="enableSetting">Enable</label>
                                                         </div>
                                                     </div>
                                                 </td>
