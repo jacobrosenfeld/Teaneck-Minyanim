@@ -41,7 +41,8 @@
                                 <form th:action="@{/admin/update-settings}" method="post">
                                     <div class="form-group" th:each="settings: ${settings}">
                                         <label for="${settings.setting}" th:text="${settings.setting}"></label>                                        <div class="custom-control custom-switch" style="z-index: auto;">
-                                            <input type="checkbox" class="custom-control-input" name="rounded" id="rounded"  th:id="${settings.setting}"  th:value="${settings.enabled}">
+                                            <!-- <input type="checkbox" class="custom-control-input" name="rounded" id="rounded"  th:id="${settings.setting}"  th:value="${settings.enabled}"> -->
+                                            <input type="checkbox" class="custom-control-input" name="rounded" id="rounded"  th:id="${settings.setting}">
                                             <label class="custom-control-label" for="rounded" th:text="${settings.setting}"></label>
                                         </div>
                                     </div>
