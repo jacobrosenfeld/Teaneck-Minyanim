@@ -39,17 +39,11 @@
                                     
                                 </tr>
                                 <form th:action="@{/admin/update-settings}" method="post">
-                                    <!-- <div class="form-check form-switch" th:each="settings: ${settings}">
-                                        <input class="form-check-input" type="checkbox" role="switch" th:id="${settings.setting}" checked>
-                                        <label class="form-check-label" for="flexSwitchCheckChecked" th:text="${settings.setting}"></label>
-                                    </div> -->
-                                    <div class="btn-group" role="group" aria-label="Setting Toggle" th:each="settings: ${settings}">
-                                        <input type="radio" class="btn-check" name="btnradio" id="enableSetting" autocomplete="off" th:checked="${settings.enabled}">
-                                        <label class="btn btn-outline-primary" for="enableSetting">Enable</label>
-                                        
-                                        <input type="radio" class="btn-check" name="btnradio" id="disableSetting" autocomplete="off" th:checked="${!settings.enabled}">
-                                        <label class="btn btn-outline-primary" for="disableSetting">Disable</label>
+                                    <div class="custom-control custom-switch" th:each="settings: ${settings}">
+                                        <input type="checkbox" class="custom-control-input" id="enableSetting" th:checked="${minyan.enabled}">
+                                        <label class="custom-control-label" for="enableSetting">Enable</label>
                                     </div>
+                                    
                                     
                                     
                                     <hr>
