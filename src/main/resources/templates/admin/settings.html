@@ -44,7 +44,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group" th:each="settings: ${settings}">
-                                    <input type="hidden" name="id" th:value="${settings.id}">
+                                    <input type="hidden" name="id" th:value="${settings.getID}">
                                 </div>
                                 <div class="form-group" th:each="settings: ${settings}">
                                     <label for="Text">Text</label>
