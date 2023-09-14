@@ -860,7 +860,7 @@ if (this.TNMUserDAO.delete(account)) {
 
     @RequestMapping(value = "/admin/update-settings", method = RequestMethod.POST)
     public ModelAndView updateSettings(
-            @RequestParam(value = "setting", required = true) String setting,
+            @RequestParam(value = "setting", required = false) String setting,
             @RequestParam(value = "enabled", required = false) Boolean newEnabled,
             @RequestParam(value = "ID", required = true) String id,
             @RequestParam(value = "text", required = false) String newText
