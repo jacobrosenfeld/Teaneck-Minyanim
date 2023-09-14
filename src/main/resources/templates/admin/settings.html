@@ -42,13 +42,13 @@
                                     <div class="form-check form-switch" th:each="settings: ${settings}">
                                         <input class="form-check-input" type="checkbox" role="switch" th:id="${settings.setting}" checked>
                                         <label class="form-check-label" for="flexSwitchCheckChecked" th:text="${settings.setting}"></label>
-                                      </div>
-                                    <div class="form-group" th:each="settings: ${settings}">
-                                        <label for="${settings.setting}" th:text="${settings.setting}"></label>                                        <div class="custom-control custom-switch" style="z-index: auto;">
-                                            <!-- <input type="checkbox" class="custom-control-input" name="rounded" id="rounded"  th:id="${settings.setting}"  th:value="${settings.enabled}"> -->
-                                            <input type="checkbox" class="custom-control-input" name="rounded" id="rounded"  th:id="${settings.setting}">
-                                            <label class="custom-control-label" for="rounded" th:text="${settings.setting}"></label>
-                                        </div>
+                                    </div>
+                                    <div class="btn-group" role="group" aria-label="Setting Toggle">
+                                        <input type="radio" class="btn-check" name="btnradio" id="enableSetting" autocomplete="off" th:checked="${minyan.enabled}">
+                                        <label class="btn btn-outline-primary" for="enableSetting">Enable</label>
+                                        
+                                        <input type="radio" class="btn-check" name="btnradio" id="disableSetting" autocomplete="off" th:checked="${!minyan.enabled}">
+                                        <label class="btn btn-outline-primary" for="disableSetting">Disable</label>
                                     </div>
                                     
                                     
