@@ -862,7 +862,7 @@ if (this.TNMUserDAO.delete(account)) {
     public ModelAndView updateSettings(
             @RequestParam(value = "setting", required = false) String setting,
             @RequestParam(value = "enabled", required = false) Boolean newEnabled,
-            @RequestParam(value = "id", required = true) String id,
+            @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "text", required = false) String newText
     ) {
         System.out.println("IM IN THE FUNCTION");
