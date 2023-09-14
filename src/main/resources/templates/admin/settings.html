@@ -32,7 +32,7 @@
 
                     <div class="row my-4" style="padding-bottom: 60px">
                         <div class="col-lg-9 col-md-8">
-                            <!-- <div class="table-responsive">
+                            <div class="table-responsive">
                                 <form th:action="@{/admin/update-settings}" method="post">
                                 <tr>
                                     <div class="form-group" th:each="settings: ${settings}">
@@ -52,34 +52,24 @@
                                     <input type="text" class="form-control" name="text" id="text" aria-describedby="txt" th:value="${settings.text}">
                                 </div>
                                 </tr>
-                            </div> -->
-                                <div class="table-responsive">
-                                    <form th:action="@{/admin/update-settings}" method="post">
-                                        <input type="hidden" name="id" th:value="${settings.getid}">
-                                        <div class="form-group">
-                                            <label for="name">Setting</label>
-                                            <input type="text" class="form-control" name="name" id="name" aria-describedby="name-help" required th:value="${settings.setting}">
-                                            <small id="name-help" class="form-text text-muted">This is the public display name for the organization.</small>
-                                        </div>
-                                        <div class="form-group">
-                                            <div class="custom-control custom-switch" th:each="settings: ${settings}">
-                                                <input type="checkbox" class="custom-control-input" id="enableSetting" th:checked="${settings.enabled}">
-                                                <label class="custom-control-label" for="enableSetting">Enable</label>
-                                            </div>
-                                        </div>
-                                        <div class="form-group" th:each="settings: ${settings}">
-                                            <label for="Text">Text</label>
-                                            <input type="text" class="form-control" name="text" id="text" aria-describedby="txt" th:value="${settings.text}">
-                                        </div>
-                                        <div class="login-msg-box" th:if="${updateError}" style="padding-bottom: 8px">
-                                            <div class="form-msg-fatal" th:text="${updateError}"></div>
-                                        </div>
-                                        <!--                                    <div class="login-msg-box" th:if="${mainSuccess}" style="padding-bottom: 8px">-->
-                                        <!--                                        <div class="form-msg-success" th:text="${mainSuccess}"></div>-->
-                                        <!--                                    </div>-->
-                                        <button type="submit" class="btn btn-primary">Update</button>
-                                    </form>
-                                </div>
+                                
+                                    
+                                    
+                                    <hr>
+                                    <!--                                    <div class="form-group">-->
+                                    <!--                                        <label for="site-url">Website</label>-->
+                                    <!--                                        <input type="text" class="form-control" name="site-url" id="site-url" aria-describedby="site-url" th:value="${organization.websiteURI}">-->
+                                    <!--                                        <small id="site-url-help" class="form-text text-muted">This website link will be displayed publically.</small>-->
+                                    <!--                                    </div>-->
+                                    <div class="login-msg-box" th:if="${updateError}" style="padding-bottom: 8px">
+                                        <div class="form-msg-fatal" th:text="${updateError}"></div>
+                                    </div>
+                                    <!--                                    <div class="login-msg-box" th:if="${mainSuccess}" style="padding-bottom: 8px">-->
+                                    <!--                                        <div class="form-msg-success" th:text="${mainSuccess}"></div>-->
+                                    <!--                                    </div>-->
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                </form>
+                            </div>
 
                             <hr>
 
