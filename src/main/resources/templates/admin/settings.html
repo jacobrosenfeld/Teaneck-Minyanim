@@ -34,7 +34,7 @@
                         <div class="col-lg-9 col-md-8">
                             <div class="table-responsive">
                                 <form th:action="@{/admin/update-settings}" method="post">
-                                <tr>
+                                <td>
                                 <div class="form-group" th:each="settings: ${settings}">
                                     <td th:text="${settings.setting}"></td>
                                 </div>
@@ -51,7 +51,7 @@
                                     <label for="Text">Text</label>
                                     <input type="text" class="form-control" name="text" id="text" aria-describedby="txt" th:value="${settings.text}">
                                 </div>
-                                </tr>
+                                </td>
                                 
                                     
                                     
