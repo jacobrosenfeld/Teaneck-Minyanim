@@ -861,11 +861,12 @@ if (this.TNMUserDAO.delete(account)) {
     @RequestMapping(value = "/admin/update-settings", method = RequestMethod.POST)
     public ModelAndView updateSettings(
             @RequestParam(value = "setting", required = true) String setting,
-            @RequestParam(value = "enabled", required = true) Boolean newEnabled,
-            @RequestParam(value = "ID", required = true) String id
+            @RequestParam(value = "enabled", required = false) Boolean newEnabled,
+            @RequestParam(value = "ID", required = true) String id,
+            @RequestParam(value = "text", required = false) String newText
     ) {
         System.out.println("IM IN THE FUNCTION");
-            TNMSettings updatedSetting = new TNMSettings(setting, newEnabled, id);
+            TNMSettings updatedSetting = new TNMSettings(setting, newEnabled, id, newText);
             return settings ("Successfully updated setting with name '" + updatedSetting.getSetting() + "'.", null);
     }
 
