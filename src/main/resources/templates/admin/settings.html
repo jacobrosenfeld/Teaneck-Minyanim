@@ -34,7 +34,7 @@
                         <div class="col-lg-9 col-md-8">
                             <div class="table-responsive">
                                 <form th:action="@{/admin/update-settings}" method="post">
-                                <td class="form-group" th:each="settings: ${settings}">
+                                <tr class="form-group" th:each="settings: ${settings}">
                                     <tr th:text="${settings.setting}"></tr>
                                     <tr>
                                         <div class="custom-control custom-switch" th:each="settings: ${settings}">
@@ -43,7 +43,7 @@
                                         </div>
                                     </tr>
                                     <tr th:text="${settings.id}"></tr>
-                                </td>
+                                </tr>
                             
                                     
                                     
