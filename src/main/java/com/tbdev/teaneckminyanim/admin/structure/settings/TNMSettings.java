@@ -16,16 +16,21 @@ public class TNMSettings extends TNMObject implements IDGenerator {
     @Column(name="ID")
     private String ID;
 
-    public TNMSettings(String setting, boolean enable, String ID) {
+    @Column(name="TEXT", nullable = true)
+    private String text;
+
+    public TNMSettings(String setting, boolean enable, String ID, String text) {
         super.id = ID;
         this.setting = setting;
         this.enable = enable;
+        this.text = text;
     }
 
-    public TNMSettings(String setting, boolean enable) {
+    public TNMSettings(String setting, boolean enable, String text) {
         super.id = generateID('S');
         this.setting = setting;
         this.enable = enable;
+        this.text = text;
     }
 
     public String getSetting() {
@@ -38,5 +43,9 @@ public class TNMSettings extends TNMObject implements IDGenerator {
 
     public String getID() {
         return ID;
+    }
+
+    public String getText() {
+        return text;
     }
 }
