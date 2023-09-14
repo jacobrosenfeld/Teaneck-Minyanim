@@ -33,7 +33,41 @@
                     <div class="row my-4" style="padding-bottom: 60px">
                         <div class="col-lg-9 col-md-8">
                             <div class="table-responsive">
-                                <form th:action="@{/admin/update-settings}" method="post">
+                                <table class="table">
+                                    <thead class="thead-inverse">
+                                        <tr>
+                                            <th>Setting</th>
+                                            <th>Enabled</th>
+                                            <th>Text</th>
+                                    </thead>
+                                    <tbody>
+                                        <form th:action="@{/admin/update-settings}" method="post"></form>
+                                            <tr th:each="settings: ${settings}">
+                                                <td th:text="${settings.setting}"></td>
+                                                <td th:text="${settings.getid}">
+                                                    <div class="form-group" th:each="settings: ${settings}">
+                                                        <input type="hidden" name="id" th:value="${settings.getID}">
+                                                    </div>
+                                                </td>
+                                                <td th:text="${settings.enabled}">
+                                                    <div class="form-group">
+                                                        <div class="custom-control custom-switch" th:each="settings: ${settings}">
+                                                            <input type="checkbox" class="custom-control-input" id="enableSetting" th:checked="${settings.enabled}">
+                                                            <label class="custom-control-label" for="enableSetting">Enable</label>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td th:text="${settings.text}">
+                                                    <div class="form-group" th:each="settings: ${settings}">
+                                                        <label for="Text">Text</label>
+                                                        <input type="text" class="form-control" name="text" id="text" aria-describedby="txt" th:value="${settings.text}">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </form>
+                                    </tbody>
+                                </table>
+                                <!-- <form th:action="@{/admin/update-settings}" method="post">
                                 <tr>
                                     <div class="form-group" th:each="settings: ${settings}">
                                     <td th:text="${settings.setting}"></td>
@@ -55,7 +89,7 @@
                                 
                                     
                                     
-                                    <hr>
+                                    <hr> -->
                                     <!--                                    <div class="form-group">-->
                                     <!--                                        <label for="site-url">Website</label>-->
                                     <!--                                        <input type="text" class="form-control" name="site-url" id="site-url" aria-describedby="site-url" th:value="${organization.websiteURI}">-->
