@@ -51,7 +51,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
 
     @Override
     public List<TNMSettings> getAll() {
-        String sql = "SELECT SETTING, ENABLED, ID FROM SETTINGS";
+        String sql = "SELECT SETTING, ENABLED, ID, TEXT FROM SETTINGS";
         
         TNMSettingsMapper mapper = new TNMSettingsMapper();
 
