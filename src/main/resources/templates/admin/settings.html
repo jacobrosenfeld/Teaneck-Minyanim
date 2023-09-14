@@ -36,11 +36,12 @@
                                 <tr class="form-group" th:each="settings: ${settings}">
                                     <td th:text="${settings.setting}"></td>
                                     <td th:text="${settings.enabled}"></td>
+                                    
                                 </tr>
                                 <form th:action="@{/admin/update-settings}" method="post">
                                     <div class="form-group" th:each="settings: ${settings}">
                                         <label for="username">Setting</label>
-                                        <input type="checkbox" class="form-control" th:name="${settings.setting}" th:id="${settings.setting}"  th:value="${settings.enabled}">
+                                        <input type="checkbox" class="form-control" th:name="${settings.setting}" th:id="${settings.setting}"  th:value="${settings.enabled}" checked data-toggle="toggle">
                                     </div>
                                     
                                     
