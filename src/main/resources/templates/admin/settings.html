@@ -44,9 +44,9 @@
                                         <form th:action="@{/admin/update-settings}" method="post"></form>
                                             <tr th:each="settings: ${settings}">
                                                 <td th:text="${settings.setting}"></td>
-                                                <td th:text="${settings.getID}">
+                                                <td th:text="${settings.getid}">
                                                     <div class="form-group" th:each="settings: ${settings}">
-                                                        <input type="hidden" name="id" th:value="${settings.getID}">
+                                                        <input type="text" name="id" th:value="${settings.getID}" disabled>
                                                     </div>
                                                 </td>
                                                 <td th:text="${settings.enabled}">
