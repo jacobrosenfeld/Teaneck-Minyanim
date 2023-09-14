@@ -47,20 +47,20 @@
                                                 <td th:text="${settings.setting}"></td>
                                                 <td>
                                                     <div class="form-group" th:each="settings: ${settings}">
-                                                        <input type="text" class="form-control" name="id" id="id" aria-describedby="id" th:value="${settings.id}" disabled>
+                                                        <input type="text" class="form-control" name="id" id="id" aria-describedby="id" th:field="${settings.id}" disabled>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div class="form-group">
                                                         <div class="custom-control custom-switch" th:each="settings: ${settings}">
-                                                            <input type="checkbox" class="custom-control-input" id="enableSetting" th:checked="${settings.enabled}">
+                                                            <input type="checkbox" class="custom-control-input" id="enableSetting" th:field="${settings.enabled}">
                                                             <label class="custom-control-label" for="enableSetting">Enable</label>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div class="form-group" th:each="settings: ${settings}">
-                                                        <input type="text" class="form-control" name="text" id="text" aria-describedby="txt" th:value="${settings.text}">
+                                                        <input type="text" class="form-control" name="text" id="text" aria-describedby="txt" th:field="${settings.text}">
                                                     </div>
                                                 </td>
                                             </tr>
