@@ -69,7 +69,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
 
     @Override
     public boolean save(TNMSettings setting) {
-        String sql = String.format("INSERT INTO SETTINGS VALUES ('%s', '%d')", setting.getSetting(), setting.getEnabled(), setting.getID());
+        String sql = String.format("INSERT INTO SETTINGS VALUES ('%s', '%d')", setting.getSetting(), setting.getEnabled(), setting.getID(), setting.getText());
 
         try {
             this.getConnection().createStatement().executeUpdate(sql);
@@ -99,7 +99,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
             String sql = "UPDATE SETTINGS SET SETTING='%s', ENABLED='%D', ID='%s' WHERE ID='%s';";
 
 
-            getConnection().createStatement().executeUpdate(String.format(sql, objectToUpdate.getSetting(), objectToUpdate.getEnabled(), objectToUpdate.getId()));
+            getConnection().createStatement().executeUpdate(String.format(sql, objectToUpdate.getSetting(), objectToUpdate.getEnabled(), objectToUpdate.getId(), objectToUpdate.getText()));
             return true;
         } catch (Exception e) {
             e.printStackTrace();
