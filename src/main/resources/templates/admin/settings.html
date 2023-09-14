@@ -37,6 +37,7 @@
                                     <thead class="thead-inverse">
                                         <tr>
                                             <th>Setting</th>
+                                            <th>ID</th>
                                             <th>Enabled</th>
                                             <th>Text</th>
                                     </thead>
@@ -44,12 +45,12 @@
                                         <form th:action="@{/admin/update-settings}" method="post"></form>
                                             <tr th:each="settings: ${settings}">
                                                 <td th:text="${settings.setting}"></td>
-                                                <td th:text="${settings.getID}">
+                                                <td>
                                                     <div class="form-group" th:each="settings: ${settings}">
                                                         <input type="text" name="id" th:value="${settings.getID}" disabled>
                                                     </div>
                                                 </td>
-                                                <td th:text="${settings.enabled}">
+                                                <td>
                                                     <div class="form-group">
                                                         <div class="custom-control custom-switch" th:each="settings: ${settings}">
                                                             <input type="checkbox" class="custom-control-input" id="enableSetting" th:checked="${settings.enabled}">
@@ -57,7 +58,7 @@
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td th:text="${settings.text}">
+                                                <td>
                                                     <div class="form-group" th:each="settings: ${settings}">
                                                         <label for="Text">Text</label>
                                                         <input type="text" class="form-control" name="text" id="text" aria-describedby="txt" th:value="${settings.text}">
