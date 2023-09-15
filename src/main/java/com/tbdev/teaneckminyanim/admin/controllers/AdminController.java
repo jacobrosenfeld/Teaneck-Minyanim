@@ -866,9 +866,13 @@ if (this.TNMUserDAO.delete(account)) {
             @RequestParam(value = "text", required = false) String newText
     ) {
         System.out.println("IM IN THE FUNCTION");
-        // TNMSettings updatedSetting = tnmsettingsDAO.findById(id);    
-        TNMSettings updatedSetting = new TNMSettings(setting, newEnabled, id, newText);
-        return settings ("Successfully updated setting with name '" + updatedSetting.getSetting() + "'.", null);
+        TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);    
+        
+        String SettingId = settingtoUpdate.getId();
+        
+
+        TNMSettings settings = new TNMSettings(setting, newEnabled, SettingId, newText);
+        return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
     }
 
     @RequestMapping(value = "/admin/{oid}/locations", method = RequestMethod.GET)
