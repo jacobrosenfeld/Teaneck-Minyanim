@@ -134,7 +134,7 @@
                         <div class="form-group">
                             <div class="custom-control custom-switch" th:each="settings: ${settings}">
                                 <input type="checkbox" class="custom-control-input" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:checked="${settings.enabled}">
-                                <label class="custom-control-label" for="enableSetting">Enable</label>
+                                <label class="custom-control-label" for="new-enabled">Enable</label>
                             </div>
                         </div>
                         <div class="form-group">
