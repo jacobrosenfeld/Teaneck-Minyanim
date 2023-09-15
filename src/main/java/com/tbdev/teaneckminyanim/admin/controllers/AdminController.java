@@ -45,7 +45,7 @@ public class AdminController {
     private MinyanDAO minyanDAO;
 
     @Autowired
-    private TNMSettingsDAO TNMsettingsDAO;
+    private TNMSettingsDAO tnmsettingsDAO;
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | hh:mm aa");
     TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
@@ -186,7 +186,7 @@ public class AdminController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/settings");
 
-        List<TNMSettings> settings = this.TNMsettingsDAO.getAll();
+        List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
         mv.addObject("settings", settings);
 
         addStandardPageData(mv);
@@ -862,12 +862,13 @@ if (this.TNMUserDAO.delete(account)) {
     public ModelAndView updateSettings(
             @RequestParam(value = "setting", required = false) String setting,
             @RequestParam(value = "enabled", required = false) Boolean newEnabled,
-            @RequestParam(value = "id", required = false) String id,
+            @RequestParam(value = "id", required = true) String id,
             @RequestParam(value = "text", required = false) String newText
     ) {
         System.out.println("IM IN THE FUNCTION");
-            TNMSettings updatedSetting = new TNMSettings(setting, newEnabled, id, newText);
-            return settings ("Successfully updated setting with name '" + updatedSetting.getSetting() + "'.", null);
+        // TNMSettings updatedSetting = tnmsettingsDAO.findById(id);    
+        TNMSettings updatedSetting = new TNMSettings(setting, newEnabled, id, newText);
+        return settings ("Successfully updated setting with name '" + updatedSetting.getSetting() + "'.", null);
     }
 
     @RequestMapping(value = "/admin/{oid}/locations", method = RequestMethod.GET)
@@ -915,7 +916,9 @@ if (this.TNMUserDAO.delete(account)) {
     }
 
     @RequestMapping(value = "/admin/update-location", method = RequestMethod.POST)
-    public ModelAndView updateLocation(@RequestParam(value = "id", required = true) String id, @RequestParam(value = "name", required = true) String newName) {
+    public ModelAndView updateLocation(
+        @RequestParam(value = "id", required = true) String id,
+        @RequestParam(value = "name", required = true) String newName) {
         Location locationToUpdate = locationDAO.findById(id);
         if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(locationToUpdate.getOrganizationId())) {
             throw new AccessDeniedException("You do not have permission to update a location for this organization.");
