@@ -870,7 +870,11 @@ if (this.TNMUserDAO.delete(account)) {
         // String SettingId = settingtoUpdate.getId();
 
         TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText);
-        return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
+        if (tnmsettingsDAO.update(settings)) {
+            return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
+        } else {
+            return settings (null, "Sorry, an error occurred. The setting could not be updated.");
+        }
     }
 
     @RequestMapping(value = "/admin/{oid}/locations", method = RequestMethod.GET)
