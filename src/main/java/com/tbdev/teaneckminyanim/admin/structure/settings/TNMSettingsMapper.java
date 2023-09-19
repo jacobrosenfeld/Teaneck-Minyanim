@@ -25,7 +25,7 @@ public class TNMSettingsMapper implements RowMapper<TNMSettings>, Serializable {
     public TNMSettings mapRow(Map<String, Object> m) {
 
         String setting = (String) m.get("SETTING");
-        Boolean enabled = Boolean.valueOf(m.get("ENABLED").toString());
+        Boolean enabled = (Boolean) m.get("ENABLED");
         String id = (String) m.get("ID");
         String text = (String) m.get("TEXT");
 
