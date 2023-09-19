@@ -126,7 +126,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" th:action="@{/admin/update-settings}">
+                    <form method="post" th:action="@{/admin/update-settings/}">
                         <div class="form-group">
                             <input hidden name="id" th:value="${settings.id}">
                             <td th:text="${settings.setting}"></td>
