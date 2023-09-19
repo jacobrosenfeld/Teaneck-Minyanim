@@ -865,13 +865,11 @@ if (this.TNMUserDAO.delete(account)) {
             @RequestParam(value = "id", required = true) String id,
             @RequestParam(value = "text", required = false) String newText
     ) {
-        System.out.println("IM IN THE FUNCTION");
         TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);    
         
-        String SettingId = settingtoUpdate.getId();
-        
+        // String SettingId = settingtoUpdate.getId();
 
-        TNMSettings settings = new TNMSettings(setting, newEnabled, SettingId, newText);
+        TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText);
         return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
     }
 
