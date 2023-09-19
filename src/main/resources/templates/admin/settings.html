@@ -51,7 +51,7 @@
                                                         <input type="checkbox" class="custom-control-input" id="enableSetting" th:checked="${settings.enabled}" disabled>
                                                         <label class="custom-control-label" for="enableSetting">Enable</label>
                                                     </div>
-                                                    <!-- <button type="button" class="btn btn-secondary" disabled th:if="${settings.enabled} = 'null'">N/A</button> -->
+                                                    <button type="button" class="btn btn-secondary" disabled th:if="${settings.enabled} = 'null'">N/A</button>
                                                 </td>
                                                 <td th:text="${settings.text}" />
                                                 <td>
