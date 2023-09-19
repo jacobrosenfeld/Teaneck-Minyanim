@@ -47,10 +47,12 @@
                                                 <td th:text="${settings.setting}" />
                                                 <td th:text="${settings.id}" />
                                                 <td>
-                                                    <div class="custom-control custom-switch" th:each="settings: ${settings}" th:if="${settings.enabled} != 'null'">
+                                                    <!-- <div class="custom-control custom-switch" th:each="settings: ${settings}" th:if="${settings.enabled} != 'null'">
                                                         <input type="checkbox" class="custom-control-input" id="enableSetting" th:checked="${settings.enabled}" disabled>
                                                         <label class="custom-control-label" for="enableSetting">Enable</label>
-                                                    </div>
+                                                    </div> -->
+                                                    <button type="button" class="btn btn-outline-success" disabled th:if="${settings.enabled} == 'true'">Enabled</button>
+                                                    <button type="button" class="btn btn-outline-danger"disabled th:if="${settings.enabled} == 'false'">Disabled</button>
                                                     <button type="button" class="btn btn-secondary" disabled th:if="${settings.enabled} == 'null'">N/A</button>
                                                 </td>
                                                 <td th:text="${settings.text}" />
