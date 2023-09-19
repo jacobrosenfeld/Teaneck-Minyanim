@@ -940,6 +940,7 @@ if (this.TNMUserDAO.delete(account)) {
         }
     }
 
+
     @RequestMapping(value = "/admin/delete-location")
     public ModelAndView deleteLocation(@RequestParam(value = "id", required = true) String id) {
         Location locationToDelete = locationDAO.findById(id);
