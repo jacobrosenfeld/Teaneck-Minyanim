@@ -48,4 +48,5 @@ public class TNMSettings extends TNMObject implements IDGenerator {
     public String getText() {
         return text;
     }
+
 }
