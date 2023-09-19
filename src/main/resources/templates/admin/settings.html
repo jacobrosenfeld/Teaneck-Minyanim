@@ -131,7 +131,7 @@
                             <input hidden name="id" th:value="${settings.id}">
                             <td th:text="${settings.setting}"></td>
                             <div class="custom-control custom-switch" th:each="settings: ${settings}">
-                                <input type="checkbox" class="custom-control-input" name="enabled" style="z-index: 99;" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:checked="${settings.enabled}">
+                                <input type="checkbox" class="custom-control-input" name="enabled" style="z-index: 99;" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:checked="${settings?.enabled}">
                                 <label class="custom-control-label" for="new-enabled">Enable</label>
                             </div>
                             <input type="text" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
