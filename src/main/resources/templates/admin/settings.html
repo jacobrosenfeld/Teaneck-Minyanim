@@ -127,19 +127,17 @@
                 </div>
                 <div class="modal-body">
                     <form method="post" th:action="@{/admin/update-settings}">
-                        <input hidden name="id" th:value="${settings.id}">
-                        <td th:text="${settings.setting}"></td>
                         <div class="form-group">
+                            <input hidden name="id" th:value="${settings.id}">
+                            <td th:text="${settings.setting}"></td>
                             <div class="custom-control custom-switch" th:each="settings: ${settings}">
-                                <input type="checkbox" class="custom-control-input" name="enabled" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:value="${settings.enabled}">
+                                <input type="checkbox" class="custom-control-input" name="enabled" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:checked="${settings.enabled}">
                                 <label class="custom-control-label" for="new-enabled">Enable</label>
                             </div>
-                        </div>
-                        <div class="form-group">
                             <input type="text" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
                         </div>
                         <hr>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
                     </form>
                 </div>
             </div>
