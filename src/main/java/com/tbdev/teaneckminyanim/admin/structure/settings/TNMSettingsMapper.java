@@ -26,10 +26,11 @@ public class TNMSettingsMapper implements RowMapper<TNMSettings>, Serializable {
 
         String setting = (String) m.get("SETTING");
         Boolean enabled = m.get("ENABLED") != null ? Boolean.valueOf(m.get("ENABLED").toString()) : null;
+        String enabledAsString = enabled != null ? enabled.toString() : "null";
         String id = (String) m.get("ID");
         String text = (String) m.get("TEXT");
 
-        return new TNMSettings(setting, enabled, id, text);
+        return new TNMSettings(setting, enabledAsString, id, text);
     }
 
 }
