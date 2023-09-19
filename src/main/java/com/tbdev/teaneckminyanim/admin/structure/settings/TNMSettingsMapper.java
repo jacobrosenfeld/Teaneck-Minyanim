@@ -13,14 +13,15 @@ public class TNMSettingsMapper implements RowMapper<TNMSettings>, Serializable {
 
     @Override
     public TNMSettings mapRow(ResultSet rs, int rowNum) throws SQLException {
-
         String setting = rs.getString("SETTING");
-        Boolean enabled = rs.getBoolean("ENABLED");
+        boolean enabled = rs.getBoolean("ENABLED");
         String id = rs.getString("ID");
         String text = rs.getString("TEXT");
-
-        return new TNMSettings(setting, enabled, id, text);
+        String enabledAsString = enabled ? "true" : "null";
+    
+        return new TNMSettings(setting, enabledAsString, id, text);
     }
+    
 
     public TNMSettings mapRow(Map<String, Object> m) {
 
