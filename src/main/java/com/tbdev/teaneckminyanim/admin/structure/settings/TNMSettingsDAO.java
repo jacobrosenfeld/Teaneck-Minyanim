@@ -51,7 +51,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
 
     @Override
     public List<TNMSettings> getAll() {
-        String sql = "SELECT SETTING, ENABLED, ID, TEXT FROM SETTINGS";
+        String sql = "SELECT SETTING, ENABLED, ID, TEXT, TYPE FROM SETTINGS";
         
         TNMSettingsMapper mapper = new TNMSettingsMapper();
 
@@ -69,7 +69,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
 
     @Override
     public boolean save(TNMSettings setting) {
-        String sql = String.format("INSERT INTO SETTINGS VALUES ('%s', '%d')", setting.getSetting(), setting.getEnabled(), setting.getID(), setting.getText());
+        String sql = String.format("INSERT INTO SETTINGS VALUES ('%s', '%d')", setting.getSetting(), setting.getEnabled(), setting.getID(), setting.getText(), setting.getType());
 
         try {
             this.getConnection().createStatement().executeUpdate(sql);
@@ -99,7 +99,7 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
             String sql = "UPDATE SETTINGS SET ENABLED=%b, TEXT='%s' WHERE ID='%s';";
 
 
-            getConnection().createStatement().executeUpdate(String.format(sql, settingtoUpdate.getEnabled(), settingtoUpdate.getText(), settingtoUpdate.getId()));
+            getConnection().createStatement().executeUpdate(String.format(sql, settingtoUpdate.getEnabled(), settingtoUpdate.getText(), settingtoUpdate.getId(), settingtoUpdate.getType()));
             return true;
         } catch (Exception e) {
             e.printStackTrace();
