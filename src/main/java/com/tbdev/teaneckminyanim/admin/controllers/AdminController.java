@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -872,7 +873,9 @@ if (this.TNMUserDAO.delete(account)) {
 
         TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText, type);
         if (tnmsettingsDAO.update(settings)) {
-            return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
+            // return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
+            RedirectView redirectView = new RedirectView("/settings", true);
+        return new ModelAndView(redirectView);
         } else {
             return settings (null, "Sorry, an error occurred. The setting could not be updated.");
         }
