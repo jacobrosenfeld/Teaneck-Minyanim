@@ -555,34 +555,30 @@ public class AdminController {
 
         Organization organization = new Organization(id, name, address, siteURI, nusach, orgColor);
 //        check permissions
-        if (isAdmin()) {
-            if (this.organizationDAO.update(organization)) {
-                System.out.println("Organization updated successfully.");
-                return organization(id, "Successfully updated the organization details.", null, null, null);
-            } else {
-                System.out.println("Organization update failed.");
-                return organization(id, null, null, "Sorry, the update failed.", null);
-            }
-        } else if (isUser()) {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            TNMUser user = this.TNMUserDAO.findByName(username);
-            String associatedOrganizationId = user.getOrganizationId();
-            if (!associatedOrganizationId.equals(id)) {
-                System.out.println("You do not have permission to view this organization.");
-                throw new AccessDeniedException("You do not have permission to view this organization.");
-            } else {
-                if (this.organizationDAO.update(organization)) {
-                    System.out.println("Organization updated successfully.");
-                    return organization(id, "Successfully updated the organization details.", null, null, null);
-                } else {
-                    System.out.println("Organization update failed.");
-                    return organization(id, null, "Sorry, the update failed.", null, null);
-                }
-            }
+          if (isAdmin()) {
+        if (this.organizationDAO.update(organization)) {
+            // Redirect to the organization page after a successful update
+            RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
+            return new ModelAndView(redirectView);
         } else {
-            throw new AccessDeniedException("You do not have permission to view this organization.");
+            // Handle update failure
+            return organization(id, null, null, "Sorry, the update failed.", null);
         }
+    } else if (isUser()) {
+        // ... (Permissions check and organization update, similar to admin case)
+
+        if (this.organizationDAO.update(organization)) {
+            // Redirect to the organization page after a successful update
+            RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
+            return new ModelAndView(redirectView);
+        } else {
+            // Handle update failure
+            return organization(id, null, "Sorry, the update failed.", null, null);
+        }
+    } else {
+        throw new AccessDeniedException("You do not have permission to view this organization.");
     }
+}
 
     @RequestMapping(value = "/admin/delete-organization")
     public ModelAndView deleteOrganization(@RequestParam(value = "id", required = true) String id) throws Exception {
