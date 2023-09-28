@@ -17,10 +17,11 @@ public class TNMSettingsMapper implements RowMapper<TNMSettings>, Serializable {
         Boolean enabled = rs.getBoolean("ENABLED"); // Use Boolean, not boolean
         String id = rs.getString("ID");
         String text = rs.getString("TEXT");
+        String type = rs.getString("TYPE");
     
         String enabledAsString = (enabled != null) ? enabled.toString() : "null";
     
-        return new TNMSettings(setting, enabledAsString, id, text);
+        return new TNMSettings(setting, enabledAsString, id, text, type);
     }
     
     
@@ -32,8 +33,9 @@ public class TNMSettingsMapper implements RowMapper<TNMSettings>, Serializable {
         String enabledAsString = enabled != null ? enabled.toString() : "null";
         String id = (String) m.get("ID");
         String text = (String) m.get("TEXT");
+        String type = (String) m.get("TYPE");
 
-        return new TNMSettings(setting, enabledAsString, id, text);
+        return new TNMSettings(setting, enabledAsString, id, text, type);
     }
 
 }
