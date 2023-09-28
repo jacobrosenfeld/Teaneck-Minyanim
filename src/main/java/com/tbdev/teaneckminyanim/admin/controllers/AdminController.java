@@ -874,8 +874,8 @@ if (this.TNMUserDAO.delete(account)) {
         TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText, type);
         if (tnmsettingsDAO.update(settings)) {
             // return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
-            RedirectView redirectView = new RedirectView("/settings", true);
-        return new ModelAndView(redirectView);
+            RedirectView redirectView = new RedirectView("/admin/settings", true);
+            return new ModelAndView(redirectView);
         } else {
             return settings (null, "Sorry, an error occurred. The setting could not be updated.");
         }
