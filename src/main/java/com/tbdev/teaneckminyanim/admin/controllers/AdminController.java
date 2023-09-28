@@ -863,13 +863,14 @@ if (this.TNMUserDAO.delete(account)) {
             @RequestParam(value = "setting", required = false) String setting,
             @RequestParam(value = "enabled", required = false) String newEnabled,
             @RequestParam(value = "id", required = true) String id,
-            @RequestParam(value = "text", required = false) String newText
+            @RequestParam(value = "text", required = false) String newText,
+            @RequestParam(value = "type", required = false) String type
     ) {
         TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);    
         
         // String SettingId = settingtoUpdate.getId();
 
-        TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText);
+        TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText, type);
         if (tnmsettingsDAO.update(settings)) {
             return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
         } else {
