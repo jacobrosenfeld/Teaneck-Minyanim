@@ -133,7 +133,7 @@
                                 <input type="checkbox" class="custom-control-input" name="enabled" style="z-index: 99;" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:checked="${settings?.enabled}">
                                 <label class="custom-control-label" for="new-enabled">Enable</label>
                             </div>
-                            <input th:type="${settings.enabled}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
+                            <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
                         </div>
                         <hr>
                         <button type="submit" class="btn btn-primary">Save</button>
