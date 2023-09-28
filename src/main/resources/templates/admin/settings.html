@@ -128,13 +128,19 @@
                     <form method="post" th:action="@{/admin/update-settings}">
                         <div class="form-group">
                             <input hidden name="id" th:value="${settings.id}">
-                            <td><h4 th:text="${settings.setting}" /></td>
-                            <div class="custom-control custom-switch" th:each="settings: ${settings}" th:if="${settings.enabled} != 'null'">
-                                <input type="checkbox" class="custom-control-input" name="enabled" style="z-index: 99;" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:checked="${settings?.enabled}">
-                                <label class="custom-control-label" for="new-enabled">Enable</label>
+                            <td>
+                                <h4 th:text="${settings.setting}" />
+                            </td>
+                            <td>
+                                <div class="custom-control custom-switch" th:each="settings: ${settings}" th:if="${settings.enabled} != 'null'">
+                                    <input type="checkbox" class="custom-control-input" name="enabled" style="z-index: 99;" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:checked="${settings?.enabled}">
+                                    <label class="custom-control-label" for="new-enabled">Enable</label>
+                                </div>
+                            </td>
+                            <td>
+                                <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
+                            </td>
                             </div>
-                            <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
-                        </div>
                         <hr>
                         <button type="submit" class="btn btn-primary">Save</button>
                     </form>
