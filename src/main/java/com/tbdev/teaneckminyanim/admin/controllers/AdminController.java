@@ -872,11 +872,12 @@ if (this.TNMUserDAO.delete(account)) {
             @RequestParam(value = "type", required = false) String type
     ) {
         TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);    
-        
-        // Check if newEnabled is "null" and set it to actual null in that case
+
+            // Check if newEnabled is "null" and set it to actual null in that case
         if ("null".equals(newEnabled)) {
         newEnabled = null;
         }
+
 
         TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText, type);
         if (tnmsettingsDAO.update(settings)) {
