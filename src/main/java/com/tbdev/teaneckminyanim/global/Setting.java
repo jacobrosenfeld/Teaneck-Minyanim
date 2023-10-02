@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static com.tbdev.teaneckminyanim.admin.structure.Role.ADMIN;
 
 @Controller
-public class SettingController {
+public class Setting {
 
     @Autowired
     private TNMSettingsDAO tnmsettingsDAO;

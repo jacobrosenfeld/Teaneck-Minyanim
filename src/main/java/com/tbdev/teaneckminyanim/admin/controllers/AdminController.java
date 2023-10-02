@@ -177,13 +177,13 @@ public class AdminController {
         return mv;
     }
 
-    // @ModelAttribute("settings")
-    // public List<TNMSettings> settings() {
-    //     // Load and return the settings here
-    //     List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
-    //     Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
-    //     return settings;
-    // }
+    @ModelAttribute("settings")
+    public List<TNMSettings> settings() {
+        // Load and return the settings here
+        List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
+        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
+        return settings;
+    }
 
     @GetMapping("/admin/settings")
     public ModelAndView settings(String successMessage, String errorMessage) {
