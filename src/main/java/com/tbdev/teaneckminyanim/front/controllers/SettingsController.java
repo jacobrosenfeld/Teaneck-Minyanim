@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 
 @Controller
-public class Settings {
+public class SettingsController {
 
     @Autowired
     private TNMSettingsDAO tnmsettingsDAO;
