@@ -1,4 +1,4 @@
-package com.tbdev.teaneckminyanim.global;
+package com.tbdev.teaneckminyanim.front.controllers;
 
 import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettings;
 import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettingsDAO;
@@ -20,7 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.tbdev.teaneckminyanim.admin.structure.Role.ADMIN;
 
 @Controller
 public class Setting {
