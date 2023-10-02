@@ -105,17 +105,17 @@
                                 <h4 th:text="${settings.setting}" />
                             </td>
                             <td>
-                                <div class="custom-control custom-switch" th:each="setting : ${settings}" th:if="${setting.enabled} != 'null'">
+                                <div class="custom-control custom-switch" th:each="settings : ${settings}" th:if="${settings.enabled} != 'null'">
                                     <input type="checkbox" class="custom-control-input" name="enabled" style="z-index: 99;"
-                                           th:id="${'new-enabled-' + setting.id}" th:aria-describedby="${'new-enabled-help-' + setting.id}"
-                                           th:checked="${setting.enabled == 'true'}">
-                                    <label class="custom-control-label" for="${'new-enabled-' + setting.id}">Enable</label>
+                                           th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}"
+                                           th:checked="${settings.enabled == 'true'}">
+                                    <label class="custom-control-label" for="${'new-enabled-' + settings.id}">Enable</label>
                                 </div>
-                                <div class="custom-control custom-switch" th:if="${setting.enabled} == 'null'">
+                                <div class="custom-control custom-switch" th:if="${settings.enabled} == 'null'">
                                     <input type="checkbox" class="custom-control-input" name="enabled" style="z-index: 99;"
-                                           th:id="${'new-enabled-' + setting.id}" th:aria-describedby="${'new-enabled-help-' + setting.id}"
+                                           th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}"
                                            th:checked="null">
-                                    <label class="custom-control-label" for="${'new-enabled-' + setting.id}">Null</label>
+                                    <label class="custom-control-label" for="${'new-enabled-' + settings.id}">Null</label>
                                 </div>
                             </td>
                             
