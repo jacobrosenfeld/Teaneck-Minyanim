@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Dictionary;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,6 +33,8 @@ import com.tbdev.teaneckminyanim.admin.structure.minyan.Minyan;
 import com.tbdev.teaneckminyanim.admin.structure.minyan.MinyanDAO;
 import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
 import com.tbdev.teaneckminyanim.admin.structure.organization.OrganizationDAO;
+import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettings;
+import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettingsDAO;
 import com.tbdev.teaneckminyanim.front.KolhaMinyanim;
 import com.tbdev.teaneckminyanim.front.MinyanEvent;
 import com.tbdev.teaneckminyanim.front.ZmanimHandler;
@@ -68,6 +72,9 @@ public class ZmanimController {
     @Autowired
     private LocationDAO locationDAO;
 
+    @Autowired
+    private TNMSettingsDAO tnmsettingsDAO;
+
     @GetMapping("/")
     public ModelAndView home() {
         return todaysZmanim();
@@ -78,6 +85,14 @@ public class ZmanimController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("subscription");
         return mv;
+    }
+
+    @ModelAttribute("settings")
+    public List<TNMSettings> settings() {
+        // Load and return the settings here
+        List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
+        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
+        return settings;
     }
 
     private void setTimeZone(TimeZone tz) {
