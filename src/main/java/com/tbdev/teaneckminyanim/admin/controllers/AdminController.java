@@ -188,6 +188,7 @@ public class AdminController {
         mv.setViewName("admin/settings");
 
         List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
+        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
         mv.addObject("settings", settings);
 
         addStandardPageData(mv);
