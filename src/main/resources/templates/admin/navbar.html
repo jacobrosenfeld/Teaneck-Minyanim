@@ -22,7 +22,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <img href="/admin/dashboard" src="/assets/icons/favicon.svg" height="40" alt="TM Logo">
-        <a class="navbar-brand" href="/admin/dashboard" th:text="${settings.?[id == 'S2'].![text].get(0)}"></a>
+        <a class="navbar-brand" href="/admin/dashboard" th:text="${settings.?[setting == 'Site Name'].![text].get(0)}"></a>
 
     </div>
     <div class="navbar-collapse collapse" id="collapsingNavbar">
