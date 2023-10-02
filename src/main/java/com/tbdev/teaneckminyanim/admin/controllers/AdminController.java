@@ -181,7 +181,7 @@ public class AdminController {
     public List<TNMSettings> settings() {
         // Load and return the settings here
         List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
-        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
+        // Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
         return settings;
     }
 
@@ -195,7 +195,7 @@ public class AdminController {
         mv.setViewName("admin/settings");
 
         List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
-        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
+        // Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
         mv.addObject("settings", settings);
 
         addStandardPageData(mv);
