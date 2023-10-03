@@ -105,10 +105,23 @@
                                 <h4 th:text="${settings.setting}" />
                             </td>
                             <td>
-                                <div class="custom-control custom-switch" th:each="settings: ${settings}" th:if="${settings.enabled} != 'n/a'">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="enabled" id="inlineRadio1" value="0">
+                                    <label class="form-check-label" for="inlineRadio1">Enabled</label>
+                                  </div>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="enabled" id="inlineRadio2" value="1">
+                                    <label class="form-check-label" for="inlineRadio2">Disabled</label>
+                                  </div>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="enabled" id="inlineRadio3" value="n/a" disabled>
+                                    <label class="form-check-label" for="inlineRadio3">n/a</label>
+                                  </div>
+                                
+                                <!-- <div class="custom-control custom-switch" th:each="settings: ${settings}" th:if="${settings.enabled} != 'n/a'">
                                     <input type="checkbox" class="custom-control-input" name="enabled" style="z-index: 99;" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:value="${settings?.enabled}">
                                     <label class="custom-control-label" for="new-enabled">Enable</label>
-                                </div>
+                                </div> -->
                             </td>
                             <td>
                                 <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
