@@ -105,11 +105,15 @@
                                 <h4 th:text="${settings.setting}" />
                             </td>
                             <td>
-                                <div class="custom-control custom-switch" th:each="settings: ${settings}" th:if="${settings.enabled} != 'n/a'">
-                                    <input type="checkbox" class="custom-control-input" name="enabled" style="z-index: 99;" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:value="${settings?.enabled}">
-                                    <label class="custom-control-label" for="new-enabled">Enable</label>
+                                <div class="custom-control custom-switch" th:each="settings: ${settings}">
+                                    <select class="custom-select" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}">
+                                        <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'">Enabled</option>
+                                        <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'">Disabled</option>
+                                        <option th:value="'n/a'" th:selected="${settings.enabled == 'n/a'}">n/a</option>
+                                    </select>
                                 </div>
                             </td>
+                            
                             <td>
                                 <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
                             </td>
