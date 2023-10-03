@@ -11,7 +11,7 @@ public class TNMSettings extends TNMObject implements IDGenerator {
     private String setting;
 
     @Column(name="ENABLED", nullable = true)
-    private String enabledAsString;
+    private String enabled;
 
     @Column(name="ID", nullable = false, unique = true)
     private String id;
@@ -22,10 +22,10 @@ public class TNMSettings extends TNMObject implements IDGenerator {
     @Column(name="TYPE", nullable = false)
     private String type;
 
-    public TNMSettings(String setting, String enabledAsString, String id, String text, String type) {
+    public TNMSettings(String setting, String enabled, String id, String text, String type) {
         super.id = id;
         this.setting = setting;
-        this.enabledAsString = enabledAsString;
+        this.enabled = enabled;
         this.text = text;
         this.type = type;
     }
@@ -33,7 +33,7 @@ public class TNMSettings extends TNMObject implements IDGenerator {
     public TNMSettings(String setting, String enable, String text, String type) {
         super.id = generateID('S');
         this.setting = setting;
-        this.enabledAsString = enabledAsString;
+        this.enabled = enabled;
         this.text = text;
         this.type = type;
     }
@@ -43,7 +43,7 @@ public class TNMSettings extends TNMObject implements IDGenerator {
     }
 
     public String getEnabled() {
-        return enabledAsString;
+        return enabled;
     }
 
     public String getID() {
