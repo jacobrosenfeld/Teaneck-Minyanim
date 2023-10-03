@@ -14,14 +14,12 @@ public class TNMSettingsMapper implements RowMapper<TNMSettings>, Serializable {
     @Override
     public TNMSettings mapRow(ResultSet rs, int rowNum) throws SQLException {
         String setting = rs.getString("SETTING");
-        Boolean enabled = rs.getBoolean("ENABLED"); // Use Boolean, not boolean
+        String enabled = rs.getString("ENABLED"); // Use Boolean, not boolean  -- changed to string
         String id = rs.getString("ID");
         String text = rs.getString("TEXT");
         String type = rs.getString("TYPE");
     
-        String enabledAsString = (enabled != null) ? enabled.toString() : "null";
-    
-        return new TNMSettings(setting, enabledAsString, id, text, type);
+        return new TNMSettings(setting, enabled, id, text, type);
     }
     
     
@@ -29,13 +27,14 @@ public class TNMSettingsMapper implements RowMapper<TNMSettings>, Serializable {
     public TNMSettings mapRow(Map<String, Object> m) {
 
         String setting = (String) m.get("SETTING");
-        Boolean enabled = m.get("ENABLED") != null ? Boolean.valueOf(m.get("ENABLED").toString()) : null;
-        String enabledAsString = enabled != null ? enabled.toString() : "null";
+        //Boolean enabled = m.get("ENABLED") != null ? Boolean.valueOf(m.get("ENABLED").toString()) : null;
+        //String enabled = enabled != null ? enabled.toString() : "null";
+        String enabled = (String) m.get("ENABLED");
         String id = (String) m.get("ID");
         String text = (String) m.get("TEXT");
         String type = (String) m.get("TYPE");
 
-        return new TNMSettings(setting, enabledAsString, id, text, type);
+        return new TNMSettings(setting, enabled, id, text, type);
     }
 
 }
