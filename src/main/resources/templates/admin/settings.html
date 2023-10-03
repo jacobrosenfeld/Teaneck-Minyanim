@@ -105,15 +105,15 @@
                                 <h4 th:text="${settings.setting}" />
                             </td>
                             <td>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="enabled" id="inlineRadio1" value="0">
+                                <div class="form-check form-check-inline" th:each="settings: ${settings}">
+                                    <input class="form-check-input" type="radio" name="enabled" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:value="${settings?.enabled}">
                                     <label class="form-check-label" for="inlineRadio1">Enabled</label>
                                   </div>
                                   <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="enabled" id="inlineRadio2" value="1">
+                                    <input class="form-check-input" type="radio" name="enabled" th:id="${'new-enabled-' + settings.id}" th:aria-describedby="${'new-enabled-help-' + settings.id}" th:value="${settings?.enabled}">
                                     <label class="form-check-label" for="inlineRadio2">Disabled</label>
                                   </div>
-                                  <div class="form-check form-check-inline">
+                                  <div class="form-check form-check-inline" th:if="${settings.enabled} != 'n/a'">
                                     <input class="form-check-input" type="radio" name="enabled" id="inlineRadio3" value="n/a" disabled>
                                     <label class="form-check-label" for="inlineRadio3">n/a</label>
                                   </div>
