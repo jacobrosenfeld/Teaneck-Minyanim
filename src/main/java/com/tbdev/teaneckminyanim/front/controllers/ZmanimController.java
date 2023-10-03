@@ -17,6 +17,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -93,6 +95,12 @@ public class ZmanimController {
         List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
         Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
         return settings;
+    }
+
+    @RequestMapping("/error")
+    public String handleError(HttpServletRequest request) {
+        // Custom error handling logic
+        return "error"; // Return the name of your Thymeleaf error template
     }
 
     private void setTimeZone(TimeZone tz) {
