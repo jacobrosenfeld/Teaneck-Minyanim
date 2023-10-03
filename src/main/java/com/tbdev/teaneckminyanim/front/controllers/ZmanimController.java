@@ -97,12 +97,6 @@ public class ZmanimController {
         return settings;
     }
 
-    @RequestMapping("/error")
-    public String handleError(HttpServletRequest request) {
-        // Custom error handling logic
-        return "error"; // Return the name of your Thymeleaf error template
-    }
-
     private void setTimeZone(TimeZone tz) {
         // set time format
         timeFormat.setTimeZone(tz);
