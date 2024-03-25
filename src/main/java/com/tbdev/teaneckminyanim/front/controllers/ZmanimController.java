@@ -275,7 +275,7 @@ public class ZmanimController {
                             
                                     }
                                 else {
-                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("Tishrei"))){
+                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
                                             minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                     organizationNusach, organizationId, locationName, startDate,
                                                     roundedDisplayName,
@@ -305,7 +305,7 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                             else {
-                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("Tishrei"))){
+                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
                                             minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                     organizationNusach, organizationId, locationName, startDate,
                                                     roundedDisplayName,
@@ -340,7 +340,7 @@ public class ZmanimController {
                                                 minyan.getNotes(), organizationColor));
                             }
                             else {
-                                    if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("Tishrei"))){
+                                    if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
                                 minyanEvents
                                         .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach,
@@ -646,7 +646,7 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                         else {
-                                if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("Tishrei"))){
+                                if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -675,7 +675,7 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                         else {
-                                if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("Tishrei"))){
+                                if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -709,7 +709,7 @@ public class ZmanimController {
                                                 minyan.getNotes(), organizationColor));
                             }
                             else {
-                                if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("Tishrei"))){
+                                if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -809,7 +809,7 @@ public class ZmanimController {
                                             minyan.getNusach(), minyan.getNotes(), organizationColor));
                                 }
                                 else {
-                                    if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("Tishrei"))){
+                                    if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -839,7 +839,7 @@ public class ZmanimController {
                                             minyan.getNusach(), minyan.getNotes(), organizationColor));
                                 }
                                 else {
-                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("Tishrei"))){
+                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
                                         nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
@@ -871,7 +871,7 @@ public class ZmanimController {
                                                     minyan.getNotes(), organizationColor));
                                 }
                                 else {
-                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("Tishrei"))){
+                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
                                         nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
