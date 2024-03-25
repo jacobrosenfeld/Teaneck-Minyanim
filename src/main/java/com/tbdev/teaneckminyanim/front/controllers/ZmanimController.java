@@ -593,6 +593,7 @@ public class ZmanimController {
             Calendar mgMinusOneMinute = Calendar.getInstance();
             mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
+            String hebrewDate = zmanimHandler.getHebrewDate(date);
             if (startDate != null) {
                 String organizationName;
                 Nusach organizationNusach;
@@ -752,6 +753,7 @@ public class ZmanimController {
             Calendar mgMinusOneMinute = Calendar.getInstance();
             mgMinusOneMinute.setTime(zmanimtoday.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
+            String hebrewDate = zmanimHandler.getHebrewDate(date);
             if (startDate != null && (startDate.after(terminationDate))) {
                 if (startDate != null) {
                     String organizationName;
