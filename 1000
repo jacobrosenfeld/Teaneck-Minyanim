@@ -1,0 +1,4 @@
+history -n 1000
+history -n 1
+history -n 100
+ssh opc@teaneckminyanim.com
