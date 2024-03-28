@@ -36,7 +36,7 @@
       <div class="horizontal-container d-flex container-xl" id="wrapper">
         <th:block th:include="frontnavbar"></th:block>
         <!-- Navbar End -->
-        <div class="container-fluid " id="main">
+        <div class="container-fluid home-container" id="main">
               <main class="col main pt-5 mt-4 overflow-auto">
                 <div class="jumbotron alert alert-secondary text-center" th:if="${settings.?[setting == 'Home Page Announcement'].![enabled].get(0) == 'true'}">
                   <h5 class="mb-1" th:text="${settings.?[setting == 'Home Page Announcement'].![text].get(0)}" />

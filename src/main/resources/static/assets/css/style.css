@@ -660,6 +660,9 @@ body {
 		outline: none !important;
 	}
 
+	.home-container {
+		padding-top: calc(var(--bs-gutter-x) * .5);
+	}
 	/*------------------------------------------------
 ------------- Hero Version 2 Styling -------------
 -------------------------------------------------*/
