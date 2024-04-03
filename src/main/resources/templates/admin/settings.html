@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title text="Application Settings - Teaneck Minyanim"></title>
+    <title>Application Settings - Teaneck Minyanim</title>
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
@@ -116,7 +116,6 @@
                             
                             <td>
                                 <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
-                                <select class="form-control bfh-timezones" data-country="US"></select>
                             </td>
                             </div>
                         <hr>
@@ -187,6 +186,7 @@
 </body>
 
 <script th:src="@{/account.js}"></script>
+<script th:src="@{/admin/timezone.js}"></script>
 <script th:if="${changePasswordError}" th:inline="javascript">
     showChangePasswordModal();
 </script>
