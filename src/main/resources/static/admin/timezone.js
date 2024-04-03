@@ -11,7 +11,7 @@ function populateTimezones() {
         const option = document.createElement('option');
         option.text = timezone;
         option.value = timezone;
-        timezoneDropdown.add(option);
+        timezoneInputs.add(option);
     });
 }
 
