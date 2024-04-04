@@ -1,16 +1,17 @@
+// Function to populate the timezone dropdown
 function populateTimezones() {
     const timezoneInputs = document.querySelectorAll('input[type="timezone"]');
 
-    // Get all timezones using moment-timezone
-    var timezones = moment.tz.names();
-    
+    // Get all timezones
+    const timezones = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timezoneOptions = [...new Set([timezones])];
+
     // Iterate over each input element with type="timezone"
     timezoneInputs.forEach(function(input) {
         // Get the class, id, and aria-describedby attributes from the input element
         const inputClass = input.getAttribute('class');
         const inputId = input.getAttribute('id');
         const ariaDescribedby = input.getAttribute('aria-describedby');
-        const inputValue = input.value; // Use .value to get input value
 
         // Create select element
         const select = document.createElement('select');
@@ -20,29 +21,16 @@ function populateTimezones() {
         select.setAttribute('id', inputId);
         select.setAttribute('aria-describedby', ariaDescribedby);
 
-        // Create an empty option element to represent the default value
-        const defaultOption = document.createElement('option');
-        defaultOption.text = "Select timezone"; // Change to your default option text if needed
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        select.appendChild(defaultOption);
-
         // Populate the select with timezone options
-        timezones.forEach(timezone => {
+        timezoneOptions.forEach(timezone => {
             const option = document.createElement('option');
             option.text = timezone;
             option.value = timezone;
             select.appendChild(option);
         });
 
-        // Insert the select element after the input element
-        input.parentNode.insertBefore(select, input.nextSibling);
-
-        // Remove the original input element
-        input.parentNode.removeChild(input);
-
-        // Set the selected value for the select element
-        select.value = inputValue;
+        // Replace input with select
+        input.parentNode.replaceChild(select, input);
     });
 }
 
