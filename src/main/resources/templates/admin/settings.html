@@ -108,8 +108,7 @@
                             </td>
                             <td>
                                 <div class="h1" th:each="settings: ${settings}">
-                                    <input class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}" list="enable-disable-list">
-                                        
+                                    <input class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}" list="enable-disable-list" th:value="${settings.enabled}">
                                         <datalist id="enable-disable-list">
                                             <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'}"></option>
                                             <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}"></option>
