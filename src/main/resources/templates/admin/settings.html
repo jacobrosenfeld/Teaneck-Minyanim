@@ -109,9 +109,6 @@
                             </td>
                             <td>
                                 <div class="h1" th:each="settings: ${settings}">
-                                    <!-- Hidden input field to store the original value -->
-                                    <input type="hidden" name="originalEnabled" th:value="${settings.enabled}" />
-                                
                                     <select class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}" th:value="${settings.enabled}">
                                         <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'}">Enabled</option>
                                         <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}">Disabled</option>
