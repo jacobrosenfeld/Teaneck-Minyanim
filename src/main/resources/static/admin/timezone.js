@@ -5,6 +5,7 @@ function populateTimezones() {
     // Get all timezones using moment-timezone
     const timezones = moment.tz.names();
     const timezoneOptions = [...new Set(timezones)];
+    console.log('Timezone options:', timezoneOptions);
 
     // Iterate over each input element with type="timezone"
     timezoneInputs.forEach(function(input) {
