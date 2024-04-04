@@ -1,11 +1,9 @@
-// Function to populate the timezone dropdown
 function populateTimezones() {
     const timezoneInputs = document.querySelectorAll('input[type="timezone"]');
 
-    // Get all timezones
-    const timezones = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const timezoneOptions = [...new Set([timezones])];
-
+    // Get all timezones using moment-timezone
+    const timezones = moment.tz.names();
+    
     // Iterate over each input element with type="timezone"
     timezoneInputs.forEach(function(input) {
         // Get the class, id, and aria-describedby attributes from the input element
@@ -22,7 +20,7 @@ function populateTimezones() {
         select.setAttribute('aria-describedby', ariaDescribedby);
 
         // Populate the select with timezone options
-        timezoneOptions.forEach(timezone => {
+        timezones.forEach(timezone => {
             const option = document.createElement('option');
             option.text = timezone;
             option.value = timezone;
