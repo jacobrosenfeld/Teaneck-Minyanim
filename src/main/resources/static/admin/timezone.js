@@ -14,6 +14,8 @@ function populateTimezones() {
             placeholder: 'Select a timezone',
             dropdownCssClass: 'select2-dropdown--below',
             width: '100%',
+            searchInputPlaceholder: 'Search for a timezone',
+            search: true,
         });
     });
 }
