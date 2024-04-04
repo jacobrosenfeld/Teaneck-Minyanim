@@ -36,12 +36,13 @@ function populateTimezones() {
             selectElement.append(optgroup);
         }
         
-        // Enable searching within the dropdown
+        // Enable searching within the dropdown and set dropdownParent to the modal element
         selectElement.select2({
             placeholder: 'Select a timezone',
             dropdownCssClass: 'select2-dropdown--below',
             width: '100%',
-            search: true
+            search: true,
+            dropdownParent: selectElement.closest('.modal') // Assuming the select element is within a modal
         });
     });
 }
