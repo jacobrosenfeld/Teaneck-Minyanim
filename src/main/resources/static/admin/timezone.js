@@ -5,17 +5,43 @@ function populateTimezones() {
     
     // Get all timezones using moment-timezone
     const timezones = moment.tz.names();
-    const timezoneOptions = [...new Set(timezones)];
+    
+    // Object to store timezones grouped by region
+    const timezonesByRegion = {};
+    
+    // Group timezones by region
+    timezones.forEach(timezone => {
+        const region = timezone.split('/')[0];
+        if (!timezonesByRegion[region]) {
+            timezonesByRegion[region] = [];
+        }
+        timezonesByRegion[region].push(timezone);
+    });
     
     // Initialize Select2 for each timezone input
     timezoneInputs.each(function() {
-        $(this).select2({
-            data: timezoneOptions.sort(),
+        const selectElement = $(this);
+        // Clear existing options
+        selectElement.empty();
+        
+        // Iterate over regions
+        for (const region in timezonesByRegion) {
+            // Create optgroup for the region
+            const optgroup = $('<optgroup label="' + region + '"></optgroup>');
+            // Append timezones for the region
+            timezonesByRegion[region].forEach(timezone => {
+                optgroup.append($('<option></option>').attr('value', timezone).text(timezone));
+            });
+            // Append optgroup to select element
+            selectElement.append(optgroup);
+        }
+        
+        // Enable searching within the dropdown
+        selectElement.select2({
             placeholder: 'Select a timezone',
             dropdownCssClass: 'select2-dropdown--below',
             width: '100%',
-            searchInputPlaceholder: 'Search for a timezone',
-            search: true,
+            search: true
         });
     });
 }
