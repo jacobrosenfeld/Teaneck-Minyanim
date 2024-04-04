@@ -35,8 +35,11 @@ function populateTimezones() {
             select.appendChild(option);
         });
 
-        // Replace input with select
-        input.parentNode.replaceChild(select, input);
+        // Insert the select element after the input element
+        input.parentNode.insertBefore(select, input.nextSibling);
+
+        // Remove the original input element
+        input.parentNode.removeChild(input);
 
         // Set the selected value for the select element
         select.value = inputValue;
