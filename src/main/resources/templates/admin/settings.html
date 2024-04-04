@@ -46,8 +46,8 @@
                                                 <td th:text="${settings.setting}" />
                                                 <td th:text="${settings.id}" />
                                                 <td>
-                                                    <button type="button" class="btn btn-success" disabled th:if="${settings.enabled} == 1">Enabled</button>
-                                                    <button type="button" class="btn btn-danger"disabled th:if="${settings.enabled} == 2">Disabled</button>
+                                                    <button type="button" class="btn btn-success" disabled th:if="${settings.enabled} == 'Enabled'">Enabled</button>
+                                                    <button type="button" class="btn btn-danger"disabled th:if="${settings.enabled} == 'Disabled'">Disabled</button>
                                                     <button type="button" class="btn btn-secondary" disabled th:if="${settings.enabled} == 'n/a'">N/A</button>
                                                 </td>
                                                 <td th:text="${settings.text}" />
@@ -117,7 +117,7 @@
                             </td>
                             
                             <td>
-                                <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
+                                <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}" th:text="${settings.setting}">
                             </td>
                             </div>
                         <hr>
