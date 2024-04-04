@@ -94,24 +94,24 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
     }
 
     @Override
-    public boolean update(TNMSettings settingToUpdate) {
-        try {
-            // Fetch the existing settings from the database
-            TNMSettings existingSettings = this.findById(settingToUpdate.getId());
+public boolean update(TNMSettings settingToUpdate) {
+    try {
+        // Fetch the existing settings from the database
+        TNMSettings existingSettings = this.findById(settingToUpdate.getId());
 
-            // If the "enabled" field has not been changed or is "n/a", use the original value
-            if (settingToUpdate.getEnabled() == null || settingToUpdate.getEnabled().isEmpty() || settingToUpdate.getEnabled().equals("n/a")) {
-                settingToUpdate.setEnabled(existingSettings.getEnabled());
-                settingToUpdate.setText(existingSettings.getText());
-            }
-
-            String sql = "UPDATE SETTINGS SET ENABLED='%s', TEXT='%s' WHERE ID='%s';";
-
-            getConnection().createStatement().executeUpdate(String.format(sql, settingToUpdate.getEnabled(), settingToUpdate.getText(), settingToUpdate.getId(), settingToUpdate.getType()));
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        // If the "enabled" field has not been changed or is "n/a", use the original value
+        if (settingToUpdate.getEnabled() == null || settingToUpdate.getEnabled().isEmpty() || settingToUpdate.getEnabled().equals("n/a")) {
+            settingToUpdate.setEnabled(existingSettings.getEnabled());
+            settingToUpdate.setText(existingSettings.getText());
         }
+
+        String sql = "UPDATE SETTINGS SET ENABLED='%s', TEXT='%s' WHERE ID='%s';";
+
+        getConnection().createStatement().executeUpdate(String.format(sql, settingToUpdate.getEnabled(), settingToUpdate.getText(), settingToUpdate.getId(), settingToUpdate.getType()));
+        return true;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
     }
+}
 }
