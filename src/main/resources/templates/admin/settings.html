@@ -46,8 +46,8 @@
                                                 <td th:text="${settings.setting}" />
                                                 <td th:text="${settings.id}" />
                                                 <td>
-                                                    <button type="button" class="btn btn-success" disabled th:if="${settings.enabled} == 'Enabled'">Enabled</button>
-                                                    <button type="button" class="btn btn-danger"disabled th:if="${settings.enabled} == 'Disabled'">Disabled</button>
+                                                    <button type="button" class="btn btn-success" disabled th:if="${settings.enabled} == 1">Enabled</button>
+                                                    <button type="button" class="btn btn-danger"disabled th:if="${settings.enabled} == 2">Disabled</button>
                                                     <button type="button" class="btn btn-secondary" disabled th:if="${settings.enabled} == 'n/a'">N/A</button>
                                                 </td>
                                                 <td th:text="${settings.text}" />
@@ -108,7 +108,7 @@
                             </td>
                             <td>
                                 <div class="h1" th:each="settings: ${settings}">
-                                    <select class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}"Í>
+                                    <select class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}">
                                         <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'}">Enabled</option>
                                         <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}">Disabled</option>
                                         <option th:value="'n/a'" th:selected="${settings.enabled == 'n/a'}">n/a</option>
@@ -117,7 +117,7 @@
                             </td>
                             
                             <td>
-                                <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}">
+                                <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
                             </td>
                             </div>
                         <hr>
