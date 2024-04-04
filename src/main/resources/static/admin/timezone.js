@@ -10,7 +10,7 @@ function populateTimezones() {
         const inputClass = input.getAttribute('class');
         const inputId = input.getAttribute('id');
         const ariaDescribedby = input.getAttribute('aria-describedby');
-        const inputValue = input.getValue('value');
+        const inputValue = input.value; // Use .value to get input value
 
         // Create select element
         const select = document.createElement('select');
@@ -19,10 +19,13 @@ function populateTimezones() {
         select.setAttribute('class', inputClass);
         select.setAttribute('id', inputId);
         select.setAttribute('aria-describedby', ariaDescribedby);
-        select.setAttribute('value', inputValue);
 
-        // Replace input with select
-        input.parentNode.replaceChild(select, input);
+        // Create an empty option element to represent the default value
+        const defaultOption = document.createElement('option');
+        defaultOption.text = "Select timezone"; // Change to your default option text if needed
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        select.appendChild(defaultOption);
 
         // Populate the select with timezone options
         timezones.forEach(timezone => {
@@ -31,6 +34,12 @@ function populateTimezones() {
             option.value = timezone;
             select.appendChild(option);
         });
+
+        // Replace input with select
+        input.parentNode.replaceChild(select, input);
+
+        // Set the selected value for the select element
+        select.value = inputValue;
     });
 }
 
