@@ -8,13 +8,22 @@ function populateTimezones() {
 
     // Iterate over each input element with type="timezone"
     timezoneInputs.forEach(function(input) {
-        // Populate the dropdown with timezone options for each input
+        // Change input type to select
+        input.setAttribute('type', 'select');
+
+        // Create select element
+        const select = document.createElement('select');
+
+        // Populate the select with timezone options
         timezoneOptions.forEach(timezone => {
             const option = document.createElement('option');
             option.text = timezone;
             option.value = timezone;
-            input.appendChild(option);
+            select.appendChild(option);
         });
+
+        // Replace input with select
+        input.parentNode.replaceChild(select, input);
     });
 }
 
