@@ -1,10 +1,13 @@
+// Import moment-timezone
+const moment = require('moment-timezone');
+
 // Function to populate the timezone dropdown
 function populateTimezones() {
     const timezoneInputs = document.querySelectorAll('input[type="timezone"]');
 
-    // Get all timezones
-    const timezones = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const timezoneOptions = [...new Set([timezones])];
+    // Get all timezones using moment-timezone
+    const timezones = moment.tz.names();
+    const timezoneOptions = [...new Set(timezones)];
 
     // Iterate over each input element with type="timezone"
     timezoneInputs.forEach(function(input) {
@@ -35,4 +38,4 @@ function populateTimezones() {
 }
 
 // Call the function to populate the dropdown when the page loads
-window.onload = populateTimezones;
+document.addEventListener('DOMContentLoaded', populateTimezones);
