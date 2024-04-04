@@ -42,6 +42,7 @@ function populateTimezones() {
             dropdownCssClass: 'select2-dropdown--below',
             width: '100%',
             search: true,
+            searchInputPlaceholder: 'Search for a timezone',
             dropdownParent: selectElement.closest('.modal') // Assuming the select element is within a modal
         });
     });
