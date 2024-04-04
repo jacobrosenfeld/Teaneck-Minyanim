@@ -21,6 +21,9 @@ function populateTimezones() {
         select.setAttribute('aria-describedby', ariaDescribedby);
         select.setAttribute('value', inputValue);
 
+        // Replace input with select
+        input.parentNode.replaceChild(select, input);
+
         // Populate the select with timezone options
         timezones.forEach(timezone => {
             const option = document.createElement('option');
@@ -28,9 +31,6 @@ function populateTimezones() {
             option.value = timezone;
             select.appendChild(option);
         });
-
-        // Replace input with select
-        input.parentNode.replaceChild(select, input);
     });
 }
 
