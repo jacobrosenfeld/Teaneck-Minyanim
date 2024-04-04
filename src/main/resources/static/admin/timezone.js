@@ -1,5 +1,4 @@
 function populateTimezones() {
-    var moment = require('moment-timezone');
     const timezoneInputs = document.querySelectorAll('input[type="timezone"]');
 
     // Get all timezones using moment-timezone
