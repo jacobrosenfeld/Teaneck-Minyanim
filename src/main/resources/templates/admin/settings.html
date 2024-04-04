@@ -46,8 +46,8 @@
                                                 <td th:text="${settings.setting}" />
                                                 <td th:text="${settings.id}" />
                                                 <td>
-                                                    <button type="button" class="btn btn-success" disabled th:if="${settings.enabled} == 1">Enabled</button>
-                                                    <button type="button" class="btn btn-danger"disabled th:if="${settings.enabled} == 2">Disabled</button>
+                                                    <button type="button" class="btn btn-success" disabled th:if="${settings.enabled} == 'Enabled'">Enabled</button>
+                                                    <button type="button" class="btn btn-danger" disabled th:if="${settings.enabled} == 'Disabled'">Disabled</button>
                                                     <button type="button" class="btn btn-secondary" disabled th:if="${settings.enabled} == 'n/a'">N/A</button>
                                                 </td>
                                                 <td th:text="${settings.text}" />
