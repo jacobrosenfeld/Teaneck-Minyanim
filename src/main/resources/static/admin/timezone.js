@@ -47,4 +47,3 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('DOMContentLoaded event triggered.');
     populateTimezones();
 });
-// End of timezone.js
