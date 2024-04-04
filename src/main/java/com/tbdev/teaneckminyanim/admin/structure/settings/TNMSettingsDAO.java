@@ -94,16 +94,23 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
     }
 
     @Override
-    public boolean update(TNMSettings settingtoUpdate) {
-        try {
-            String sql = "UPDATE SETTINGS SET ENABLED='%s', TEXT='%s' WHERE ID='%s';";
+public boolean update(TNMSettings settingToUpdate) {
+    try {
+        // Fetch the existing settings from the database
+        TNMSettings existingSettings = this.findById(settingToUpdate.getId());
 
-
-            getConnection().createStatement().executeUpdate(String.format(sql, settingtoUpdate.getEnabled(), settingtoUpdate.getText(), settingtoUpdate.getId(), settingtoUpdate.getType()));
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        // If the "enabled" field has not been changed, use the original value
+        if (settingToUpdate.getEnabled() == null || settingToUpdate.getEnabled().isEmpty()) {
+            settingToUpdate.setEnabled(existingSettings.getEnabled());
         }
+
+        String sql = "UPDATE SETTINGS SET ENABLED='%s', TEXT='%s' WHERE ID='%s';";
+
+        getConnection().createStatement().executeUpdate(String.format(sql, settingToUpdate.getEnabled(), settingToUpdate.getText(), settingToUpdate.getId(), settingToUpdate.getType()));
+        return true;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
     }
+}
 }
