@@ -8,11 +8,18 @@ function populateTimezones() {
 
     // Iterate over each input element with type="timezone"
     timezoneInputs.forEach(function(input) {
-        // Change input type to select
-        input.setAttribute('type', 'select');
+        // Get the class, id, and aria-describedby attributes from the input element
+        const inputClass = input.getAttribute('class');
+        const inputId = input.getAttribute('id');
+        const ariaDescribedby = input.getAttribute('aria-describedby');
 
         // Create select element
         const select = document.createElement('select');
+
+        // Set the select element's class, id, and aria-describedby attributes
+        select.setAttribute('class', inputClass);
+        select.setAttribute('id', inputId);
+        select.setAttribute('aria-describedby', ariaDescribedby);
 
         // Populate the select with timezone options
         timezoneOptions.forEach(timezone => {
