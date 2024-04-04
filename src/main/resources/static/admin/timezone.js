@@ -1,6 +1,6 @@
 // Function to populate the timezone input with datalist
 function populateTimezones() {
-    const timezoneInputs = document.querySelectorAll('[aria-describedby*="Time Zone"]');
+    const timezoneInputs = document.querySelectorAll('input[type="timezone"]');
     
     // Get all timezones using moment-timezone
     const timezones = moment.tz.names();
