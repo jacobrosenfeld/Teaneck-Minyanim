@@ -63,4 +63,9 @@ public class TNMSettings extends TNMObject implements IDGenerator {
         throw new UnsupportedOperationException("Unimplemented method 'setEnabled'");
     }
 
+    public void setText(String text2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setText'");
+    }
+
 }
