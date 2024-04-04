@@ -39,6 +39,7 @@ function populateTimezones() {
         // Enable searching within the dropdown and set dropdownParent to the modal element
         selectElement.select2({
             placeholder: 'Select a timezone',
+            debug: true,
             dropdownCssClass: 'select2-dropdown--below',
             width: '100%',
             search: true,
