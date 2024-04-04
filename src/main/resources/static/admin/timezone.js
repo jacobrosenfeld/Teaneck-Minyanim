@@ -20,7 +20,13 @@ function populateTimezones() {
     
     // Initialize Select2 for each timezone input
     timezoneInputs.each(function() {
-        const selectElement = $(this);
+        const inputElement = $(this);
+        const inputName = inputElement.attr('name');
+        
+        // Create a select element to replace the input element
+        const selectElement = $('<select></select>').attr('name', inputName + '_select');
+        inputElement.after(selectElement).hide();
+        
         // Clear existing options
         selectElement.empty();
         
@@ -49,8 +55,7 @@ function populateTimezones() {
         // Listen for change event and update the corresponding input field
         selectElement.on('change', function() {
             const selectedValue = $(this).val();
-            const inputField = $(this).siblings('input[type="timezone"]');
-            inputField.val(selectedValue).trigger('change'); // Trigger change event for input field if needed
+            inputElement.val(selectedValue).trigger('change'); // Trigger change event for input field if needed
         });
     });
 }
