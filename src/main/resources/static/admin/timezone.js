@@ -2,7 +2,7 @@ function populateTimezones() {
     const timezoneInputs = document.querySelectorAll('input[type="timezone"]');
 
     // Get all timezones using moment-timezone
-    const timezones = moment.tz.names();
+    var timezones = moment.tz.names();
     
     // Iterate over each input element with type="timezone"
     timezoneInputs.forEach(function(input) {
