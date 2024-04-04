@@ -50,6 +50,9 @@ function populateTimezones() {
             const selectedValue = $(this).val();
             const inputField = $('input[type="timezone"]');
             inputField.val(selectedValue).trigger('change'); // Trigger change event for input field if needed
+            
+            // Manually close the dropdown after selection
+            $(this).select2('close');
         });
     });
 }
