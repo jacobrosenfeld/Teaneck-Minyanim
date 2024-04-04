@@ -69,16 +69,17 @@ public class TNMSettingsDAO extends JdbcDaoSupport implements TNMSaveable<TNMSet
 
     @Override
     public boolean save(TNMSettings setting) {
-        String sql = String.format("INSERT INTO SETTINGS VALUES ('%s', '%d')", setting.getSetting(), setting.getEnabled(), setting.getID(), setting.getText(), setting.getType());
-
+        String sql = "INSERT INTO SETTINGS (SETTING, ENABLED, ID, TEXT, TYPE) VALUES (?, ?, ?, ?, ?)";
+        
         try {
-            this.getConnection().createStatement().executeUpdate(sql);
+            this.getJdbcTemplate().update(sql, setting.getSetting(), setting.getEnabled(), setting.getID(), setting.getText(), setting.getType());
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
     }
+    
 
     @Override
     public boolean delete(TNMSettings objectToDelete) {
