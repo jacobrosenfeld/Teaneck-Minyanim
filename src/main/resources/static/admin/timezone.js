@@ -1,34 +1,25 @@
-// Function to populate the timezone input with datalist
+// Function to populate the timezone input with Select2 dropdown
 function populateTimezones() {
-    const timezoneInputs = document.querySelectorAll('input[type="timezone"]');
+    // Target the timezone inputs
+    const timezoneInputs = $('input[type="timezone"]');
     
     // Get all timezones using moment-timezone
     const timezones = moment.tz.names();
     const timezoneOptions = [...new Set(timezones)];
-    console.log('Timezone options:', timezoneOptions);
     
-    // Create datalist element
-    const dataList = document.createElement('datalist');
-    dataList.id = 'timezoneOptions';
-    
-    // Populate datalist with timezone options
-    timezoneOptions.forEach(timezone => {
-        const option = document.createElement('option');
-        option.value = timezone;
-        dataList.appendChild(option);
-    });
-    
-    // Append datalist to the document body
-    document.body.appendChild(dataList);
-    
-    // Associate each timezone input with the datalist
-    timezoneInputs.forEach(input => {
-        input.setAttribute('list', 'timezoneOptions');
+    // Initialize Select2 for each timezone input
+    timezoneInputs.each(function() {
+        $(this).select2({
+            data: timezoneOptions.sort(),
+            placeholder: 'Select a timezone',
+            dropdownCssClass: 'select2-dropdown--below',
+            width: '100%',
+        });
     });
 }
 
-// Call the function to populate the timezone input with datalist when the page loads.
-document.addEventListener('DOMContentLoaded', function() {
+// Call the function to populate the timezone input with Select2 when the page loads
+$(document).ready(function() {
     console.log('DOMContentLoaded event triggered.');
     populateTimezones();
 });
