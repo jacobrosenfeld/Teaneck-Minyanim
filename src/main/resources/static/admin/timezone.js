@@ -21,15 +21,15 @@ function populateTimezones() {
         select.setAttribute('id', inputId);
         select.setAttribute('aria-describedby', ariaDescribedby);
 
-        // Replace input with select
-        input.parentNode.replaceChild(select, input);
-
         // Populate the select with timezone options
         timezoneOptions.forEach(timezone => {
             const option = document.createElement('option');
             option.text = timezone;
             option.value = timezone;
             select.appendChild(option);
+
+        // Replace input with select
+        input.parentNode.replaceChild(select, input);
         });
 
 
