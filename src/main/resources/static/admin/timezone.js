@@ -27,12 +27,10 @@ function populateTimezones() {
             option.text = timezone;
             option.value = timezone;
             select.appendChild(option);
+        });
 
         // Replace input with select
         input.parentNode.replaceChild(select, input);
-        });
-
-
     });
 }
 
