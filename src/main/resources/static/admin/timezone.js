@@ -13,6 +13,7 @@ function populateTimezones() {
         const inputId = input.getAttribute('id');
         const ariaDescribedby = input.getAttribute('aria-describedby');
         const currentZone = input.value; // Get current timezone value from input value
+        console.log('Current timezone:', currentZone);
 
         // Create select element
         const select = document.createElement('select');
@@ -36,8 +37,12 @@ function populateTimezones() {
 
         // Replace input with select
         input.parentNode.replaceChild(select, input);
+        console.log('Select element created and inserted:', select);
     });
 }
 
 // Call the function to populate the dropdown when the page loads.
-document.addEventListener('DOMContentLoaded', populateTimezones);
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded event triggered.');
+    populateTimezones();
+});
