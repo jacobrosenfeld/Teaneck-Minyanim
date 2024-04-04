@@ -48,7 +48,7 @@ function populateTimezones() {
         // Listen for change event and update the corresponding input field
         selectElement.on('change', function() {
             const selectedValue = $(this).val();
-            const inputField = $(this).siblings('input[type="timezone"]');
+            const inputField = $('input[type="timezone"]');
             inputField.val(selectedValue).trigger('change'); // Trigger change event for input field if needed
         });
     });
