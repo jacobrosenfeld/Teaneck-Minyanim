@@ -1,6 +1,3 @@
-// Import moment-timezone
-const moment = require('moment-timezone');
-
 // Function to populate the timezone dropdown
 function populateTimezones() {
     const timezoneInputs = document.querySelectorAll('input[type="timezone"]');
