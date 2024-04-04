@@ -108,18 +108,17 @@
                             </td>
                             <td>
                                 <div class="h1" th:each="settings: ${settings}">
-                                    <input class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}" list="enable-disable-list" th:value="${settings.enabled}">
+                                    <input class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}" list="enable-disable-list" th:value="${settings.enabled}"/>
                                         <datalist id="enable-disable-list">
                                             <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'}"></option>
                                             <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}"></option>
                                             <option th:value="'n/a'" th:selected="${settings.enabled == 'n/a'}"></option>
                                         </datalist>
-                                    </input>
                                 </div>
                             </td>
                             
                             <td>
-                                <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
+                                <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}"/>
                             </td>
                             </div>
                         <hr>
