@@ -10,6 +10,7 @@ function populateTimezones() {
         const inputClass = input.getAttribute('class');
         const inputId = input.getAttribute('id');
         const ariaDescribedby = input.getAttribute('aria-describedby');
+        const inputValue = input.getValue('value');
 
         // Create select element
         const select = document.createElement('select');
@@ -18,6 +19,7 @@ function populateTimezones() {
         select.setAttribute('class', inputClass);
         select.setAttribute('id', inputId);
         select.setAttribute('aria-describedby', ariaDescribedby);
+        select.setAttribute('value', inputValue);
 
         // Populate the select with timezone options
         timezones.forEach(timezone => {
