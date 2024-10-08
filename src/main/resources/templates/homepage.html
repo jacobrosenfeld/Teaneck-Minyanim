@@ -191,7 +191,11 @@
                                               <hr>
                                           </div>
                                           <div class="col-12">
-                                              <div>
+                                            <div
+                                            data-bs-toggle="tooltip" data-bs-placement="top"
+                                            data-bs-custom-class="custom-tooltip"
+                                            data-bs-html="true"
+                                            th:data-bs-title="@{|Magen Avraham: ${maszks} <br> Vilna Gaon: ${szks}|}">
                                                   <span class="p-time"  th:text="${szks}"></span>
                                                   &nbsp;
                                                   <span class="p-zman">Sof Zman Krias Shema</span>
@@ -199,7 +203,11 @@
                                               <hr>
                                           </div>
                                           <div class="col-12">
-                                              <div>
+                                            <div
+                                            data-bs-toggle="tooltip" data-bs-placement="top"
+                                            data-bs-custom-class="custom-tooltip"
+                                            data-bs-html="true"
+                                            th:data-bs-title="@{|Magen Avraham: ${maszt} <br> Vilna Gaon: ${szt}|}">
                                                   <span class="p-time" th:text="${szt}"></span>
                                                   &nbsp;
                                                   <span class="p-zman">Sof Zman Tefilla</span>
