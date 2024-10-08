@@ -233,6 +233,7 @@ public class ZmanimController {
             mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
             String hebrewDate = zmanimHandler.getHebrewDate(date);
+            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(LocalDate.now());
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
             // if (startDate != null && (startDate.after(terminationDate))) {
@@ -294,7 +295,7 @@ public class ZmanimController {
                             
                                     }
                                 else {
-                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
+                                        if (minyan.getType().isSelichos() && isSelichosRecited == true){
                                             minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                     organizationNusach, organizationId, locationName, startDate,
                                                     roundedDisplayName,
@@ -324,8 +325,8 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                             else {
-                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
-                                            minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                     organizationNusach, organizationId, locationName, startDate,
                                                     roundedDisplayName,
                                                     minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -359,8 +360,8 @@ public class ZmanimController {
                                                 minyan.getNotes(), organizationColor));
                             }
                             else {
-                                    if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
-                                minyanEvents
+                                if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                                    minyanEvents
                                         .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach,
                                                 organizationId, locationName, startDate, minyan.getNusach(),
@@ -616,6 +617,7 @@ public class ZmanimController {
             mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
             String hebrewDate = zmanimHandler.getHebrewDate(date);
+            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(LocalDate.now());
             if (startDate != null) {
                 String organizationName;
                 Nusach organizationNusach;
@@ -668,7 +670,7 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                         else {
-                                if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
+                            if (minyan.getType().isSelichos() && isSelichosRecited == true){
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -697,7 +699,7 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                         else {
-                                if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
+                            if (minyan.getType().isSelichos() && isSelichosRecited == true){
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -731,8 +733,8 @@ public class ZmanimController {
                                                 minyan.getNotes(), organizationColor));
                             }
                             else {
-                                if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
-                                minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
@@ -776,6 +778,7 @@ public class ZmanimController {
             mgMinusOneMinute.setTime(zmanimtoday.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
             String hebrewDate = zmanimHandler.getHebrewDate(date);
+            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(LocalDate.now());
             if (startDate != null && (startDate.after(terminationDate))) {
                 if (startDate != null) {
                     String organizationName;
@@ -831,8 +834,8 @@ public class ZmanimController {
                                             minyan.getNusach(), minyan.getNotes(), organizationColor));
                                 }
                                 else {
-                                    if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
-                                minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                    if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                                        minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
@@ -861,7 +864,7 @@ public class ZmanimController {
                                             minyan.getNusach(), minyan.getNotes(), organizationColor));
                                 }
                                 else {
-                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
+                                    if (minyan.getType().isSelichos() && isSelichosRecited == true){
                                         nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
@@ -893,7 +896,7 @@ public class ZmanimController {
                                                     minyan.getNotes(), organizationColor));
                                 }
                                 else {
-                                        if (minyan.getType().isSelichos() && (hebrewDate.contains("אלול") ||  hebrewDate.contains("תשרי"))){
+                                    if (minyan.getType().isSelichos() && isSelichosRecited == true){
                                         nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
