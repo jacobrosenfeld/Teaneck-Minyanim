@@ -445,6 +445,7 @@ public class ZmanimController {
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
+        m.getModel().put("selichosMinyanim", selichosMinyanim);
 
         return mv;
     }
