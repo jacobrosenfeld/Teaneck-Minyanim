@@ -88,7 +88,7 @@ public class ZmanimHandler {
 
     public boolean isSelichosRecited(LocalDate date) {
         JewishCalendar jewishCalendar = new JewishCalendar();
-        jewishCalendar.setGregorianDate(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
+        jewishCalendar.setGregorianDate(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
         
         // Check if the date is within Aseres Yemei Teshuva
         if (jewishCalendar.isAseresYemeiTeshuva()) {
@@ -97,12 +97,12 @@ public class ZmanimHandler {
         }
     
         // Determine the date of Rosh HaShana for the current or next Jewish year
-        JewishCalendar roshHashana = new JewishCalendar(jewishCalendar.getJewishYear() + 1, JewishDate.TISHREI, 1);
+        JewishCalendar roshHashana = new JewishCalendar(jewishCalendar.getJewishYear(), JewishDate.TISHREI, 1);
         LocalDate roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         System.out.println("Rosh HaShana Date: " + roshHashanaDate);
         
         if (date.isAfter(roshHashanaDate)) {
-            roshHashana = new JewishCalendar(jewishCalendar.getJewishYear(), JewishDate.TISHREI, 1);
+            roshHashana = new JewishCalendar(jewishCalendar.getJewishYear() + 1, JewishDate.TISHREI, 1);
             roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             System.out.println("Next Year Rosh HaShana Date: " + roshHashanaDate);
         }
@@ -124,6 +124,7 @@ public class ZmanimHandler {
     
         // Check if the given date is on or after the start date for Selichos
         boolean result = !date.isBefore(selichosStartDate);
+        System.out.println("Is Selichos Recited on " + date + ": " + result);
         return result;
     }
 
