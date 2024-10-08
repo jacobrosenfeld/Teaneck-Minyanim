@@ -109,7 +109,6 @@ public class ZmanimController {
     public String checkSelichos(Model model) {
         LocalDate date = LocalDate.now(); // or any specific date you want to check
         boolean isSelichosRecited = zmanimHandler.isSelichosRecited(date);
-        System.out.println("Is Selichos Recited: " + isSelichosRecited);
         model.addAttribute("isSelichosRecited", isSelichosRecited);
         return "checkSelichos";
     }
@@ -235,6 +234,7 @@ public class ZmanimController {
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
             String hebrewDate = zmanimHandler.getHebrewDate(date);
             boolean isSelichosRecited = zmanimHandler.isSelichosRecited(LocalDate.now());
+            System.out.println("Selichos: " + isSelichosRecited);
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
             // if (startDate != null && (startDate.after(terminationDate))) {
