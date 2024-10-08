@@ -7,7 +7,10 @@ import com.kosherjava.zmanim.hebrewcalendar.JewishDate;
 import com.kosherjava.zmanim.util.GeoLocation;
 import com.tbdev.teaneckminyanim.global.Zman;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -62,6 +65,7 @@ public class ZmanimHandler {
 
         return dictionary;
     }
+    
 
     public String getHebrewDate(Date date) {
         JewishDate jd = new JewishDate(date);
@@ -72,6 +76,46 @@ public class ZmanimHandler {
 
     public String getTodaysHebrewDate() {
         return getHebrewDate(new Date());
+    }
+    
+    public boolean isAseresYemeiTeshuva() {
+        JewishCalendar jewishCalendar = new JewishCalendar();
+        jewishCalendar.setGregorianDate(LocalDate.now().getYear(), LocalDate.now().getMonthValue(), LocalDate.now().getDayOfMonth());
+        return jewishCalendar.isAseresYemeiTeshuva();
+    }
+
+    public boolean isSelichosRecited(LocalDate date) {
+        JewishCalendar jewishCalendar = new JewishCalendar();
+        jewishCalendar.setGregorianDate(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+
+        // Check if the date is within Aseres Yemei Teshuva
+        if (jewishCalendar.isAseresYemeiTeshuva()) {
+            return true;
+        }
+
+        // Determine the date of Rosh HaShana for the current or next Jewish year
+        JewishCalendar roshHashana = new JewishCalendar(jewishCalendar.getJewishYear(), JewishDate.TISHREI, 1);
+        LocalDate roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        if (date.isAfter(roshHashanaDate)) {
+            roshHashana = new JewishCalendar(jewishCalendar.getJewishYear() + 1, JewishDate.TISHREI, 1);
+            roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        }
+
+        // Determine the day of the week for Rosh HaShana
+        int roshHashanaDayOfWeek = roshHashana.getDayOfWeek();
+
+        // Determine the start date for Selichos
+        LocalDate selichosStartDate;
+        if (roshHashanaDayOfWeek == Calendar.MONDAY || roshHashanaDayOfWeek == Calendar.TUESDAY) {
+            // Start from two Sundays before Rosh HaShana
+            selichosStartDate = roshHashanaDate.minusWeeks(2).with(DayOfWeek.SUNDAY);
+        } else {
+            // Start from the Sunday before Rosh HaShana
+            selichosStartDate = roshHashanaDate.minusWeeks(1).with(DayOfWeek.SUNDAY);
+        }
+
+        // Check if the given date is on or after the start date for Selichos
+        return !date.isBefore(selichosStartDate);
     }
 
 }
