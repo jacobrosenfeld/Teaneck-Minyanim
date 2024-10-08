@@ -98,7 +98,7 @@ public class ZmanimController {
         return settings;
     }
 
-    @GetMapping("/checkAseresYemeiTeshuva")
+    @GetMapping("/checkAseresYemeiTeshuva") // @TODO: aseres won't work as it's own check as it looks at current date not queried date
     public String checkAseresYemeiTeshuva(Model model) {
         boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva();
         model.addAttribute("isAseresYemeiTeshuva", isAseresYemeiTeshuva);
