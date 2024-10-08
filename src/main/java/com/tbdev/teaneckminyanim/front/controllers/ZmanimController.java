@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -95,6 +96,21 @@ public class ZmanimController {
         List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
         Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
         return settings;
+    }
+
+    @GetMapping("/checkAseresYemeiTeshuva")
+    public String checkAseresYemeiTeshuva(Model model) {
+        boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva();
+        model.addAttribute("isAseresYemeiTeshuva", isAseresYemeiTeshuva);
+        return "checkAseresYemeiTeshuva";
+    }
+
+    @GetMapping("/checkSelichos")
+    public String checkSelichos(Model model) {
+        LocalDate date = LocalDate.now(); // or any specific date you want to check
+        boolean isSelichosRecited = zmanimHandler.isSelichosRecited(date);
+        model.addAttribute("isSelichosRecited", isSelichosRecited);
+        return "checkSelichos";
     }
 
     private void setTimeZone(TimeZone tz) {
@@ -448,7 +464,7 @@ public class ZmanimController {
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
-        // mv.getModel().put("selichosMinyanim", selichosMinyanim);
+        mv.getModel().put("selichosMinyanim", selichosMinyanim);
 
         return mv;
     }
