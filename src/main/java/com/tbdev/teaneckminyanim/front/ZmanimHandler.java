@@ -102,7 +102,7 @@ public class ZmanimHandler {
         System.out.println("Rosh HaShana Date: " + roshHashanaDate);
         
         if (date.isAfter(roshHashanaDate)) {
-            roshHashana = new JewishCalendar(jewishCalendar.getJewishYear() + 1, JewishDate.TISHREI, 1);
+            roshHashana = new JewishCalendar(jewishCalendar.getJewishYear(), JewishDate.TISHREI, 1);
             roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             System.out.println("Next Year Rosh HaShana Date: " + roshHashanaDate);
         }
@@ -124,8 +124,12 @@ public class ZmanimHandler {
     
         // Check if the given date is on or after the start date for Selichos
         boolean result = !date.isBefore(selichosStartDate);
-        System.out.println("Is Selichos Recited on " + date + ": " + result);
         return result;
+    }
+
+    public boolean isAseresYemeiTeshuva(LocalDate date) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isAseresYemeiTeshuva'");
     }
 
 }

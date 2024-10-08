@@ -100,7 +100,8 @@ public class ZmanimController {
 
     @GetMapping("/checkAseresYemeiTeshuva")
     public String checkAseresYemeiTeshuva(Model model) {
-        boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva();
+        LocalDate date = LocalDate.now(); // or any specific date you want to check
+        boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva(date);
         model.addAttribute("isAseresYemeiTeshuva", isAseresYemeiTeshuva);
         return "checkAseresYemeiTeshuva";
     }
@@ -234,8 +235,7 @@ public class ZmanimController {
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
             String hebrewDate = zmanimHandler.getHebrewDate(date);
             boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
-            System.out.println("Selichos: " + isSelichosRecited);
-            boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva();
+            boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva(ref);
             System.out.println("Aseres: " + isAseresYemeiTeshuva);
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
@@ -609,7 +609,7 @@ public class ZmanimController {
         // boolean usesNotes;
 
         for (Minyan minyan : enabledMinyanim) {
-            // LocalDate ref = dateToLocalDate(date);
+            LocalDate ref = dateToLocalDate(date);
             Date startDate = minyan.getStartDate(localDate);
             // Date terminationDate = new Date((new Date()).getTime() - (60000 * 20));
             // if (startDate != null && startDate.after(terminationDate)) {
@@ -620,7 +620,7 @@ public class ZmanimController {
             mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
             String hebrewDate = zmanimHandler.getHebrewDate(date);
-            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(LocalDate.now());
+            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
             if (startDate != null) {
                 String organizationName;
                 Nusach organizationNusach;
@@ -770,7 +770,7 @@ public class ZmanimController {
         List<MinyanEvent> nextMinyan = new ArrayList<>();
 
         for (Minyan minyan : enabledMinyanim) {
-            // LocalDate ref = dateToLocalDate(date);
+            LocalDate ref = dateToLocalDate(date);
             Date startDate = minyan.getStartDate(dateToLocalDate(datenow));
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3));
@@ -781,7 +781,7 @@ public class ZmanimController {
             mgMinusOneMinute.setTime(zmanimtoday.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
             String hebrewDate = zmanimHandler.getHebrewDate(date);
-            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(LocalDate.now());
+            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
             if (startDate != null && (startDate.after(terminationDate))) {
                 if (startDate != null) {
                     String organizationName;
