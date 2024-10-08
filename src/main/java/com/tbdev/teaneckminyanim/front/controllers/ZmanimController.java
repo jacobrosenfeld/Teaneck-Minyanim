@@ -220,7 +220,7 @@ public class ZmanimController {
         System.out.println("DEBUG: Filtering through minyanim");
 
         for (Minyan minyan : enabledMinyanim) {
-            // LocalDate ref = dateToLocalDate(date);
+            LocalDate ref = dateToLocalDate(date);
             Date startDate = minyan.getStartDate(localDate);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
@@ -233,7 +233,7 @@ public class ZmanimController {
             mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
             String hebrewDate = zmanimHandler.getHebrewDate(date);
-            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(LocalDate.now());
+            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
             System.out.println("Selichos: " + isSelichosRecited);
             boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva();
             System.out.println("Aseres: " + isAseresYemeiTeshuva);
