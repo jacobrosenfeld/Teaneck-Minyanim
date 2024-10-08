@@ -295,8 +295,8 @@ public class ZmanimController {
                             
                                     }
                                 else {
-                                        if (minyan.getType().isSelichos() && isSelichosRecited == true){
-                                            minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                    if (minyan.getType().isSelichos() && isSelichosRecited){
+                                        minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                     organizationNusach, organizationId, locationName, startDate,
                                                     roundedDisplayName,
                                                     minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -325,7 +325,7 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                             else {
-                                if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                                if (minyan.getType().isSelichos() && isSelichosRecited){
                                     minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                     organizationNusach, organizationId, locationName, startDate,
                                                     roundedDisplayName,
@@ -360,7 +360,7 @@ public class ZmanimController {
                                                 minyan.getNotes(), organizationColor));
                             }
                             else {
-                                if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                                if (minyan.getType().isSelichos() && isSelichosRecited){
                                     minyanEvents
                                         .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach,
@@ -670,7 +670,7 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                         else {
-                            if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                            if (minyan.getType().isSelichos() && isSelichosRecited){
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -699,7 +699,7 @@ public class ZmanimController {
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
                             }
                         else {
-                            if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                            if (minyan.getType().isSelichos() && isSelichosRecited){
                                 minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -733,7 +733,7 @@ public class ZmanimController {
                                                 minyan.getNotes(), organizationColor));
                             }
                             else {
-                                if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                                if (minyan.getType().isSelichos() && isSelichosRecited){
                                     minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -834,7 +834,7 @@ public class ZmanimController {
                                             minyan.getNusach(), minyan.getNotes(), organizationColor));
                                 }
                                 else {
-                                    if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                                    if (minyan.getType().isSelichos() && isSelichosRecited){
                                         minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor));
@@ -864,7 +864,7 @@ public class ZmanimController {
                                             minyan.getNusach(), minyan.getNotes(), organizationColor));
                                 }
                                 else {
-                                    if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                                    if (minyan.getType().isSelichos() && isSelichosRecited){
                                         nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
@@ -896,7 +896,7 @@ public class ZmanimController {
                                                     minyan.getNotes(), organizationColor));
                                 }
                                 else {
-                                    if (minyan.getType().isSelichos() && isSelichosRecited == true){
+                                    if (minyan.getType().isSelichos() && isSelichosRecited){
                                         nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
