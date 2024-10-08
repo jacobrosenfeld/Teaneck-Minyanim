@@ -2072,6 +2072,6 @@ body {
 	--bs-tooltip-bg: #275ed8;
 	--bs-tooltip-color: var(--bs-white);
 	font-family: 'Montserrat';
-	font-size: calc(.5rem);
+	font-size: calc(.8rem);
 	font-weight: 600;
   }
