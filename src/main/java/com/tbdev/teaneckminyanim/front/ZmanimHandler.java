@@ -92,24 +92,20 @@ public class ZmanimHandler {
         
         // Check if the date is within Aseres Yemei Teshuva
         if (jewishCalendar.isAseresYemeiTeshuva()) {
-            System.out.println("Date " + date + " is within Aseres Yemei Teshuva.");
             return true;
         }
     
         // Determine the date of Rosh HaShana for the current or next Jewish year
         JewishCalendar roshHashana = new JewishCalendar(jewishCalendar.getJewishYear(), JewishDate.TISHREI, 1);
         LocalDate roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        System.out.println("Rosh HaShana Date: " + roshHashanaDate);
         
         if (date.isAfter(roshHashanaDate)) {
             roshHashana = new JewishCalendar(jewishCalendar.getJewishYear() + 1, JewishDate.TISHREI, 1);
             roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            System.out.println("Next Year Rosh HaShana Date: " + roshHashanaDate);
         }
     
         // Determine the day of the week for Rosh HaShana
         int roshHashanaDayOfWeek = roshHashana.getDayOfWeek();
-        System.out.println("Rosh HaShana Day of Week: " + roshHashanaDayOfWeek);
     
         // Determine the start date for Selichos
         LocalDate selichosStartDate;
@@ -120,11 +116,8 @@ public class ZmanimHandler {
             // Start from the Sunday before Rosh HaShana
             selichosStartDate = roshHashanaDate.minusWeeks(1).with(DayOfWeek.SUNDAY);
         }
-        System.out.println("Selichos Start Date: " + selichosStartDate);
-    
         // Check if the given date is on or after the start date for Selichos
         boolean result = !date.isBefore(selichosStartDate);
-        System.out.println("Is Selichos Recited on " + date + ": " + result);
         return result;
     }
 
