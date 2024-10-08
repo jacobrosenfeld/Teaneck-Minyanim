@@ -2066,3 +2066,9 @@ body {
 	background-color: #f0f7fd;
 	border-color: #d0e3f0;
   }
+
+  /* Tootlip */
+  .custom-tooltip {
+	--bs-tooltip-bg: #275ed8;
+	--bs-tooltip-color: var(--bs-white);
+  }
