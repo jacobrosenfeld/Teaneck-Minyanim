@@ -235,6 +235,8 @@ public class ZmanimController {
             String hebrewDate = zmanimHandler.getHebrewDate(date);
             boolean isSelichosRecited = zmanimHandler.isSelichosRecited(LocalDate.now());
             System.out.println("Selichos: " + isSelichosRecited);
+            boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva();
+            System.out.println("Aseres: " + isAseresYemeiTeshuva);
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
             // if (startDate != null && (startDate.after(terminationDate))) {
