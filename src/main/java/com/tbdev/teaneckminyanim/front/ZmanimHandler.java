@@ -127,9 +127,4 @@ public class ZmanimHandler {
         return result;
     }
 
-    public boolean isAseresYemeiTeshuva(LocalDate date) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'isAseresYemeiTeshuva'");
-    }
-
 }

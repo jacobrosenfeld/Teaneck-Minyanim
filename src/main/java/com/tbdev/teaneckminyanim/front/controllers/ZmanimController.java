@@ -100,8 +100,7 @@ public class ZmanimController {
 
     @GetMapping("/checkAseresYemeiTeshuva")
     public String checkAseresYemeiTeshuva(Model model) {
-        LocalDate date = LocalDate.now(); // or any specific date you want to check
-        boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva(date);
+        boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva();
         model.addAttribute("isAseresYemeiTeshuva", isAseresYemeiTeshuva);
         return "checkAseresYemeiTeshuva";
     }
@@ -235,8 +234,6 @@ public class ZmanimController {
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
             String hebrewDate = zmanimHandler.getHebrewDate(date);
             boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
-            boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva(ref);
-            System.out.println("Aseres: " + isAseresYemeiTeshuva);
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
             // if (startDate != null && (startDate.after(terminationDate))) {
