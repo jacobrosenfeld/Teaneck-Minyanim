@@ -82,7 +82,7 @@ public class ZmanimHandler {
         JewishCalendar jewishCalendar = new JewishCalendar();
         LocalDate now = LocalDate.now();
         jewishCalendar.setGregorianDate(now.getYear(), now.getMonthValue(), now.getDayOfMonth());
-        boolean result = jewishCalendar.isAseresYemeiTeshuva();
+        boolean result = LocalDate.isAseresYemeiTeshuva();
         System.out.println("Current Date: " + now);
         System.out.println("Jewish Year: " + jewishCalendar.getJewishYear());
         System.out.println("Jewish Month: " + jewishCalendar.getJewishMonth());
