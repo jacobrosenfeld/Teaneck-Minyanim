@@ -97,7 +97,7 @@ public class ZmanimHandler {
         }
     
         // Determine the date of Rosh HaShana for the current or next Jewish year
-        JewishCalendar roshHashana = new JewishCalendar(jewishCalendar.getJewishYear(), JewishDate.TISHREI, 1);
+        JewishCalendar roshHashana = new JewishCalendar(jewishCalendar.getJewishYear() + 1, JewishDate.TISHREI, 1);
         LocalDate roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         System.out.println("Rosh HaShana Date: " + roshHashanaDate);
         
