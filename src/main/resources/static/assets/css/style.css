@@ -2071,4 +2071,7 @@ body {
   .custom-tooltip {
 	--bs-tooltip-bg: #275ed8;
 	--bs-tooltip-color: var(--bs-white);
+	font-family: 'Montserrat';
+	font-size: calc(.5rem);
+	font-weight: 600;
   }
