@@ -51,7 +51,7 @@
                                                     <button type="button" class="btn btn-danger" disabled th:if="${settings.enabled} == 'Disabled'">Disabled</button>
                                                     <button type="button" class="btn btn-secondary" disabled th:if="${settings.enabled} == 'n/a'">N/A</button>
                                                 </td>
-                                                <td class="text-wrap" style="max-width: 200px;" th:text="${settings.text}"></td>
+                                                <td class="text-wrap" style="max-width: 200px; word-wrap: break-word; white-space: normal;" th:text="${settings.text}"></td>
                                                 <td>
                                                     <button class="btn btn-outline-dark btn-sm" data-toggle="modal" th:data-target="${'#update-settings-modal-' + settings.id}">Edit</button>
                                                 </td>
