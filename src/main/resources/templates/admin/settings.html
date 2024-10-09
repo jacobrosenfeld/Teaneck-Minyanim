@@ -39,7 +39,7 @@
                                         <th>Setting</th>
                                         <th>ID</th>
                                         <th>Enabled</th>
-                                        <th class=".col-6 .col-md-4">Value</th>
+                                        <th>Value</th>
                                         <th>Edit</th>
                                     </thead>
                                     <tbody>
@@ -51,7 +51,7 @@
                                                     <button type="button" class="btn btn-danger"disabled th:if="${settings.enabled} == 'Disabled'">Disabled</button>
                                                     <button type="button" class="btn btn-secondary" disabled th:if="${settings.enabled} == 'n/a'">N/A</button>
                                                 </td>
-                                                <td th:text="${settings.text}" />
+                                                <td class=".col-6 .col-md-4" th:text="${settings.text}" />
                                                 <td>
                                                     <button class="btn btn-outline-dark btn-sm" data-toggle="modal" th:data-target="${'#update-settings-modal-' + settings.id}">Edit</button>
                                                 </td>
