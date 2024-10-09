@@ -115,10 +115,12 @@
                                 <!-- Hidden input to store the value of the disabled select -->
                                 <input type="hidden" name="enabled" th:value="${settings.enabled == 'n/a' ? 'n/a' : ''}">
                             </div>
-                            <div class="form-group">
-                                <label for="text">Text</label>
-                                <input type="text" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
-                            </div>
+                        </td>
+                            
+                        <td>
+                            <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
+                        </td>
+
                         </div>
                         <hr>
                         <button type="submit" class="btn btn-primary">Save</button>
