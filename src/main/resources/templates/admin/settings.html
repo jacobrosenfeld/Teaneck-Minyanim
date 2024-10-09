@@ -39,48 +39,25 @@
                                         <th>Setting</th>
                                         <th>ID</th>
                                         <th>Enabled</th>
-                                        <th>Value</th>
+                                        <th class="text-wrap" style="max-width: 200px;">Value</th>
                                         <th>Edit</th>
                                     </thead>
                                     <tbody>
                                             <tr th:each="settings: ${settings}">
-                                                <td th:text="${settings.setting}" />
-                                                <td th:text="${settings.id}" />
+                                                <td th:text="${settings.setting}"></td>
+                                                <td th:text="${settings.id}"></td>
                                                 <td>
                                                     <button type="button" class="btn btn-success" disabled th:if="${settings.enabled} == 'Enabled'">Enabled</button>
-                                                    <button type="button" class="btn btn-danger"disabled th:if="${settings.enabled} == 'Disabled'">Disabled</button>
+                                                    <button type="button" class="btn btn-danger" disabled th:if="${settings.enabled} == 'Disabled'">Disabled</button>
                                                     <button type="button" class="btn btn-secondary" disabled th:if="${settings.enabled} == 'n/a'">N/A</button>
                                                 </td>
-                                                <td th:text="${settings.text}" />
+                                                <td class="text-wrap" style="max-width: 200px;" th:text="${settings.text}"></td>
                                                 <td>
                                                     <button class="btn btn-outline-dark btn-sm" data-toggle="modal" th:data-target="${'#update-settings-modal-' + settings.id}">Edit</button>
                                                 </td>
                                             </tr>
                                     </tbody>
                                 </table>
-                            </div>
-
-                            <hr>
-
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Disable this account</h5>
-                                            <p class="card-text">Disable login access to Teaneck Minyanim from this account. This will not erase any of its data.</p>
-                                            <button class="btn btn-warning" data-toggle="modal" data-target="#disable-account-modal">Disable</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Delete this account</h5>
-                                            <p class="card-text">Permanently delete all data for this account.</p>
-                                            <button class="btn btn-danger" data-toggle="modal" data-target="#delete-account-modal">Delete</button>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -174,7 +151,7 @@
         </div>
     </div>
 
-<div class="modal fade" id="change-password-modal" tabindex="-1" aria-labelledby="change-password-modal-label" style="" aria-hidden="true">
+<div class="modal fade" id="change-password-modal" tabindex="-1" aria-labelledby="change-password-modal-label" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
