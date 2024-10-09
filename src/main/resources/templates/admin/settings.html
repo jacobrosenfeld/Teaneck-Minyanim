@@ -103,24 +103,21 @@
                 <div class="modal-body">
                     <form method="post" th:action="@{/admin/update-settings}">
                         <div class="form-group">
-                            <input hidden name="id" th:value="${settings.id}">
-                            <td>
-                                <h4 th:text="${settings.setting}" />
-                            </td>
-                            <td>
-                                <div class="h1" th:each="settings: ${settings}">
-                                    <select class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}" th:value="${settings.enabled}">
-                                        <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'}">Enabled</option>
-                                        <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}">Disabled</option>
-                                        <option th:value="'n/a'" th:selected="${settings.enabled == 'n/a'}">n/a</option>
-                                    </select>
-                                </div>
-                            </td>
-                            
-                            <td>
-                                <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
-                            </td>
+                            <input type="hidden" name="id" th:value="${settings.id}">
+                            <h4 th:text="${settings.setting}"></h4>
+                            <div class="form-group">
+                                <label for="enabled">Enabled</label>
+                                <select class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}">
+                                    <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'}">Enabled</option>
+                                    <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}">Disabled</option>
+                                    <option th:value="'n/a'" th:selected="${settings.enabled == 'n/a'}">n/a</option>
+                                </select>
                             </div>
+                            <div class="form-group">
+                                <label for="text">Text</label>
+                                <input type="text" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
+                            </div>
+                        </div>
                         <hr>
                         <button type="submit" class="btn btn-primary">Save</button>
                     </form>
