@@ -1,4 +1,4 @@
-mapboxgl.accessToken = mapboxaccesstoken;
+mapboxgl.accessToken = '${settings.?[setting == 'Mapbox Access Token'].![text].get(0)}';
 let description;
 if (typeof shulname !== 'undefined' && typeof minyantype !== 'undefined' && typeof minyantime !== 'undefined' && typeof address !== 'undefined') {
     description = "<h4>" + shulname + "</h4><p>Next Minyan Today: " + minyantype + " at " + minyantime + "</p><p>" + address + "</p>";
