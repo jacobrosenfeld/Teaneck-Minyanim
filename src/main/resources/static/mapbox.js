@@ -1,4 +1,4 @@
-mapboxgl.accessToken = '${settings.?[setting == 'Mapbox Access Token'].![text].get(0)}';
+// mapboxgl.accessToken = ${settings.?[setting == 'Mapbox Access Token'].![text].get(0)};
 let description;
 if (typeof shulname !== 'undefined' && typeof minyantype !== 'undefined' && typeof minyantime !== 'undefined' && typeof address !== 'undefined') {
     description = "<h4>" + shulname + "</h4><p>Next Minyan Today: " + minyantype + " at " + minyantime + "</p><p>" + address + "</p>";
@@ -7,7 +7,7 @@ if (typeof shulname !== 'undefined' && typeof minyantype !== 'undefined' && type
 }
 
 // Make the GET request to the Mapbox Geocoding API
-fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_token=${mapboxgl.accessToken}`)
+fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address}.json?access_token=${mapboxaccesstoken}`)
     .then(response => response.json())
     .then(data => {
         // The data object returned from the API will contain an array of features
