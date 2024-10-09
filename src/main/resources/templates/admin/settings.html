@@ -112,6 +112,8 @@
                                     <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}">Disabled</option>
                                     <option th:value="'n/a'" th:selected="${settings.enabled == 'n/a'}">n/a</option>
                                 </select>
+                                <!-- Hidden input to store the value of the disabled select -->
+                                <input type="hidden" name="enabled" th:value="${settings.enabled == 'n/a' ? 'n/a' : ''}">
                             </div>
                             <div class="form-group">
                                 <label for="text">Text</label>
