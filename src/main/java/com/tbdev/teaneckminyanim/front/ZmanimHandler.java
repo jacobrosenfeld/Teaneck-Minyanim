@@ -93,7 +93,7 @@ public class ZmanimHandler {
 
     public boolean isSelichosRecited(LocalDate date) {
         JewishCalendar jewishCalendar = new JewishCalendar();
-        jewishCalendar.setGregorianDate(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+        jewishCalendar.setGregorianDate(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
         
         logger.info("Checking date: " + date);
         
