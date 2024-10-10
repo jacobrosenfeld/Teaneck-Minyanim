@@ -98,7 +98,10 @@ public class ZmanimHandler {
         logger.info("Checking date: " + date);
         
         // Check if the date is within Aseres Yemei Teshuva
-        if (jewishCalendar.isAseresYemeiTeshuva()) {
+        boolean isAseresYemeiTeshuva = jewishCalendar.isAseresYemeiTeshuva();
+        logger.info("isAseresYemeiTeshuva method called: " + isAseresYemeiTeshuva);
+        
+        if (isAseresYemeiTeshuva) {
             logger.info("Date is within Aseres Yemei Teshuva");
             return true;
         }
