@@ -15,14 +15,14 @@ import java.util.Date;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 
 public class ZmanimHandler {
     private GeoLocation geoLocation;
-//    private ComplexZmanimCalendar complexZmanimCalendar;
+    private static final Logger logger = Logger.getLogger(ZmanimHandler.class.getName());
 
     public ZmanimHandler(GeoLocation geoLocation) {
         this.geoLocation = geoLocation;
-//        this.complexZmanimCalendar = new ComplexZmanimCalendar(geoLocation);
     }
 
     public ZmanimHandler() {
@@ -35,16 +35,15 @@ public class ZmanimHandler {
         this.geoLocation = geoLocation;
     }
 
-
     public Dictionary<Zman, Date> getZmanimForNow() {
         return getZmanim(LocalDate.now());
     }
+
     public Dictionary<Zman, Date> getZmanim(LocalDate date) {
         Dictionary<Zman, Date> dictionary = new Hashtable();
 
         ComplexZmanimCalendar complexZmanimCalendar = new ComplexZmanimCalendar(geoLocation);
         complexZmanimCalendar.getCalendar().set(date.getYear(), date.getMonth().getValue() - 1, date.getDayOfMonth());
-//        complexZmanimCalendar.getCalendar().
 
         dictionary.put(Zman.ALOT_HASHACHAR, complexZmanimCalendar.getAlosHashachar());
         dictionary.put(Zman.ETT, complexZmanimCalendar.getBeginCivilTwilight());
@@ -65,7 +64,6 @@ public class ZmanimHandler {
 
         return dictionary;
     }
-    
 
     public String getHebrewDate(Date date) {
         JewishDate jd = new JewishDate(date);
@@ -77,7 +75,7 @@ public class ZmanimHandler {
     public String getTodaysHebrewDate() {
         return getHebrewDate(new Date());
     }
-    
+
     public boolean isAseresYemeiTeshuva() {
         JewishCalendar jewishCalendar = new JewishCalendar();
         LocalDate now = LocalDate.now();
@@ -90,8 +88,11 @@ public class ZmanimHandler {
         JewishCalendar jewishCalendar = new JewishCalendar();
         jewishCalendar.setGregorianDate(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
         
+        logger.info("Checking date: " + date);
+        
         // Check if the date is within Aseres Yemei Teshuva
         if (jewishCalendar.isAseresYemeiTeshuva()) {
+            logger.info("Date is within Aseres Yemei Teshuva");
             return true;
         }
     
@@ -99,13 +100,17 @@ public class ZmanimHandler {
         JewishCalendar roshHashana = new JewishCalendar(jewishCalendar.getJewishYear(), JewishDate.TISHREI, 1);
         LocalDate roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         
+        logger.info("Rosh HaShana date: " + roshHashanaDate);
+        
         if (date.isAfter(roshHashanaDate)) {
             roshHashana = new JewishCalendar(jewishCalendar.getJewishYear() + 1, JewishDate.TISHREI, 1);
             roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            logger.info("Updated Rosh HaShana date for next year: " + roshHashanaDate);
         }
     
         // Determine the day of the week for Rosh HaShana
         int roshHashanaDayOfWeek = roshHashana.getDayOfWeek();
+        logger.info("Rosh HaShana day of week: " + roshHashanaDayOfWeek);
     
         // Determine the start date for Selichos
         LocalDate selichosStartDate;
@@ -116,9 +121,12 @@ public class ZmanimHandler {
             // Start from the Sunday before Rosh HaShana
             selichosStartDate = roshHashanaDate.minusWeeks(1).with(DayOfWeek.SUNDAY);
         }
+        logger.info("Selichos start date: " + selichosStartDate);
+        
         // Check if the given date is on or after the start date for Selichos
         boolean result = !date.isBefore(selichosStartDate);
+        logger.info("Is Selichos recited: " + result);
+        
         return result;
     }
-
 }
