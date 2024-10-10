@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.tbdev.teaneckminyanim.service.ZmanimService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,34 +43,9 @@ import com.tbdev.teaneckminyanim.global.Nusach;
 import com.tbdev.teaneckminyanim.global.Zman;
 
 @Controller
+@RequiredArgsConstructor
 public class ZmanimController {
-    TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
-
-    String locationName = "Teaneck, NJ";
-    double latitude = 40.906871;
-    double longitude = -74.020924;
-    double elevation = 24;
-    GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
-
-    Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm aa");
-    SimpleDateFormat onlyDateFormat = new SimpleDateFormat("EEEE, MMMM d");
-    SimpleDateFormat strippedDayFormat = new SimpleDateFormat("MMMM d");
-    SimpleDateFormat timeFormatSec = new SimpleDateFormat("h:mm:ss aa");
-    SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
-
-    ZmanimHandler zmanimHandler = new ZmanimHandler(geoLocation);
-    @Autowired
-    private ZmanimService zmanimService;
-
-    @Autowired
-    private MinyanDAO minyanDAO;
-
-    @Autowired
-    private OrganizationDAO organizationDAO;
-
-    @Autowired
-    private LocationDAO locationDAO;
+    private final ZmanimService zmanimService;
 
     @GetMapping("/")
     public ModelAndView home() {
