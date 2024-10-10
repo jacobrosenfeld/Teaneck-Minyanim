@@ -660,6 +660,9 @@ body {
 		outline: none !important;
 	}
 
+	.home-container {
+		padding-top: calc(var(--bs-gutter-x) * .5);
+	}
 	/*------------------------------------------------
 ------------- Hero Version 2 Styling -------------
 -------------------------------------------------*/
@@ -2062,4 +2065,13 @@ body {
   .bs-callout-info {
 	background-color: #f0f7fd;
 	border-color: #d0e3f0;
+  }
+
+  /* Tootlip */
+  .custom-tooltip {
+	--bs-tooltip-bg: #275ed8;
+	--bs-tooltip-color: var(--bs-white);
+	font-family: 'Montserrat';
+	font-size: calc(.8rem);
+	font-weight: 600;
   }

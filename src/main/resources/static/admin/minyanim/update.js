@@ -12,12 +12,13 @@ function update(name) {
                                 <select class="custom-select" name="${name}-zman" id="${name}-zman" required>
                                                                             <option disabled selected>Choose a zman</option>
                                                                             <option value="netz">Netz</option>
-                                                                            <option value="chatzot">Chatzot</option>
+                                                                            <option value="chatzos">Chatzos</option>
                                                                             <option value="mincha_gedola">Mincha Gedola</option>
                                                                             <option value="mincha_ketana">Mincha Ketana</option>
                                                                             <option value="plag_hamincha">Plag HaMincha</option>
                                                                             <option value="shekiya">Shekiya</option>
-                                                                            <option value="tzet">Tzet Hakochavim</option>
+                                                                            <option value="tzes">Tzes Hakochavim</option>
+                                                                            <option value="chatzos_laila">Chatzos Laila</option>
                                                                         </select>
                             </div>
                             <div class="col">
@@ -30,12 +31,13 @@ function update(name) {
                                 <select class="custom-select" name="${name}-zman" id="${name}-zman" required>
                                                                             <option disabled selected>Choose a zman</option>
                                                                             <option value="netz">Netz</option>
-                                                                            <option value="chatzot">Chatzot</option>
+                                                                            <option value="chatzos">Chatzos</option>
                                                                             <option value="mincha_gedola">Mincha Gedola</option>
                                                                             <option value="mincha_ketana">Mincha Ketana</option>
                                                                             <option value="plag_hamincha">Plag HaMincha</option>
                                                                             <option value="shekiya">Shekiya</option>
-                                                                            <option value="tzet">Tzet Hakochavim</option>
+                                                                            <option value="tzes">Tzes Hakochavim</option>
+                                                                            <option value="chatzos_laila">Chatzos Laila</option>
                                                                         </select>
                             </div>
                             <div class="col">

@@ -3,16 +3,20 @@ package com.tbdev.teaneckminyanim.global;
 public enum Zman {
     ALOT_HASHACHAR("ALOT_HASHACHAR"),
     ETT("ETT"),
+    MISHEYAKIR("MISHEYAKIR"),
     NETZ("NETZ"),
     SZKS("SZKS"),
+    MASZKS("MASZKS"),
     SZT("SZT"),
-    CHATZOT("CHATZOT"),
+    MASZT("MASZT"),
+    CHATZOS("CHATZOS"),
     MINCHA_GEDOLA("MINCHA_GEDOLA"),
     MINCHA_KETANA("MINCHA_KETANA"),
     PLAG_HAMINCHA("PLAG_HAMINCHA"),
     SHEKIYA("SHEKIYA"),
     EARLIEST_SHEMA("EARLIEST_SHEMA"),
-    TZET("TZET");
+    TZES("TZES"),
+    CHATZOS_LAILA("CHATZOS_LAILA");
 
     private String text;
 
@@ -42,13 +46,15 @@ public enum Zman {
                 return "Alos HaShachar";
             case ETT:
                 return "ETT";
+            case MISHEYAKIR:
+                return "Misheyakir";
             case NETZ:
                 return "Netz";
             case SZKS:
                 return "Sof Zman Krias Shma";
             case SZT:
                 return "Sof Zman Tefilla";   
-            case CHATZOT:
+            case CHATZOS:
                 return "Chatzos";
             case MINCHA_GEDOLA:
                 return "Mincha Gedola";
@@ -60,8 +66,10 @@ public enum Zman {
                 return "Shekiya";
             case EARLIEST_SHEMA:
                 return "Earliest Shema";
-            case TZET:
+            case TZES:
                 return "Tzes";
+            case CHATZOS_LAILA:
+                return "Chatzos Laila";
             default:
                 return null;
         }

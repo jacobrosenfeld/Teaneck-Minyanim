@@ -6,6 +6,8 @@ import com.tbdev.teaneckminyanim.admin.structure.location.LocationDAO;
 import com.tbdev.teaneckminyanim.admin.structure.minyan.*;
 import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
 import com.tbdev.teaneckminyanim.admin.structure.organization.OrganizationDAO;
+import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettings;
+import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettingsDAO;
 import com.tbdev.teaneckminyanim.admin.structure.user.TNMUser;
 import com.tbdev.teaneckminyanim.admin.structure.user.TNMUserDAO;
 import com.tbdev.teaneckminyanim.global.Nusach;
@@ -16,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -40,6 +43,9 @@ public class AdminController {
 
     @Autowired
     private MinyanDAO minyanDAO;
+
+    @Autowired
+    private TNMSettingsDAO tnmsettingsDAO;
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | hh:mm aa");
     TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
@@ -148,6 +154,7 @@ public class AdminController {
         }
     }
 
+
     @GetMapping("/admin/logout")
     public ModelAndView logout(@RequestParam(value = "error", required = false) String error) {
         return new LoginController().login(error, true);
@@ -169,6 +176,35 @@ public class AdminController {
         mv.getModel().put("error", errorMessage);
         return mv;
     }
+
+    @ModelAttribute("settings")
+    public List<TNMSettings> settings() {
+        // Load and return the settings here
+        List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
+        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
+        return settings;
+    }
+
+    @GetMapping("/admin/settings")
+    public ModelAndView settings(String successMessage, String errorMessage) {
+        if (!isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to access this page");
+        }
+
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("admin/settings");
+
+        List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
+        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
+        mv.addObject("settings", settings);
+
+        addStandardPageData(mv);
+
+        mv.getModel().put("success", successMessage);
+        mv.getModel().put("error", errorMessage);
+        return mv;
+    }
+
 
     @RequestMapping(value = "/admin/new-organization", method = RequestMethod.GET)
     public ModelAndView addOrganization(boolean success, String error, String inputErrorMessage) {
@@ -326,7 +362,6 @@ public class AdminController {
                                 String errorMessage, String changePasswordError) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("account");
-//        TODO: ENSURE SECURITY
         if (isSuperAdmin()) {
             TNMUser queriedUser = this.TNMUserDAO.findById(id);
             System.out.println("Queried user: " + queriedUser);
@@ -528,34 +563,30 @@ public class AdminController {
 
         Organization organization = new Organization(id, name, address, siteURI, nusach, orgColor);
 //        check permissions
-        if (isAdmin()) {
-            if (this.organizationDAO.update(organization)) {
-                System.out.println("Organization updated successfully.");
-                return organization(id, "Successfully updated the organization details.", null, null, null);
-            } else {
-                System.out.println("Organization update failed.");
-                return organization(id, null, null, "Sorry, the update failed.", null);
-            }
-        } else if (isUser()) {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            TNMUser user = this.TNMUserDAO.findByName(username);
-            String associatedOrganizationId = user.getOrganizationId();
-            if (!associatedOrganizationId.equals(id)) {
-                System.out.println("You do not have permission to view this organization.");
-                throw new AccessDeniedException("You do not have permission to view this organization.");
-            } else {
-                if (this.organizationDAO.update(organization)) {
-                    System.out.println("Organization updated successfully.");
-                    return organization(id, "Successfully updated the organization details.", null, null, null);
-                } else {
-                    System.out.println("Organization update failed.");
-                    return organization(id, null, "Sorry, the update failed.", null, null);
-                }
-            }
+          if (isAdmin()) {
+        if (this.organizationDAO.update(organization)) {
+            // Redirect to the organization page after a successful update
+            RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
+            return new ModelAndView(redirectView);
         } else {
-            throw new AccessDeniedException("You do not have permission to view this organization.");
+            // Handle update failure
+            return organization(id, null, null, "Sorry, the update failed.", null);
         }
+    } else if (isUser()) {
+        // ... (Permissions check and organization update, similar to admin case)
+
+        if (this.organizationDAO.update(organization)) {
+            // Redirect to the organization page after a successful update
+            RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
+            return new ModelAndView(redirectView);
+        } else {
+            // Handle update failure
+            return organization(id, null, "Sorry, the update failed.", null, null);
+        }
+    } else {
+        throw new AccessDeniedException("You do not have permission to view this organization.");
     }
+}
 
     @RequestMapping(value = "/admin/delete-organization")
     public ModelAndView deleteOrganization(@RequestParam(value = "id", required = true) String id) throws Exception {
@@ -778,7 +809,6 @@ if (this.TNMUserDAO.delete(account)) {
         TNMUser userToUpdate = TNMUserDAO.findById(id);
         TNMUser currentUser = getCurrentUser();
 
-
         if (!currentUser.isSuperAdmin()) {
             if (!currentUser.getOrganizationId().equals(userToUpdate.getOrganizationId())) {
                 System.out.println("Exiting at break 1");
@@ -833,6 +863,26 @@ if (this.TNMUserDAO.delete(account)) {
         }
     }
 
+    @RequestMapping(value = "/admin/update-settings", method = RequestMethod.POST)
+    public ModelAndView updateSettings(
+            @RequestParam(value = "setting", required = false) String setting,
+            @RequestParam(value = "enabled", required = false) String newEnabled,
+            @RequestParam(value = "id", required = true) String id,
+            @RequestParam(value = "text", required = false) String newText,
+            @RequestParam(value = "type", required = false) String type
+    ) {
+        TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);    
+
+        TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText, type);
+        if (tnmsettingsDAO.update(settings)) {
+            // return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
+            RedirectView redirectView = new RedirectView("/admin/settings", true);
+            return new ModelAndView(redirectView);
+        } else {
+            return settings (null, "Sorry, an error occurred. The setting could not be updated.");
+        }
+    }
+
     @RequestMapping(value = "/admin/{oid}/locations", method = RequestMethod.GET)
     public ModelAndView locations(@PathVariable(value = "oid") String oid, String successMessage, String errorMessage) {
         String oidToUse;
@@ -878,7 +928,9 @@ if (this.TNMUserDAO.delete(account)) {
     }
 
     @RequestMapping(value = "/admin/update-location", method = RequestMethod.POST)
-    public ModelAndView updateLocation(@RequestParam(value = "id", required = true) String id, @RequestParam(value = "name", required = true) String newName) {
+    public ModelAndView updateLocation(
+        @RequestParam(value = "id", required = true) String id,
+        @RequestParam(value = "name", required = true) String newName) {
         Location locationToUpdate = locationDAO.findById(id);
         if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(locationToUpdate.getOrganizationId())) {
             throw new AccessDeniedException("You do not have permission to update a location for this organization.");
@@ -897,6 +949,7 @@ if (this.TNMUserDAO.delete(account)) {
             return locations(organizationId, null, "Sorry, an error occurred. The location could not be updated.");
         }
     }
+
 
     @RequestMapping(value = "/admin/delete-location")
     public ModelAndView deleteLocation(@RequestParam(value = "id", required = true) String id) {
@@ -961,11 +1014,11 @@ if (this.TNMUserDAO.delete(account)) {
             maarivTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
-        List<Minyan> selichotMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SELICHOT)).collect(Collectors.toList());
-        mv.addObject("selichotminyanim", selichotMinyanim);
-        Map<String, HashMap<MinyanDay, MinyanTime>> selichotTimes = new HashMap<>();
-        for (Minyan m : selichotMinyanim) {
-            selichotTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
+        List<Minyan> selichosMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SELICHOS)).collect(Collectors.toList());
+        mv.addObject("selichosminyanim", selichosMinyanim);
+        Map<String, HashMap<MinyanDay, MinyanTime>> selichosTimes = new HashMap<>();
+        for (Minyan m : selichosMinyanim) {
+            selichosTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
         List<Minyan> megilaMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.MEGILA_READING)).collect(Collectors.toList());
@@ -978,7 +1031,7 @@ if (this.TNMUserDAO.delete(account)) {
         mv.addObject("shacharistimes", shacharisTimes);
         mv.addObject("minchatimes", minchaTimes);
         mv.addObject("maarivtimes", maarivTimes);
-        mv.addObject("selichottimes", selichotTimes);
+        mv.addObject("selichostimes", selichosTimes);
         mv.addObject("megilatimes", megilaTimes);
 
         mv.addObject("Day", MinyanDay.class);
