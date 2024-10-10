@@ -13,6 +13,7 @@ import com.tbdev.teaneckminyanim.front.ZmanimHandler;
 import com.tbdev.teaneckminyanim.global.Nusach;
 import com.tbdev.teaneckminyanim.global.Zman;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -28,6 +29,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ZmanimService {
@@ -56,7 +58,7 @@ public class ZmanimService {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("homepage");
 
-        System.out.println("DEBUG: Adding dates to model");
+        log.debug("DEBUG: Adding dates to model");
 
         // adding dates to model data
         setTimeZone(timeZone);
@@ -92,47 +94,47 @@ public class ZmanimService {
         // add today's hebrew date
         mv.getModel().put("hebrewDate", zmanimHandler.getHebrewDate(date));
 
-        System.out.println("DEBUG: Fetching zmanim for model");
+        log.debug(": Fetching zmanim for model");
 
         LocalDate localDate = dateToLocalDate(date);
-        System.out.println("Showing zmanim for date: " + localDate.getMonth() + ":" + localDate.getMonthValue() + ":"
+        log.info("Showing zmanim for date: " + localDate.getMonth() + ":" + localDate.getMonthValue() + ":"
                 + localDate.getMonth().getValue() + ":" + localDate.toString());
 
         Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(localDate);
         Dictionary<Zman, Date> zmanimtoday = zmanimHandler.getZmanimForNow();
 
-        System.out.println("DEBUG: Putting zmanim in model");
+        log.debug(": Putting zmanim in model");
 
-        System.out.println("ALOT HASH: " + zmanim.get(Zman.ALOT_HASHACHAR));
+        log.info("ALOT HASH: " + zmanim.get(Zman.ALOT_HASHACHAR));
         mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOT_HASHACHAR)));
         mv.getModel().put("ett", timeFormatWithRoundingToSecond(zmanim.get(Zman.ETT)));
         mv.getModel().put("netz", timeFormatWithRoundingToSecond(zmanim.get(Zman.NETZ)));
         mv.getModel().put("szks", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZKS)));
         mv.getModel().put("szt", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZT)));
-        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOT)));
+        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
         mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_GEDOLA)));
         mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_KETANA)));
         mv.getModel().put("plagHamincha", timeFormatWithRoundingToSecond(zmanim.get(Zman.PLAG_HAMINCHA)));
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
-        mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZET)));
+        mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
 
-        System.out.println("DEBUG: Fetching minyanim");
+        log.debug(": Fetching minyanim");
 
         // get minyanim closest in time to now
         // todo: only get items with non null time for date
         List<Minyan> enabledMinyanim = minyanDAO.getEnabled();
         List<MinyanEvent> minyanEvents = new ArrayList<>();
 
-        System.out.println("DEBUG: Filtering through minyanim");
+        log.debug(": Filtering through minyanim");
 
         for (Minyan minyan : enabledMinyanim) {
             LocalDate ref = dateToLocalDate(date);
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 8));
-            System.out.println("SD: " + startDate);
-            System.out.println("TD: " + terminationDate);
+            log.info("SD: " + startDate);
+            log.info("TD: " + terminationDate);
             Calendar shekiyaMinusOneMinute = Calendar.getInstance();
             shekiyaMinusOneMinute.setTime(zmanim.get(Zman.SHEKIYA));
             shekiyaMinusOneMinute.add(Calendar.MINUTE, -1);
@@ -268,7 +270,7 @@ public class ZmanimService {
             LocalDate ref = dateToLocalDate(date);
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
-            System.out.println("SD: " + startDate);
+            log.info("SD: " + startDate);
             if (startDate != null) {
                 String organizationName;
                 Nusach organizationNusach;
@@ -361,21 +363,21 @@ public class ZmanimService {
         Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(localDate);
         Dictionary<Zman, Date> zmanimtoday = zmanimHandler.getZmanimForNow();
 
-        System.out.println("DEBUG: Putting zmanim in model");
+        log.debug(": Putting zmanim in model");
 
-        System.out.println("ALOT HASH: " + zmanim.get(Zman.ALOT_HASHACHAR));
+        log.info("ALOT HASH: " + zmanim.get(Zman.ALOT_HASHACHAR));
         mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOT_HASHACHAR)));
         mv.getModel().put("ETT", timeFormatWithRoundingToSecond(zmanim.get(Zman.ETT)));
         mv.getModel().put("netz", timeFormatWithRoundingToSecond(zmanim.get(Zman.NETZ)));
         mv.getModel().put("szks", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZKS)));
         mv.getModel().put("szt", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZT)));
-        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOT)));
+        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
         mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_GEDOLA)));
         mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_KETANA)));
         mv.getModel().put("plagHamincha", timeFormatWithRoundingToSecond(zmanim.get(Zman.PLAG_HAMINCHA)));
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
-        mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZET)));
+        mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a");
         Date datenow = new Date();
