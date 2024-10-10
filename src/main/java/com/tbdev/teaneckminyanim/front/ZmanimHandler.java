@@ -15,11 +15,11 @@ import java.util.Date;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.TimeZone;
-import java.util.logging.// logger;
+import java.util.logging.Logger;
 
 public class ZmanimHandler {
     private GeoLocation geoLocation;
-    private static final // logger // logger = // logger.get// logger(ZmanimHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(ZmanimHandler.class.getName());
 
     public ZmanimHandler(GeoLocation geoLocation) {
         this.geoLocation = geoLocation;
