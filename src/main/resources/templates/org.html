@@ -31,6 +31,7 @@
     var address = /*[[${org.getAddress()}]]*/ "";
     var shulname = /*[[${org.getName()}]]*/ "";
     var shulcolor = /*[[${org.getOrgColor()}]]*/ "";
+    var mapboxaccesstoken = /*[[${settings.?[setting == 'Mapbox Access Token'].![text].get(0)}]]*/ "";
     /*]]>*/
   </script>
   <script th:if="${upcoming != null}" th:inline="javascript">
@@ -104,7 +105,7 @@
                             </ul>
                             <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
                               th:if="${upcoming != null}"
-                              th:text="@{|Next Minyan: ${upcoming.getType().displayName()} at ${upcoming.getFormattedStartTime()}|}"></button>
+                              th:text="@{|Next Minyan Today: ${upcoming.getType().displayName()} at ${upcoming.getFormattedStartTime()}|}"></button>
                             <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
                               th:if="${upcoming == null}">TThere are no upcoming minyanim today.
                             </button>
@@ -319,6 +320,15 @@
   <script type="text/javascript" src="/assets/js/jquery.validate.min.js"></script>
   <script type="text/javascript" src="/assets/js/plugins.js"></script>
   <script type="text/javascript" src="/assets/js/custom.js"></script>
+  <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+  <script>
+    kofiWidgetOverlay.draw('jacobrosenfeld', {
+      'type': 'floating-chat',
+      'floating-chat.donateButton.text': 'Support Us',
+      'floating-chat.donateButton.background-color': '#323842',
+      'floating-chat.donateButton.text-color': '#fff'
+    });
+  </script>
 </body>
 
 </html>
