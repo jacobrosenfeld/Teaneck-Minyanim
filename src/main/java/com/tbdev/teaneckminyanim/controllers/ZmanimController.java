@@ -1,34 +1,51 @@
-package com.tbdev.teaneckminyanim.controllers;
+package com.tbdev.teaneckminyanim.front.controllers;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.util.*;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.List;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.kosherjava.zmanim.util.GeoLocation;
-import com.tbdev.teaneckminyanim.service.TNMSettingsService;
-import com.tbdev.teaneckminyanim.model.TNMSettings;
-import com.tbdev.teaneckminyanim.service.ZmanimHandler;
 import com.tbdev.teaneckminyanim.service.ZmanimService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.kosherjava.zmanim.util.GeoLocation;
+import com.tbdev.teaneckminyanim.admin.structure.location.Location;
+import com.tbdev.teaneckminyanim.admin.structure.location.LocationDAO;
+import com.tbdev.teaneckminyanim.admin.structure.minyan.Minyan;
+import com.tbdev.teaneckminyanim.admin.structure.minyan.MinyanDAO;
+import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
+import com.tbdev.teaneckminyanim.admin.structure.organization.OrganizationDAO;
+import com.tbdev.teaneckminyanim.front.KolhaMinyanim;
+import com.tbdev.teaneckminyanim.front.MinyanEvent;
+import com.tbdev.teaneckminyanim.front.ZmanimHandler;
+import com.tbdev.teaneckminyanim.global.Nusach;
+import com.tbdev.teaneckminyanim.global.Zman;
 
 @Controller
 @RequiredArgsConstructor
 public class ZmanimController {
     private final ZmanimService zmanimService;
-    private final TNMSettingsService tnmSettingsDao;
-
-    TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
-
-    String locationName = "Teaneck, NJ";
-    double latitude = 40.906871;
-    double longitude = -74.020924;
-    double elevation = 24;
-    GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
-
-    ZmanimHandler zmanimHandler = new ZmanimHandler(geoLocation);
 
     @GetMapping("/")
     public ModelAndView home() {
@@ -40,29 +57,6 @@ public class ZmanimController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("subscription");
         return mv;
-    }
-
-    @ModelAttribute("settings")
-    public List<TNMSettings> settings() {
-        // Load and return the settings here
-        List<TNMSettings> settings = tnmSettingsDao.getAll();
-        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
-        return settings;
-    }
-
-    @GetMapping("/checkAseresYemeiTeshuva")
-    public String checkAseresYemeiTeshuva(Model model) {
-        boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva();
-        model.addAttribute("isAseresYemeiTeshuva", isAseresYemeiTeshuva);
-        return "checkAseresYemeiTeshuva";
-    }
-
-    @GetMapping("/checkSelichos")
-    public String checkSelichos(Model model) {
-        LocalDate date = LocalDate.now(); // or any specific date you want to check
-        boolean isSelichosRecited = zmanimHandler.isSelichosRecited(date);
-        model.addAttribute("isSelichosRecited", isSelichosRecited);
-        return "checkSelichos";
     }
 
     @GetMapping("/zmanim")
