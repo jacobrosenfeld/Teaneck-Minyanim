@@ -234,6 +234,7 @@ public class ZmanimController {
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
             String hebrewDate = zmanimHandler.getHebrewDate(date);
             boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
+            System.out.println("TD: " + isSelichosRecited);
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
             // if (startDate != null && (startDate.after(terminationDate))) {
