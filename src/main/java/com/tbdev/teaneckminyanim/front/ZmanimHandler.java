@@ -79,8 +79,15 @@ public class ZmanimHandler {
     public boolean isAseresYemeiTeshuva() {
         JewishCalendar jewishCalendar = new JewishCalendar();
         LocalDate now = LocalDate.now();
+        
+        logger.info("Current date: " + now);
+        
         jewishCalendar.setGregorianDate(now.getYear(), now.getMonthValue() - 1, now.getDayOfMonth());
+        
         boolean result = jewishCalendar.isAseresYemeiTeshuva();
+        
+        logger.info("Is Aseres Yemei Teshuva: " + result);
+        
         return result;
     }
 
