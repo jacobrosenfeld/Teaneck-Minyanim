@@ -736,6 +736,11 @@
                                         <label for="notes">Notes</label>
                                         <input type="text" class="form-control" name="notes" id="notes" aria-describedby="notes-help" th:value="${minyan.getNotes()}">
                                     </div>
+                                    <div class="form-group">
+                                        <label for="whatsapp">WhatsApp Group</label>
+                                        <input type="text" class="form-control" name="whatsapp" id="whatsapp" aria-describedby="whatsapp">
+                                        <small id="whatsapp-help" class="form-text text-muted">Optional: If the minyan utilizes a WhatsApp Group this link will be displayed publically. Make sure  to include https://</small>
+                                    </div>
                                     <div class="login-msg-box" th:if="${inputerrormessage}">
                                         <div class="form-msg-fatal" th:text="${inputerrormessage}"></div>
                                     </div>
