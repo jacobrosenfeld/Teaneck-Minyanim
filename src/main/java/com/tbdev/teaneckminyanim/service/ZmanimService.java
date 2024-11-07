@@ -173,9 +173,12 @@ public class ZmanimService {
         log.info("ALOS HASH: " + zmanim.get(Zman.ALOS_HASHACHAR));
         mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOS_HASHACHAR)));
         mv.getModel().put("ett", timeFormatWithRoundingToSecond(zmanim.get(Zman.ETT)));
+        mv.getModel().put("misheyakir", timeFormatWithRoundingToSecond(zmanim.get(Zman.MISHEYAKIR)));
         mv.getModel().put("netz", timeFormatWithRoundingToSecond(zmanim.get(Zman.NETZ)));
         mv.getModel().put("szks", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZKS)));
+        mv.getModel().put("maszks", timeFormatWithRoundingToSecond(zmanim.get(Zman.MASZKS)));
         mv.getModel().put("szt", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZT)));
+        mv.getModel().put("maszt"), timeFormatWithRoundingToSecond(zmanim.get(Zman.MASZT));
         mv.getModel().put("chatzos", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
         mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_GEDOLA)));
         mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_KETANA)));
