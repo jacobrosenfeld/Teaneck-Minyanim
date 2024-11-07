@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class MinyanMapper implements RowMapper<Minyan>, Serializable {
 
-    public static final String BASE_SQL = "SELECT m.ID, m.TYPE, m.LOCATION_ID, m.ORGANIZATION_ID, m.ENABLED, m.START_TIME_1, m.START_TIME_2, m.START_TIME_3, m.START_TIME_4, m.START_TIME_5, m.START_TIME_6, m.START_TIME_7, m.START_TIME_RC, m.START_TIME_YT, m.START_TIME_CH, m.START_TIME_CHRC, m.NOTES, m.NUSACH FROM MINYAN m, m.WHATSAPP FROM MINYAN m";
+    public static final String BASE_SQL = "SELECT m.ID, m.TYPE, m.LOCATION_ID, m.ORGANIZATION_ID, m.ENABLED, m.START_TIME_1, m.START_TIME_2, m.START_TIME_3, m.START_TIME_4, m.START_TIME_5, m.START_TIME_6, m.START_TIME_7, m.START_TIME_RC, m.START_TIME_YT, m.START_TIME_CH, m.START_TIME_CHRC, m.NOTES, m.NUSACH, m.WHATSAPP FROM MINYAN m";
 
     @Override
     public Minyan mapRow(ResultSet rs, int rowNum) throws SQLException {
