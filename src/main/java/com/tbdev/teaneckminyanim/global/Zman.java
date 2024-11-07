@@ -1,7 +1,7 @@
 package com.tbdev.teaneckminyanim.global;
 
 public enum Zman {
-    ALOT_HASHACHAR("ALOT_HASHACHAR"),
+    ALOS_HASHACHAR("ALOS_HASHACHAR"),
     ETT("ETT"),
     MISHEYAKIR("MISHEYAKIR"),
     NETZ("NETZ"),
@@ -42,7 +42,7 @@ public enum Zman {
 
     public String displayName() {
         switch (this) {
-            case ALOT_HASHACHAR:
+            case ALOS_HASHACHAR:
                 return "Alos HaShachar";
             case ETT:
                 return "ETT";

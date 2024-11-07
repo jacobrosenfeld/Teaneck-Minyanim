@@ -45,7 +45,7 @@ public class ZmanimHandler {
         ComplexZmanimCalendar complexZmanimCalendar = new ComplexZmanimCalendar(geoLocation);
         complexZmanimCalendar.getCalendar().set(date.getYear(), date.getMonth().getValue() - 1, date.getDayOfMonth());
 
-        dictionary.put(Zman.ALOT_HASHACHAR, complexZmanimCalendar.getAlosHashachar());
+        dictionary.put(Zman.ALOS_HASHACHAR, complexZmanimCalendar.getAlosHashachar());
         dictionary.put(Zman.ETT, complexZmanimCalendar.getBeginCivilTwilight());
         dictionary.put(Zman.MISHEYAKIR, complexZmanimCalendar.getMisheyakir7Point65Degrees());
         dictionary.put(Zman.NETZ, complexZmanimCalendar.getSunrise());
