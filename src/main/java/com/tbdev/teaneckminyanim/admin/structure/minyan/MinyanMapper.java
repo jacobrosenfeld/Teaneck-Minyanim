@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class MinyanMapper implements RowMapper<Minyan>, Serializable {
 
-    public static final String BASE_SQL = "SELECT m.ID, m.TYPE, m.LOCATION_ID, m.ORGANIZATION_ID, m.ENABLED, m.START_TIME_1, m.START_TIME_2, m.START_TIME_3, m.START_TIME_4, m.START_TIME_5, m.START_TIME_6, m.START_TIME_7, m.START_TIME_RC, m.START_TIME_YT, m.START_TIME_CH, m.START_TIME_CHRC, m.NOTES, m.NUSACH FROM MINYAN m";
+    public static final String BASE_SQL = "SELECT m.ID, m.TYPE, m.LOCATION_ID, m.ORGANIZATION_ID, m.ENABLED, m.START_TIME_1, m.START_TIME_2, m.START_TIME_3, m.START_TIME_4, m.START_TIME_5, m.START_TIME_6, m.START_TIME_7, m.START_TIME_RC, m.START_TIME_YT, m.START_TIME_CH, m.START_TIME_CHRC, m.NOTES, m.NUSACH FROM MINYAN m, m.WHATSAPP FROM MINYAN m";
 
     @Override
     public Minyan mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -30,8 +30,9 @@ public class MinyanMapper implements RowMapper<Minyan>, Serializable {
         String notes = rs.getString("NOTES");
         String nusach = rs.getString("NUSACH");
         String orgColor = "#275ed8";
+        String whatsapp = rs.getString("WHATSAPP");
 
-        return new Minyan(id, typeString, locationId, organizationId, enabled, startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeYT, startTimeCH, startTimeCHRC,  notes, nusach, orgColor);
+        return new Minyan(id, typeString, locationId, organizationId, enabled, startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeYT, startTimeCH, startTimeCHRC,  notes, nusach, orgColor, whatsapp);
     }
 
     public Minyan mapRow(Map<String, Object> m) {
@@ -54,8 +55,9 @@ public class MinyanMapper implements RowMapper<Minyan>, Serializable {
         String notes = (String) m.get("NOTES");
         String nusach = (String) m.get("NUSACH");
         String orgColor = "#275ed8";
+        String whatsapp = (String) m.get("WHATSAPP");
 
 
-        return new Minyan(id, typeString, locationId, organizationId, enabled, startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeYT, startTimeCH, startTimeCHRC, notes, nusach, orgColor);
+        return new Minyan(id, typeString, locationId, organizationId, enabled, startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeYT, startTimeCH, startTimeCHRC, notes, nusach, orgColor, whatsapp);
     }
 }
