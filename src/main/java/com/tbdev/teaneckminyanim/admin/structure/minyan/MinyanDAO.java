@@ -156,7 +156,7 @@ public class MinyanDAO extends JdbcDaoSupport implements TNMSaveable<Minyan> {
                 "START_TIME_CHRC = ?, " +
                 "NOTES = ?, " +
                 "NUSACH = ? " +
-                "WHATSAAP = ? " +
+                "WHATSAPP = ? " +
                 "WHERE ID = ?";
         try (PreparedStatement statement = this.getConnection().prepareStatement(sql)) {
             statement.setString(1, objectToUpdate.getMinyanTypeString());

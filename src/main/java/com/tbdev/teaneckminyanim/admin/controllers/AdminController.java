@@ -1213,7 +1213,6 @@ if (this.TNMUserDAO.delete(account)) {
         }
 
         String orgnazationColor = organization.getOrgColor();
-//        System.out.println("Notes: " + notes);
 
         boolean enabled;
         if (enabledString != null && !enabledString.isEmpty()) {
