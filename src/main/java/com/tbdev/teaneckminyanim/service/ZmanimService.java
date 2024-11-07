@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.service;
 
+import com.kosherjava.zmanim.hebrewcalendar.JewishCalendar;
 import com.kosherjava.zmanim.util.GeoLocation;
 import com.tbdev.teaneckminyanim.admin.structure.location.Location;
 import com.tbdev.teaneckminyanim.admin.structure.location.LocationDAO;
@@ -7,21 +8,21 @@ import com.tbdev.teaneckminyanim.admin.structure.minyan.Minyan;
 import com.tbdev.teaneckminyanim.admin.structure.minyan.MinyanDAO;
 import com.tbdev.teaneckminyanim.admin.structure.organization.Organization;
 import com.tbdev.teaneckminyanim.admin.structure.organization.OrganizationDAO;
+import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettings;
+import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettingsDAO;
 import com.tbdev.teaneckminyanim.front.KolhaMinyanim;
 import com.tbdev.teaneckminyanim.front.MinyanEvent;
 import com.tbdev.teaneckminyanim.front.ZmanimHandler;
 import com.tbdev.teaneckminyanim.global.Nusach;
 import com.tbdev.teaneckminyanim.global.Zman;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -53,6 +54,70 @@ public class ZmanimService {
     private final LocationDAO locationDAO;
     private final OrganizationDAO organizationDAO;
     private final MinyanDAO minyanDAO;
+
+    public boolean isAseresYemeiTeshuva() {
+        JewishCalendar jewishCalendar = new JewishCalendar();
+        LocalDate now = LocalDate.now();
+
+        // logger.info("Current date: " + now);
+
+        jewishCalendar.setGregorianDate(now.getYear(), now.getMonthValue() - 1, now.getDayOfMonth());
+
+        boolean result = jewishCalendar.isAseresYemeiTeshuva();
+
+        // logger.info("Is Aseres Yemei Teshuva: " + result);
+
+        return result;
+    }
+
+    public boolean isSelichosRecited(LocalDate date) {
+        JewishCalendar jewishCalendar = new JewishCalendar();
+        jewishCalendar.setGregorianDate(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
+
+        // logger.info("Checking date: " + date);
+
+        // Check if the date is within Aseres Yemei Teshuva
+        boolean isAseresYemeiTeshuva = jewishCalendar.isAseresYemeiTeshuva();
+        // logger.info("isAseresYemeiTeshuva method called: " + isAseresYemeiTeshuva);
+
+        if (isAseresYemeiTeshuva) {
+            // logger.info("Date is within Aseres Yemei Teshuva");
+            return true;
+        }
+
+        // Determine the date of Rosh HaShana for the current or next Jewish year
+        JewishCalendar roshHashana = new JewishCalendar(jewishCalendar.getJewishYear(), JewishCalendar.TISHREI, 1);
+        LocalDate roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // logger.info("Rosh HaShana date: " + roshHashanaDate);
+
+        if (date.isAfter(roshHashanaDate)) {
+            roshHashana = new JewishCalendar(jewishCalendar.getJewishYear() + 1, JewishCalendar.TISHREI, 1);
+            roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            // logger.info("Updated Rosh HaShana date for next year: " + roshHashanaDate);
+        }
+
+        // Determine the day of the week for Rosh HaShana
+        int roshHashanaDayOfWeek = roshHashana.getDayOfWeek();
+        // logger.info("Rosh HaShana day of week: " + roshHashanaDayOfWeek);
+
+        // Determine the start date for Selichos
+        LocalDate selichosStartDate;
+        if (roshHashanaDayOfWeek == Calendar.MONDAY || roshHashanaDayOfWeek == Calendar.TUESDAY) {
+            // Start from two Sundays before Rosh HaShana
+            selichosStartDate = roshHashanaDate.minusWeeks(2).with(DayOfWeek.SUNDAY);
+        } else {
+            // Start from the Sunday before Rosh HaShana
+            selichosStartDate = roshHashanaDate.minusWeeks(1).with(DayOfWeek.SUNDAY);
+        }
+        // logger.info("Selichos start date: " + selichosStartDate);
+
+        // Check if the given date is on or after the start date for Selichos
+        boolean result = !date.isBefore(selichosStartDate);
+        // logger.info("Is Selichos recited: " + result);
+
+        return result;
+    }
 
     public ModelAndView getZmanim(Date date) {
         ModelAndView mv = new ModelAndView();
@@ -111,13 +176,13 @@ public class ZmanimService {
         mv.getModel().put("netz", timeFormatWithRoundingToSecond(zmanim.get(Zman.NETZ)));
         mv.getModel().put("szks", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZKS)));
         mv.getModel().put("szt", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZT)));
-        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
+        mv.getModel().put("chatzos", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
         mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_GEDOLA)));
         mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_KETANA)));
         mv.getModel().put("plagHamincha", timeFormatWithRoundingToSecond(zmanim.get(Zman.PLAG_HAMINCHA)));
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
-        mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
+        mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
 
         log.debug(": Fetching minyanim");
 
@@ -371,13 +436,13 @@ public class ZmanimService {
         mv.getModel().put("netz", timeFormatWithRoundingToSecond(zmanim.get(Zman.NETZ)));
         mv.getModel().put("szks", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZKS)));
         mv.getModel().put("szt", timeFormatWithRoundingToSecond(zmanim.get(Zman.SZT)));
-        mv.getModel().put("chatzot", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
+        mv.getModel().put("chatzos", timeFormatWithRoundingToSecond(zmanim.get(Zman.CHATZOS)));
         mv.getModel().put("minchaGedola", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_GEDOLA)));
         mv.getModel().put("minchaKetana", timeFormatWithRoundingToSecond(zmanim.get(Zman.MINCHA_KETANA)));
         mv.getModel().put("plagHamincha", timeFormatWithRoundingToSecond(zmanim.get(Zman.PLAG_HAMINCHA)));
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
-        mv.getModel().put("tzet", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
+        mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a");
         Date datenow = new Date();
