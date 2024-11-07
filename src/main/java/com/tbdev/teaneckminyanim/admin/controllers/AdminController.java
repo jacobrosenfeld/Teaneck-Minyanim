@@ -1169,6 +1169,7 @@ if (this.TNMUserDAO.delete(account)) {
                                      @RequestParam(value = "rcc-zman-offset", required = false) Integer rccZmanOffset,
                                      @RequestParam(value = "nusach", required = false) String nusachString,
                                      @RequestParam(value = "notes", required = false) String notes,
+                                     @RequestParam(value = "whatsapp", required = false) String whatsapp,
                                      @RequestParam(value = "enabled", required = false) String enabledString,
                                      @RequestParam(value = "return", required = false) boolean returnAndRefill) throws Exception {
 
@@ -1226,7 +1227,7 @@ if (this.TNMUserDAO.delete(account)) {
         }
 //        System.out.println("Enabled: " + enabled);
 
-        Minyan minyan = new Minyan(organization, minyanType, location, schedule, notes, nusach, enabled, orgnazationColor);
+        Minyan minyan = new Minyan(organization, minyanType, location, schedule, notes, nusach, enabled, orgnazationColor, whatsapp);
 
         try {
             minyanDAO.save(minyan);
@@ -1314,6 +1315,7 @@ if (this.TNMUserDAO.delete(account)) {
                                      @RequestParam(value = "rcc-zman-offset", required = false) Integer rccZmanOffset,
                                      @RequestParam(value = "nusach", required = false) String nusachString,
                                      @RequestParam(value = "notes", required = false) String notes,
+                                     @RequestParam(value = "whatsapp", required = false) String whatsapp,
                                      @RequestParam(value = "enabled", required = false) String enabledString) throws Exception {
 
 //        print starting message
@@ -1393,7 +1395,7 @@ if (this.TNMUserDAO.delete(account)) {
 
         Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, rcTime, ytTime, chanukaTime, rccTime);
 
-        Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization, minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled(), organizationColor);
+        Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization, minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled(), organizationColor, whatsapp);
 
         try {
             minyanDAO.update(updatedMinyan);

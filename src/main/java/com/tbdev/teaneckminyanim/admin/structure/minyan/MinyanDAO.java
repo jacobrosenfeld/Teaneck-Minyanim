@@ -91,7 +91,7 @@ public class MinyanDAO extends JdbcDaoSupport implements TNMSaveable<Minyan> {
     @Override
     public boolean save(Minyan objectToSave) {
         String sql = String.format("INSERT INTO MINYAN " +
-                "(ID, TYPE, LOCATION_ID, ORGANIZATION_ID, ENABLED, START_TIME_1, START_TIME_2, START_TIME_3, START_TIME_4, START_TIME_5, START_TIME_6, START_TIME_7, START_TIME_RC, START_TIME_YT, START_TIME_CH, START_TIME_CHRC, NOTES, NUSACH) " +
+                "(ID, TYPE, LOCATION_ID, ORGANIZATION_ID, ENABLED, START_TIME_1, START_TIME_2, START_TIME_3, START_TIME_4, START_TIME_5, START_TIME_6, START_TIME_7, START_TIME_RC, START_TIME_YT, START_TIME_CH, START_TIME_CHRC, NOTES, NUSACH, WHATSAPP) " +
                 "VALUES ('%s', '%s', '%s', '%s', %b, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
                 objectToSave.getId(),
                 objectToSave.getMinyanTypeString(),
@@ -110,7 +110,8 @@ public class MinyanDAO extends JdbcDaoSupport implements TNMSaveable<Minyan> {
                 objectToSave.getStartTimeCH(),
                 objectToSave.getStartTimeCHRC(),
                 objectToSave.getNotes(),
-                objectToSave.getNusachString()
+                objectToSave.getNusachString(),
+                objectToSave.getWhatsapp()
         );
 
         try {
@@ -155,6 +156,7 @@ public class MinyanDAO extends JdbcDaoSupport implements TNMSaveable<Minyan> {
                 "START_TIME_CHRC = ?, " +
                 "NOTES = ?, " +
                 "NUSACH = ? " +
+                "WHATSAAP = ? " +
                 "WHERE ID = ?";
         try (PreparedStatement statement = this.getConnection().prepareStatement(sql)) {
             statement.setString(1, objectToUpdate.getMinyanTypeString());
@@ -174,7 +176,8 @@ public class MinyanDAO extends JdbcDaoSupport implements TNMSaveable<Minyan> {
             statement.setString(15, objectToUpdate.getStartTimeCHRC());
             statement.setString(16, objectToUpdate.getNotes());
             statement.setString(17, objectToUpdate.getNusachString());
-            statement.setString(18, objectToUpdate.getId());
+            statement.setString(18, objectToUpdate.getWhatsapp());
+            statement.setString(19, objectToUpdate.getId());
             
             statement.executeUpdate();
             return true;

@@ -78,6 +78,9 @@ public class Minyan extends TNMObject implements IDGenerator {
 
     private String orgColor;
 
+    @Column(name = "WHATSAPP")
+    private String whatsapp;
+
 //    @Autowired
 //    private OrganizationDAO organizationDAO;
 
@@ -99,7 +102,8 @@ public class Minyan extends TNMObject implements IDGenerator {
                   String startTimeCHRC,
                   String notes,
                   String nusach,
-                  String orgColor
+                  String orgColor,
+                  String whatsapp
     ) {
         super.id = id;
         this.minyanTypeString = minyanTypeString;
@@ -123,6 +127,7 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.nusachString = nusach;
         this.nusach = Nusach.fromString(nusach);
         this.orgColor = orgColor;
+        this.whatsapp = whatsapp;
     }
 
     public Minyan(String minyanTypeString,
@@ -142,7 +147,8 @@ public class Minyan extends TNMObject implements IDGenerator {
                   String startTimeCHRC,
                   String notes,
                   String nusach,
-                  String orgColor
+                  String orgColor,
+                  String whatsapp
     ) {
         super.id = generateID('M');
         this.minyanTypeString = minyanTypeString;
@@ -166,9 +172,10 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.nusachString = nusach;
         this.nusach = Nusach.fromString(nusach);
         this.orgColor = orgColor;
+        this.whatsapp = whatsapp;
     }
 
-    public Minyan(Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor) {
+    public Minyan(Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor, String whatsapp) {
         super.id = generateID('M');
         this.minyanTypeString = type.toString();
         this.minyanType = type;
@@ -194,9 +201,10 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.notes = notes;
         this.nusachString = nusach.toString();
         this.orgColor = orgColor;
+        this.whatsapp = whatsapp;
     }
 
-    public Minyan(String id, Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor) {
+    public Minyan(String id, Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor, String whatsapp) {
         super.id = id;
         this.minyanTypeString = type.toString();
         this.minyanType = type;
@@ -222,6 +230,7 @@ public class Minyan extends TNMObject implements IDGenerator {
         this.notes = notes;
         this.nusachString = nusach.toString();
         this.orgColor = orgColor;
+        this.whatsapp = whatsapp;
     }
 
     public String getMinyanTypeString() {
@@ -322,6 +331,10 @@ public class Minyan extends TNMObject implements IDGenerator {
 
     public String getOrgColor() {
         return orgColor;
+    }
+
+    public String getWhatsapp() {
+        return whatsapp;
     }
 
     public void setOrganization(Organization organization) {

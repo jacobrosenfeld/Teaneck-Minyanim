@@ -1,20 +1,31 @@
 package com.tbdev.teaneckminyanim.front.controllers;
 
-import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettings;
+import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettingsDAO;
 import com.tbdev.teaneckminyanim.service.ZmanimService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 @RequiredArgsConstructor
 public class ZmanimController {
     private final ZmanimService zmanimService;
+    private final TNMSettingsDAO tnmSettingsDao;
 
     @GetMapping("/")
     public ModelAndView home() {
@@ -27,6 +38,37 @@ public class ZmanimController {
         mv.setViewName("subscription");
         return mv;
     }
+
+    @ModelAttribute("settings")
+    public List<TNMSettings> settings() {
+        // Load and return the settings here
+        List<TNMSettings> settings = tnmSettingsDao.getAll();
+        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
+        return settings;
+    }
+
+    @GetMapping("/checkAseresYemeiTeshuva") // @TODO: aseres won't work as it's own check as it looks at current date not queried date
+    public String checkAseresYemeiTeshuva(Model model) {
+        boolean isAseresYemeiTeshuva = zmanimService.isAseresYemeiTeshuva();
+        model.addAttribute("isAseresYemeiTeshuva", isAseresYemeiTeshuva);
+        return "checkAseresYemeiTeshuva";
+    }
+
+    @GetMapping("/checkSelichos")
+    public String checkSelichos(Model model) {
+        LocalDate date = LocalDate.now(); // or any specific date you want to check
+        boolean isSelichosRecited = zmanimService.isSelichosRecited(date);
+        model.addAttribute("isSelichosRecited", isSelichosRecited);
+        return "checkSelichos";
+    }
+
+//    private void setTimeZone(TimeZone tz) {
+//        // set time format
+//        timeFormat.setTimeZone(tz);
+//        dateFormat.setTimeZone(tz);
+//        onlyDateFormat.setTimeZone(tz);
+//        strippedDayFormat.setTimeZone(tz);
+//    }
 
     @GetMapping("/zmanim")
     public ModelAndView todaysZmanim() {
