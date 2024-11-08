@@ -59,13 +59,13 @@ public class ZmanimService {
         JewishCalendar jewishCalendar = new JewishCalendar();
         LocalDate now = LocalDate.now();
 
-        // logger.info("Current date: " + now);
+        log.info("Current date: " + now);
 
         jewishCalendar.setGregorianDate(now.getYear(), now.getMonthValue() - 1, now.getDayOfMonth());
 
         boolean result = jewishCalendar.isAseresYemeiTeshuva();
 
-        // logger.info("Is Aseres Yemei Teshuva: " + result);
+        log.info("Is Aseres Yemei Teshuva: " + result);
 
         return result;
     }
@@ -74,14 +74,14 @@ public class ZmanimService {
         JewishCalendar jewishCalendar = new JewishCalendar();
         jewishCalendar.setGregorianDate(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
 
-        // logger.info("Checking date: " + date);
+        log.info("Checking date: " + date);
 
         // Check if the date is within Aseres Yemei Teshuva
         boolean isAseresYemeiTeshuva = jewishCalendar.isAseresYemeiTeshuva();
-        // logger.info("isAseresYemeiTeshuva method called: " + isAseresYemeiTeshuva);
+        log.info("isAseresYemeiTeshuva method called: " + isAseresYemeiTeshuva);
 
         if (isAseresYemeiTeshuva) {
-            // logger.info("Date is within Aseres Yemei Teshuva");
+            log.info("Date is within Aseres Yemei Teshuva");
             return true;
         }
 
@@ -89,17 +89,17 @@ public class ZmanimService {
         JewishCalendar roshHashana = new JewishCalendar(jewishCalendar.getJewishYear(), JewishCalendar.TISHREI, 1);
         LocalDate roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        // logger.info("Rosh HaShana date: " + roshHashanaDate);
+        // log.info("Rosh HaShana date: " + roshHashanaDate);
 
         if (date.isAfter(roshHashanaDate)) {
             roshHashana = new JewishCalendar(jewishCalendar.getJewishYear() + 1, JewishCalendar.TISHREI, 1);
             roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            // logger.info("Updated Rosh HaShana date for next year: " + roshHashanaDate);
+            // log.info("Updated Rosh HaShana date for next year: " + roshHashanaDate);
         }
 
         // Determine the day of the week for Rosh HaShana
         int roshHashanaDayOfWeek = roshHashana.getDayOfWeek();
-        // logger.info("Rosh HaShana day of week: " + roshHashanaDayOfWeek);
+        // log.info("Rosh HaShana day of week: " + roshHashanaDayOfWeek);
 
         // Determine the start date for Selichos
         LocalDate selichosStartDate;
@@ -110,11 +110,11 @@ public class ZmanimService {
             // Start from the Sunday before Rosh HaShana
             selichosStartDate = roshHashanaDate.minusWeeks(1).with(DayOfWeek.SUNDAY);
         }
-        // logger.info("Selichos start date: " + selichosStartDate);
+        log.info("Selichos start date: " + selichosStartDate);
 
         // Check if the given date is on or after the start date for Selichos
         boolean result = !date.isBefore(selichosStartDate);
-        // logger.info("Is Selichos recited: " + result);
+        log.info("Is Selichos recited: " + result);
 
         return result;
     }
