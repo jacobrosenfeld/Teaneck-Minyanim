@@ -40,7 +40,7 @@ public class MinyanMapper implements RowMapper<Minyan>, Serializable {
         String typeString = (String) m.get("TYPE");
         String organizationId = (String) m.get("ORGANIZATION_ID");
         String locationId = (String) m.get("LOCATION_ID");
-        boolean enabled = (boolean) m.get("ENABLED");
+        boolean enabled = m.get("ENABLED").equals(0);
         String startTime1 = (String) m.get("START_TIME_1");
         String startTime2 = (String) m.get("START_TIME_2");
         String startTime3 = (String) m.get("START_TIME_3");
