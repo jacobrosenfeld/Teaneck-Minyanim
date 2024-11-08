@@ -1392,6 +1392,8 @@ if (this.TNMUserDAO.delete(account)) {
 
         System.out.println("Notes: " + notes);
 
+        System.out.println("WhatsApp: " + whatsapp);
+
         Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, rcTime, ytTime, chanukaTime, rccTime);
 
         Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization, minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled(), organizationColor, whatsapp);
