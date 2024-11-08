@@ -33,7 +33,9 @@ public class MinyanEvent {
 
     private String orgColor;
 
-    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes, String orgColor) {
+    private String whatsapp;
+
+    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, Nusach nusach, String notes, String orgColor, String whatsapp) {
         this.parentMinyanId = parentMinyanId;
         this.type = type;
         this.organizationName = organizationName;
@@ -44,9 +46,10 @@ public class MinyanEvent {
         this.nusach = nusach;
         this.notes = notes;
         this.orgColor = orgColor;
+        this.whatsapp = whatsapp;
     }
 
-    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes, String orgColor) {
+    public MinyanEvent(String parentMinyanId, MinyanType type, String organizationName, Nusach organizationNusach, String organizationId, String locationName, Date startTime, String dynamicTimeString, Nusach nusach, String notes, String orgColor, String whatsapp) {
         this.parentMinyanId = parentMinyanId;
         this.type = type;
         this.organizationName = organizationName;
@@ -58,6 +61,7 @@ public class MinyanEvent {
         this.nusach = nusach;
         this.notes = notes;
         this.orgColor = orgColor;
+        this.whatsapp = whatsapp;
     }
 
     public MinyanType getType() {
@@ -112,6 +116,10 @@ public class MinyanEvent {
 
     public String getOrgColor() {
         return orgColor;
+    }
+
+    public String getWhatsapp() {
+        return whatsapp;
     }
 
     public String getInformation() {
