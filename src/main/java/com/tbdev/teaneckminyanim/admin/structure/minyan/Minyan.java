@@ -307,8 +307,7 @@ public class Minyan extends TNMObject implements IDGenerator {
     public String getStartTimeCHRC() {
         return startTimeCHRC;
     }
-
-
+    
     public Schedule getSchedule() {
         return schedule;
     }
