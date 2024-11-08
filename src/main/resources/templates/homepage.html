@@ -110,7 +110,7 @@
                                       <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
                                       <p class="p-dts" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
                                       <!-- <a class="bi bi-whatsapp p-dts" th:href="${minyan.getWhatsapp()}"></a> -->
-                                      <a class="bi bi-whatsapp p-dts" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}" th:href="${minyan.getWhatsapp()}"></a>
+                                      <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.getNotes()}"><a class="bi bi-whatsapp" th:href="${minyan.getWhatsapp()}"></a></p>
                                       <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getNotes())}" th:utext="${minyan.getNotes()}"></p>
                                     </td>
                                     <td class="align-middle">
