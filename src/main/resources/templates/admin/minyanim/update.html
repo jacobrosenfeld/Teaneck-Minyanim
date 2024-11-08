@@ -738,7 +738,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="whatsapp">WhatsApp Group</label>
-                                        <input type="text" class="form-control" name="whatsapp" id="whatsapp" aria-describedby="whatsapp">
+                                        <input type="text" class="form-control" name="whatsapp" id="whatsapp" aria-describedby="whatsapp" th:value="${minyan.getWhatsapp()}">
                                         <small id="whatsapp-help" class="form-text text-muted">Optional: If the minyan utilizes a WhatsApp Group this link will be displayed publically. Make sure  to include https://</small>
                                     </div>
                                     <div class="login-msg-box" th:if="${inputerrormessage}">
