@@ -12,8 +12,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.kosherjava.zmanim.util.GeoLocation;
 import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettings;
 import com.tbdev.teaneckminyanim.admin.structure.settings.TNMSettingsDAO;
+import com.tbdev.teaneckminyanim.front.ZmanimHandler;
 import com.tbdev.teaneckminyanim.service.ZmanimService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -26,6 +28,16 @@ import org.springframework.web.servlet.ModelAndView;
 public class ZmanimController {
     private final ZmanimService zmanimService;
     private final TNMSettingsDAO tnmSettingsDao;
+
+    TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
+
+    String locationName = "Teaneck, NJ";
+    double latitude = 40.906871;
+    double longitude = -74.020924;
+    double elevation = 24;
+    GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
+
+    ZmanimHandler zmanimHandler = new ZmanimHandler(geoLocation);
 
     @GetMapping("/")
     public ModelAndView home() {
@@ -57,18 +69,10 @@ public class ZmanimController {
     @GetMapping("/checkSelichos")
     public String checkSelichos(Model model) {
         LocalDate date = LocalDate.now(); // or any specific date you want to check
-        boolean isSelichosRecited = zmanimService.isSelichosRecited(date);
+        boolean isSelichosRecited = zmanimHandler.isSelichosRecited(date);
         model.addAttribute("isSelichosRecited", isSelichosRecited);
         return "checkSelichos";
     }
-
-//    private void setTimeZone(TimeZone tz) {
-//        // set time format
-//        timeFormat.setTimeZone(tz);
-//        dateFormat.setTimeZone(tz);
-//        onlyDateFormat.setTimeZone(tz);
-//        strippedDayFormat.setTimeZone(tz);
-//    }
 
     @GetMapping("/zmanim")
     public ModelAndView todaysZmanim() {
