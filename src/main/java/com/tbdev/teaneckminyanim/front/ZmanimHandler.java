@@ -75,6 +75,21 @@ public class ZmanimHandler {
     public String getTodaysHebrewDate() {
         return getHebrewDate(new Date());
     }
+
+    public boolean isAseresYemeiTeshuva() {
+        JewishCalendar jewishCalendar = new JewishCalendar();
+        LocalDate now = LocalDate.now();
+
+        log.info("Current date: " + now);
+
+        jewishCalendar.setGregorianDate(now.getYear(), now.getMonthValue() - 1, now.getDayOfMonth());
+
+        boolean result = jewishCalendar.isAseresYemeiTeshuva();
+
+        log.info("Is Aseres Yemei Teshuva: " + result);
+
+        return result;
+    }
     public boolean isSelichosRecited(LocalDate date) {
         JewishCalendar jewishCalendar = new JewishCalendar();
         jewishCalendar.setGregorianDate(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());

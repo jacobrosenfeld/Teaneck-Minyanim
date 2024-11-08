@@ -55,20 +55,6 @@ public class ZmanimService {
     private final OrganizationDAO organizationDAO;
     private final MinyanDAO minyanDAO;
 
-    public boolean isAseresYemeiTeshuva() {
-        JewishCalendar jewishCalendar = new JewishCalendar();
-        LocalDate now = LocalDate.now();
-
-        log.info("Current date: " + now);
-
-        jewishCalendar.setGregorianDate(now.getYear(), now.getMonthValue() - 1, now.getDayOfMonth());
-
-        boolean result = jewishCalendar.isAseresYemeiTeshuva();
-
-        log.info("Is Aseres Yemei Teshuva: " + result);
-
-        return result;
-    }
 
 
     public ModelAndView getZmanim(Date date) {
