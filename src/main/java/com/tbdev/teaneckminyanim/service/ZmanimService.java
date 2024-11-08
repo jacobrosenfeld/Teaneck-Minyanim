@@ -89,17 +89,17 @@ public class ZmanimService {
         JewishCalendar roshHashana = new JewishCalendar(jewishCalendar.getJewishYear(), JewishCalendar.TISHREI, 1);
         LocalDate roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        // log.info("Rosh HaShana date: " + roshHashanaDate);
+        log.info("Rosh HaShana date: " + roshHashanaDate);
 
         if (date.isAfter(roshHashanaDate)) {
             roshHashana = new JewishCalendar(jewishCalendar.getJewishYear() + 1, JewishCalendar.TISHREI, 1);
             roshHashanaDate = roshHashana.getGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            // log.info("Updated Rosh HaShana date for next year: " + roshHashanaDate);
+            log.info("Updated Rosh HaShana date for next year: " + roshHashanaDate);
         }
 
         // Determine the day of the week for Rosh HaShana
         int roshHashanaDayOfWeek = roshHashana.getDayOfWeek();
-        // log.info("Rosh HaShana day of week: " + roshHashanaDayOfWeek);
+        log.info("Rosh HaShana day of week: " + roshHashanaDayOfWeek);
 
         // Determine the start date for Selichos
         LocalDate selichosStartDate;
@@ -123,7 +123,7 @@ public class ZmanimService {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("homepage");
 
-        log.debug("DEBUG: Adding dates to model");
+        log.info("DEBUG: Adding dates to model");
 
         // adding dates to model data
         setTimeZone(timeZone);
@@ -159,7 +159,7 @@ public class ZmanimService {
         // add today's hebrew date
         mv.getModel().put("hebrewDate", zmanimHandler.getHebrewDate(date));
 
-        log.debug(": Fetching zmanim for model");
+        log.info(": Fetching zmanim for model");
 
         LocalDate localDate = dateToLocalDate(date);
         log.info("Showing zmanim for date: " + localDate.getMonth() + ":" + localDate.getMonthValue() + ":"
@@ -168,7 +168,7 @@ public class ZmanimService {
         Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(localDate);
         Dictionary<Zman, Date> zmanimtoday = zmanimHandler.getZmanimForNow();
 
-        log.debug(": Putting zmanim in model");
+        log.info(": Putting zmanim in model");
 
         log.info("ALOS HASH: " + zmanim.get(Zman.ALOS_HASHACHAR));
         mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOS_HASHACHAR)));
@@ -187,14 +187,14 @@ public class ZmanimService {
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
 
-        log.debug(": Fetching minyanim");
+        log.info(": Fetching minyanim");
 
         // get minyanim closest in time to now
         // todo: only get items with non null time for date
         List<Minyan> enabledMinyanim = minyanDAO.getEnabled();
         List<MinyanEvent> minyanEvents = new ArrayList<>();
 
-        log.debug(": Filtering through minyanim");
+        log.info(": Filtering through minyanim");
 
         for (Minyan minyan : enabledMinyanim) {
             LocalDate ref = dateToLocalDate(date);
@@ -431,7 +431,7 @@ public class ZmanimService {
         Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(localDate);
         Dictionary<Zman, Date> zmanimtoday = zmanimHandler.getZmanimForNow();
 
-        log.debug(": Putting zmanim in model");
+        log.info(": Putting zmanim in model");
 
         log.info("ALOS HASH: " + zmanim.get(Zman.ALOS_HASHACHAR));
         mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOS_HASHACHAR)));
