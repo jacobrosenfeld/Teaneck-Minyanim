@@ -102,9 +102,7 @@
                                   <td class="align-middle">
                                     <h5 th:style="'color: ' + ${minyan.getOrgColor()}"
                                   th:utext="${minyan.getType().displayName()} "></h5>
-                                <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>                                    <!-- <td th:if="${minyan.getLocationName() != null}" class="middle">
-                                      <button type="button" class="btn btn-primary btn-sm" th:text="${minyan.getOrganizationName() + '- ' + minyan.getLocationName()}"></button>
-                                    </td> -->
+                                <p class="p-notes" th:utext="${minyan.getNusach().displayName()}"></p>
                                   </td>
                                     <td class="align-middle">
                                       <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
