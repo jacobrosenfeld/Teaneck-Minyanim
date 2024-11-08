@@ -147,6 +147,7 @@ public class ZmanimService {
             Calendar mgMinusOneMinute = Calendar.getInstance();
             mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
             mgMinusOneMinute.add(Calendar.MINUTE, -1);
+            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
             // if (startDate != null && (startDate.after(terminationDate))) {
@@ -206,6 +207,14 @@ public class ZmanimService {
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             }
+                            else {
+                                if (minyan.getType().isSelichos() && isSelichosRecited){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                organizationNusach, organizationId, locationName, startDate,
+                                                roundedDisplayName,
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                    }
+                                }
                         }
                     }
                 } else if (roundedDisplayName != null) {
@@ -228,6 +237,14 @@ public class ZmanimService {
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             }
+                            else {
+                                if (minyan.getType().isSelichos() && isSelichosRecited){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                organizationNusach, organizationId, locationName, startDate,
+                                                roundedDisplayName,
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                    }
+                                }
                         }
                     }
                 } else {
@@ -255,6 +272,14 @@ public class ZmanimService {
                                                 organizationId, locationName, startDate, minyan.getNusach(),
                                                 minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             }
+                            else {
+                                if (minyan.getType().isSelichos() && isSelichosRecited){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                organizationNusach, organizationId, locationName, startDate,
+                                                roundedDisplayName,
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                    }
+                                }
                         }
                     }
                 }
@@ -486,6 +511,14 @@ public class ZmanimService {
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
                                         minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             }
+                            else {
+                                if (minyan.getType().isSelichos() && isSelichosRecited){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
+                                                organizationNusach, organizationId, locationName, startDate,
+                                                roundedDisplayName,
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                    }
+                                }
                         }
                     }
                 } else if (roundedDisplayName != null) {
