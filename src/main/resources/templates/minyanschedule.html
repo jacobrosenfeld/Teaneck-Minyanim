@@ -539,6 +539,13 @@
                                     <a th:href="${'/admin/' + organization.id + '/minyanim/new'}" class="btn btn-primary">New Minyan</a>
                                 </div>
                             </div>
+                            <div class="card card-inverse bg-inverse mt-3">
+                                <div class="card-body">
+                                    <h4 class="card-title">Locations</h4>
+                                    <p class="card-text" th:text="${'Manage the locations of minyanim for ' + organization.name + '.'}"></p>
+                                    <a th:href="@{|/admin/${organization.id}/locations|}" class="btn btn-primary">Go</a>
+                                </div>
+                            </div>
                             <!--                            <div class="card card-inverse bg-inverse mt-3">-->
                             <!--                                <div class="card-body">-->
                             <!--                                    <h4 class="card-title">Add a One-Time Minyan</h4>-->
