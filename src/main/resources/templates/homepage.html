@@ -109,12 +109,8 @@
                                       <p class="p-dts" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
                                       <div class="d-flex justify-content-center align-items-center">
                                         <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.getNotes()}"></p>
-                                        <!-- <a class="bi bi-whatsapp p-dts px-2" style="color: #25D366" th:href="${minyan.getWhatsapp()}" th:target="_blank" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}">
-                                        </a> -->
-                                        <a class="icon-link icon-link-hover p-dts px-2" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" th:href="${minyan.getWhatsapp()}" th:target="_blank" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}">
-                                          <svg class="bi" aria-hidden="true"><use xlink:href="#whatsapp"></use></svg>
+                                        <a class="bi bi-whatsapp p-dts px-2" style="color: #25D366" th:href="${minyan.getWhatsapp()}" th:target="_blank" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}">
                                         </a>
-                                        
                                       </div>
                                       <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getNotes()) and #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.getNotes()}"></p>
                                     </td>
