@@ -111,7 +111,7 @@
                                         <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.getNotes()}"></p>
                                         <!-- <a class="bi bi-whatsapp p-dts px-2" style="color: #25D366" th:href="${minyan.getWhatsapp()}" th:target="_blank" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}">
                                         </a> -->
-                                        <a class="icon-link icon-link-hover" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" th:href="${minyan.getWhatsapp()}" th:target="_blank" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}">
+                                        <a class="icon-link icon-link-hover p-dts px-2" style="--bs-icon-link-transform: translate3d(0, -.125rem, 0);" th:href="${minyan.getWhatsapp()}" th:target="_blank" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}">
                                           <svg class="bi" aria-hidden="true"><use xlink:href="#whatsapp"></use></svg>
                                         </a>
                                         
