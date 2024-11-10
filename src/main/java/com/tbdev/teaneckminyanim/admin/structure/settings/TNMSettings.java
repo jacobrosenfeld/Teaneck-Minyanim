@@ -30,7 +30,7 @@ public class TNMSettings extends TNMObject implements IDGenerator {
         this.type = type;
     }
 
-    public TNMSettings(String setting, String enable, String text, String type) {
+    public TNMSettings(String setting, String enabled, String text, String type) {
         super.id = generateID('S');
         this.setting = setting;
         this.enabled = enabled;
