@@ -37,3 +37,5 @@ build/
 src/.DS_Store
 .DS_Store
 src/main/resources/application.properties
+nohup.out
+application.properties
