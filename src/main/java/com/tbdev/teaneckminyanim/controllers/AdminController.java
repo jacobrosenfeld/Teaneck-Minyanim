@@ -918,7 +918,7 @@ if (this.TNMUserDAO.delete(account)) {
             @RequestParam(value = "text", required = false) String newText,
             @RequestParam(value = "type", required = false) String type
     ) {
-        TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);    
+        TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);
 
         TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText, type);
         if (tnmsettingsDAO.update(settings)) {
@@ -926,7 +926,7 @@ if (this.TNMUserDAO.delete(account)) {
             RedirectView redirectView = new RedirectView("/admin/settings", true);
             return new ModelAndView(redirectView);
         } else {
-            return settings (null, "Sorry, an error occurred. The setting could not be updated.");
+            return settings(null, "Sorry, an error occurred. The setting could not be updated.");
         }
     }
 

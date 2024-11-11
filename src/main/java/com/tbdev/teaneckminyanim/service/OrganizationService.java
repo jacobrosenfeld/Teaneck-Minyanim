@@ -23,7 +23,12 @@ public class OrganizationService {
     }
 
     public Organization findByName(String name) {
-        return organizationRepository.findByName(name).orElse(null);
+        Optional<Organization> organizationByName = organizationRepository.findByName(name);
+        if (organizationByName.isEmpty()){
+            return new Organization();
+        }
+        organizationByName.get().setNusach(Nusach.fromString(organizationByName.get().getNusachStr()));
+        return organizationByName.get();
     }
 
     public Organization findById(String id) {
@@ -36,7 +41,9 @@ public class OrganizationService {
     }
 
     public List<Organization> getAll() {
-        return organizationRepository.findAll();
+        List<Organization> allOrgs = organizationRepository.findAll();
+        setupOrgObjs(allOrgs);
+        return allOrgs;
     }
 
     public boolean save(Organization organization) {
@@ -79,5 +86,11 @@ public class OrganizationService {
 
         }
         return users;
+    }
+
+    private void setupOrgObjs(List<Organization> organizations) {
+        for(Organization organization : organizations) {
+            organization.setNusach(Nusach.fromString(organization.getNusachStr()));
+        }
     }
 }

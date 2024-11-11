@@ -2,12 +2,14 @@ package com.tbdev.teaneckminyanim.structure;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 
 @Entity
 @NoArgsConstructor
 @Getter
+@Setter
 @Table(name = "SETTINGS")
 public class TNMSettings {
 
