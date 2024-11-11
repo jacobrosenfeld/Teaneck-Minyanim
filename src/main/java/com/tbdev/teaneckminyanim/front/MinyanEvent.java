@@ -1,7 +1,7 @@
 package com.tbdev.teaneckminyanim.front;
 
-import com.tbdev.teaneckminyanim.admin.structure.minyan.MinyanType;
-import com.tbdev.teaneckminyanim.global.Nusach;
+import com.tbdev.teaneckminyanim.structure.minyan.MinyanType;
+import com.tbdev.teaneckminyanim.structure.global.Nusach;
 
 //import javax.persistence.Id;
 import java.text.SimpleDateFormat;
