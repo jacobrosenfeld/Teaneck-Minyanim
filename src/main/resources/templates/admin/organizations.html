@@ -54,7 +54,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr th:each="organization : ${#lists.sort(organizations)}">
+                                            <tr th:each="organization: ${#lists.sort(organizations, 'name')}">
                                                 <td th:text="${organization.id}" />
                                                 <td th:text="${organization.name}" />
                                                 <td>
