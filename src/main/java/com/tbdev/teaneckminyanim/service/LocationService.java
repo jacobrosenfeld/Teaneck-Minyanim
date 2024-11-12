@@ -1,7 +1,7 @@
 package com.tbdev.teaneckminyanim.service;
 
 import com.tbdev.teaneckminyanim.repo.LocationRepository;
-import com.tbdev.teaneckminyanim.structure.model.Location;
+import com.tbdev.teaneckminyanim.model.Location;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

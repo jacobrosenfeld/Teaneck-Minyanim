@@ -1,16 +1,14 @@
 package com.tbdev.teaneckminyanim.service;
 
 import com.kosherjava.zmanim.util.GeoLocation;
-import com.tbdev.teaneckminyanim.structure.minyan.MinyanTime;
-import com.tbdev.teaneckminyanim.structure.minyan.MinyanType;
-import com.tbdev.teaneckminyanim.structure.model.Location;
-import com.tbdev.teaneckminyanim.structure.model.Minyan;
+import com.tbdev.teaneckminyanim.minyan.MinyanType;
+import com.tbdev.teaneckminyanim.model.Location;
+import com.tbdev.teaneckminyanim.model.Minyan;
 import com.tbdev.teaneckminyanim.front.KolhaMinyanim;
 import com.tbdev.teaneckminyanim.front.MinyanEvent;
-import com.tbdev.teaneckminyanim.front.ZmanimHandler;
-import com.tbdev.teaneckminyanim.structure.global.Nusach;
-import com.tbdev.teaneckminyanim.structure.global.Zman;
-import com.tbdev.teaneckminyanim.structure.model.Organization;
+import com.tbdev.teaneckminyanim.enums.Nusach;
+import com.tbdev.teaneckminyanim.enums.Zman;
+import com.tbdev.teaneckminyanim.model.Organization;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

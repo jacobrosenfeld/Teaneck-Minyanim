@@ -1,11 +1,11 @@
-package com.tbdev.teaneckminyanim.structure.model;
+package com.tbdev.teaneckminyanim.model;
 
 import com.kosherjava.zmanim.hebrewcalendar.JewishCalendar;
 import com.kosherjava.zmanim.util.Time;
-import com.tbdev.teaneckminyanim.structure.minyan.MinyanTime;
-import com.tbdev.teaneckminyanim.structure.minyan.MinyanType;
-import com.tbdev.teaneckminyanim.structure.minyan.Schedule;
-import com.tbdev.teaneckminyanim.structure.global.Nusach;
+import com.tbdev.teaneckminyanim.enums.Nusach;
+import com.tbdev.teaneckminyanim.minyan.MinyanTime;
+import com.tbdev.teaneckminyanim.minyan.MinyanType;
+import com.tbdev.teaneckminyanim.minyan.Schedule;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -123,7 +123,6 @@ public class Minyan {
         this.startTimeYT = startTimeYT;
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
-//        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeYT, startTimeCH, startTimeCHRC);
         this.notes = notes;
         this.nusachString = nusach;
         this.nusach = Nusach.fromString(nusach);
@@ -166,7 +165,6 @@ public class Minyan {
         this.startTimeYT = startTimeYT;
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
-//        this.schedule = new Schedule(startTime1, startTime2, startTime3, startTime4, startTime5, startTime6, startTime7, startTimeRC, startTimeYT, startTimeCH, startTimeCHRC);
         this.notes = notes;
         this.nusachString = nusach;
         this.nusach = Nusach.fromString(nusach);
@@ -179,7 +177,6 @@ public class Minyan {
         this.minyanType = type.toString();
         this.locationId = location.getId();
         this.organizationId = organization.getId();
-        this.organizationId = organizationId;
         this.startTime1 = schedule.getSunday().toString();
         this.startTime2 = schedule.getMonday().toString();
         this.startTime3 = schedule.getTuesday().toString();

@@ -1,10 +1,10 @@
 package com.tbdev.teaneckminyanim.service;
 
 import com.tbdev.teaneckminyanim.repo.OrganizationRepository;
-import com.tbdev.teaneckminyanim.structure.TNMUser;
-import com.tbdev.teaneckminyanim.structure.global.Nusach;
-import com.tbdev.teaneckminyanim.structure.model.Account;
-import com.tbdev.teaneckminyanim.structure.model.Organization;
+import com.tbdev.teaneckminyanim.model.TNMUser;
+import com.tbdev.teaneckminyanim.enums.Nusach;
+import com.tbdev.teaneckminyanim.model.Account;
+import com.tbdev.teaneckminyanim.model.Organization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

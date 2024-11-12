@@ -1,7 +1,6 @@
 package com.tbdev.teaneckminyanim.repo;
 
-import com.tbdev.teaneckminyanim.structure.TNMUser;
-import org.springframework.dao.DataAccessException;
+import com.tbdev.teaneckminyanim.model.TNMUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

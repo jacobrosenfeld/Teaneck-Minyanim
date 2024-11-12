@@ -1,7 +1,7 @@
 package com.tbdev.teaneckminyanim.service;
 
 import com.tbdev.teaneckminyanim.repo.TNMSettingsRepository;
-import com.tbdev.teaneckminyanim.structure.TNMSettings;
+import com.tbdev.teaneckminyanim.model.TNMSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

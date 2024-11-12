@@ -1,5 +1,6 @@
-package com.tbdev.teaneckminyanim.structure;
+package com.tbdev.teaneckminyanim.security;
 
+import com.tbdev.teaneckminyanim.service.LoginAttemptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;

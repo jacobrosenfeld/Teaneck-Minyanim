@@ -1,4 +1,4 @@
-package com.tbdev.teaneckminyanim.structure.model;
+package com.tbdev.teaneckminyanim.model;
 
 import lombok.Data;
 import javax.persistence.Entity;

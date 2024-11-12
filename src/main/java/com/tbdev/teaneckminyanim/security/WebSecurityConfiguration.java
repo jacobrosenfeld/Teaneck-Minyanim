@@ -1,5 +1,6 @@
-package com.tbdev.teaneckminyanim.structure;
+package com.tbdev.teaneckminyanim.security;
 
+import com.tbdev.teaneckminyanim.service.TNMUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;

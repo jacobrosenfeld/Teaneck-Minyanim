@@ -1,6 +1,6 @@
 package com.tbdev.teaneckminyanim.repo;
 
-import com.tbdev.teaneckminyanim.structure.model.Location;
+import com.tbdev.teaneckminyanim.model.Location;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

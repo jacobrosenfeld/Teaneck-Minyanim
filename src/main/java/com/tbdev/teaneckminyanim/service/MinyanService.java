@@ -2,11 +2,10 @@ package com.tbdev.teaneckminyanim.service;
 
 import com.tbdev.teaneckminyanim.repo.LocationRepository;
 import com.tbdev.teaneckminyanim.repo.MinyanRepository;
-import com.tbdev.teaneckminyanim.structure.minyan.Schedule;
-import com.tbdev.teaneckminyanim.structure.model.Location;
-import com.tbdev.teaneckminyanim.structure.model.Minyan;
+import com.tbdev.teaneckminyanim.minyan.Schedule;
+import com.tbdev.teaneckminyanim.model.Location;
+import com.tbdev.teaneckminyanim.model.Minyan;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,15 +1,14 @@
 package com.tbdev.teaneckminyanim.controllers;
 
+import com.tbdev.teaneckminyanim.model.*;
+import com.tbdev.teaneckminyanim.security.Encrypter;
 import com.tbdev.teaneckminyanim.service.*;
-import com.tbdev.teaneckminyanim.structure.*;
-import com.tbdev.teaneckminyanim.structure.global.Nusach;
-import com.tbdev.teaneckminyanim.structure.minyan.MinyanDay;
-import com.tbdev.teaneckminyanim.structure.minyan.MinyanTime;
-import com.tbdev.teaneckminyanim.structure.minyan.MinyanType;
-import com.tbdev.teaneckminyanim.structure.minyan.Schedule;
-import com.tbdev.teaneckminyanim.structure.model.Location;
-import com.tbdev.teaneckminyanim.structure.model.Minyan;
-import com.tbdev.teaneckminyanim.structure.model.Organization;
+import com.tbdev.teaneckminyanim.enums.Nusach;
+import com.tbdev.teaneckminyanim.enums.Role;
+import com.tbdev.teaneckminyanim.minyan.MinyanDay;
+import com.tbdev.teaneckminyanim.minyan.MinyanTime;
+import com.tbdev.teaneckminyanim.minyan.MinyanType;
+import com.tbdev.teaneckminyanim.minyan.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,7 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.tbdev.teaneckminyanim.structure.Role.ADMIN;
+import static com.tbdev.teaneckminyanim.enums.Role.ADMIN;
 
 @Controller
 public class AdminController {
@@ -301,7 +300,13 @@ public class AdminController {
             return addOrganization(false, "The organization could not be created.", "Sorry, the organization could not be created.");
         }
 
-        Organization organization = new Organization(name, address, siteURI, nusach, orgColor);
+        Organization organization = Organization.builder()
+                .name(name)
+                .address(address)
+                .websiteURI(siteURI)
+                .nusach(nusach)
+                .orgColor(orgColor)
+                .build();
 
         if  (this.organizationService.save(organization)) {
             System.out.println("Organization created successfully.");
@@ -573,7 +578,14 @@ public class AdminController {
             return organization(id, null, null, "Invalid nusach type.", null);
         }
 
-        Organization organization = new Organization(id, name, address, siteURI, nusach, orgColor);
+        Organization organization = Organization.builder()
+                .name(name)
+                .address(address)
+                .websiteURI(siteURI)
+                .nusach(nusach)
+                .orgColor(orgColor)
+                .build();
+
 //        check permissions
           if (isAdmin()) {
         if (this.organizationService.update(organization)) {
@@ -1040,35 +1052,35 @@ if (this.TNMUserDAO.delete(account)) {
 //                shacharisMinyanim.add(m);
 //            }
 //        }
-        List<Minyan> shacharisMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.SHACHARIS)).collect(Collectors.toList());
+        List<Minyan> shacharisMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.SHACHARIS.toString())).collect(Collectors.toList());
         mv.addObject("shacharisminyanim", shacharisMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> shacharisTimes = new HashMap<>();
         for (Minyan m : shacharisMinyanim) {
             shacharisTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
-        List<Minyan> minchaMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.MINCHA)).collect(Collectors.toList());
+        List<Minyan> minchaMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.MINCHA.toString())).collect(Collectors.toList());
         mv.addObject("minchaminyanim", minchaMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> minchaTimes = new HashMap<>();
         for (Minyan m : minchaMinyanim) {
             minchaTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
         
-        List<Minyan> maarivMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.MAARIV)).collect(Collectors.toList());
+        List<Minyan> maarivMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.MAARIV.toString())).collect(Collectors.toList());
         mv.addObject("maarivminyanim", maarivMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> maarivTimes = new HashMap<>();
         for (Minyan m : maarivMinyanim) {
             maarivTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
-        List<Minyan> selichosMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.SELICHOS)).collect(Collectors.toList());
+        List<Minyan> selichosMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.SELICHOS.toString())).collect(Collectors.toList());
         mv.addObject("selichosminyanim", selichosMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> selichosTimes = new HashMap<>();
         for (Minyan m : selichosMinyanim) {
             selichosTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
-        List<Minyan> megilaMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.MEGILA_READING)).collect(Collectors.toList());
+        List<Minyan> megilaMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.MEGILA_READING.toString())).collect(Collectors.toList());
         mv.addObject("megilaminyanim", megilaMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> megilaTimes = new HashMap<>();
         for (Minyan m : megilaMinyanim) {

@@ -1,8 +1,8 @@
-package com.tbdev.teaneckminyanim.structure.minyan;
+package com.tbdev.teaneckminyanim.minyan;
 
 import com.kosherjava.zmanim.util.Time;
-import com.tbdev.teaneckminyanim.front.ZmanimHandler;
-import com.tbdev.teaneckminyanim.structure.global.Zman;
+import com.tbdev.teaneckminyanim.service.ZmanimHandler;
+import com.tbdev.teaneckminyanim.enums.Zman;
 import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.Date;

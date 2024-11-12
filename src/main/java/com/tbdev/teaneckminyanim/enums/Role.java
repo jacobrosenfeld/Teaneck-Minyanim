@@ -1,4 +1,4 @@
-package com.tbdev.teaneckminyanim.structure;
+package com.tbdev.teaneckminyanim.enums;
 
 public enum Role {
     ADMIN, USER;

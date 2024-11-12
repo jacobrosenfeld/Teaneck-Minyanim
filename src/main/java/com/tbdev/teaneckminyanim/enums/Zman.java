@@ -1,4 +1,4 @@
-package com.tbdev.teaneckminyanim.structure.global;
+package com.tbdev.teaneckminyanim.enums;
 
 public enum Zman {
     ALOS_HASHACHAR("ALOS_HASHACHAR"),

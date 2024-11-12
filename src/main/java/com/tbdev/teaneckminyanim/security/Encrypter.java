@@ -1,4 +1,4 @@
-package com.tbdev.teaneckminyanim.structure;
+package com.tbdev.teaneckminyanim.security;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 

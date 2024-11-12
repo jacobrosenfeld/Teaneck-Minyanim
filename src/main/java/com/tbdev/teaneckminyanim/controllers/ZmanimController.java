@@ -5,8 +5,8 @@ import java.util.*;
 
 import com.kosherjava.zmanim.util.GeoLocation;
 import com.tbdev.teaneckminyanim.service.TNMSettingsService;
-import com.tbdev.teaneckminyanim.structure.TNMSettings;
-import com.tbdev.teaneckminyanim.front.ZmanimHandler;
+import com.tbdev.teaneckminyanim.model.TNMSettings;
+import com.tbdev.teaneckminyanim.service.ZmanimHandler;
 import com.tbdev.teaneckminyanim.service.ZmanimService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

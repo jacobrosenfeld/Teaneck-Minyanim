@@ -1,7 +1,7 @@
 package com.tbdev.teaneckminyanim.service;
 
 import com.tbdev.teaneckminyanim.repo.TNMUserRepository;
-import com.tbdev.teaneckminyanim.structure.TNMUser;
+import com.tbdev.teaneckminyanim.model.TNMUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

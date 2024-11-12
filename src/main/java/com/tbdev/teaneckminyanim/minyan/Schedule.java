@@ -1,4 +1,4 @@
-package com.tbdev.teaneckminyanim.structure.minyan;
+package com.tbdev.teaneckminyanim.minyan;
 
 import java.util.HashMap;
 

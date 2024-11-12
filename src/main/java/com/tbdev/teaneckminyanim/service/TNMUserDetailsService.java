@@ -1,6 +1,6 @@
-package com.tbdev.teaneckminyanim.structure;
+package com.tbdev.teaneckminyanim.service;
 
-import com.tbdev.teaneckminyanim.service.TNMUserService;
+import com.tbdev.teaneckminyanim.model.TNMUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -1,5 +1,6 @@
-package com.tbdev.teaneckminyanim.structure;
+package com.tbdev.teaneckminyanim.model;
 
+import com.tbdev.teaneckminyanim.enums.Role;
 import lombok.*;
 
 import javax.persistence.*;

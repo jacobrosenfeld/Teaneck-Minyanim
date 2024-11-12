@@ -1,6 +1,6 @@
 package com.tbdev.teaneckminyanim.repo;
 
-import com.tbdev.teaneckminyanim.structure.model.Minyan;
+import com.tbdev.teaneckminyanim.model.Minyan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

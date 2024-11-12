@@ -1,4 +1,4 @@
-package com.tbdev.teaneckminyanim.structure;
+package com.tbdev.teaneckminyanim.service;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

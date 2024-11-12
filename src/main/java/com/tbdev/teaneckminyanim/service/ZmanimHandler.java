@@ -1,11 +1,11 @@
-package com.tbdev.teaneckminyanim.front;
+package com.tbdev.teaneckminyanim.service;
 
 import com.kosherjava.zmanim.ComplexZmanimCalendar;
 import com.kosherjava.zmanim.hebrewcalendar.JewishCalendar;
 import com.kosherjava.zmanim.hebrewcalendar.HebrewDateFormatter;
 import com.kosherjava.zmanim.hebrewcalendar.JewishDate;
 import com.kosherjava.zmanim.util.GeoLocation;
-import com.tbdev.teaneckminyanim.structure.global.Zman;
+import com.tbdev.teaneckminyanim.enums.Zman;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.DayOfWeek;
