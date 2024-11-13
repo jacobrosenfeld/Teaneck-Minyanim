@@ -86,15 +86,15 @@ public class AdminController {
      * Verifies that the current user has access to the organization in question and returns it
      */
     private Organization getOrganization(String orgId) throws AccessDeniedException {
-        Organization org = organizationService.findById(orgId);
-        if (org == null) {
+        Optional<Organization> org = organizationService.findById(orgId);
+        if (org.isEmpty()) {
             return null;
         } else {
 //            verify user has user permissions for this organization
-            if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(org.getId())) {
+            if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(org.get().getId())) {
                 throw new AccessDeniedException("You do not have permission to access this organization.");
             } else {
-                return org;
+                return org.get();
             }
         }
     }
@@ -114,16 +114,12 @@ public class AdminController {
     }
 
     private boolean hasUserPermissions(String orgId) throws Exception {
-        Organization org = organizationService.findById(orgId);
-        if (org == null) {
+        Optional<Organization> org = organizationService.findById(orgId);
+        if (org.isEmpty()) {
             throw new Exception("Organization not found.");
         } else {
 //            verify user has user permissions for this organization
-            if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(org.getId())) {
-                return false;
-            } else {
-                return true;
-            }
+            return isSuperAdmin() || getCurrentUser().getOrganizationId().equals(org.get().getId());
         }
     }
 
@@ -352,8 +348,8 @@ public class AdminController {
 
         Map<String, String> organizationNames = new HashMap<>();
         for (TNMUser user : users) {
-            Organization organization = this.organizationService.findById(user.getOrganizationId());
-            String organizationDisplayName = organization == null ? "" : organization.getName();
+            Optional<Organization> organization = this.organizationService.findById(user.getOrganizationId());
+            String organizationDisplayName = organization.isEmpty() ? "" : organization.get().getName();
             organizationNames.put(user.getId(), organizationDisplayName);
         }
         mv.addObject("organizationNames", organizationNames);
@@ -381,21 +377,18 @@ public class AdminController {
                 throw new AccessDeniedException("You are not authorized to view this account.");
             }
 
-            Organization associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
-            System.out.println("Associated organization: " + associatedOrganization);
-            mv.addObject("associatedorganization", associatedOrganization);
+            Optional<Organization> associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
+            mv.addObject("associatedorganization", associatedOrganization.orElseGet(Organization::new));
         } else if (isAdmin()) {
             TNMUser user = getCurrentUser();
             TNMUser queriedUser = this.TNMUserDAO.findById(id);
-            System.out.println("Queried user: " + queriedUser);
 
             if (user != null && user.getOrganizationId().equals(queriedUser.getOrganizationId()) && !(queriedUser.isAdmin() && !queriedUser.getId().equals(user.getId()))) {
 
                 mv.addObject("queriedaccount", queriedUser);
 
-                Organization associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
-                System.out.println("Associated organization: " + associatedOrganization);
-                mv.addObject("associatedorganization", associatedOrganization);
+                Optional<Organization> associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
+                mv.addObject("associatedorganization", associatedOrganization.orElseGet(Organization::new));
             } else {
                 throw new AccessDeniedException("You are not authorized to view this account.");
             }
@@ -414,9 +407,8 @@ public class AdminController {
 
                 mv.addObject("queriedaccount", queriedUser);
 
-                Organization associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
-                System.out.println("Associated organization: " + associatedOrganization);
-                mv.addObject("associatedorganization", associatedOrganization);
+                Optional<Organization> associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
+                mv.addObject("associatedorganization", associatedOrganization.orElseGet(Organization::new));
             } else {
                 throw new AccessDeniedException("You are not authorized to view this account.");
             }
@@ -509,16 +501,16 @@ public class AdminController {
 //        check permissions
         if (isAdmin()) {
 //                find organization for id
-            Organization organization = this.organizationService.findById(id);
-            if (organization != null) {
-                mv.getModel().put("organization", organization);
-            } else {
+            Optional<Organization> organization = this.organizationService.findById(id);
+            if (organization.isEmpty()) {
                 System.out.println("Organization not found.");
 //                    TODO: HANDLE ERROR CORRECTLY
                 throw new Exception("Organization not found.");
+            } else {
+                mv.getModel().put("organization", organization.get());
             }
 
-            List<TNMUser> associatedUsers = this.organizationService.getUsersForOrganization(organization);
+            List<TNMUser> associatedUsers = this.organizationService.getUsersForOrganization(organization.get());
             mv.addObject("associatedusers", associatedUsers);
         } else if (isUser()) {
 //              check if user is associated with organization
@@ -530,17 +522,17 @@ public class AdminController {
                 throw new AccessDeniedException("You do not have permission to view this organization.");
             } else {
 //                find organization for id
-                Organization organization = this.organizationService.findById(id);
-                if (organization != null) {
-                    mv.getModel().put("organization", organization);
-                } else {
+                Optional<Organization> organization = this.organizationService.findById(id);
+                if (organization.isEmpty()) {
                     System.out.println("Organization not found.");
 //                    TODO: HANDLE ERROR CORRECTLY
                     throw new Exception("Organization not found.");
+                } else {
+                    mv.getModel().put("organization", organization);
                 }
 
 
-                List<TNMUser> associatedUsers = this.organizationService.getUsersForOrganization(organization);
+                List<TNMUser> associatedUsers = this.organizationService.getUsersForOrganization(organization.get());
                 mv.addObject("associatedusers", associatedUsers);
             }
         }
@@ -616,18 +608,18 @@ public class AdminController {
     public ModelAndView deleteOrganization(@RequestParam(value = "id", required = true) String id) throws Exception {
         if (isSuperAdmin()) {
 //            get organization and check if it exists
-            Organization organization = this.organizationService.findById(id);
-            if (organization != null) {
-                if (this.organizationService.delete(organization)) {
+            Optional<Organization> organization = this.organizationService.findById(id);
+            if (organization.isEmpty()) {
+                System.out.println("Organization does not exist. Failed to delete.");
+                return organizations(null, "Sorry, the organization could not be deleted.");
+            } else {
+                if (this.organizationService.delete(organization.get())) {
                     System.out.println("Organization deleted successfully.");
                     return organizations("Successfully deleted the organization.", null);
                 } else {
                     System.out.println("Organization delete failed.");
                     return organizations(null, "Sorry, the organization could not be deleted.");
                 }
-            } else {
-                System.out.println("Organization does not exist. Failed to delete.");
-                return organizations(null, "Sorry, the organization could not be deleted.");
             }
         } /*else if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority(Role.USER.getName()))) {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -957,8 +949,8 @@ if (this.TNMUserDAO.delete(account)) {
         TNMUser currentUser = getCurrentUser();
         mv.addObject("user", currentUser);
 
-        Organization organization = organizationService.findById(oidToUse);
-        mv.addObject("organization", organization);
+        Optional<Organization> organization = organizationService.findById(oidToUse);
+        mv.addObject("organization", organization.orElseGet(Organization::new));
 
         addStandardPageData(mv);
 
@@ -1308,17 +1300,16 @@ if (this.TNMUserDAO.delete(account)) {
         ModelAndView mv = new ModelAndView("admin/minyanim/update");
         Minyan minyan = minyanService.findById(id);
 //        authenticate user has permission to edit minyan
-        Organization minyanOrganization = organizationService.findById(minyan.getOrganizationId());
-        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(minyanOrganization.getId())) {
+        Optional<Organization> minyanOrganization = organizationService.findById(minyan.getOrganizationId());
+        if (!isSuperAdmin() && minyanOrganization.isPresent() && !getCurrentUser().getOrganizationId().equals(minyanOrganization.get().getId())) {
             throw new AccessDeniedException("You do not have permission to edit this minyan.");
         }
-
-        mv.addObject("minyan", minyan);
-        mv.addObject("organization", minyanOrganization);
-        mv.addObject("locations", locationDAO.findMatching(minyanOrganization.getId()));
-
+        if (minyanOrganization.isPresent()) {
+            mv.addObject("minyan", minyan);
+            mv.addObject("organization", minyanOrganization);
+            mv.addObject("locations", locationDAO.findMatching(minyanOrganization.get().getId()));
+        }
         addStandardPageData(mv);
-
         return mv;
     }
 
@@ -1380,12 +1371,12 @@ if (this.TNMUserDAO.delete(account)) {
         System.out.println("Updating minyan with id " + minyanId);
 
 //        confirm user has access to organization
-        Organization organization = organizationService.findById(organizationId);
-        if (organization == null) {
+        Optional<Organization> organization = organizationService.findById(organizationId);
+        if (organization.isEmpty()) {
             throw new Exception("Organization not found.");
         } else {
 //            verify user has permission to create minyan for this organization
-            if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(organization.getId())) {
+            if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(organization.get().getId())) {
                 throw new AccessDeniedException("You do not have permission to create a minyan for this organization.");
             }
         }
@@ -1395,7 +1386,7 @@ if (this.TNMUserDAO.delete(account)) {
             throw new Exception("Minyan not found.");
         }
 
-        String organizationColor = organization.getOrgColor();
+        String organizationColor = organization.get().getOrgColor();
 
 //        verify minyan type
         MinyanType minyanType = MinyanType.fromString(type);
@@ -1410,7 +1401,7 @@ if (this.TNMUserDAO.delete(account)) {
 //        get and verify location
         Location location = locationDAO.findById(locationId);
         if (location != null) {
-            if (!location.getOrganizationId().equals(organization.getId())) {
+            if (!location.getOrganizationId().equals(organization.get().getId())) {
                 throw new AccessDeniedException("You do not have permission to create a minyan using this location.");
             }
         }
@@ -1455,7 +1446,7 @@ if (this.TNMUserDAO.delete(account)) {
 
         Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, rcTime, ytTime, chanukaTime, rccTime);
 
-        Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization, minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled(), organizationColor, whatsapp);
+        Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization.get(), minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled(), organizationColor, whatsapp);
 
         try {
             minyanService.update(updatedMinyan);

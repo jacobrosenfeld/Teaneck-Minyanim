@@ -8,6 +8,7 @@ import com.tbdev.teaneckminyanim.model.Organization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,13 +32,13 @@ public class OrganizationService {
         return organizationByName.get();
     }
 
-    public Organization findById(String id) {
+    public Optional<Organization> findById(String id) {
         Optional<Organization> organizationById = organizationRepository.findById(id);
         if (organizationById.isEmpty()){
-            return new Organization();
+            return organizationById;
         }
         organizationById.get().setNusach(Nusach.fromString(organizationById.get().getNusachStr()));
-        return organizationById.get();
+        return organizationById;
     }
 
     public List<Organization> getAll() {
@@ -90,6 +91,7 @@ public class OrganizationService {
 
     private void setupOrgObjs(List<Organization> organizations) {
         for(Organization organization : organizations) {
+            organization.setWebsiteURI(URI.create(organization.getWebsiteURIStr()));
             organization.setNusach(Nusach.fromString(organization.getNusachStr()));
         }
     }

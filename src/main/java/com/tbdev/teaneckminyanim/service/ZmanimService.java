@@ -152,18 +152,18 @@ public class ZmanimService {
                 Nusach organizationNusach;
                 String organizationId;
                 String organizationColor;
-                Organization organization = organizationDAO.findById(minyan.getOrganizationId());
-                if (organization == null) {
-                    Organization temp = organizationDAO.findById(minyan.getOrganizationId());
+                Optional<Organization> organization = organizationDAO.findById(minyan.getOrganizationId());
+                if (organization.isEmpty()) {
+                    Organization temp = organizationDAO.findById(minyan.getOrganizationId()).get();
                     organizationName = temp.getName();
                     organizationNusach = temp.getNusach();
                     organizationId = temp.getId();
                     organizationColor = temp.getOrgColor();
                 } else {
-                    organizationName = organization.getName();
-                    organizationNusach = organization.getNusach();
-                    organizationId = organization.getId();
-                    organizationColor = organization.getOrgColor();
+                    organizationName = organization.get().getName();
+                    organizationNusach = organization.get().getNusach();
+                    organizationId = organization.get().getId();
+                    organizationColor = organization.get().getOrgColor();
                 }
 
                 String locationName = null;
@@ -300,18 +300,18 @@ public class ZmanimService {
                 String organizationId;
                 String organizationColor = minyan.getOrgColor();
 //                Organization organization = minyan();
-                Organization organization = organizationDAO.findById(minyan.getOrganizationId());
-                if (organization == null) {
-                    Organization temp = organizationDAO.findById(minyan.getOrganizationId());
+                Optional<Organization> organization = organizationDAO.findById(minyan.getOrganizationId());
+                if (organization.isEmpty()) {
+                    Organization temp = organizationDAO.findById(minyan.getOrganizationId()).get();
                     organizationName = temp.getName();
                     organizationNusach = temp.getNusach();
                     organizationId = temp.getId();
                     organizationColor = temp.getOrgColor();
                 } else {
-                    organizationName = organization.getName();
-                    organizationNusach = organization.getNusach();
-                    organizationId = organization.getId();
-                    organizationColor = organization.getOrgColor();
+                    organizationName = organization.get().getName();
+                    organizationNusach = organization.get().getNusach();
+                    organizationId = organization.get().getId();
+                    organizationColor = organization.get().getOrgColor();
                 }
 
                 String locationName = null;
@@ -427,7 +427,7 @@ public class ZmanimService {
         mv.getModel().put("hebrewDate", zmanimHandler.getHebrewDate(date));
 
         try {
-            Organization org = organizationDAO.findById(orgId);
+            Organization org = organizationDAO.findById(orgId).orElse(new Organization());
             mv.addObject("org", org);
         } catch (Exception e) {
             e.printStackTrace();
@@ -456,19 +456,19 @@ public class ZmanimService {
                 String organizationName;
                 Nusach organizationNusach;
                 String organizationId;
-                Organization organization = organizationDAO.findById(minyan.getOrganizationId());
+                Optional<Organization> organization = organizationDAO.findById(minyan.getOrganizationId());
                 String organizationColor = minyan.getOrgColor();
                 boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
-                if (organization == null) {
-                    Organization temp = organizationDAO.findById(minyan.getOrganizationId());
-                    organizationName = temp.getName();
-                    organizationId = temp.getId();
-                    organizationNusach = temp.getNusach();
+                if (organization.isEmpty()) {
+                    Optional<Organization> temp = organizationDAO.findById(minyan.getOrganizationId());
+                    organizationName = temp.get().getName();
+                    organizationId = temp.get().getId();
+                    organizationNusach = temp.get().getNusach();
                 } else {
-                    organizationName = organization.getName();
-                    organizationId = organization.getId();
-                    organizationNusach = organization.getNusach();
-                    organizationColor = organization.getOrgColor();
+                    organizationName = organization.get().getName();
+                    organizationId = organization.get().getId();
+                    organizationNusach = organization.get().getNusach();
+                    organizationColor = organization.get().getOrgColor();
                 }
 
                 String locationName = null;
@@ -609,19 +609,19 @@ public class ZmanimService {
                     String organizationName;
                     Nusach organizationNusach;
                     String organizationId;
-                    Organization organization = organizationDAO.findById(minyan.getOrganizationId());
+                    Optional<Organization> organization = organizationDAO.findById(minyan.getOrganizationId());
                     String organizationColor = minyan.getOrgColor();
-                    if (organization == null) {
-                        Organization temp = organizationDAO.findById(minyan.getOrganizationId());
-                        organizationName = temp.getName();
-                        organizationId = temp.getId();
-                        organizationNusach = temp.getNusach();
-                        organizationColor = temp.getOrgColor();
+                    if (organization.isEmpty()) {
+                        Optional<Organization> temp = organizationDAO.findById(minyan.getOrganizationId());
+                        organizationName = temp.get().getName();
+                        organizationId = temp.get().getId();
+                        organizationNusach = temp.get().getNusach();
+                        organizationColor = temp.get().getOrgColor();
                     } else {
-                        organizationName = organization.getName();
-                        organizationId = organization.getId();
-                        organizationNusach = organization.getNusach();
-                        organizationColor = organization.getOrgColor();
+                        organizationName = organization.get().getName();
+                        organizationId = organization.get().getId();
+                        organizationNusach = organization.get().getNusach();
+                        organizationColor = organization.get().getOrgColor();
                     }
 
                     String locationName = null;

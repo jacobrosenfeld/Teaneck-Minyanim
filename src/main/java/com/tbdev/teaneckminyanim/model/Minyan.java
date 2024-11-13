@@ -6,6 +6,7 @@ import com.tbdev.teaneckminyanim.enums.Nusach;
 import com.tbdev.teaneckminyanim.minyan.MinyanTime;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.minyan.Schedule;
+import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,7 +20,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @Table(name = "Minyan")
-public class Minyan {
+public class Minyan implements IDGenerator {
     @Id
     @Column(name = "ID")
     private String id;
@@ -149,7 +150,7 @@ public class Minyan {
                   String nusach,
                   String orgColor,
                   String whatsapp) {
-        this.id = id;
+        this.id = generateID('M');
         this.minyanType = minyanTypeString;
         this.locationId = locationId;
         this.organizationId = organizationId;
@@ -173,7 +174,7 @@ public class Minyan {
     }
 
     public Minyan(Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor, String whatsapp) {
-        this.id = id;
+        this.id = generateID('M');
         this.minyanType = type.toString();
         this.locationId = location.getId();
         this.organizationId = organization.getId();

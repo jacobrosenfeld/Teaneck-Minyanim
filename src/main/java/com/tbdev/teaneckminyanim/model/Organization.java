@@ -13,7 +13,7 @@ import java.net.URI;
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
-@Table(name = "ORGANIZATION")
+@Table(name = "organization")
 public class Organization {
 
     @Column(name = "NAME", nullable = false)
