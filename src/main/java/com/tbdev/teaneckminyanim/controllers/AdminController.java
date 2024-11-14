@@ -1027,6 +1027,7 @@ if (this.TNMUserDAO.delete(account)) {
                 throw new IllegalArgumentException("You must specify an organization ID.");
             } else {
                 oidToUse = organizationId;
+                Optional<Organization> organization = this.organizationService.findById(organizationId);
             }
         } else if (isUser()) {
             oidToUse = getCurrentUser().getOrganizationId();
