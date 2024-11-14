@@ -1097,7 +1097,7 @@ if (this.TNMUserDAO.delete(account)) {
         }
         mv.addObject("locationnames", locationNames);
 
-        mv.addObject("organization", organizationService.findById(oidToUse));
+        mv.addObject("organization", organizationService.findById(oidToUse).orElse(null));
 
         mv.addObject("successmessage", successMessage);
         mv.addObject("errormessage", errorMessage);
