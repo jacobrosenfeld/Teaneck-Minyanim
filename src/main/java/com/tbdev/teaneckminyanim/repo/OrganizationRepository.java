@@ -15,6 +15,7 @@ import java.util.Optional;
 public interface OrganizationRepository extends JpaRepository<Organization, String> {
 
     Optional<Organization> findByName(String name);
+
     @Query("SELECT a FROM Account a WHERE a.organizationId = :organizationId")
     List<Account> findAccountsByOrganizationId(@Param("organizationId") String organizationId);
 }

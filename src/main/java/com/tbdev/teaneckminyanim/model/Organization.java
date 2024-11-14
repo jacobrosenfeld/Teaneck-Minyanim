@@ -27,6 +27,7 @@ public class Organization {
 
     @Column(name = "COLOR", nullable = false)
     private String orgColor;
+
     @Column(name = "SITE_URI", nullable = true)
     private String websiteURIStr;
 

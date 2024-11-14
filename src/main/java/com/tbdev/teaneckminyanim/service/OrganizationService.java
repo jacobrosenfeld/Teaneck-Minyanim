@@ -90,8 +90,13 @@ public class OrganizationService {
     }
 
     private void setupOrgObjs(List<Organization> organizations) {
-        for(Organization organization : organizations) {
-            organization.setWebsiteURI(URI.create(organization.getWebsiteURIStr()));
+        for (Organization organization : organizations) {
+            String websiteURIStr = organization.getWebsiteURIStr();
+            if (websiteURIStr != null && !websiteURIStr.isEmpty()) {
+                organization.setWebsiteURI(URI.create(websiteURIStr));
+            } else {
+                organization.setWebsiteURI(null);  // Or handle as needed if URI is missing
+            }
             organization.setNusach(Nusach.fromString(organization.getNusachStr()));
         }
     }
