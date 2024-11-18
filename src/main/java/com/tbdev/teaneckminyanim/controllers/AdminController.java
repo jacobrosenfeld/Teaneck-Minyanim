@@ -348,9 +348,11 @@ public class AdminController {
 
         Map<String, String> organizationNames = new HashMap<>();
         for (TNMUser user : users) {
-            Optional<Organization> organization = this.organizationService.findById(user.getOrganizationId());
-            String organizationDisplayName = organization.isEmpty() ? "" : organization.get().getName();
-            organizationNames.put(user.getId(), organizationDisplayName);
+            if (user.getOrganizationId()!= null) {
+                Optional<Organization> organization = this.organizationService.findById(user.getOrganizationId());
+                String organizationDisplayName = organization.isEmpty() ? "" : organization.get().getName();
+                organizationNames.put(user.getId(), organizationDisplayName);
+            }
         }
         mv.addObject("organizationNames", organizationNames);
 
