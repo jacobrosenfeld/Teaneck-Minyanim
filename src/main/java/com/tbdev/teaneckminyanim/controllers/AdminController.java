@@ -1306,7 +1306,7 @@ if (this.TNMUserDAO.delete(account)) {
         }
         if (minyanOrganization.isPresent()) {
             mv.addObject("minyan", minyan);
-            mv.addObject("organization", minyanOrganization);
+            mv.addObject("organization", minyanOrganization.orElse(null));
             mv.addObject("locations", locationDAO.findMatching(minyanOrganization.get().getId()));
         }
         addStandardPageData(mv);
