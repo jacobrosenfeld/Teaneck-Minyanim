@@ -180,96 +180,96 @@ public class ZmanimService {
                 String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
                 String roundedDisplayName = minyan.getMinyanTime().roundedDisplayName();
                 if (dynamicDisplayName != null) {
-                    if (minyan.getMinyanType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanim.get(Zman.SZT))
+                    if (minyan.getType().equals(MinyanType.SHACHARIS) && startDate.before(zmanim.get(Zman.SZT))
                             && startDate.after(zmanim.get(Zman.ALOS_HASHACHAR))) {
-                        minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                        minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                 organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                                Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                     } else {
-                        if (minyan.getMinyanType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanim.get(Zman.SHEKIYA))
+                        if (minyan.getType().equals(MinyanType.MINCHA) && startDate.before(zmanim.get(Zman.SHEKIYA))
                                 && (startDate.after(mgMinusOneMinute.getTime())
                                 || (startDate.equals(mgMinusOneMinute.getTime())))) {
-                            minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                            minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                     organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                                    Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                    minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                         } else {
-                            if (minyan.getMinyanType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
+                            if (minyan.getType().equals(MinyanType.MAARIV) && (startDate.after(shekiyaMinusOneMinute.getTime())
                                     || startDate.equals((shekiyaMinusOneMinute.getTime())) || dynamicDisplayName.contains("Plag"))) {
-                                minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                                        Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                        minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             }
                             else {
-                                if (minyan.getMinyanType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
-                                    minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                if (minyan.getType().equals(MinyanType.SELICHOS) && isSelichosRecited){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
-                                                Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                     }
                                 }
                         }
                     }
                 } else if (roundedDisplayName != null) {
-                    if (minyan.getMinyanType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanim.get(Zman.SZT))
+                    if (minyan.getType().equals(MinyanType.SHACHARIS) && startDate.before(zmanim.get(Zman.SZT))
                             && startDate.after(zmanim.get(Zman.ALOS_HASHACHAR))) {
-                        minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                        minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                 organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
-                                Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                     } else {
-                        if (minyan.getMinyanType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanim.get(Zman.SHEKIYA))
+                        if (minyan.getType().equals(MinyanType.MINCHA) && startDate.before(zmanim.get(Zman.SHEKIYA))
                                 && (startDate.after(mgMinusOneMinute.getTime())
                                 || (startDate.equals(mgMinusOneMinute.getTime())))) {
-                            minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                            minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                     organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
-                                    Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                    minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                         } else {
-                            if (minyan.getMinyanType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
+                            if (minyan.getType().equals(MinyanType.MAARIV) && (startDate.after(shekiyaMinusOneMinute.getTime())
                                     || startDate.equals((shekiyaMinusOneMinute.getTime())) || roundedDisplayName.contains("plag"))) {
-                                minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
-                                        Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                        minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             }
                             else {
-                                if (minyan.getMinyanType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
-                                    minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                if (minyan.getType().equals(MinyanType.SELICHOS) && isSelichosRecited){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
-                                                Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                     }
                                 }
                         }
                     }
                 } else {
-                    if (minyan.getMinyanType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanim.get(Zman.SZT))
+                    if (minyan.getType().equals(MinyanType.SHACHARIS) && startDate.before(zmanim.get(Zman.SZT))
                             && startDate.after(zmanim.get(Zman.ALOS_HASHACHAR))) {
                         minyanEvents
-                                .add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach,
-                                        organizationId, locationName, startDate, Nusach.fromString(minyan.getNusachString()),
+                                        organizationId, locationName, startDate, minyan.getNusach(),
                                         minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                     } else {
-                        if (minyan.getMinyanType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanim.get(Zman.SHEKIYA))
+                        if (minyan.getType().equals(MinyanType.MINCHA) && startDate.before(zmanim.get(Zman.SHEKIYA))
                                 && startDate.after(zmanim.get(Zman.MINCHA_GEDOLA))) {
                             minyanEvents
-                                    .add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                    .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                             organizationNusach,
-                                            organizationId, locationName, startDate, Nusach.fromString(minyan.getNusachString()),
+                                            organizationId, locationName, startDate, minyan.getNusach(),
                                             minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                         } else {
-                            if (minyan.getMinyanType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
+                            if (minyan.getType().equals(MinyanType.MAARIV) && (startDate.after(shekiyaMinusOneMinute.getTime())
                                     || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
                                 minyanEvents
-                                        .add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                        .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach,
-                                                organizationId, locationName, startDate, Nusach.fromString(minyan.getNusachString()),
+                                                organizationId, locationName, startDate, minyan.getNusach(),
                                                 minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             }
                             else {
-                                if (minyan.getMinyanType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
-                                    minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                if (minyan.getType().equals(MinyanType.SELICHOS) && isSelichosRecited){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
-                                                Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                     }
                                 }
                         }
@@ -327,13 +327,13 @@ public class ZmanimService {
 
                 String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
                 if (dynamicDisplayName != null) {
-                    kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                    kolhaMinyanims.add(new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName,
                             organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                            Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor));
+                            minyan.getNusach(), minyan.getNotes(), organizationColor));
                 } else {
                     kolhaMinyanims.add(
-                            new KolhaMinyanim(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName, organizationNusach,
-                                    organizationId, locationName, startDate, Nusach.fromString(minyan.getNusachString()), minyan.getNotes(),
+                            new KolhaMinyanim(minyan.getId(), minyan.getType(), organizationName, organizationNusach,
+                                    organizationId, locationName, startDate, minyan.getNusach(), minyan.getNotes(),
                                     organizationColor));
                 }
             }
@@ -485,88 +485,88 @@ public class ZmanimService {
                 String dynamicDisplayName = minyan.getMinyanTime().dynamicDisplayName();
                 String roundedDisplayName = minyan.getMinyanTime().roundedDisplayName();
                 if (dynamicDisplayName != null) {
-                    if (minyan.getMinyanType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanim.get(Zman.SZT))
+                    if (minyan.getType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanim.get(Zman.SZT))
                             && startDate.after(zmanim.get(Zman.ALOS_HASHACHAR))) {
-                        minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                        minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                 organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                                Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                     } else {
-                        if (minyan.getMinyanType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanim.get(Zman.SHEKIYA))
+                        if (minyan.getType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanim.get(Zman.SHEKIYA))
                                 && (startDate.after(mgMinusOneMinute.getTime())
                                 || (startDate.equals(mgMinusOneMinute.getTime())))) {
-                            minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                            minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                     organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                                    Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                    minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                         } else {
-                            if (minyan.getMinyanType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
+                            if (minyan.getType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
                                     || startDate.equals((shekiyaMinusOneMinute.getTime())) || dynamicDisplayName.contains("Plag"))) {
-                                minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                                        Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                        minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             }
                             else {
-                                if (minyan.getMinyanType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
-                                    minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                if (minyan.getType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
-                                                Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                     }
                                 }
                         }
                     }
                 } else if (roundedDisplayName != null) {
-                    if (minyan.getMinyanType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanim.get(Zman.SZT))
+                    if (minyan.getType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanim.get(Zman.SZT))
                             && startDate.after(zmanim.get(Zman.ALOS_HASHACHAR))) {
-                        minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                        minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                 organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
-                                Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                     } else {
-                        if (minyan.getMinyanType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanim.get(Zman.SHEKIYA))
+                        if (minyan.getType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanim.get(Zman.SHEKIYA))
                                 && (startDate.after(mgMinusOneMinute.getTime())
                                 || (startDate.equals(mgMinusOneMinute.getTime())))) {
-                            minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                            minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                     organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
-                                    Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                    minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                         } else {
-                            if (minyan.getMinyanType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
+                            if (minyan.getType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
                                     || startDate.equals((shekiyaMinusOneMinute.getTime())) || roundedDisplayName.contains("plag"))) {
-                                minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
-                                        Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                        minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             }
                             else {
-                                if (minyan.getMinyanType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
-                                    minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                if (minyan.getType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
+                                    minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach, organizationId, locationName, startDate,
                                                 roundedDisplayName,
-                                                Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                                minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                     }
                                 }
                         }
                     }
                 } else {
-                    if (minyan.getMinyanType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanim.get(Zman.SZT))
+                    if (minyan.getType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanim.get(Zman.SZT))
                             && startDate.after(zmanim.get(Zman.ALOS_HASHACHAR))) {
                         minyanEvents
-                                .add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach,
-                                        organizationId, locationName, startDate, Nusach.fromString(minyan.getNusachString()),
+                                        organizationId, locationName, startDate, minyan.getNusach(),
                                         minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                     } else {
-                        if (minyan.getMinyanType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanim.get(Zman.SHEKIYA))
+                        if (minyan.getType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanim.get(Zman.SHEKIYA))
                                 && startDate.after(zmanim.get(Zman.MINCHA_GEDOLA))) {
                             minyanEvents
-                                    .add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                    .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                             organizationNusach,
-                                            organizationId, locationName, startDate, Nusach.fromString(minyan.getNusachString()),
+                                            organizationId, locationName, startDate, minyan.getNusach(),
                                             minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                         } else {
-                            if (minyan.getMinyanType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
+                            if (minyan.getType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
                                     || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
                                 minyanEvents
-                                        .add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                        .add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                 organizationNusach,
-                                                organizationId, locationName, startDate, Nusach.fromString(minyan.getNusachString()),
+                                                organizationId, locationName, startDate, minyan.getNusach(),
                                                 minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             }
                         }
@@ -639,95 +639,95 @@ public class ZmanimService {
                     String roundedDisplayName = minyan.getMinyanTime().roundedDisplayName();
                     Boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
                     if (dynamicDisplayName != null) {
-                        if (minyan.getMinyanType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanimtoday.get(Zman.SZT))
+                        if (minyan.getType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanimtoday.get(Zman.SZT))
                                 && startDate.after(zmanimtoday.get(Zman.ALOS_HASHACHAR))) {
-                            nextMinyan.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                            nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                     organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                                    Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                    minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                         } else {
-                            if (minyan.getMinyanType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanimtoday.get(Zman.SHEKIYA))
+                            if (minyan.getType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanimtoday.get(Zman.SHEKIYA))
                                     && (startDate.after(mgMinusOneMinute.getTime())
                                     || (startDate.equals(mgMinusOneMinute.getTime())))) {
-                                nextMinyan.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, dynamicDisplayName,
-                                        Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                        minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             } else {
-                                if (minyan.getMinyanType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
+                                if (minyan.getType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
                                         || startDate.equals((shekiyaMinusOneMinute.getTime())) || dynamicDisplayName.contains("Plag"))) {
-                                    nextMinyan.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                    nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                             organizationNusach, organizationId, locationName, startDate,
                                             dynamicDisplayName,
-                                            Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                            minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                 }
                                 else {
-                                    if (minyan.getMinyanType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
-                                        minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                    if (minyan.getType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
+                                        minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                     organizationNusach, organizationId, locationName, startDate,
                                                     roundedDisplayName,
-                                                    Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                                    minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                         }
                                     }
                             }
                         }
                     } else if (roundedDisplayName != null) {
-                        if (minyan.getMinyanType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanimtoday.get(Zman.SZT))
+                        if (minyan.getType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanimtoday.get(Zman.SZT))
                                 && startDate.after(zmanimtoday.get(Zman.ALOS_HASHACHAR))) {
-                            nextMinyan.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                            nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                     organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
-                                    Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                    minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                         } else {
-                            if (minyan.getMinyanType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanimtoday.get(Zman.SHEKIYA))
+                            if (minyan.getType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanimtoday.get(Zman.SHEKIYA))
                                     && (startDate.after(mgMinusOneMinute.getTime())
                                     || (startDate.equals(mgMinusOneMinute.getTime())))) {
-                                nextMinyan.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach, organizationId, locationName, startDate, roundedDisplayName,
-                                        Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                        minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             } else {
-                                if (minyan.getMinyanType().equals(MinyanType.MAARIV.toString())&& (startDate.after(shekiyaMinusOneMinute.getTime())
+                                if (minyan.getType().equals(MinyanType.MAARIV.toString())&& (startDate.after(shekiyaMinusOneMinute.getTime())
                                         || startDate.equals((shekiyaMinusOneMinute.getTime())) || roundedDisplayName.contains("plag"))) {
-                                    nextMinyan.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                    nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                             organizationNusach, organizationId, locationName, startDate,
                                             roundedDisplayName,
-                                            Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                            minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                 }
                                 else {
-                                    if (minyan.getMinyanType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
-                                        minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                    if (minyan.getType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
+                                        minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                     organizationNusach, organizationId, locationName, startDate,
                                                     roundedDisplayName,
-                                                    Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                                    minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                         }
                                     }
                             }
                         }
                     } else {
-                        if (minyan.getMinyanType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanimtoday.get(Zman.SZT))
+                        if (minyan.getType().equals(MinyanType.SHACHARIS.toString()) && startDate.before(zmanimtoday.get(Zman.SZT))
                                 && startDate.after(zmanimtoday.get(Zman.ALOS_HASHACHAR))) {
-                            nextMinyan.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                            nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                     organizationNusach,
-                                    organizationId, locationName, startDate, Nusach.fromString(minyan.getNusachString()),
+                                    organizationId, locationName, startDate, minyan.getNusach(),
                                     minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                         } else {
-                            if (minyan.getMinyanType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanimtoday.get(Zman.SHEKIYA))
+                            if (minyan.getType().equals(MinyanType.MINCHA.toString()) && startDate.before(zmanimtoday.get(Zman.SHEKIYA))
                                     && startDate.after(zmanimtoday.get(Zman.MINCHA_GEDOLA))) {
-                                nextMinyan.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                         organizationNusach,
-                                        organizationId, locationName, startDate, Nusach.fromString(minyan.getNusachString()),
+                                        organizationId, locationName, startDate, minyan.getNusach(),
                                         minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                             } else {
-                                if (minyan.getMinyanType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
+                                if (minyan.getType().equals(MinyanType.MAARIV.toString()) && (startDate.after(shekiyaMinusOneMinute.getTime())
                                         || startDate.equals((shekiyaMinusOneMinute.getTime())))) {
-                                    nextMinyan.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                    nextMinyan.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                             organizationNusach,
-                                            organizationId, locationName, startDate, Nusach.fromString(minyan.getNusachString()),
+                                            organizationId, locationName, startDate, minyan.getNusach(),
                                             minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                 }
                                 else {
-                                    if (minyan.getMinyanType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
-                                        minyanEvents.add(new MinyanEvent(minyan.getId(), MinyanType.fromString(minyan.getMinyanType()), organizationName,
+                                    if (minyan.getType().equals(MinyanType.SELICHOS.toString()) && isSelichosRecited){
+                                        minyanEvents.add(new MinyanEvent(minyan.getId(), minyan.getType(), organizationName,
                                                     organizationNusach, organizationId, locationName, startDate,
                                                     roundedDisplayName,
-                                                    Nusach.fromString(minyan.getNusachString()), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
+                                                    minyan.getNusach(), minyan.getNotes(), organizationColor, minyan.getWhatsapp()));
                                         }
                                     }
                             }

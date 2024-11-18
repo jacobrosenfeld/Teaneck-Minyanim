@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +20,9 @@ public class MinyanService {
     private final LocationRepository locationRepository;
 
     public Minyan findById(String id) {
-        return minyanRepository.findById(id).orElse(null);
+        Optional<Minyan> minyanById = minyanRepository.findById(id);
+        minyanById.ifPresent(this::setupMinyanObj);
+        return minyanById.orElse(null);
     }
 
     public List<Minyan> getAll() {
@@ -63,10 +66,12 @@ public class MinyanService {
 
     private void setupMinyanObjs(List<Minyan> minyans) {
         for (Minyan minyan : minyans) {
-            minyan.setOrgColor("#275ed8");
-            minyan.setNusach(Nusach.fromString(minyan.getNusachString()));
-            minyan.setSchedule(new Schedule(minyan.getStartTime1(), minyan.getStartTime2(), minyan.getStartTime3(), minyan.getStartTime4(), minyan.getStartTime5(), minyan.getStartTime6(), minyan.getStartTime7(), minyan.getStartTimeRC(), minyan.getStartTimeYT(), minyan.getStartTimeCH(), minyan.getStartTimeCHRC()));
+            setupMinyanObj(minyan);
         }
+    }
+    private void setupMinyanObj(Minyan minyan) {
+        minyan.setOrgColor("#275ed8");
+        minyan.setSchedule(new Schedule(minyan.getStartTime1(), minyan.getStartTime2(), minyan.getStartTime3(), minyan.getStartTime4(), minyan.getStartTime5(), minyan.getStartTime6(), minyan.getStartTime7(), minyan.getStartTimeRC(), minyan.getStartTimeYT(), minyan.getStartTimeCH(), minyan.getStartTimeCHRC()));
     }
 }
 

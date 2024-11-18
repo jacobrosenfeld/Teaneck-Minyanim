@@ -26,7 +26,8 @@ public class Minyan implements IDGenerator {
     private String id;
 
     @Column(name = "TYPE", nullable = false)
-    private String minyanType;
+    @Enumerated(EnumType.STRING)
+    private MinyanType type;
 
     @Column(name = "LOCATION_ID", nullable = false)
     private String locationId;
@@ -77,19 +78,18 @@ public class Minyan implements IDGenerator {
     private String notes;
 
     @Column(name = "NUSACH", nullable = false)
-    private String nusachString;
-
-    @Transient
+    @Enumerated(EnumType.STRING)
     private Nusach nusach;
-
-    @Transient
-    private String orgColor;
 
     @Column(name = "WHATSAPP")
     private String whatsapp;
 
+    @Transient
+    private String orgColor;
+
+
     public Minyan(String id,
-                  String minyanTypeString,
+                  MinyanType type,
                   String locationId,
                   String organizationId,
                   boolean enabled,
@@ -105,11 +105,11 @@ public class Minyan implements IDGenerator {
                   String startTimeCH,
                   String startTimeCHRC,
                   String notes,
-                  String nusach,
+                  Nusach nusach,
                   String orgColor,
                   String whatsapp) {
         this.id = id;
-        this.minyanType = minyanTypeString;
+        this.type = type;
         this.locationId = locationId;
         this.organizationId = organizationId;
         this.enabled = enabled;
@@ -125,8 +125,7 @@ public class Minyan implements IDGenerator {
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
         this.notes = notes;
-        this.nusachString = nusach;
-        this.nusach = Nusach.fromString(nusach);
+        this.nusach = nusach;
         this.orgColor = orgColor;
         this.whatsapp = whatsapp;
     }
@@ -147,11 +146,11 @@ public class Minyan implements IDGenerator {
                   String startTimeCH,
                   String startTimeCHRC,
                   String notes,
-                  String nusach,
+                  Nusach nusach,
                   String orgColor,
                   String whatsapp) {
         this.id = generateID('M');
-        this.minyanType = minyanTypeString;
+        this.type = type;
         this.locationId = locationId;
         this.organizationId = organizationId;
         this.enabled = enabled;
@@ -167,15 +166,14 @@ public class Minyan implements IDGenerator {
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
         this.notes = notes;
-        this.nusachString = nusach;
-        this.nusach = Nusach.fromString(nusach);
+        this.nusach = nusach;
         this.orgColor = orgColor;
         this.whatsapp = whatsapp;
     }
 
     public Minyan(Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor, String whatsapp) {
         this.id = generateID('M');
-        this.minyanType = type.toString();
+        this.type = type;
         this.locationId = location.getId();
         this.organizationId = organization.getId();
         this.startTime1 = schedule.getSunday().toString();
@@ -192,14 +190,14 @@ public class Minyan implements IDGenerator {
         this.schedule = schedule;
         this.enabled = enabled;
         this.notes = notes;
-        this.nusachString = nusach.toString();
+        this.nusach = nusach;
         this.orgColor = orgColor;
         this.whatsapp = whatsapp;
     }
 
     public Minyan(String id, Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor, String whatsapp) {
         this.id = id;
-        this.minyanType = type.toString();
+        this.type = type;
         this.locationId = location.getId();
         this.organizationId = organization.getId();
         this.startTime1 = schedule.getSunday().toString();
@@ -216,7 +214,7 @@ public class Minyan implements IDGenerator {
         this.schedule = schedule;
         this.enabled = enabled;
         this.notes = notes;
-        this.nusachString = nusach.toString();
+        this.nusach = nusach;
         this.orgColor = orgColor;
         this.whatsapp = whatsapp;
     }

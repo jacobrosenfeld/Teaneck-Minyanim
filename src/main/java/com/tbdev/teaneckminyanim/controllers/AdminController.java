@@ -348,9 +348,11 @@ public class AdminController {
 
         Map<String, String> organizationNames = new HashMap<>();
         for (TNMUser user : users) {
-            Optional<Organization> organization = this.organizationService.findById(user.getOrganizationId());
-            String organizationDisplayName = organization.isEmpty() ? "" : organization.get().getName();
-            organizationNames.put(user.getId(), organizationDisplayName);
+            if (user.getOrganizationId()!= null) {
+                Optional<Organization> organization = this.organizationService.findById(user.getOrganizationId());
+                String organizationDisplayName = organization.isEmpty() ? "" : organization.get().getName();
+                organizationNames.put(user.getId(), organizationDisplayName);
+            }
         }
         mv.addObject("organizationNames", organizationNames);
 
@@ -579,30 +581,30 @@ public class AdminController {
                 .build();
 
 //        check permissions
-          if (isAdmin()) {
-        if (this.organizationService.update(organization)) {
-            // Redirect to the organization page after a successful update
-            RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
-            return new ModelAndView(redirectView);
-        } else {
-            // Handle update failure
-            return organization(id, null, null, "Sorry, the update failed.", null);
-        }
-    } else if (isUser()) {
-        // ... (Permissions check and organization update, similar to admin case)
+        if (isAdmin()) {
+            if (this.organizationService.update(organization)) {
+                // Redirect to the organization page after a successful update
+                RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
+                return new ModelAndView(redirectView);
+            } else {
+                // Handle update failure
+                return organization(id, null, null, "Sorry, the update failed.", null);
+            }
+        } else if (isUser()) {
+            // ... (Permissions check and organization update, similar to admin case)
 
-        if (this.organizationService.update(organization)) {
-            // Redirect to the organization page after a successful update
-            RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
-            return new ModelAndView(redirectView);
+            if (this.organizationService.update(organization)) {
+                // Redirect to the organization page after a successful update
+                RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
+                return new ModelAndView(redirectView);
+            } else {
+                // Handle update failure
+                return organization(id, null, "Sorry, the update failed.", null, null);
+            }
         } else {
-            // Handle update failure
-            return organization(id, null, "Sorry, the update failed.", null, null);
+            throw new AccessDeniedException("You do not have permission to view this organization.");
         }
-    } else {
-        throw new AccessDeniedException("You do not have permission to view this organization.");
     }
-}
 
     @RequestMapping(value = "/admin/delete-organization")
     public ModelAndView deleteOrganization(@RequestParam(value = "id", required = true) String id) throws Exception {
@@ -672,7 +674,7 @@ public class AdminController {
                 System.out.println("You do not have permission to view this organization.");
                 throw new AccessDeniedException("You do not have permission to view this organization.");
             } else {
-if (this.TNMUserDAO.delete(account)) {
+                if (this.TNMUserDAO.delete(account)) {
                     System.out.println("Account deleted successfully.");
                     return accounts("Successfully deleted the account.", null);
                 } else {
@@ -980,8 +982,8 @@ if (this.TNMUserDAO.delete(account)) {
 
     @RequestMapping(value = "/admin/update-location", method = RequestMethod.POST)
     public ModelAndView updateLocation(
-        @RequestParam(value = "id", required = true) String id,
-        @RequestParam(value = "name", required = true) String newName) {
+            @RequestParam(value = "id", required = true) String id,
+            @RequestParam(value = "name", required = true) String newName) {
         Location locationToUpdate = locationDAO.findById(id);
         if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(locationToUpdate.getOrganizationId())) {
             throw new AccessDeniedException("You do not have permission to update a location for this organization.");
@@ -1035,44 +1037,44 @@ if (this.TNMUserDAO.delete(account)) {
         }
 
         List<Minyan> minyanim = minyanService.findMatching(oidToUse);
-//        minyanim.stream().filter(m -> m.getMinyanType() == MinyanType.SHACHARIS);
+//        minyanim.stream().filter(m -> m.getType() == MinyanType.SHACHARIS);
 
 //        get elements from list that are shacharis
 //        List<Minyan> shacharisMinyanim = new ArrayList<>();
 //        for (Minyan m : minyanim) {
-//            if (m.getMinyanType().equals("shacharis")) {
+//            if (m.getType().equals("shacharis")) {
 //                shacharisMinyanim.add(m);
 //            }
 //        }
-        List<Minyan> shacharisMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.SHACHARIS.toString())).collect(Collectors.toList());
+        List<Minyan> shacharisMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SHACHARIS)).collect(Collectors.toList());
         mv.addObject("shacharisminyanim", shacharisMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> shacharisTimes = new HashMap<>();
         for (Minyan m : shacharisMinyanim) {
             shacharisTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
-        List<Minyan> minchaMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.MINCHA.toString())).collect(Collectors.toList());
+        List<Minyan> minchaMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.MINCHA)).collect(Collectors.toList());
         mv.addObject("minchaminyanim", minchaMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> minchaTimes = new HashMap<>();
         for (Minyan m : minchaMinyanim) {
             minchaTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
-        
-        List<Minyan> maarivMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.MAARIV.toString())).collect(Collectors.toList());
+
+        List<Minyan> maarivMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.MAARIV)).collect(Collectors.toList());
         mv.addObject("maarivminyanim", maarivMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> maarivTimes = new HashMap<>();
         for (Minyan m : maarivMinyanim) {
             maarivTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
-        List<Minyan> selichosMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.SELICHOS.toString())).collect(Collectors.toList());
+        List<Minyan> selichosMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SELICHOS)).collect(Collectors.toList());
         mv.addObject("selichosminyanim", selichosMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> selichosTimes = new HashMap<>();
         for (Minyan m : selichosMinyanim) {
             selichosTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
-        List<Minyan> megilaMinyanim = minyanim.stream().filter(m -> m.getMinyanType().equals(MinyanType.MEGILA_READING.toString())).collect(Collectors.toList());
+        List<Minyan> megilaMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.MEGILA_READING)).collect(Collectors.toList());
         mv.addObject("megilaminyanim", megilaMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> megilaTimes = new HashMap<>();
         for (Minyan m : megilaMinyanim) {
@@ -1235,13 +1237,13 @@ if (this.TNMUserDAO.delete(account)) {
             mv.addObject("errormessage", "Sorry, there was an error creating the minyan. Please try again. (M01)");
             return mv;
         }
-        
-//        System.out.println("Minyan type: " + minyanType);
+
+//        System.out.println("Minyan type: " + type);
 
 //        get and verify location
         Location location = getLocation(locationId);
 
-  //        create minyan times
+        //        create minyan times
         MinyanTime sundayTime = MinyanTime.fromFormData(sundayTimeType, sundayTimeString, sundayZman, sundayZmanOffset);
         MinyanTime mondayTime = MinyanTime.fromFormData(mondayTimeType, mondayTimeString, mondayZman, mondayZmanOffset);
         MinyanTime tuesdayTime = MinyanTime.fromFormData(tuesdayTimeType, tuesdayTimeString, tuesdayZman, tuesdayZmanOffset);
