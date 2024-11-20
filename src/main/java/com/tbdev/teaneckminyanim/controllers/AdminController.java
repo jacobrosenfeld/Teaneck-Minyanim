@@ -1308,7 +1308,7 @@ public class AdminController {
         }
         if (minyanOrganization.isPresent()) {
             mv.addObject("minyan", minyan);
-            mv.addObject("organization", minyanOrganization);
+            mv.addObject("organization", minyanOrganization.get());
             mv.addObject("locations", locationDAO.findMatching(minyanOrganization.get().getId()));
         }
         addStandardPageData(mv);

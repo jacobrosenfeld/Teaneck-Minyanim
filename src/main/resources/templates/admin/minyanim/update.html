@@ -64,7 +64,7 @@
                                     <div class="form-group">
                                         <label for="location">Location</label>
                                         <select class="custom-select" name="location" id="location" required>
-                                            <option value="null" th:selected="${minyan.location == null}">None specified</option>
+                                            <option value="null" th:selected="${minyan.locationId == null}">None specified</option>
                                             <div th:each="location: ${locations}">
                                                 <option th:value="${location.id}" th:text="${location.name}" th:selected="${minyan.getLocationId() != null && minyan.getLocationId() == location.getId()}"></option>
                                             </div>
