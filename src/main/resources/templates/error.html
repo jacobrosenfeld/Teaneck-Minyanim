@@ -52,14 +52,6 @@
                                         <p class="mb-4" style="font-size: 25px;">We're working on it.<br /></p>
                                         <a class="btn-cta nav-link" role="button" href="/">Go Home</a>
                                     </div>
-                                    <div th:utext="'&lt;!--'" th:remove="tag"></div>
-                                    <div th:utext="'Failed URL: ' +  ${url}" th:remove="tag">${url}</div>
-                                    <div th:utext="'Exception: ' + ${exception}" th:remove="tag">${exception}</div>
-                                    <ul th:remove="tag">
-                                        <li th:each="ste : ${exception}" th:remove="tag"><span
-                                                th:utext="${ste}" th:remove="tag">${ste}</span></li>
-                                    </ul>
-                                    <div th:utext="'--&gt;'" th:remove="tag"></div>
                                 </div>
                             </div>
                         </div>
