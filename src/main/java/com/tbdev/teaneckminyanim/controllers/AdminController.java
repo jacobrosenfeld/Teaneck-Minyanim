@@ -379,8 +379,10 @@ public class AdminController {
                 throw new AccessDeniedException("You are not authorized to view this account.");
             }
 
-            Optional<Organization> associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
-            mv.addObject("associatedorganization", associatedOrganization.orElseGet(Organization::new));
+            if (!queriedUser.isSuperAdmin()) {
+                Optional<Organization> associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
+                mv.addObject("associatedorganization", associatedOrganization.orElseGet(Organization::new));
+            }
         } else if (isAdmin()) {
             TNMUser user = getCurrentUser();
             TNMUser queriedUser = this.TNMUserDAO.findById(id);
