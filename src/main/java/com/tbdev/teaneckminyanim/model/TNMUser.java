@@ -1,6 +1,7 @@
 package com.tbdev.teaneckminyanim.model;
 
 import com.tbdev.teaneckminyanim.enums.Role;
+import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import lombok.*;
 
 import javax.persistence.*;
@@ -11,9 +12,11 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "ACCOUNT")
-public class TNMUser {
+public class TNMUser implements IDGenerator{
 
     @Id
+//    @Builder.Default
+//    protected String id = IDGenerator.generateID('A'); // Use the static methodally generate ID during object creation.
     @Column(name="ID", nullable = false, unique = true)
     protected String id;
 
@@ -52,7 +55,6 @@ public class TNMUser {
         return switch (this.role()) {
             case ADMIN -> (this.getOrganizationId() == null) ? "Admin" : "Manager";
             case USER -> "User";
-            default -> null;
         };
     }
 }

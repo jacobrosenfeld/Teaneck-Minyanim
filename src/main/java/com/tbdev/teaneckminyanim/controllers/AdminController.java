@@ -359,7 +359,7 @@ public class AdminController {
         addStandardPageData(mv);
 
         mv.getModel().put("successmessage", successMessage);
-        mv.getModel().put("errormessahe", errorMessage);
+        mv.getModel().put("errormessage", errorMessage);
 
         return mv;
     }
@@ -767,9 +767,11 @@ public class AdminController {
 
 //                TNMUser user = new TNMUser(username.toLowerCase(), email.toLowerCase(), Encrypter.encrytedPassword(password), organizationId, role.getId());
                 TNMUser user = TNMUser.builder()
+                        .id(new TNMUser().generateID('A')) // Generate the ID here
                         .username(username.toLowerCase())
                         .email(email.toLowerCase())
                         .encryptedPassword(Encrypter.encrytedPassword(password))
+                        .organizationId(organizationId)
                         .roleId(role.getId())
                         .build();
 
@@ -787,9 +789,11 @@ public class AdminController {
                 System.out.println("Creating account...");
 
                 TNMUser user = TNMUser.builder()
+                        .id(new TNMUser().generateID('A')) // Generate the ID here
                         .username(username.toLowerCase())
                         .email(email.toLowerCase())
                         .encryptedPassword(Encrypter.encrytedPassword(password))
+                        .organizationId(organizationId)
                         .roleId(role.getId())
                         .build();
                 if (this.TNMUserDAO.save(user)) {
@@ -805,9 +809,11 @@ public class AdminController {
                         System.out.println("Creating account...");
 
                         TNMUser user = TNMUser.builder()
+                                .id(new TNMUser().generateID('A')) // Generate the ID here
                                 .username(username.toLowerCase())
                                 .email(email.toLowerCase())
                                 .encryptedPassword(Encrypter.encrytedPassword(password))
+                                .organizationId(organizationId)
                                 .roleId(role.getId())
                                 .build();
                         if (this.TNMUserDAO.save(user)) {
