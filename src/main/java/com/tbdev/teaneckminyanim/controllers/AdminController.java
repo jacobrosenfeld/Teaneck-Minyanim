@@ -768,9 +768,8 @@ public class AdminController {
             if (isAdmin()) {
                 System.out.println("Creating account...");
 
-//                TNMUser user = new TNMUser(username.toLowerCase(), email.toLowerCase(), Encrypter.encrytedPassword(password), organizationId, role.getId());
                 TNMUser user = TNMUser.builder()
-                        .id(IDGenerator.generateID('A')) // Generate the ID here
+                        .id(IDGenerator.generateID('A'))
                         .username(username.toLowerCase())
                         .email(email.toLowerCase())
                         .encryptedPassword(Encrypter.encrytedPassword(password))
@@ -787,7 +786,7 @@ public class AdminController {
             } else {
                 throw new AccessDeniedException("You do not have permission to create an administrator account.");
             }
-        } else if (role == Role.USER) {
+        } else if (Objects.equals(role.getName(), Role.USER.getName())) {
             if (isAdmin()) {
                 System.out.println("Creating account...");
 
