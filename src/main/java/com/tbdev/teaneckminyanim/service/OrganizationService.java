@@ -80,6 +80,8 @@ public class OrganizationService {
         for (Account account : accountsByOrganizationId) {
            users.add(TNMUser.builder()
                    .id(account.getId())
+                   .email(account.getEmail())
+                   .username(account.getUsername())
                    .encryptedPassword(account.getEncryptedPassword())
                    .organizationId(account.getOrganizationId())
                    .roleId(Integer.parseInt(account.getRoleId()))
