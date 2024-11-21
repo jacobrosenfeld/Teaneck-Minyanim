@@ -2,6 +2,7 @@ package com.tbdev.teaneckminyanim.model;
 
 
 import com.tbdev.teaneckminyanim.enums.Nusach;
+import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import lombok.*;
 
 import javax.persistence.*;
@@ -14,13 +15,14 @@ import java.net.URI;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Table(name = "organization")
-public class Organization {
+public class Organization implements IDGenerator {
 
     @Column(name = "NAME", nullable = false)
     private String name;
 
     @Column(name = "ADDRESS", nullable = true)
     private String address;
+
     @Id
     @Column(name="ID", nullable = false, unique = true)
     protected String id;
@@ -32,13 +34,13 @@ public class Organization {
     private String websiteURIStr;
 
     @Column(name = "NUSACH", nullable = false)
-    private String nusachStr;
+    private Nusach nusach;
 
-    @Column(name = "CALENDAR", nullable = false)
+    @Column(name = "CALENDAR", nullable = true)
     private String calendar;
 
     @Transient
-    private Nusach nusach;
+    private String nusachStr;
 
     @Transient
     private URI websiteURI;

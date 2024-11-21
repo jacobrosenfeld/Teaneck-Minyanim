@@ -297,6 +297,7 @@ public class AdminController {
         }
 
         Organization organization = Organization.builder()
+                .id(new Organization().generateID('O'))
                 .name(name)
                 .address(address)
                 .websiteURI(siteURI)
@@ -309,6 +310,7 @@ public class AdminController {
             System.out.println("Creating account for organization...");
 
             TNMUser user = TNMUser.builder()
+                    .id(new TNMUser().generateID('A'))
                     .username(username)
                     .email(email)
                     .encryptedPassword(Encrypter.encrytedPassword(password))
