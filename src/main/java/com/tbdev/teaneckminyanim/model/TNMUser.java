@@ -12,11 +12,9 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "ACCOUNT")
-public class TNMUser implements IDGenerator{
+public class TNMUser {
 
     @Id
-//    @Builder.Default
-//    protected String id = IDGenerator.generateID('A'); // Use the static methodally generate ID during object creation.
     @Column(name="ID", nullable = false, unique = true)
     protected String id;
 

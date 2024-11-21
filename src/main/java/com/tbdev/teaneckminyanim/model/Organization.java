@@ -15,7 +15,7 @@ import java.net.URI;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Table(name = "organization")
-public class Organization implements IDGenerator {
+public class Organization {
 
     @Column(name = "NAME", nullable = false)
     private String name;
