@@ -89,7 +89,7 @@
                                 <select class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}">
                                     <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'}">Enabled</option>
                                     <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}">Disabled</option>
-                                    <option th:value="'n/a'" th:selected="${settings.enabled == 'n/a'}">n/a</option>
+<!--                                    <option th:value="'n/a'" th:selected="${settings.enabled == 'n/a'}">n/a</option>-->
                                 </select>
                                 <!-- Hidden input to store the value of the disabled select -->
                                 <input type="hidden" name="enabledHidden" th:value="${settings.enabled == 'n/a' ? 'n/a' : settings.enabled}">
