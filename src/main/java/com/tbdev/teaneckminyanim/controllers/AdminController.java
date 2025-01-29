@@ -1269,7 +1269,7 @@ public class AdminController {
         Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, ytTime, rcTime, chanukaTime, rccTime);
 
 //        validate nusach
-        Nusach nusach = Nusach.fromString(nusachString);
+        Nusach nusach = Nusach.fromString(nusachString.toUpperCase());
         if (nusach == null) {
             mv.addObject("errormessage", "Sorry, there was an error updating the minyan. Please try again. (M02)");
             return mv;
@@ -1289,7 +1289,7 @@ public class AdminController {
         }
 //        System.out.println("Enabled: " + enabled);
 
-        Minyan minyan = new Minyan(organization, minyanType, location, schedule, notes, nusachString, enabled, orgnazationColor, whatsapp);
+        Minyan minyan = new Minyan(organization, minyanType, location, schedule, notes, nusach, enabled, orgnazationColor, whatsapp);
 
         try {
             minyanService.save(minyan);

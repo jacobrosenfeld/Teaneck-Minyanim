@@ -175,7 +175,7 @@ public class Minyan {
         this.whatsapp = whatsapp;
     }
 
-    public Minyan(Organization organization, MinyanType type, Location location, Schedule schedule, String notes, String nusachStr, boolean enabled, String orgColor, String whatsapp) {
+    public Minyan(Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor, String whatsapp) {
         this.id = generateID('M');
         this.type = type;
         this.locationId = location.getId();
@@ -194,7 +194,7 @@ public class Minyan {
         this.schedule = schedule;
         this.enabled = enabled;
         this.notes = notes;
-        this.nusachStr = nusachStr;
+        this.nusach = nusach;
         this.orgColor = orgColor;
         this.whatsapp = whatsapp;
     }
