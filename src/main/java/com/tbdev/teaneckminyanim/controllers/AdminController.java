@@ -1271,7 +1271,7 @@ public class AdminController {
 //        validate nusach
         Nusach nusach = Nusach.fromString(nusachString);
         if (nusach == null) {
-            mv.addObject("errormessage", "Sorry, there was an error updating the minyan. Please try again. (M02)");
+            mv.addObject("errormessage", "Invalid or missing Nusach value. Please provide a valid Nusach. (M02)");
             return mv;
         }
 
