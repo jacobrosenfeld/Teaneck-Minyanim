@@ -33,6 +33,7 @@ public class Organization implements IDGenerator {
     @Column(name = "SITE_URI", nullable = true)
     private String websiteURIStr;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "NUSACH", nullable = false)
     private Nusach nusach;
 
