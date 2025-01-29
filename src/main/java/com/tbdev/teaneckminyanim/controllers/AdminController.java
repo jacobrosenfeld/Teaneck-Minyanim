@@ -1289,7 +1289,7 @@ public class AdminController {
         }
 //        System.out.println("Enabled: " + enabled);
 
-        Minyan minyan = new Minyan(organization, minyanType, location, schedule, notes, nusach, enabled, orgnazationColor, whatsapp);
+        Minyan minyan = new Minyan(organization, minyanType, location, schedule, notes, nusachString, enabled, orgnazationColor, whatsapp);
 
         try {
             minyanService.save(minyan);

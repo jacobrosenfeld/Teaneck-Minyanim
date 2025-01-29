@@ -89,6 +89,9 @@ public class Minyan {
     @Transient
     private String orgColor;
 
+    @Transient
+    private String nusachStr;
+
 
     public Minyan(String id,
                   MinyanType type,
@@ -148,7 +151,7 @@ public class Minyan {
                   String startTimeCH,
                   String startTimeCHRC,
                   String notes,
-                  Nusach nusach,
+                  String nusachStr,
                   String orgColor,
                   String whatsapp) {
         this.id = generateID('M');
@@ -167,12 +170,12 @@ public class Minyan {
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
         this.notes = notes;
-        this.nusach = nusach;
+        this.nusachStr = nusachStr;
         this.orgColor = orgColor;
         this.whatsapp = whatsapp;
     }
 
-    public Minyan(Organization organization, MinyanType type, Location location, Schedule schedule, String notes, Nusach nusach, boolean enabled, String orgColor, String whatsapp) {
+    public Minyan(Organization organization, MinyanType type, Location location, Schedule schedule, String notes, String nusachStr, boolean enabled, String orgColor, String whatsapp) {
         this.id = generateID('M');
         this.type = type;
         this.locationId = location.getId();
@@ -191,7 +194,7 @@ public class Minyan {
         this.schedule = schedule;
         this.enabled = enabled;
         this.notes = notes;
-        this.nusach = nusach;
+        this.nusachStr = nusachStr;
         this.orgColor = orgColor;
         this.whatsapp = whatsapp;
     }
