@@ -33,7 +33,8 @@ public class Organization {
     @Column(name = "SITE_URI", nullable = true)
     private String websiteURIStr;
 
-    @Column(name = "NUSACH", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name="NUSACH", nullable = false)
     private Nusach nusach;
 
     @Column(name = "CALENDAR", nullable = true)
