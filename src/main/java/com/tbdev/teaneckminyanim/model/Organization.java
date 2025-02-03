@@ -41,9 +41,6 @@ public class Organization {
     private String calendar;
 
     @Transient
-    private String nusachStr;
-
-    @Transient
     private URI websiteURI;
 
 }
