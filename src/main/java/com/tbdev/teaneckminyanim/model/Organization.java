@@ -30,14 +30,14 @@ public class Organization {
     @Column(name = "COLOR", nullable = false)
     private String orgColor;
 
-    @Column(name = "SITE_URI", nullable = true)
+    @Column(name = "SITE_URI")
     private String websiteURIStr;
 
     @Enumerated(EnumType.STRING)
     @Column(name="NUSACH")
     private Nusach nusach;
 
-    @Column(name = "CALENDAR", nullable = true)
+    @Column(name = "CALENDAR")
     private String calendar;
 
     @Transient
