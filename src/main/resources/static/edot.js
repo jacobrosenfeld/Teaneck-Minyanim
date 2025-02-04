@@ -1,7 +1,7 @@
 // Function to replace prayer names globally across the whole page
 function replacePrayerNamesGlobally() {
     document.body.innerHTML = document.body.innerHTML
-        .replace(/Shacharis/g, 'Shaharit')
+        .replace(/Shacharis/g, 'Shaharit') // Use 'Shaharit' for replacement
         .replace(/Maariv/g, 'Arvit');
 }
 
@@ -16,12 +16,15 @@ function replacePrayerNamesInRows(containingClass) {
         var elements = rows[i].getElementsByClassName(containingClass);
 
         if (elements.length > 0) {
-            // Check if 'Edot Hamizrach' is in the row
-            if (elements[0].innerHTML.includes('Edot Hamizrach')) {
-                // Replace prayer names only in this specific row
-                rows[i].innerHTML = rows[i].innerHTML
-                    .replace(/Shacharis/g, 'Shaharit')
-                    .replace(/Maariv/g, 'Arvit');
+            // Check if 'Edot Hamizrach' is in the row's specific child element
+            for (var j = 0; j < elements.length; j++) {
+                if (elements[j].innerHTML.includes('Edot Hamizrach')) {
+                    // Replace prayer names only in this specific row
+                    rows[i].innerHTML = rows[i].innerHTML
+                        .replace(/Shacharis/g, 'Shaharit') // Use 'Shaharit' for replacement
+                        .replace(/Maariv/g, 'Arvit');
+                    break; // Stop further checks for this row as we've done the replacement
+                }
             }
         }
     }
