@@ -1195,7 +1195,7 @@ body {
 
 	/* ----- Pricing Tables Styling Starts ----- */
 
-	.pricing-section {
+	.org-section {
 		width: 100%;
 		height: 100%;
 		/* padding-top: 100px; */
@@ -1203,11 +1203,11 @@ body {
 		background: #FFFFFF;
 	}
 
-	.pricing-intro {
+	.org-intro {
 		padding-bottom: 30px;
 	}
 
-	.pricing-intro h1 {
+	.org-intro h1 {
 		font-size: 32px;
 		color: #364655;
 		font-weight: 600;
@@ -1216,7 +1216,7 @@ body {
 	}
 
 
-	.pricing-intro p {
+	.org-intro p {
 		font-size: 16px;
 		color: #97a6b5;
 		font-weight: 500;
@@ -1226,12 +1226,12 @@ body {
 		margin-bottom: 50px;
 	}
 
-	.pricing-details {
+	.org-details {
 		padding: 2rem 0 0 0;
 	}
 
-	.pricing-section .table-left,
-	.pricing-section .table-right {
+	.org-section .table-left,
+	.org-section .table-right {
 		padding: 20px 20px 20px 20px;
 		margin: 0 auto;
 		margin-bottom: 30px;
@@ -1254,8 +1254,8 @@ body {
 		margin: 0 auto;
 	}
 
-	.table-left .pricing-details span,
-	.table-right .pricing-details span {
+	.table-left .org-details span,
+	.table-right .org-details span {
 		display: block;
 		font-family: 'Montserrat';
 		font-size: 32px;
@@ -1266,31 +1266,31 @@ body {
 	}
 
 
-	.table-left .pricing-details h2,
-	.table-right .pricing-details h2 {
+	.table-left .org-details h2,
+	.table-right .org-details h2 {
 		font-size: 21px;
 		font-weight: 600;
 		color: #275ed8;
 		margin-bottom: 30px;
 	}
 
-	.table-left .pricing-details p,
-	.table-right .pricing-details p {
+	.table-left .org-details p,
+	.table-right .org-details p {
 		font-size: 16px;
 		font-weight: 500;
 		color: #364655;
 		line-height: 1.4;
 	}
 
-	.table-left .pricing-details ul,
-	.table-right .pricing-details ul {
+	.table-left .org-details ul,
+	.table-right .org-details ul {
 		margin-top: 30px;
 		margin-bottom: 50px;
 		padding: 0;
 	}
 
-	.table-left .pricing-details li,
-	.table-right .pricing-details li {
+	.table-left .org-details li,
+	.table-right .org-details li {
 		font-family: 'Montserrat';
 		font-size: 16px;
 		font-weight: 500;
@@ -1300,8 +1300,8 @@ body {
 		margin-bottom: 10px;
 	}
 
-	.pricing-section .table-left:hover,
-	.pricing-section .table-right:hover {
+	.org-section .table-left:hover,
+	.org-section .table-right:hover {
 		box-shadow: 0 0 80px 0 rgba(0, 0, 0, 0.1);
 		-webkit-transition: 0.3s;
 		-moz-transition: 0.3s;
@@ -1309,12 +1309,12 @@ body {
 		transition: 0.3s;
 	}
 
-	.pricing-section .table-left,
-	.pricing-section .table-right {
+	.org-section .table-left,
+	.org-section .table-right {
 		margin-top: 0px;
 	}
 
-	.pricing-section .table-center {
+	.org-section .table-center {
 		margin-top: 0;
 	}
 
