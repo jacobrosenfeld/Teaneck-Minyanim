@@ -15,7 +15,7 @@ import java.net.URI;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Table(name = "organization")
-public class Organization implements IDGenerator {
+public class Organization {
 
     @Column(name = "NAME", nullable = false)
     private String name;
@@ -34,7 +34,7 @@ public class Organization implements IDGenerator {
     private String websiteURIStr;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "NUSACH", nullable = false)
+    @Column(name="NUSACH")
     private Nusach nusach;
 
     @Column(name = "CALENDAR")

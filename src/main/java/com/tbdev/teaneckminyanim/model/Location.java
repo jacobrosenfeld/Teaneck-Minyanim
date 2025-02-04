@@ -11,12 +11,14 @@ import lombok.NoArgsConstructor;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import static com.tbdev.teaneckminyanim.tools.IDGenerator.generateID;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Table(name = "LOCATION")
-public class Location implements IDGenerator {
+public class Location {
 
     @Id
     @Column(name="ID", nullable = false, unique = true)

@@ -1,16 +1,21 @@
 package com.tbdev.teaneckminyanim.tools;
 
 import java.util.Date;
+import java.util.Random;
 
-public interface IDGenerator {
-//    private String id = generateID();
+public class IDGenerator {
 
-    default String generateID(Character prefix) {
+    public static String generateID(Character prefix) {
         Long timeSinceEpoch = (new Date()).getTime();
         return String.format("%s%s%s", prefix, timeSinceEpoch.toString().substring(5), random());
     }
 
-    private String random() {
-        return String.valueOf(NumberTools.getRandomNumber(1000, 9999));
+    private static String random() {
+        return String.valueOf(getRandomNumber());
+    }
+
+    private static int getRandomNumber() {
+        Random random = new Random();
+        return random.nextInt((9999 - 1000) + 1) + 1000;
     }
 }

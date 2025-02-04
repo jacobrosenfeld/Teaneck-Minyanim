@@ -28,7 +28,7 @@ public class OrganizationService {
         if (organizationByName.isEmpty()){
             return new Organization();
         }
-        organizationByName.get().setNusach(Nusach.fromString(organizationByName.get().getNusachStr()));
+//        organizationByName.get().setNusach(Nusach.fromString(organizationByName.get().getNusachStr()));
         return organizationByName.get();
     }
 
@@ -37,7 +37,7 @@ public class OrganizationService {
         if (organizationById.isEmpty()){
             return organizationById;
         }
-        organizationById.get().setNusach(Nusach.fromString(organizationById.get().getNusachStr()));
+//        organizationById.get().setNusach(Nusach.fromString(organizationById.get().getNusachStr()));
         return organizationById;
     }
 
@@ -99,7 +99,7 @@ public class OrganizationService {
             } else {
                 organization.setWebsiteURI(null);  // Or handle as needed if URI is missing
             }
-            organization.setNusach(Nusach.fromString(organization.getNusachStr()));
+//            organization.setNusach(Nusach.fromString(organization.getNusachStr()));
         }
     }
 }

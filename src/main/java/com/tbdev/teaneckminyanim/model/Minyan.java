@@ -15,12 +15,14 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Date;
 
+import static com.tbdev.teaneckminyanim.tools.IDGenerator.generateID;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "Minyan")
-public class Minyan implements IDGenerator {
+public class Minyan {
     @Id
     @Column(name = "ID")
     private String id;
@@ -87,6 +89,9 @@ public class Minyan implements IDGenerator {
     @Transient
     private String orgColor;
 
+    @Transient
+    private String nusachStr;
+
 
     public Minyan(String id,
                   MinyanType type,
@@ -146,11 +151,10 @@ public class Minyan implements IDGenerator {
                   String startTimeCH,
                   String startTimeCHRC,
                   String notes,
-                  Nusach nusach,
+                  String nusachStr,
                   String orgColor,
                   String whatsapp) {
         this.id = generateID('M');
-        this.type = type;
         this.locationId = locationId;
         this.organizationId = organizationId;
         this.enabled = enabled;
@@ -166,7 +170,7 @@ public class Minyan implements IDGenerator {
         this.startTimeCH = startTimeCH;
         this.startTimeCHRC = startTimeCHRC;
         this.notes = notes;
-        this.nusach = nusach;
+        this.nusachStr = nusachStr;
         this.orgColor = orgColor;
         this.whatsapp = whatsapp;
     }

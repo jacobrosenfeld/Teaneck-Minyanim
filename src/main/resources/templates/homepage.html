@@ -22,7 +22,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Noto+Sans+Hebrew:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/animate.css"> <!-- Resource style -->
     <link rel="stylesheet" href="/assets/css/owl.carousel.css">
     <link rel="stylesheet" href="/assets/css/owl.theme.css">
@@ -61,7 +63,7 @@
                       <button type="button" th:data-url="@{/zmanim/next(after=${dateString})}" onclick="location.href = this.getAttribute('data-url')" class="btn btn-cta switcher-btn">></button>
                     </div>
                   </div>
-                    <h4 class="col-md-4 mt-3 mobile-hide"  style="text-align: right; font-weight: 430;" th:text="${hebrewDate}"></h4>
+                    <h4 class="col-md-4 mt-3 mobile-hide noto-sans-hebrew-date"  style="text-align: right;" th:text="${hebrewDate}"></h4>
                 </div>
                 <!-- End Date Nav Buttons -->
                 <hr>
@@ -106,9 +108,10 @@
                                   </td>
                                     <td class="align-middle">
                                       <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
-                                      <p class="p-dts" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
+                                      <p class="p-dts" th:if="${not #strings.isEmpty(minyan.dynamicTimeString()) and #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.dynamicTimeString()}"></p>
                                       <div class="d-flex justify-content-center align-items-center">
                                         <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.getNotes()}"></p>
+                                        <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.dynamicTimeString()}"></p>
                                         <a class="bi bi-whatsapp p-dts px-2" style="color: #25D366" th:href="${minyan.getWhatsapp()}" th:target="_blank" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}">
                                         </a>
                                       </div>
@@ -353,7 +356,7 @@
         <div id="info" class="cta-sm">
           <div class="container-m text-center">
             <div class="cta-content">
-              <h1>Bug? Question? Comment? Donation?</h1><h5><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h5>
+              <h1>Bug? Question? Comment?</h1><h5><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h5>
               <hr>
               <h3>Subscribe now to stay up to date on Teaneck Minyanim updates and news!</h3>
                <div class="form wow fadeIn" data-wow-delay="0.2s">

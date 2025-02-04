@@ -9,6 +9,7 @@ import com.tbdev.teaneckminyanim.minyan.MinyanDay;
 import com.tbdev.teaneckminyanim.minyan.MinyanTime;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.minyan.Schedule;
+import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -297,7 +298,7 @@ public class AdminController {
         }
 
         Organization organization = Organization.builder()
-                .id(new Organization().generateID('O'))
+                .id(IDGenerator.generateID('O'))
                 .name(name)
                 .address(address)
                 .websiteURI(siteURI)
@@ -310,7 +311,7 @@ public class AdminController {
             System.out.println("Creating account for organization...");
 
             TNMUser user = TNMUser.builder()
-                    .id(new TNMUser().generateID('A'))
+                    .id(IDGenerator.generateID('A'))
                     .username(username)
                     .email(email)
                     .encryptedPassword(Encrypter.encrytedPassword(password))
@@ -767,9 +768,8 @@ public class AdminController {
             if (isAdmin()) {
                 System.out.println("Creating account...");
 
-//                TNMUser user = new TNMUser(username.toLowerCase(), email.toLowerCase(), Encrypter.encrytedPassword(password), organizationId, role.getId());
                 TNMUser user = TNMUser.builder()
-                        .id(new TNMUser().generateID('A')) // Generate the ID here
+                        .id(IDGenerator.generateID('A'))
                         .username(username.toLowerCase())
                         .email(email.toLowerCase())
                         .encryptedPassword(Encrypter.encrytedPassword(password))
@@ -786,12 +786,12 @@ public class AdminController {
             } else {
                 throw new AccessDeniedException("You do not have permission to create an administrator account.");
             }
-        } else if (role == Role.USER) {
+        } else if (Objects.equals(role.getName(), Role.USER.getName())) {
             if (isAdmin()) {
                 System.out.println("Creating account...");
 
                 TNMUser user = TNMUser.builder()
-                        .id(new TNMUser().generateID('A')) // Generate the ID here
+                        .id(IDGenerator.generateID('A')) // Generate the ID here
                         .username(username.toLowerCase())
                         .email(email.toLowerCase())
                         .encryptedPassword(Encrypter.encrytedPassword(password))
@@ -811,7 +811,7 @@ public class AdminController {
                         System.out.println("Creating account...");
 
                         TNMUser user = TNMUser.builder()
-                                .id(new TNMUser().generateID('A')) // Generate the ID here
+                                .id(IDGenerator.generateID('A')) // Generate the ID here
                                 .username(username.toLowerCase())
                                 .email(email.toLowerCase())
                                 .encryptedPassword(Encrypter.encrytedPassword(password))
@@ -1269,7 +1269,7 @@ public class AdminController {
         Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, ytTime, rcTime, chanukaTime, rccTime);
 
 //        validate nusach
-        Nusach nusach = Nusach.fromString(nusachString);
+        Nusach nusach = Nusach.fromString(nusachString.toUpperCase());
         if (nusach == null) {
             mv.addObject("errormessage", "Invalid or missing Nusach value. Please provide a valid Nusach. (M02)");
             return mv;
