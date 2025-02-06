@@ -16,7 +16,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="Zmanim and Minyanim for Teaneck, New Jersey">
-    <meta name="keywords" content="Jewish,minyanim,zmanim,times,sechedule,teaneck,nj,07666">
+    <meta name="keywords" content="Jewish,minyanim,zmanim,times,schedule,teaneck,nj,07666"
     <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
@@ -34,6 +34,12 @@
     <script type="text/javascript" src="/assets/js/plugins.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6026762329140546"
      crossorigin="anonymous"></script>
+      <script>
+          (adsbygoogle = window.adsbygoogle || []).push({
+              google_ad_client: "ca-pub-6026762329140546",
+              overlays: {bottom: true}
+          });
+      </script>
   </head>
   <body>
       <!-- Navbar Section -->
@@ -299,7 +305,7 @@
               <div class="col-md-12">
                 <div class="features-intro">
                   <h2>Shuls</h2>
-                  <div th:with="uniqueValues=${uniqueKolhaMinyanims}">
+<!--                  <div th:with="uniqueValues=${uniqueKolhaMinyanims}">-->
                     <a role="button" class="btn-shuls js-scroll-trigger px-3 px-sm-3" th:each="minyan: ${uniqueValues}" th:href="@{|/orgs/${minyan.getOrganizationId()}|}" th:text="${minyan.getOrganizationName()}" th:style="'background: '+${minyan.getOrgColor()}"></a>
                 </div>
                 </div>
@@ -319,7 +325,7 @@
                </div>
                <div class="col-sm-4">
                  <div class="counter-up">
-                  <h3 th:text="${kolminyanim.size()}" class="counter"/>
+<!--                  <h3 th:text="${kolminyanim.size()}" class="counter"/>-->
                    <div class="counter-text">
                      <h2>Minyanim</h2>
                    </div>
@@ -327,7 +333,7 @@
                </div>
                <div class="col-sm-4">
                  <div class="counter-up">
-                  <h3 th:text="${uniqueKolhaMinyanims.size()}" class="counter"/>
+<!--                  <h3 th:text="${uniqueKolhaMinyanims.size()}" class="counter"/>-->
                    <div class="counter-text">
                      <h2>Shuls</h2>
                    </div>
