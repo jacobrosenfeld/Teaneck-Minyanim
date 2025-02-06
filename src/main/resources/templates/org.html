@@ -234,7 +234,7 @@
                                   </tbody>
                                 </table>
                                 <p class="mobile-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
-                                <div class="d-flex justify-content-evenly align-items-center">
+                                <div class="d-flex justify-content-center align-items-center">
                                   <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.getNotes()}"></p>
                                   <a class="bi bi-whatsapp p-dts px-2" style="color: #25D366" th:href="${minyan.getWhatsapp()}" th:target="_blank" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}">
                                   </a>
