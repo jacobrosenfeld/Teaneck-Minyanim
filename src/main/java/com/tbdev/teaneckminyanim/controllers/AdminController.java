@@ -10,6 +10,8 @@ import com.tbdev.teaneckminyanim.minyan.MinyanTime;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.minyan.Schedule;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,6 +33,8 @@ import static com.tbdev.teaneckminyanim.enums.Role.ADMIN;
 
 @Controller
 public class AdminController {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
     @Autowired
     private TNMUserService TNMUserDAO;
 
@@ -232,15 +236,15 @@ public class AdminController {
             throw new AccessDeniedException("You are not authorized to access this page.");
         }
 
-        System.out.println("Validating input data...");
+        logger.debug("Validating organization creation input data");
 
         if (name.isEmpty() || address.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty() || cpassword.isEmpty() || orgColor.isEmpty()) {
-            System.out.println("Sorry, fields cannot be left blank.");
+            logger.warn("Organization creation failed: Required fields cannot be left blank");
             return addOrganization(false, "The organization could not be created. Required fields cannot be left blank.", "Sorry, required fields cannot be left blank.");
         }
 
         if (!password.equals(cpassword)) {
-            System.out.println("Sorry, these passwords do not match.");
+            logger.warn("Organization creation failed: Password mismatch");
             return addOrganization(false, "The organization could not be created. The passwords do not match.", "Sorry, passwords do not match.");
         }
 
@@ -249,13 +253,13 @@ public class AdminController {
         Pattern usernamePattern = Pattern.compile(usernameRegex);
         Matcher m = usernamePattern.matcher(username);
         if (!m.matches()) {
-            System.out.println("Sorry, this password is not valid.");
+            logger.warn("Organization creation failed: Invalid username format");
             return addOrganization(false, "The organization could not be created. The username must be 6-30 characters, only contain letters and numbers, and start with a letter.", "Sorry, the username must be 6-30 characters, only contain letters and numbers, and start with a letter.");
         }
 
 //        check if username already exists
         if (TNMUserDAO.findByName(username) != null) {
-            System.out.println("Sorry, this username already exists.");
+            logger.warn("Organization creation failed: Username already exists");
             return addOrganization(false, "The organization could not be created. This username already in use.","Sorry, this username is already in use.");
         }
 
@@ -314,7 +318,7 @@ public class AdminController {
                     .id(IDGenerator.generateID('A'))
                     .username(username)
                     .email(email)
-                    .encryptedPassword(Encrypter.encrytedPassword(password))
+                    .encryptedPassword(Encrypter.encryptedPassword(password))
                     .organizationId(organization.getId())
                     .roleId(ADMIN.getId())
                     .build();
@@ -772,7 +776,7 @@ public class AdminController {
                         .id(IDGenerator.generateID('A'))
                         .username(username.toLowerCase())
                         .email(email.toLowerCase())
-                        .encryptedPassword(Encrypter.encrytedPassword(password))
+                        .encryptedPassword(Encrypter.encryptedPassword(password))
                         .organizationId(organizationId)
                         .roleId(role.getId())
                         .build();
@@ -794,7 +798,7 @@ public class AdminController {
                         .id(IDGenerator.generateID('A')) // Generate the ID here
                         .username(username.toLowerCase())
                         .email(email.toLowerCase())
-                        .encryptedPassword(Encrypter.encrytedPassword(password))
+                        .encryptedPassword(Encrypter.encryptedPassword(password))
                         .organizationId(organizationId)
                         .roleId(role.getId())
                         .build();
@@ -814,7 +818,7 @@ public class AdminController {
                                 .id(IDGenerator.generateID('A')) // Generate the ID here
                                 .username(username.toLowerCase())
                                 .email(email.toLowerCase())
-                                .encryptedPassword(Encrypter.encrytedPassword(password))
+                                .encryptedPassword(Encrypter.encryptedPassword(password))
                                 .organizationId(organizationId)
                                 .roleId(role.getId())
                                 .build();
@@ -847,13 +851,13 @@ public class AdminController {
             @RequestParam(value = "email", required = true) String newEmail,
             @RequestParam(value = "privileges", required = false) int roleId
     ) {
-        System.out.println("IM IN THE FUNCTION");
+        logger.debug("Processing account update request for user ID: {}", id);
         TNMUser userToUpdate = TNMUserDAO.findById(id);
         TNMUser currentUser = getCurrentUser();
 
         if (!currentUser.isSuperAdmin()) {
             if (!currentUser.getOrganizationId().equals(userToUpdate.getOrganizationId())) {
-                System.out.println("Exiting at break 1");
+                logger.warn("User {} attempted to update account {} from different organization", currentUser.getId(), id);
                 throw new AccessDeniedException("You do not have permission to update this account.");
             }
         }
@@ -872,11 +876,12 @@ public class AdminController {
         }
 
         if (!isAdmin() && !newRole.equals(userToUpdate.role())) {
-            System.out.println("Exiting at break 2");
+            logger.warn("Non-admin user {} attempted to change role privileges", currentUser.getId());
             throw new AccessDeniedException("You do not have permission to update this information.");
         }
 
-        System.out.printf("IDS: %s %s " + userToUpdate.getId().equals(currentUser.getId()), currentUser.getId(), userToUpdate.getId());
+        logger.debug("User comparison - Current: {}, Target: {}, Same user: {}", 
+                     currentUser.getId(), userToUpdate.getId(), userToUpdate.getId().equals(currentUser.getId()));
 
 //        TODO: DECIDE ABOUT CONTROL OF SUPER ADMIN STATUSES
         if (isSuperAdmin() && (!userToUpdate.isSuperAdmin() || userToUpdate.getId().equals(currentUser.getId()))) {
