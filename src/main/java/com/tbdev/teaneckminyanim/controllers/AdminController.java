@@ -1118,6 +1118,99 @@ public class AdminController {
         return mv;
     }
 
+    @RequestMapping(value = "/admin/{organizationId}/minyanim/printable")
+    public ModelAndView printableMinyanim(@PathVariable String organizationId, 
+                                        @RequestParam(value = "types", required = false) String[] selectedTypes,
+                                        @RequestParam(value = "locations", required = false) String[] selectedLocations) {
+        ModelAndView mv = new ModelAndView("printable-schedule");
+
+        String oidToUse;
+        if (isSuperAdmin()) {
+            if (organizationId == null) {
+                throw new IllegalArgumentException("You must specify an organization ID.");
+            } else {
+                oidToUse = organizationId;
+            }
+        } else if (isUser()) {
+            oidToUse = getCurrentUser().getOrganizationId();
+        } else {
+            throw new AccessDeniedException("You do not have permission to view this page.");
+        }
+
+        List<Minyan> allMinyanim = minyanService.findMatching(oidToUse);
+        List<Minyan> filteredMinyanim = allMinyanim.stream()
+            .filter(m -> m.isEnabled()) // Only show enabled minyanim
+            .collect(Collectors.toList());
+
+        // Apply type filters if specified
+        if (selectedTypes != null && selectedTypes.length > 0) {
+            Set<String> typeSet = Arrays.stream(selectedTypes).collect(Collectors.toSet());
+            filteredMinyanim = filteredMinyanim.stream()
+                .filter(m -> typeSet.contains(m.getType().toString()))
+                .collect(Collectors.toList());
+        }
+
+        // Apply location filters if specified
+        if (selectedLocations != null && selectedLocations.length > 0) {
+            Set<String> locationSet = Arrays.stream(selectedLocations).collect(Collectors.toSet());
+            filteredMinyanim = filteredMinyanim.stream()
+                .filter(m -> locationSet.contains(m.getLocationId()))
+                .collect(Collectors.toList());
+        }
+
+        // Group minyanim by type for organized display
+        List<Minyan> shacharisMinyanim = filteredMinyanim.stream()
+            .filter(m -> m.getType().equals(MinyanType.SHACHARIS))
+            .collect(Collectors.toList());
+        List<Minyan> minchaMinyanim = filteredMinyanim.stream()
+            .filter(m -> m.getType().equals(MinyanType.MINCHA))
+            .collect(Collectors.toList());
+        List<Minyan> maarivMinyanim = filteredMinyanim.stream()
+            .filter(m -> m.getType().equals(MinyanType.MAARIV))
+            .collect(Collectors.toList());
+
+        mv.addObject("shacharisminyanim", shacharisMinyanim);
+        mv.addObject("minchaminyanim", minchaMinyanim);
+        mv.addObject("maarivminyanim", maarivMinyanim);
+
+        // Create time maps for each type
+        Map<String, HashMap<MinyanDay, MinyanTime>> shacharisTimes = new HashMap<>();
+        for (Minyan m : shacharisMinyanim) {
+            shacharisTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
+        }
+        Map<String, HashMap<MinyanDay, MinyanTime>> minchaTimes = new HashMap<>();
+        for (Minyan m : minchaMinyanim) {
+            minchaTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
+        }
+        Map<String, HashMap<MinyanDay, MinyanTime>> maarivTimes = new HashMap<>();
+        for (Minyan m : maarivMinyanim) {
+            maarivTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
+        }
+
+        mv.addObject("shacharistimes", shacharisTimes);
+        mv.addObject("minchatimes", minchaTimes);
+        mv.addObject("maarivtimes", maarivTimes);
+        mv.addObject("Day", MinyanDay.class);
+
+        // Add location names
+        Map<String, String> locationNames = new HashMap<>();
+        for (Minyan minyan : filteredMinyanim) {
+            Location location = this.locationDAO.findById(minyan.getLocationId());
+            String locationDisplayName = location == null ? "" : location.getName();
+            locationNames.put(minyan.getId(), locationDisplayName);
+        }
+        mv.addObject("locationnames", locationNames);
+
+        // Add organization and filter options for the filter form
+        mv.addObject("organization", organizationService.findById(oidToUse).orElse(null));
+        mv.addObject("alllocations", locationDAO.findMatching(oidToUse));
+        mv.addObject("selectedTypes", selectedTypes);
+        mv.addObject("selectedLocations", selectedLocations);
+
+        addStandardPageData(mv);
+        return mv;
+    }
+
     //    enable and disable pages
     @RequestMapping(value = "/admin/minyanim/{id}/enable")
     public ModelAndView enableMinyan(@PathVariable String id, @RequestParam(value = "rd", required = false) String rd) {

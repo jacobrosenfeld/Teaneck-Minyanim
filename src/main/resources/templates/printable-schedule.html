@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Printable Minyan Schedule - [(${organization.name})]</title>
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css} "/>
+    <link th:rel="stylesheet" th:href="@{/printable-schedule.css}"/>
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    <script th:src="@{/webjars/bootstrap/4.6.1/js/bootstrap.min.js}"></script>
+</head>
+<body>
+    <div class="container-fluid print-container">
+        <!-- Header Section -->
+        <div class="header no-print">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Printable Minyan Schedule</h2>
+                <div>
+                    <button onclick="window.print()" class="btn btn-primary mr-2">
+                        <i class="fa fa-print"></i> Print Schedule
+                    </button>
+                    <a th:href="@{'/admin/' + ${organization.id} + '/minyanim'}" class="btn btn-secondary">
+                        Back to Schedule
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Filter Form -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Filter Options</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" th:action="@{'/admin/' + ${organization.id} + '/minyanim/printable'}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Minyan Types:</h6>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="types" value="SHACHARIS" 
+                                           th:checked="${selectedTypes != null and #arrays.contains(selectedTypes, 'SHACHARIS')}" id="shacharis">
+                                    <label class="form-check-label" for="shacharis">Shacharis</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="types" value="MINCHA" 
+                                           th:checked="${selectedTypes != null and #arrays.contains(selectedTypes, 'MINCHA')}" id="mincha">
+                                    <label class="form-check-label" for="mincha">Mincha</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="types" value="MAARIV" 
+                                           th:checked="${selectedTypes != null and #arrays.contains(selectedTypes, 'MAARIV')}" id="maariv">
+                                    <label class="form-check-label" for="maariv">Maariv</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Locations:</h6>
+                                <div th:each="location : ${alllocations}" class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="locations" th:value="${location.id}" 
+                                           th:checked="${selectedLocations != null and #arrays.contains(selectedLocations, location.id)}" 
+                                           th:id="'location-' + ${location.id}">
+                                    <label class="form-check-label" th:for="'location-' + ${location.id}" th:text="${location.name}"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Apply Filters</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Printable Schedule -->
+        <div class="schedule-header">
+            <h1 class="text-center mb-2" th:text="${organization.name}">Organization Name</h1>
+            <h3 class="text-center mb-4">Weekly Minyan Schedule</h3>
+        </div>
+
+        <!-- Shacharis Section -->
+        <div th:if="${!shacharisminyanim.isEmpty()}" class="minyan-section">
+            <h4 class="section-title">Shacharis</h4>
+            <table class="table table-bordered schedule-table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Location</th>
+                        <th>Sunday</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                        <th>Shabbos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="minyan: ${shacharisminyanim}" th:with="minyantimes=${shacharistimes.get(minyan.getId())}">
+                        <td class="location-cell" th:text="${locationnames.get(minyan.getId())}">Location</td>
+                        <td th:with="sundaytime=${minyantimes.get(Day.SUNDAY)}" th:text="${sundaytime.displayTime()}">Time</td>
+                        <td th:with="mondaytime=${minyantimes.get(Day.MONDAY)}" th:text="${mondaytime.displayTime()}">Time</td>
+                        <td th:with="tuesdaytime=${minyantimes.get(Day.TUESDAY)}" th:text="${tuesdaytime.displayTime()}">Time</td>
+                        <td th:with="wednesdaytime=${minyantimes.get(Day.WEDNESDAY)}" th:text="${wednesdaytime.displayTime()}">Time</td>
+                        <td th:with="thursdaytime=${minyantimes.get(Day.THURSDAY)}" th:text="${thursdaytime.displayTime()}">Time</td>
+                        <td th:with="fridaytime=${minyantimes.get(Day.FRIDAY)}" th:text="${fridaytime.displayTime()}">Time</td>
+                        <td th:with="shabbostime=${minyantimes.get(Day.SHABBOS)}" th:text="${shabbostime.displayTime()}">Time</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mincha Section -->
+        <div th:if="${!minchaminyanim.isEmpty()}" class="minyan-section">
+            <h4 class="section-title">Mincha</h4>
+            <table class="table table-bordered schedule-table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Location</th>
+                        <th>Sunday</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                        <th>Shabbos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="minyan: ${minchaminyanim}" th:with="minyantimes=${minchatimes.get(minyan.getId())}">
+                        <td class="location-cell" th:text="${locationnames.get(minyan.getId())}">Location</td>
+                        <td th:with="sundaytime=${minyantimes.get(Day.SUNDAY)}" th:text="${sundaytime.displayTime()}">Time</td>
+                        <td th:with="mondaytime=${minyantimes.get(Day.MONDAY)}" th:text="${mondaytime.displayTime()}">Time</td>
+                        <td th:with="tuesdaytime=${minyantimes.get(Day.TUESDAY)}" th:text="${tuesdaytime.displayTime()}">Time</td>
+                        <td th:with="wednesdaytime=${minyantimes.get(Day.WEDNESDAY)}" th:text="${wednesdaytime.displayTime()}">Time</td>
+                        <td th:with="thursdaytime=${minyantimes.get(Day.THURSDAY)}" th:text="${thursdaytime.displayTime()}">Time</td>
+                        <td th:with="fridaytime=${minyantimes.get(Day.FRIDAY)}" th:text="${fridaytime.displayTime()}">Time</td>
+                        <td th:with="shabbostime=${minyantimes.get(Day.SHABBOS)}" th:text="${shabbostime.displayTime()}">Time</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Maariv Section -->
+        <div th:if="${!maarivminyanim.isEmpty()}" class="minyan-section">
+            <h4 class="section-title">Maariv</h4>
+            <table class="table table-bordered schedule-table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Location</th>
+                        <th>Sunday</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                        <th>Shabbos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="minyan: ${maarivminyanim}" th:with="minyantimes=${maarivtimes.get(minyan.getId())}">
+                        <td class="location-cell" th:text="${locationnames.get(minyan.getId())}">Location</td>
+                        <td th:with="sundaytime=${minyantimes.get(Day.SUNDAY)}" th:text="${sundaytime.displayTime()}">Time</td>
+                        <td th:with="mondaytime=${minyantimes.get(Day.MONDAY)}" th:text="${mondaytime.displayTime()}">Time</td>
+                        <td th:with="tuesdaytime=${minyantimes.get(Day.TUESDAY)}" th:text="${tuesdaytime.displayTime()}">Time</td>
+                        <td th:with="wednesdaytime=${minyantimes.get(Day.WEDNESDAY)}" th:text="${wednesdaytime.displayTime()}">Time</td>
+                        <td th:with="thursdaytime=${minyantimes.get(Day.THURSDAY)}" th:text="${thursdaytime.displayTime()}">Time</td>
+                        <td th:with="fridaytime=${minyantimes.get(Day.FRIDAY)}" th:text="${fridaytime.displayTime()}">Time</td>
+                        <td th:with="shabbostime=${minyantimes.get(Day.SHABBOS)}" th:text="${shabbostime.displayTime()}">Time</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${shacharisminyanim.isEmpty() and minchaminyanim.isEmpty() and maarivminyanim.isEmpty()}" class="text-center mt-5">
+            <h4>No minyanim match your current filters</h4>
+            <p>Please adjust your filter selections above.</p>
+        </div>
+    </div>
+</body>
+</html>
