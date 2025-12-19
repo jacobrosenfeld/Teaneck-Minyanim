@@ -56,12 +56,12 @@ public class RuleBasedProvider implements OrgScheduleProvider {
                 return null;
             }
 
-            Optional<Location> locationOpt = locationService.findById(minyan.getLocationId());
-            String locationName = locationOpt.map(Location::getName).orElse(null);
+            Location location = locationService.findById(minyan.getLocationId());
+            String locationName = location != null ? location.getName() : null;
 
             String dynamicTimeString = null;
             if (minyan.getMinyanTime(date) != null) {
-                dynamicTimeString = minyan.getMinyanTime(date).getDynamicTimeString();
+                dynamicTimeString = minyan.getMinyanTime(date).dynamicDisplayName();
             }
 
             return new MinyanEvent(

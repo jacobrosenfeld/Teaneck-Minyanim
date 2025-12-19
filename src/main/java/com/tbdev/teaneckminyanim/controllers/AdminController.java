@@ -31,6 +31,8 @@ import static com.tbdev.teaneckminyanim.enums.Role.ADMIN;
 
 @Controller
 public class AdminController {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AdminController.class);
+
     @Autowired
     private TNMUserService TNMUserDAO;
 
@@ -561,7 +563,9 @@ public class AdminController {
                                            @RequestParam(value = "site-url", required = false) String siteURIString,
                                            @RequestParam(value = "nusach", required = true) String nusachString,
                                            @RequestParam(value = "orgColor", required = true) String orgColor,
-                                           @RequestParam(value = "url-slug", required = false) String urlSlug) throws Exception {
+                                           @RequestParam(value = "url-slug", required = false) String urlSlug,
+                                           @RequestParam(value = "calendar", required = false) String calendar,
+                                           @RequestParam(value = "useScrapedCalendar", required = false) Boolean useScrapedCalendar) throws Exception {
 
 //        validate input
         if (name == null || name.isEmpty()) {
@@ -591,6 +595,8 @@ public class AdminController {
                 .nusach(nusach)
                 .orgColor(orgColor)
                 .urlSlug(urlSlug)
+                .calendar(calendar)
+                .useScrapedCalendar(useScrapedCalendar != null ? useScrapedCalendar : false)
                 .build();
 
         // Ensure organization has a slug (generate from name if not provided)
@@ -1599,5 +1605,118 @@ public class AdminController {
                 throw new Exception("Sorry, there was an error deleting the minyan.");
             }
         }
+    }
+
+    @Autowired
+    private com.tbdev.teaneckminyanim.calendar.CalendarSyncService calendarSyncService;
+
+    @Autowired
+    private com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository calendarEntryRepository;
+
+    /**
+     * Trigger manual calendar sync for an organization
+     */
+    @PostMapping("/admin/{organizationId}/sync-calendar")
+    public ModelAndView syncCalendar(@PathVariable("organizationId") String organizationId) {
+        log.info("Manual calendar sync triggered for organization {}", organizationId);
+        
+        Organization org = getOrganization(organizationId);
+        if (org == null) {
+            return new ModelAndView("redirect:/admin/organizations?error=Organization not found");
+        }
+
+        com.tbdev.teaneckminyanim.calendar.CalendarSyncResult result = calendarSyncService.syncOrganization(organizationId);
+        
+        String message;
+        String error = null;
+        
+        if (result.isSuccess()) {
+            message = String.format("Calendar sync completed successfully. Added: %d, Updated: %d, Disabled: %d, Skipped: %d",
+                    result.getEntriesAdded(), result.getEntriesUpdated(), result.getEntriesDisabled(), result.getEntriesSkipped());
+        } else {
+            error = "Calendar sync failed: " + result.getErrorMessage();
+            message = null;
+        }
+        
+        try {
+            return organization(organizationId, message, error, null, null);
+        } catch (Exception e) {
+            return new ModelAndView("redirect:/admin/organizations?error=Failed to load organization");
+        }
+    }
+
+    /**
+     * Show calendar entries management page
+     */
+    @GetMapping("/admin/{organizationId}/calendar-entries")
+    public ModelAndView calendarEntries(@PathVariable("organizationId") String organizationId,
+                                        @RequestParam(required = false) String startDate,
+                                        @RequestParam(required = false) String endDate,
+                                        @RequestParam(required = false) String search) {
+        ModelAndView mv = new ModelAndView("admin/calendar-entries");
+        addStandardPageData(mv);
+
+        Organization org = getOrganization(organizationId);
+        if (org == null) {
+            return new ModelAndView("redirect:/admin/organizations?error=Organization not found");
+        }
+
+        mv.addObject("org", org);
+
+        // Default date range: 2 weeks past to 8 weeks future
+        java.time.LocalDate start = startDate != null ? 
+                java.time.LocalDate.parse(startDate) : 
+                java.time.LocalDate.now().minusWeeks(2);
+        java.time.LocalDate end = endDate != null ? 
+                java.time.LocalDate.parse(endDate) : 
+                java.time.LocalDate.now().plusWeeks(8);
+
+        List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entries = 
+                calendarEntryRepository.findByOrganizationIdAndDateBetween(organizationId, start, end);
+
+        // Apply search filter if provided
+        if (search != null && !search.trim().isEmpty()) {
+            String searchLower = search.toLowerCase();
+            entries = entries.stream()
+                    .filter(e -> e.getTitle().toLowerCase().contains(searchLower) ||
+                               (e.getRawText() != null && e.getRawText().toLowerCase().contains(searchLower)))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        mv.addObject("entries", entries);
+        mv.addObject("startDate", start);
+        mv.addObject("endDate", end);
+        mv.addObject("search", search);
+
+        return mv;
+    }
+
+    /**
+     * Toggle enabled status of a calendar entry
+     */
+    @PostMapping("/admin/{organizationId}/calendar-entries/{entryId}/toggle")
+    public ModelAndView toggleCalendarEntry(@PathVariable("organizationId") String organizationId,
+                                           @PathVariable("entryId") Long entryId) {
+        Organization org = getOrganization(organizationId);
+        if (org == null) {
+            return new ModelAndView("redirect:/admin/organizations?error=Organization not found");
+        }
+
+        Optional<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entryOpt = 
+                calendarEntryRepository.findById(entryId);
+        
+        if (entryOpt.isPresent()) {
+            com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry entry = entryOpt.get();
+            
+            // Verify entry belongs to this organization
+            if (!entry.getOrganizationId().equals(organizationId)) {
+                return new ModelAndView("redirect:/admin/" + organizationId + "/calendar-entries?error=Entry not found");
+            }
+            
+            entry.setEnabled(!entry.isEnabled());
+            calendarEntryRepository.save(entry);
+        }
+
+        return new ModelAndView("redirect:/admin/" + organizationId + "/calendar-entries");
     }
 }

@@ -41,7 +41,7 @@ public class CalendarSyncService {
      * Sync calendars for all organizations with calendar URLs
      */
     public List<CalendarSyncResult> syncAllOrganizations() {
-        List<Organization> orgsWithCalendars = organizationService.findAll().stream()
+        List<Organization> orgsWithCalendars = organizationService.getAll().stream()
                 .filter(org -> org.getCalendar() != null && !org.getCalendar().trim().isEmpty())
                 .toList();
 

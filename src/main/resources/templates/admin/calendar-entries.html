@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${org.name} + ' - Calendar Entries'"></title>
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    <meta name="msapplication-TileColor" content="#275ed8">
+    <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+<div class="horizontal-container d-flex" id="wrapper">
+    <th:block th:include="admin/navbar"></th:block>
+    <div class="container-fluid" id="main">
+        <div class="row row-offcanvas row-offcanvas-left vh-100">
+            <th:block th:include="admin/sidebar"></th:block>
+            <div class="col-housing main h-100 overflow-auto">
+                <main class="col main pt-5 mt-3 overflow-auto">
+                    <h1 class="display-4 d-none d-sm-block" th:text="${org.name} + ' - Calendar Entries'"></h1>
+                    <p class="lead">Manage scraped calendar entries for this organization.</p>
+
+                    <hr>
+
+                    <!-- Filter Form -->
+                    <div class="row my-4">
+                        <div class="col-12">
+                            <form method="get" class="form-inline">
+                                <div class="form-group mr-2">
+                                    <label for="startDate" class="mr-2">Start Date:</label>
+                                    <input type="date" class="form-control" id="startDate" name="startDate" th:value="${startDate}">
+                                </div>
+                                <div class="form-group mr-2">
+                                    <label for="endDate" class="mr-2">End Date:</label>
+                                    <input type="date" class="form-control" id="endDate" name="endDate" th:value="${endDate}">
+                                </div>
+                                <div class="form-group mr-2">
+                                    <label for="search" class="mr-2">Search:</label>
+                                    <input type="text" class="form-control" id="search" name="search" th:value="${search}" placeholder="Search title or text">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a th:href="@{/admin/{orgId}/calendar-entries(orgId=${org.id})}" class="btn btn-secondary ml-2">Reset</a>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Entries Table -->
+                    <div class="row my-4">
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Time</th>
+                                            <th>Title</th>
+                                            <th>Type</th>
+                                            <th>Enabled</th>
+                                            <th>Scraped At</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:if="${#lists.isEmpty(entries)}">
+                                            <td colspan="7" class="text-center">No calendar entries found.</td>
+                                        </tr>
+                                        <tr th:each="entry : ${entries}" th:classappend="${!entry.enabled} ? 'table-secondary' : ''">
+                                            <td th:text="${#temporals.format(entry.date, 'MM/dd/yyyy')}"></td>
+                                            <td th:text="${#temporals.format(entry.time, 'h:mm a')}"></td>
+                                            <td>
+                                                <span th:text="${entry.title}"></span>
+                                                <br>
+                                                <small class="text-muted" th:text="${entry.rawText}" style="font-size: 0.8em;"></small>
+                                            </td>
+                                            <td>
+                                                <span th:if="${entry.type != null}" th:text="${entry.type.displayName()}"></span>
+                                                <span th:unless="${entry.type != null}" class="text-muted">-</span>
+                                            </td>
+                                            <td>
+                                                <span th:if="${entry.enabled}" class="badge badge-success">Yes</span>
+                                                <span th:unless="${entry.enabled}" class="badge badge-secondary">No</span>
+                                                <span th:if="${entry.dedupeReason != null}">
+                                                    <br><small class="text-muted" th:text="${entry.dedupeReason}"></small>
+                                                </span>
+                                            </td>
+                                            <td th:text="${#temporals.format(entry.scrapedAt, 'MM/dd/yyyy HH:mm')}"></td>
+                                            <td>
+                                                <form th:action="@{/admin/{orgId}/calendar-entries/{entryId}/toggle(orgId=${org.id},entryId=${entry.id})}" method="post" style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm" th:classappend="${entry.enabled} ? 'btn-warning' : 'btn-success'">
+                                                        <span th:if="${entry.enabled}">Disable</span>
+                                                        <span th:unless="${entry.enabled}">Enable</span>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="row my-4">
+                        <div class="col-12">
+                            <p class="text-muted">
+                                Showing <strong th:text="${#lists.size(entries)}"></strong> entries.
+                                <span th:if="${entries != null}">
+                                    Enabled: <strong th:text="${entries.stream().filter(e -> e.enabled).count()}"></strong>,
+                                    Disabled: <strong th:text="${entries.stream().filter(e -> !e.enabled).count()}"></strong>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row my-4">
+                        <div class="col-12">
+                            <a th:href="@{/admin/organization(id=${org.id})}" class="btn btn-secondary">Back to Organization</a>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:include="admin/footer"></th:block>
+
+</body>
+</html>

@@ -69,6 +69,16 @@
                                         <label for="orgColor">Shul Color</label>
                                         <input type="color" class="form-control form-control-color" name="orgColor" id="orgColor" th:value="${organization.getOrgColor()}" title="Choose your color">
                                     </div>
+                                    <div class="form-group">
+                                        <label for="calendar">Calendar URL</label>
+                                        <input type="text" class="form-control" name="calendar" id="calendar" aria-describedby="calendar-help" th:value="${organization.calendar}">
+                                        <small id="calendar-help" class="form-text text-muted">Optional: URL to your shul's online calendar. When set, the system can scrape minyan times automatically.</small>
+                                    </div>
+                                    <div class="form-group form-check">
+                                        <input type="checkbox" class="form-check-input" name="useScrapedCalendar" id="useScrapedCalendar" th:checked="${organization.useScrapedCalendar}">
+                                        <label class="form-check-label" for="useScrapedCalendar">Use Scraped Calendar</label>
+                                        <small class="form-text text-muted">When enabled, minyan times will be pulled from the calendar URL instead of using rule-based schedules.</small>
+                                    </div>
                                     <div class="login-msg-box" th:if="${updateError}" style="padding-bottom: 8px">
                                         <div class="form-msg-fatal" th:text="${updateError}"></div>
                                     </div>
@@ -76,6 +86,12 @@
                                     <!--                                        <div class="form-msg-success" th:text="${mainSuccess}"></div>-->
                                     <!--                                    </div>-->
                                     <button type="submit" class="btn btn-primary">Update</button>
+                                    <a th:if="${organization.calendar}" th:href="@{/admin/{orgId}/sync-calendar(orgId=${organization.id})}" class="btn btn-secondary" onclick="return confirm('This will scrape the calendar URL now. Continue?')">
+                                        <form th:action="@{/admin/{orgId}/sync-calendar(orgId=${organization.id})}" method="post" style="display:inline;">
+                                            <button type="submit" class="btn btn-secondary">Refresh Zmanim Sync</button>
+                                        </form>
+                                    </a>
+                                    <a th:if="${organization.calendar}" th:href="@{/admin/{orgId}/calendar-entries(orgId=${organization.id})}" class="btn btn-outline-primary">Manage Calendar Entries</a>
                                 </form>
                             </div>
 
