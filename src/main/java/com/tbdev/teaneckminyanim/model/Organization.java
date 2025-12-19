@@ -40,6 +40,9 @@ public class Organization {
     @Column(name = "CALENDAR")
     private String calendar;
 
+    @Column(name = "URL_SLUG", unique = true)
+    private String urlSlug;
+
     @Transient
     private URI websiteURI;
 

@@ -51,6 +51,11 @@
                                         <small id="site-url-help" class="form-text text-muted">Optional: This website link will be displayed publically. Make sure NOT to include http://</small>
                                     </div>
                                     <div class="form-group">
+                                        <label for="url-slug">URL Slug</label>
+                                        <input type="text" class="form-control" name="url-slug" id="url-slug" aria-describedby="url-slug-help" th:value="${organization.urlSlug}" pattern="[a-z0-9\-]+">
+                                        <small id="url-slug-help" class="form-text text-muted">Human-readable URL for this organization (e.g., "keter-torah"). Only lowercase letters, numbers, and hyphens allowed. Leave blank to auto-generate from organization name.</small>
+                                    </div>
+                                    <div class="form-group">
                                         <label for="nusach">Nusach</label>
                                         <select class="custom-select" name="nusach" id="nusach">
                                             <option value="unspecified" th:selected="${organization.getNusach().isUnspecified()}">None specified</option>

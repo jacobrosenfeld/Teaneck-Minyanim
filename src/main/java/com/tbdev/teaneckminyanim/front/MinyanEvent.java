@@ -21,6 +21,8 @@ public class MinyanEvent {
 
     private String organizationId;
 
+    private String organizationSlug;
+
     private String locationName;
 
     final private Date startTime;
@@ -75,6 +77,14 @@ public class MinyanEvent {
 
     public String getOrganizationId() {
         return organizationId;
+    }
+
+    public String getOrganizationSlug() {
+        return organizationSlug;
+    }
+
+    public void setOrganizationSlug(String organizationSlug) {
+        this.organizationSlug = organizationSlug;
     }
 
     public String getLocationName() {
