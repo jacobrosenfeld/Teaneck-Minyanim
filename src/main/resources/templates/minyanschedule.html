@@ -36,9 +36,14 @@
                     <div th:if="${errormessage}">
                         <div class="alert alert-danger" role="alert" th:text="${errormessage}"></div>
                     </div>
-                    <h1 class="display-4 d-none d-sm-block">
-                        Minyan Schedule
-                    </h1>
+                    <div class="d-flex justify-content-between align-items-center d-none d-sm-flex">
+                        <h1 class="display-4 mb-0">
+                            Minyan Schedule
+                        </h1>
+                        <a th:href="@{'/admin/' + ${organization.id} + '/minyanim/printable'}" class="btn btn-outline-primary">
+                            <i class="fa fa-print"></i> Printable Format
+                        </a>
+                    </div>
                     <p class="lead d-none d-sm-block">Manage and add new minyanim for [(${organization.name})] on the Teaneck Minyanim platform.</p>
 
                     <hr>

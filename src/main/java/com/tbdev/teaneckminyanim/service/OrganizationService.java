@@ -91,15 +91,20 @@ public class OrganizationService {
         return users;
     }
 
-    private void setupOrgObjs(List<Organization> organizations) {
-        for (Organization organization : organizations) {
+    public void setupOrg(Organization organization) {
+        if (organization != null) {
             String websiteURIStr = organization.getWebsiteURIStr();
             if (websiteURIStr != null && !websiteURIStr.isEmpty()) {
                 organization.setWebsiteURI(URI.create(websiteURIStr));
             } else {
                 organization.setWebsiteURI(null);  // Or handle as needed if URI is missing
             }
-//            organization.setNusach(Nusach.fromString(organization.getNusachStr()));
+        }
+    }
+
+    private void setupOrgObjs(List<Organization> organizations) {
+        for (Organization organization : organizations) {
+            setupOrg(organization);
         }
     }
 }

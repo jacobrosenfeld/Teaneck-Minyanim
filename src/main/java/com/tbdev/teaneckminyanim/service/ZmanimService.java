@@ -428,6 +428,7 @@ public class ZmanimService {
 
         try {
             Organization org = organizationDAO.findById(orgId).orElse(new Organization());
+            organizationDAO.setupOrg(org);
             mv.addObject("org", org);
         } catch (Exception e) {
             e.printStackTrace();
