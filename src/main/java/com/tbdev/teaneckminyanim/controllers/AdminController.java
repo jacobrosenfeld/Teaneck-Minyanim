@@ -227,7 +227,8 @@ public class AdminController {
                                            @RequestParam(value = "nusach", required = false) String nusachString,
                                            @RequestParam(value = "password", required = true) String password,
                                            @RequestParam(value = "cpassword", required = true) String cpassword,
-                                           @RequestParam(value = "orgColor", required = true) String orgColor) {
+                                           @RequestParam(value = "orgColor", required = true) String orgColor,
+                                           @RequestParam(value = "url-slug", required = false) String urlSlug) {
         if (!isSuperAdmin()) {
             throw new AccessDeniedException("You are not authorized to access this page.");
         }
@@ -304,7 +305,11 @@ public class AdminController {
                 .websiteURI(siteURI)
                 .nusach(nusach)
                 .orgColor(orgColor)
+                .urlSlug(urlSlug)
                 .build();
+
+        // Ensure organization has a slug (generate from name if not provided)
+        organizationService.ensureSlug(organization);
 
         if  (this.organizationService.save(organization)) {
             System.out.println("Organization created successfully.");
@@ -555,7 +560,8 @@ public class AdminController {
                                            @RequestParam(value = "address", required = false) String address,
                                            @RequestParam(value = "site-url", required = false) String siteURIString,
                                            @RequestParam(value = "nusach", required = true) String nusachString,
-                                           @RequestParam(value = "orgColor", required = true) String orgColor) throws Exception {
+                                           @RequestParam(value = "orgColor", required = true) String orgColor,
+                                           @RequestParam(value = "url-slug", required = false) String urlSlug) throws Exception {
 
 //        validate input
         if (name == null || name.isEmpty()) {
@@ -578,12 +584,17 @@ public class AdminController {
         }
 
         Organization organization = Organization.builder()
+                .id(id)
                 .name(name)
                 .address(address)
                 .websiteURI(siteURI)
                 .nusach(nusach)
                 .orgColor(orgColor)
+                .urlSlug(urlSlug)
                 .build();
+
+        // Ensure organization has a slug (generate from name if not provided)
+        organizationService.ensureSlug(organization);
 
 //        check permissions
         if (isAdmin()) {

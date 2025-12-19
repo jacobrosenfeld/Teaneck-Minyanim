@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.util.*;
 
 import com.kosherjava.zmanim.util.GeoLocation;
+import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMSettingsService;
+import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.TNMSettings;
 import com.tbdev.teaneckminyanim.service.ZmanimHandler;
 import com.tbdev.teaneckminyanim.service.ZmanimService;
@@ -19,6 +21,7 @@ import org.springframework.web.servlet.ModelAndView;
 public class ZmanimController {
     private final ZmanimService zmanimService;
     private final TNMSettingsService tnmSettingsDao;
+    private final OrganizationService organizationService;
 
     TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
 
@@ -85,6 +88,7 @@ public class ZmanimController {
                 date.getMinutes(), date.getSeconds()));
     }
 
+    // Legacy routes using org ID (kept for backward compatibility)
     @GetMapping("/orgs/{id}/next")
     public ModelAndView nextOrgAfter(@PathVariable String id,
             @RequestParam(value = "after", required = true) String dateString) throws Exception {
@@ -104,5 +108,54 @@ public class ZmanimController {
     @RequestMapping("/orgs/{orgId}")
     public ModelAndView orgToday(@PathVariable String orgId) throws Exception {
         return zmanimService.org(orgId, new Date());
+    }
+
+    // New slug-based routes
+    @GetMapping("/org/{slug}")
+    public ModelAndView orgTodayBySlug(@PathVariable String slug) throws Exception {
+        String orgId = resolveOrgId(slug);
+        return zmanimService.org(orgId, new Date());
+    }
+
+    @GetMapping("/org/{slug}/next")
+    public ModelAndView nextOrgAfterBySlug(@PathVariable String slug,
+            @RequestParam(value = "after", required = true) String dateString) throws Exception {
+        String orgId = resolveOrgId(slug);
+        Date date = new Date(dateString);
+        return zmanimService.org(orgId, new Date(date.getYear(), date.getMonth(), date.getDate() + 1, date.getHours(),
+                date.getMinutes(), date.getSeconds()));
+    }
+
+    @GetMapping("/org/{slug}/last")
+    public ModelAndView lastOrgBeforeBySlug(@PathVariable String slug,
+            @RequestParam(value = "before", required = true) String dateString) throws Exception {
+        String orgId = resolveOrgId(slug);
+        Date date = new Date(dateString);
+        return zmanimService.org(orgId, new Date(date.getYear(), date.getMonth(), date.getDate() - 1, date.getHours(),
+                date.getMinutes(), date.getSeconds()));
+    }
+
+    /**
+     * Helper method to resolve organization ID from slug.
+     * Looks up organization by slug, falling back to ID lookup if not found.
+     * 
+     * @param slugOrId URL slug or organization ID
+     * @return Organization ID
+     * @throws Exception if organization not found
+     */
+    private String resolveOrgId(String slugOrId) throws Exception {
+        // First try to find by slug
+        Optional<Organization> orgBySlug = organizationService.findByUrlSlug(slugOrId);
+        if (orgBySlug.isPresent()) {
+            return orgBySlug.get().getId();
+        }
+        
+        // Fall back to ID lookup for backward compatibility
+        Optional<Organization> orgById = organizationService.findById(slugOrId);
+        if (orgById.isPresent()) {
+            return orgById.get().getId();
+        }
+        
+        throw new Exception("Organization not found: " + slugOrId);
     }
 }

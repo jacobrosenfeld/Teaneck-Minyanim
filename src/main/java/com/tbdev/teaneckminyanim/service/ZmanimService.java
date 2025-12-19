@@ -339,6 +339,10 @@ public class ZmanimService {
             }
         }
         kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
+        
+        // Populate organization slugs for KolhaMinyanim objects
+        populateOrganizationSlugsForKolha(kolhaMinyanims);
+        
         mv.getModel().put("kolminyanim", kolhaMinyanims);
         Stream<KolhaMinyanim> stream = kolhaMinyanims.stream();
 
@@ -355,6 +359,10 @@ public class ZmanimService {
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
+        
+        // Populate organization slugs for all minyan events
+        populateOrganizationSlugs(minyanEvents);
+        
         for (MinyanEvent me : minyanEvents) {
             if (me.getType().isShacharis()) {
                 shacharisMinyanim.add(me);
@@ -738,6 +746,12 @@ public class ZmanimService {
             }
         }
         nextMinyan.sort(Comparator.comparing(MinyanEvent::getStartTime));
+        
+        // Populate organization slugs for next minyan events
+        populateOrganizationSlugs(nextMinyan);
+        // Populate organization slugs for all minyan events
+        populateOrganizationSlugs(minyanEvents);
+        
         mv.getModel().put("nextMinyan", nextMinyan);
 
         if(!nextMinyan.isEmpty()) {
@@ -754,6 +768,47 @@ public class ZmanimService {
 
         return mv;
     }
+    
+    /**
+     * Populates the organizationSlug field for all MinyanEvent objects.
+     * This helper method looks up the organization by ID and sets the slug.
+     * 
+     * @param events List of MinyanEvent objects to populate
+     */
+    private void populateOrganizationSlugs(List<MinyanEvent> events) {
+        for (MinyanEvent event : events) {
+            Optional<Organization> org = organizationDAO.findById(event.getOrganizationId());
+            if (org.isPresent()) {
+                String slug = org.get().getUrlSlug();
+                // Fall back to org ID if slug is not set
+                event.setOrganizationSlug(slug != null && !slug.isEmpty() ? slug : event.getOrganizationId());
+            } else {
+                // Fall back to org ID if organization not found
+                event.setOrganizationSlug(event.getOrganizationId());
+            }
+        }
+    }
+    
+    /**
+     * Populates the organizationSlug field for all KolhaMinyanim objects.
+     * This helper method looks up the organization by ID and sets the slug.
+     * 
+     * @param minyanims List of KolhaMinyanim objects to populate
+     */
+    private void populateOrganizationSlugsForKolha(List<KolhaMinyanim> minyanims) {
+        for (KolhaMinyanim minyanim : minyanims) {
+            Optional<Organization> org = organizationDAO.findById(minyanim.getOrganizationId());
+            if (org.isPresent()) {
+                String slug = org.get().getUrlSlug();
+                // Fall back to org ID if slug is not set
+                minyanim.setOrganizationSlug(slug != null && !slug.isEmpty() ? slug : minyanim.getOrganizationId());
+            } else {
+                // Fall back to org ID if organization not found
+                minyanim.setOrganizationSlug(minyanim.getOrganizationId());
+            }
+        }
+    }
+    
     private void setTimeZone(TimeZone tz) {
         // set time format
         timeFormat.setTimeZone(tz);

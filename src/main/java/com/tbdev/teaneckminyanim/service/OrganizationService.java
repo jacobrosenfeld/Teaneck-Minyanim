@@ -5,6 +5,7 @@ import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.enums.Nusach;
 import com.tbdev.teaneckminyanim.model.Account;
 import com.tbdev.teaneckminyanim.model.Organization;
+import com.tbdev.teaneckminyanim.tools.SlugGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,10 @@ public class OrganizationService {
         }
 //        organizationById.get().setNusach(Nusach.fromString(organizationById.get().getNusachStr()));
         return organizationById;
+    }
+
+    public Optional<Organization> findByUrlSlug(String urlSlug) {
+        return organizationRepository.findByUrlSlug(urlSlug);
     }
 
     public List<Organization> getAll() {
@@ -105,6 +110,39 @@ public class OrganizationService {
     private void setupOrgObjs(List<Organization> organizations) {
         for (Organization organization : organizations) {
             setupOrg(organization);
+        }
+    }
+
+    /**
+     * Generates a unique URL slug for an organization.
+     * If slug already exists, appends a number to make it unique.
+     * 
+     * @param baseSlug The base slug to start with
+     * @return A unique slug that doesn't exist in the database
+     */
+    public String generateUniqueSlug(String baseSlug) {
+        String slug = baseSlug;
+        int counter = 0;
+        
+        while (organizationRepository.findByUrlSlug(slug).isPresent()) {
+            counter++;
+            slug = SlugGenerator.generateUniqueSlug(baseSlug, counter);
+        }
+        
+        return slug;
+    }
+
+    /**
+     * Ensures an organization has a URL slug.
+     * If not present, generates one from the organization name.
+     * 
+     * @param organization The organization to ensure has a slug
+     */
+    public void ensureSlug(Organization organization) {
+        if (organization.getUrlSlug() == null || organization.getUrlSlug().trim().isEmpty()) {
+            String baseSlug = SlugGenerator.generateSlug(organization.getName());
+            String uniqueSlug = generateUniqueSlug(baseSlug);
+            organization.setUrlSlug(uniqueSlug);
         }
     }
 }
