@@ -1641,15 +1641,32 @@ public class AdminController {
      */
     @PostMapping("/admin/{organizationId}/sync-calendar")
     public ModelAndView syncCalendar(@PathVariable("organizationId") String organizationId) {
+        log.info("========================================");
         log.info("Manual calendar sync triggered for organization {}", organizationId);
+        log.info("========================================");
         
         try {
             Organization org = getOrganization(organizationId);
             if (org == null) {
                 return new ModelAndView("redirect:/admin/organizations?error=Organization not found");
             }
+            
+            log.info("Organization: {}", org.getName());
+            log.info("Calendar URL: {}", org.getCalendar());
+            log.info("Use Scraped Calendar: {}", org.isUseScrapedCalendar());
 
             com.tbdev.teaneckminyanim.calendar.CalendarSyncResult result = calendarSyncService.syncOrganization(organizationId);
+            
+            log.info("========================================");
+            log.info("Sync completed for {}", org.getName());
+            log.info("Success: {}", result.isSuccess());
+            log.info("Added: {}, Updated: {}, Disabled: {}, Skipped: {}", 
+                    result.getEntriesAdded(), result.getEntriesUpdated(), 
+                    result.getEntriesDisabled(), result.getEntriesSkipped());
+            if (result.getErrorMessage() != null) {
+                log.info("Message: {}", result.getErrorMessage());
+            }
+            log.info("========================================");
             
             String message = null;
             String error = null;
@@ -1659,21 +1676,24 @@ public class AdminController {
                     result.getEntriesDisabled() == 0 && result.getEntriesSkipped() == 0) {
                     // No entries processed - show warning
                     message = result.getErrorMessage() != null ? result.getErrorMessage() : 
-                             "Calendar sync completed but no entries were found.";
+                             "Calendar sync completed but no entries were found. Check application logs for detailed parsing information.";
                 } else {
-                    message = String.format("Calendar sync completed successfully. Added: %d, Updated: %d, Disabled: %d, Skipped: %d",
+                    message = String.format("Calendar sync completed successfully. Added: %d, Updated: %d, Disabled: %d, Skipped: %d. Check logs for details.",
                             result.getEntriesAdded(), result.getEntriesUpdated(), result.getEntriesDisabled(), result.getEntriesSkipped());
                 }
             } else {
-                error = "Calendar sync failed: " + result.getErrorMessage();
+                error = "Calendar sync failed: " + result.getErrorMessage() + ". Check application logs for details.";
             }
             
             return organization(organizationId, message, error, null, null);
         } catch (Exception e) {
-            log.error("Error during calendar sync for organization {}: {}", organizationId, e.getMessage(), e);
+            log.error("========================================");
+            log.error("ERROR during calendar sync for organization {}", organizationId);
+            log.error("Error message: {}", e.getMessage(), e);
+            log.error("========================================");
             try {
                 return organization(organizationId, null, 
-                        "Calendar sync error: " + e.getMessage() + ". Please ensure the database table exists (run setup_database_v1.2.sql)", 
+                        "Calendar sync error: " + e.getMessage() + ". Please check application logs for details. Ensure the database table exists (run setup_database_v1.2.sql)", 
                         null, null);
             } catch (Exception e2) {
                 return new ModelAndView("redirect:/admin/organizations?error=Failed to sync calendar: " + e.getMessage());
@@ -1689,10 +1709,10 @@ public class AdminController {
                                         @RequestParam(required = false) String startDate,
                                         @RequestParam(required = false) String endDate,
                                         @RequestParam(required = false) String search) {
+        ModelAndView mv = new ModelAndView("admin/calendar-entries");
+        addStandardPageData(mv);
+        
         try {
-            ModelAndView mv = new ModelAndView("admin/calendar-entries");
-            addStandardPageData(mv);
-
             Organization org = getOrganization(organizationId);
             if (org == null) {
                 return new ModelAndView("redirect:/admin/organizations?error=Organization not found");
@@ -1710,6 +1730,14 @@ public class AdminController {
 
             List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entries = 
                     calendarEntryRepository.findByOrganizationIdAndDateBetween(organizationId, start, end);
+            
+            // Always initialize entries list (even if null/empty)
+            if (entries == null) {
+                entries = new ArrayList<>();
+            }
+            
+            log.debug("Found {} calendar entries for org {} in date range {} to {}", 
+                     entries.size(), organizationId, start, end);
 
             // Apply search filter if provided
             if (search != null && !search.trim().isEmpty()) {

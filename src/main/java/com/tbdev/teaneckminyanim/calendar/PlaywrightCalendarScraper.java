@@ -245,21 +245,32 @@ public class PlaywrightCalendarScraper {
             // Extract all text content and look for patterns
             String cleanText = html.replaceAll("<[^>]*>", " ").replaceAll("\\s+", " ");
             
+            log.info("Starting general text parsing. Text length: {} chars", cleanText.length());
+            log.debug("Sample of cleaned text (first 1000 chars): {}", 
+                     cleanText.length() > 1000 ? cleanText.substring(0, 1000) : cleanText);
+            
             // Split into chunks by looking for date patterns
+            // Updated pattern to be more flexible and capture more variations
             Pattern dateTimePattern = Pattern.compile(
-                "((?:January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2}).*?" +
-                "(\\d{1,2}:\\d{2}\\s*(?:am|pm|AM|PM)).*?" +
-                "(shacharit|shacharit|mincha|ma'?ariv|arvit|plag)",
-                Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+                "((?:January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2})" +
+                "[\\s\\S]{0,200}?" +  // Allow up to 200 chars between date and time
+                "(\\d{1,2}:\\d{2}\\s*(?:am|pm|AM|PM))" +
+                "[\\s\\S]{0,100}?" +  // Allow up to 100 chars between time and keyword
+                "(shacharit|shacharis|mincha|ma'?ariv|arvit|plag|minyan)",
+                Pattern.CASE_INSENSITIVE
             );
             
             Matcher matcher = dateTimePattern.matcher(cleanText);
+            int matchCount = 0;
             
             while (matcher.find()) {
+                matchCount++;
                 try {
                     String dateStr = matcher.group(1);
                     String timeStr = matcher.group(2);
                     String typeStr = matcher.group(3);
+                    
+                    log.info("Match #{}: date='{}', time='{}', type='{}'", matchCount, dateStr, timeStr, typeStr);
                     
                     LocalDate date = extractDate(dateStr);
                     LocalTime time = normalizer.normalizeTime(timeStr);
@@ -277,14 +288,23 @@ public class PlaywrightCalendarScraper {
                                 .build();
                         entries.add(entry);
                         
-                        log.debug("Parsed entry: {} at {} on {}", title, time, date);
+                        log.info("✓ Successfully parsed entry: {} at {} on {}", title, time, date);
+                    } else {
+                        log.warn("✗ Failed to extract date or time from match: dateStr='{}', timeStr='{}' -> date={}, time={}", 
+                                dateStr, timeStr, date, time);
                     }
                 } catch (Exception e) {
-                    log.debug("Failed to parse entry from match: {}", e.getMessage());
+                    log.warn("✗ Failed to parse entry from match: {}", e.getMessage());
                 }
             }
             
-            log.info("General text parsing found {} entries", entries.size());
+            log.info("General text parsing completed. Total patterns found: {}, Successfully parsed: {}", 
+                    matchCount, entries.size());
+            
+            if (matchCount == 0) {
+                log.warn("No date/time/keyword patterns found in text. Sample text for debugging:");
+                log.warn("  First 500 chars: {}", cleanText.length() > 500 ? cleanText.substring(0, 500) : cleanText);
+            }
             
         } catch (Exception e) {
             log.debug("General text parsing failed: {}", e.getMessage());
