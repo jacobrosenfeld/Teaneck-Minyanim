@@ -1,20 +1,16 @@
 package com.tbdev.teaneckminyanim.calendar;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
+import com.microsoft.playwright.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 /**
  * Debug service to inspect what's actually on a calendar page
- * Tries headless Chrome first, falls back to Jsoup on failure (e.g., ARM64)
+ * Uses Playwright for reliable cross-platform support (ARM64, x86_64)
  */
 @Slf4j
 @Service
@@ -28,79 +24,56 @@ public class CalendarDebugger {
      */
     public String debugCalendarPage(String url) {
         StringBuilder report = new StringBuilder();
-        report.append("=== Calendar Debug Report ===\n");
+        report.append("=== Calendar Debug Report (Playwright) ===\n");
         report.append("URL: ").append(url).append("\n\n");
 
-        // Check if Chrome is available
-        if (!hybridScraper.isChromeAvailable()) {
-            report.append("⚠ Chrome scraper is disabled: ").append(hybridScraper.getChromeFailureReason()).append("\n");
+        // Check if Playwright is available
+        if (!hybridScraper.isPlaywrightAvailable()) {
+            report.append("⚠ Playwright scraper is disabled: ").append(hybridScraper.getPlaywrightFailureReason()).append("\n");
             report.append("Using Jsoup scraper instead\n\n");
             return debugWithJsoup(url, report);
         }
 
-        WebDriver driver = null;
-        try {
-            ChromeOptions options = new ChromeOptions();
+        try (Playwright playwright = Playwright.create()) {
+            report.append("✓ Playwright initialized\n");
             
-            // Try to use system-installed Chromium first
-            String[] chromiumPaths = {
-                "/usr/bin/chromium",
-                "/usr/bin/chromium-browser",
-                "/usr/bin/google-chrome",
-                "/usr/bin/chrome-headless-shell"
-            };
+            BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions()
+                    .setHeadless(true)
+                    .setTimeout(30000);
             
-            boolean chromiumFound = false;
-            for (String path : chromiumPaths) {
-                java.io.File chromiumBinary = new java.io.File(path);
-                if (chromiumBinary.exists() && chromiumBinary.canExecute()) {
-                    options.setBinary(path);
-                    chromiumFound = true;
-                    report.append("✓ Found system Chromium at: ").append(path).append("\n");
-                    break;
-                }
-            }
-            
-            if (!chromiumFound) {
-                report.append("⚠ System Chromium not found, using WebDriverManager\n");
-                WebDriverManager.chromedriver().setup();
-            }
-            
-            options.addArguments("--headless=new");
-            options.addArguments("--no-sandbox");
-            options.addArguments("--disable-dev-shm-usage");
-            options.addArguments("--disable-gpu");
-            options.addArguments("--window-size=1920,1080");
-            options.addArguments("--user-agent=Teaneck-Minyanim/1.2 (Calendar Sync Bot)");
-            options.addArguments("--ignore-certificate-errors");
-            options.setAcceptInsecureCerts(true);
-            
-            driver = new ChromeDriver(options);
-            driver.manage().timeouts().pageLoadTimeout(30, java.util.concurrent.TimeUnit.SECONDS);
-            driver.manage().timeouts().implicitlyWait(2, java.util.concurrent.TimeUnit.SECONDS);
-            
-            report.append("✓ Chrome driver initialized\n");
-            
-            // Navigate to the page
-            driver.get(url);
-            report.append("✓ Successfully loaded page\n");
-            report.append("Final URL: ").append(driver.getCurrentUrl()).append("\n\n");
-            
-            // Wait for JavaScript
-            Thread.sleep(5000);
-            report.append("✓ Waited for JavaScript rendering (5 seconds)\n\n");
-            
-            // Get page source after JavaScript execution
-            String pageSource = driver.getPageSource();
-            report.append("HTML size after JavaScript: ").append(pageSource.length()).append(" bytes\n\n");
+            try (Browser browser = playwright.chromium().launch(launchOptions)) {
+                report.append("✓ Chromium browser launched\n");
+                
+                BrowserContext context = browser.newContext(new Browser.NewContextOptions()
+                        .setUserAgent("Teaneck-Minyanim/1.2 (Calendar Sync Bot)")
+                        .setIgnoreHTTPSErrors(true));
+                
+                Page page = context.newPage();
+                page.setDefaultTimeout(30000);
+                
+                // Navigate to the page
+                report.append("✓ Navigating to URL...\n");
+                page.navigate(url);
+                report.append("✓ Successfully loaded page\n");
+                report.append("Final URL: ").append(page.url()).append("\n\n");
+                
+                // Wait for JavaScript
+                page.waitForTimeout(5000);
+                report.append("✓ Waited for JavaScript rendering (5 seconds)\n\n");
+                
+                // Get page source after JavaScript execution
+                String pageSource = page.content();
+                report.append("HTML size after JavaScript: ").append(pageSource.length()).append(" bytes\n\n");
 
-            // Check for JavaScript calendar indicators
-            report.append("--- JavaScript Calendar Detection ---\n");
-            if (pageSource.toLowerCase().contains("fullcalendar")) {
-                report.append("✓ Found FullCalendar.js references\n");
+                // Check for JavaScript calendar indicators
+                report.append("--- JavaScript Calendar Detection ---\n");
+                if (pageSource.toLowerCase().contains("fullcalendar")) {
+                    report.append("✓ Found FullCalendar.js references\n");
             }
             if (pageSource.toLowerCase().contains("daypilot")) {
                 report.append("✓ Found DayPilot references\n");
+            } else {
+                report.append("⚠ WARNING: This appears to be a JavaScript-rendered calendar\n");
             }
             if (pageSource.toLowerCase().contains("react")) {
                 report.append("✓ Found React references\n");
@@ -109,91 +82,86 @@ public class CalendarDebugger {
 
             // Sample text content
             report.append("--- Content Sample Analysis ---\n");
-            String bodyText = driver.findElement(org.openqa.selenium.By.tagName("body")).getText();
+            String bodyText = page.textContent("body");
             
             // Look for date patterns
-            java.util.regex.Pattern datePattern = java.util.regex.Pattern.compile("\\d{1,2}[/\\-]\\d{1,2}[/\\-]\\d{2,4}");
-            java.util.regex.Matcher dateMatcher = datePattern.matcher(bodyText);
+            report.append("\n--- Date Pattern Detection ---\n");
+            Pattern datePattern = Pattern.compile("\\b(\\d{1,2})[/-](\\d{1,2})[/-](\\d{2,4})\\b|" +
+                    "\\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \\d{1,2}\\b");
+            Matcher dateMatcher = datePattern.matcher(bodyText);
             int dateCount = 0;
-            report.append("Date patterns (MM/DD/YYYY) in rendered text:\n");
+            report.append("Date patterns in rendered text:\n");
             while (dateMatcher.find() && dateCount < 5) {
                 report.append("  - ").append(dateMatcher.group()).append("\n");
                 dateCount++;
             }
             if (dateCount == 0) {
                 report.append("  ✗ No date patterns found!\n");
-            } else {
-                report.append("  Total date patterns found: ").append(dateCount).append("+\n");
-            }
-
-            // Look for time patterns
-            java.util.regex.Pattern timePattern = java.util.regex.Pattern.compile("\\d{1,2}:\\d{2}\\s*[AaPp][Mm]?");
-            java.util.regex.Matcher timeMatcher = timePattern.matcher(bodyText);
-            int timeCount = 0;
-            report.append("\nTime patterns (HH:MM AM/PM) in rendered text:\n");
-            while (timeMatcher.find() && timeCount < 5) {
-                report.append("  - ").append(timeMatcher.group()).append("\n");
-                timeCount++;
-            }
-            if (timeCount == 0) {
-                report.append("  ✗ No time patterns found!\n");
-            } else {
-                report.append("  Total time patterns found: ").append(timeCount).append("+\n");
-            }
-
-            // Look for minyan-related keywords
-            report.append("\n--- Minyan Keywords Detection ---\n");
-            String lowerBody = bodyText.toLowerCase();
-            String[] keywords = {"shacharis", "shacharit", "mincha", "maariv", "arvit", "minyan"};
-            for (String keyword : keywords) {
-                int count = countOccurrences(lowerBody, keyword);
-                if (count > 0) {
-                    report.append("  '").append(keyword).append("': ").append(count).append(" occurrences\n");
+                } else {
+                    report.append("  Total date patterns found: ").append(dateCount).append("+\n");
                 }
-            }
 
-            // Sample of visible text
-            report.append("\n--- Sample Rendered Text (first 500 chars) ---\n");
-            String visibleText = bodyText.replaceAll("\\s+", " ").trim();
-            report.append(visibleText.substring(0, Math.min(500, visibleText.length())));
-            if (visibleText.length() > 500) {
-                report.append("...");
-            }
-            report.append("\n");
+                // Look for time patterns
+                Pattern timePattern = Pattern.compile("\\d{1,2}:\\d{2}\\s*[AaPp][Mm]?");
+                Matcher timeMatcher = timePattern.matcher(bodyText);
+                int timeCount = 0;
+                report.append("\nTime patterns (HH:MM AM/PM) in rendered text:\n");
+                while (timeMatcher.find() && timeCount < 5) {
+                    report.append("  - ").append(timeMatcher.group()).append("\n");
+                    timeCount++;
+                }
+                if (timeCount == 0) {
+                    report.append("  ✗ No time patterns found!\n");
+                } else {
+                    report.append("  Total time patterns found: ").append(timeCount).append("+\n");
+                }
 
-            report.append("\n=== End Debug Report ===\n");
-            report.append("\n✓ Using headless Chrome allows scraping JavaScript-rendered calendars!\n");
+                // Look for minyan-related keywords
+                report.append("\n--- Minyan Keywords Detection ---\n");
+                String lowerBody = bodyText.toLowerCase();
+                String[] keywords = {"shacharis", "shacharit", "mincha", "maariv", "arvit", "minyan"};
+                for (String keyword : keywords) {
+                    int count = countOccurrences(lowerBody, keyword);
+                    if (count > 0) {
+                        report.append("  '").append(keyword).append("': ").append(count).append(" occurrences\n");
+                    }
+                }
 
-        } catch (Exception e) {
-            report.append("\n✗ ERROR with Chrome: ").append(e.getMessage()).append("\n");
-            
-            // Check if this is an architecture issue
-            if (e.getMessage() != null && e.getMessage().contains("cannot execute binary file")) {
-                report.append("\n⚠ ARCHITECTURE ISSUE DETECTED\n");
-                report.append("Your server is running ARM64 architecture, but ChromeDriver is x86_64.\n");
-                report.append("Falling back to Jsoup scraper...\n\n");
+                // Sample of visible text
+                report.append("\n--- Sample Rendered Text (first 500 chars) ---\n");
+                String visibleText = bodyText.replaceAll("\\s+", " ").trim();
+                report.append(visibleText.substring(0, Math.min(500, visibleText.length())));
+                if (visibleText.length() > 500) {
+                    report.append("...");
+                }
+                report.append("\n");
+
+                report.append("\n=== End Debug Report ===\n");
+                report.append("\n✓ Playwright successfully scraped the page (JavaScript-rendered content visible)!\n");
+                
+            } catch (PlaywrightException e) {
+                report.append("\n✗ ERROR with Playwright: ").append(e.getMessage()).append("\n");
+                report.append("\nFalling back to Jsoup scraper...\n\n");
                 return debugWithJsoup(url, report);
             }
+
+        } catch (Exception e) {
+            report.append("\n✗ ERROR initializing Playwright: ").append(e.getMessage()).append("\n");
             
             report.append("\nStack trace:\n");
             for (StackTraceElement element : e.getStackTrace()) {
                 report.append("  ").append(element.toString()).append("\n");
             }
-        } finally {
-            if (driver != null) {
-                try {
-                    driver.quit();
-                } catch (Exception e) {
-                    report.append("\n⚠ Warning: Error closing driver: ").append(e.getMessage()).append("\n");
-                }
-            }
+            
+            report.append("\nFalling back to Jsoup scraper...\n\n");
+            return debugWithJsoup(url, report);
         }
 
         return report.toString();
     }
     
     /**
-     * Fallback debug using Jsoup (for ARM64 or when Chrome fails)
+     * Fallback debug using Jsoup (when Playwright fails)
      */
     private String debugWithJsoup(String url, StringBuilder existingReport) {
         StringBuilder report = existingReport != null ? existingReport : new StringBuilder();
@@ -217,7 +185,7 @@ public class CalendarDebugger {
             report.append("--- Date Pattern Detection ---\n");
             Pattern datePattern = Pattern.compile("\\b(\\d{1,2})[/-](\\d{1,2})[/-](\\d{2,4})\\b|" +
                     "\\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \\d{1,2}\\b");
-            java.util.regex.Matcher dateMatcher = datePattern.matcher(bodyText);
+            Matcher dateMatcher = datePattern.matcher(bodyText);
             int dateCount = 0;
             while (dateMatcher.find() && dateCount < 5) {
                 report.append("  - ").append(dateMatcher.group()).append("\n");

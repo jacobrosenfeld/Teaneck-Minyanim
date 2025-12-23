@@ -9,29 +9,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Hybrid scraper that tries headless Chrome first, then falls back to Jsoup
- * This handles architecture issues (e.g., ARM64) gracefully
+ * Hybrid scraper that tries Playwright first, then falls back to Jsoup
+ * Playwright has excellent ARM64 support and handles JavaScript calendars
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class HybridCalendarScraper {
     
-    private final HeadlessChromeScraper chromeScraper;
+    private final PlaywrightCalendarScraper playwrightScraper;
     private final CalendarScraper jsoupScraper;
     
-    private volatile boolean chromeFailed = false; // Cache failure state
-    private volatile String chromeFailureReason = null;
+    private volatile boolean playwrightFailed = false; // Cache failure state
+    private volatile String playwrightFailureReason = null;
     
     /**
      * Scrape calendar with automatic fallback
-     * - Try headless Chrome first (handles JavaScript, SSL)
-     * - Fall back to Jsoup if Chrome fails (e.g., ARM64 architecture)
+     * - Try Playwright first (handles JavaScript, SSL, works on ARM64)
+     * - Fall back to Jsoup if Playwright fails
      */
     public List<ScrapedCalendarEntry> scrapeCalendar(String url, LocalDate startDate, LocalDate endDate) {
-        // If Chrome previously failed, skip straight to Jsoup
-        if (chromeFailed) {
-            log.info("Using Jsoup scraper (Chrome previously failed: {})", chromeFailureReason);
+        // If Playwright previously failed, skip straight to Jsoup
+        if (playwrightFailed) {
+            log.info("Using Jsoup scraper (Playwright previously failed: {})", playwrightFailureReason);
             try {
                 return jsoupScraper.scrapeCalendar(url, startDate, endDate);
             } catch (Exception e) {
@@ -40,19 +40,19 @@ public class HybridCalendarScraper {
             }
         }
         
-        // Try Chrome first
-        log.info("Attempting scrape with headless Chrome...");
+        // Try Playwright first
+        log.info("Attempting scrape with Playwright...");
         try {
-            List<ScrapedCalendarEntry> entries = chromeScraper.scrapeCalendar(url, startDate, endDate);
+            List<ScrapedCalendarEntry> entries = playwrightScraper.scrapeCalendar(url, startDate, endDate);
             
             // Success - return results (even if empty)
             if (!entries.isEmpty()) {
-                log.info("Chrome scraper succeeded: {} entries", entries.size());
+                log.info("Playwright scraper succeeded: {} entries", entries.size());
                 return entries;
             }
             
-            // Chrome worked but found nothing - still try Jsoup as backup
-            log.info("Chrome scraper found no entries, trying Jsoup as fallback...");
+            // Playwright worked but found nothing - still try Jsoup as backup
+            log.info("Playwright scraper found no entries, trying Jsoup as fallback...");
             try {
                 List<ScrapedCalendarEntry> jsoupEntries = jsoupScraper.scrapeCalendar(url, startDate, endDate);
                 
@@ -65,22 +65,15 @@ public class HybridCalendarScraper {
             }
             
             // Both found nothing - return empty list
-            log.warn("Both Chrome and Jsoup found no entries at {}", url);
+            log.warn("Both Playwright and Jsoup found no entries at {}", url);
             return entries;
             
         } catch (Exception e) {
-            // Chrome failed - mark it and fall back to Jsoup permanently
+            // Playwright failed - mark it and fall back to Jsoup permanently
             String errorMsg = e.getMessage();
-            log.warn("Headless Chrome failed ({}), falling back to Jsoup scraper", errorMsg);
+            log.warn("Playwright failed ({}), falling back to Jsoup scraper", errorMsg);
             
-            // Check if this is an architecture issue (ARM64)
-            if (errorMsg != null && (errorMsg.contains("cannot execute binary file") 
-                    || errorMsg.contains("ChromeDriver") 
-                    || errorMsg.contains("WebDriverManager"))) {
-                chromeFailed = true;
-                chromeFailureReason = "Architecture incompatibility (likely ARM64)";
-                log.error("Chrome scraper disabled: {}. All future scrapes will use Jsoup.", chromeFailureReason);
-            }
+            log.warn("Playwright scraper disabled due to error. All future scrapes will use Jsoup.");
             
             // Try Jsoup
             try {
@@ -89,31 +82,31 @@ public class HybridCalendarScraper {
                 return entries;
             } catch (Exception jsoupError) {
                 log.error("Jsoup fallback also failed: {}", jsoupError.getMessage());
-                throw new RuntimeException("Both Chrome and Jsoup scrapers failed", jsoupError);
+                throw new RuntimeException("Both Playwright and Jsoup scrapers failed", jsoupError);
             }
         }
     }
     
     /**
-     * Check if Chrome scraper is available
+     * Check if Playwright scraper is available
      */
-    public boolean isChromeAvailable() {
-        return !chromeFailed;
+    public boolean isPlaywrightAvailable() {
+        return !playwrightFailed;
     }
     
     /**
-     * Get the reason Chrome failed (if applicable)
+     * Get the reason Playwright failed (if applicable)
      */
-    public String getChromeFailureReason() {
-        return chromeFailureReason;
+    public String getPlaywrightFailureReason() {
+        return playwrightFailureReason;
     }
     
     /**
-     * Reset Chrome failure state (for testing/retry)
+     * Reset Playwright failure state (for testing/retry)
      */
-    public void resetChromeState() {
-        chromeFailed = false;
-        chromeFailureReason = null;
-        log.info("Chrome scraper state reset - will retry on next scrape");
+    public void resetPlaywrightState() {
+        playwrightFailed = false;
+        playwrightFailureReason = null;
+        log.info("Playwright scraper state reset - will retry on next scrape");
     }
 }
