@@ -47,6 +47,7 @@ public class ZmanimService {
     private final LocationService locationDAO;
     private final OrganizationService organizationDAO;
     private final MinyanService minyanService;
+    private final com.tbdev.teaneckminyanim.service.provider.OrgScheduleResolver scheduleResolver;
 
 
     public ModelAndView getZmanim(Date date) {
@@ -443,12 +444,26 @@ public class ZmanimService {
             throw new Exception("Sorry, there was an error finding the organization.");
         }
 
-        List<Minyan> enabledMinyanim = minyanService.findEnabledMatching(orgId);
         List<MinyanEvent> minyanEvents = new ArrayList<>();
-        // boolean usesLocations;
-        // boolean nusachChanges;
-        // Nusach lastNusach;
-        // boolean usesNotes;
+        
+        // Check if calendar import is enabled for this organization
+        boolean useCalendarImport = scheduleResolver.isCalendarImportEnabled(orgId);
+        
+        if (useCalendarImport) {
+            log.info("Using calendar import provider for organization: {}", orgId);
+            // Get events from calendar import provider
+            LocalDate localDateRef = dateToLocalDate(date);
+            List<MinyanEvent> calendarEvents = scheduleResolver.getEventsForDate(orgId, localDateRef);
+            minyanEvents.addAll(calendarEvents);
+            log.info("Added {} calendar-imported events", calendarEvents.size());
+        } else {
+            log.info("Using rule-based provider for organization: {}", orgId);
+            // Use existing rule-based logic
+            List<Minyan> enabledMinyanim = minyanService.findEnabledMatching(orgId);
+            // boolean usesLocations;
+            // boolean nusachChanges;
+            // Nusach lastNusach;
+            // boolean usesNotes;
 
         for (Minyan minyan : enabledMinyanim) {
             LocalDate ref = dateToLocalDate(date);
@@ -583,6 +598,8 @@ public class ZmanimService {
                 }
             }
         }
+        } // End of else block for rule-based provider
+        
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
         mv.getModel().put("allminyanim", minyanEvents);
 
@@ -602,7 +619,10 @@ public class ZmanimService {
         // upcoming minyanim for org
         List<MinyanEvent> nextMinyan = new ArrayList<>();
 
-        for (Minyan minyan : enabledMinyanim) {
+        // Only compute "next minyan" for rule-based (calendar import doesn't need this special logic)
+        if (!useCalendarImport) {
+            List<Minyan> enabledMinyanim2 = minyanService.findEnabledMatching(orgId);
+            for (Minyan minyan : enabledMinyanim2) {
             LocalDate ref = dateToLocalDate(today);
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
@@ -745,6 +765,8 @@ public class ZmanimService {
                 }
             }
         }
+        } // End of if (!useCalendarImport) for nextMinyan
+        
         nextMinyan.sort(Comparator.comparing(MinyanEvent::getStartTime));
         
         // Populate organization slugs for next minyan events

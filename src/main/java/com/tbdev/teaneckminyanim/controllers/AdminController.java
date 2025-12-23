@@ -561,7 +561,9 @@ public class AdminController {
                                            @RequestParam(value = "site-url", required = false) String siteURIString,
                                            @RequestParam(value = "nusach", required = true) String nusachString,
                                            @RequestParam(value = "orgColor", required = true) String orgColor,
-                                           @RequestParam(value = "url-slug", required = false) String urlSlug) throws Exception {
+                                           @RequestParam(value = "url-slug", required = false) String urlSlug,
+                                           @RequestParam(value = "calendar", required = false) String calendar,
+                                           @RequestParam(value = "useScrapedCalendar", required = false) Boolean useScrapedCalendar) throws Exception {
 
 //        validate input
         if (name == null || name.isEmpty()) {
@@ -591,6 +593,8 @@ public class AdminController {
                 .nusach(nusach)
                 .orgColor(orgColor)
                 .urlSlug(urlSlug)
+                .calendar(calendar)
+                .useScrapedCalendar(useScrapedCalendar != null ? useScrapedCalendar : false)
                 .build();
 
         // Ensure organization has a slug (generate from name if not provided)
@@ -1600,4 +1604,152 @@ public class AdminController {
             }
         }
     }
+
+    // ==================== Calendar Import Endpoints ====================
+
+    /**
+     * Manual trigger for calendar import for a specific organization
+     */
+    @PostMapping("/admin/{orgId}/calendar/import")
+    public ModelAndView triggerCalendarImport(@PathVariable String orgId) {
+        if (!isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to access this page.");
+        }
+
+        try {
+            Organization org = getOrganization(orgId);
+            if (org == null) {
+                ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
+                mv.addObject("errorMessage", "Organization not found");
+                return mv;
+            }
+
+            // Check if calendar URL is configured
+            if (org.getCalendar() == null || org.getCalendar().trim().isEmpty()) {
+                ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
+                mv.addObject("errorMessage", "No calendar URL configured");
+                return mv;
+            }
+
+            // Trigger import
+            com.tbdev.teaneckminyanim.service.calendar.CalendarImportService importService = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.service.calendar.CalendarImportService.class);
+            
+            com.tbdev.teaneckminyanim.service.calendar.CalendarImportService.ImportResult result = 
+                    importService.importCalendarForOrganization(orgId);
+
+            ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
+            
+            if (result.success) {
+                mv.addObject("successMessage", 
+                        String.format("Import successful: %d new, %d updated, %d duplicates skipped",
+                                result.newEntries, result.updatedEntries, result.duplicatesSkipped));
+            } else {
+                mv.addObject("errorMessage", "Import failed: " + result.errorMessage);
+            }
+            
+            return mv;
+
+        } catch (Exception e) {
+            ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
+            mv.addObject("errorMessage", "Import error: " + e.getMessage());
+            return mv;
+        }
+    }
+
+    /**
+     * View and manage imported calendar entries for an organization
+     */
+    @GetMapping("/admin/{orgId}/calendar-entries")
+    public ModelAndView viewCalendarEntries(@PathVariable String orgId,
+                                           @RequestParam(required = false) String successMessage,
+                                           @RequestParam(required = false) String errorMessage) {
+        if (!isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to access this page.");
+        }
+
+        ModelAndView mv = new ModelAndView("admin/calendar-entries");
+        addStandardPageData(mv);
+
+        try {
+            Organization org = getOrganization(orgId);
+            if (org == null) {
+                mv.setViewName("redirect:/admin");
+                return mv;
+            }
+
+            mv.addObject("organization", org);
+
+            // Get repository bean
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
+
+            // Get all entries for this organization
+            List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entries = 
+                    entryRepo.findByOrganizationIdOrderByDateDesc(orgId);
+
+            mv.addObject("entries", entries);
+            mv.addObject("totalEntries", entries.size());
+            mv.addObject("enabledCount", entries.stream().filter(e -> e.isEnabled()).count());
+            mv.addObject("disabledCount", entries.stream().filter(e -> !e.isEnabled()).count());
+
+            if (successMessage != null) {
+                mv.addObject("successMessage", successMessage);
+            }
+            if (errorMessage != null) {
+                mv.addObject("errorMessage", errorMessage);
+            }
+
+        } catch (Exception e) {
+            mv.addObject("errorMessage", "Error loading calendar entries: " + e.getMessage());
+        }
+
+        return mv;
+    }
+
+    /**
+     * Toggle enabled/disabled status for a calendar entry
+     */
+    @PostMapping("/admin/{orgId}/calendar-entries/{entryId}/toggle")
+    public RedirectView toggleCalendarEntry(@PathVariable String orgId, @PathVariable Long entryId) {
+        if (!isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to perform this action.");
+        }
+
+        try {
+            Organization org = getOrganization(orgId);
+            if (org == null) {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
+            }
+
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
+
+            Optional<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entryOpt = 
+                    entryRepo.findById(entryId);
+
+            if (entryOpt.isPresent()) {
+                com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry entry = entryOpt.get();
+                
+                // Verify entry belongs to this organization
+                if (!entry.getOrganizationId().equals(orgId)) {
+                    throw new AccessDeniedException("Entry does not belong to this organization");
+                }
+
+                // Toggle enabled status
+                entry.setEnabled(!entry.isEnabled());
+                entryRepo.save(entry);
+
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Entry+status+updated");
+            } else {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Entry+not+found");
+            }
+
+        } catch (Exception e) {
+            return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=" + e.getMessage());
+        }
+    }
+
+    @Autowired
+    private org.springframework.context.ApplicationContext applicationContext;
 }
