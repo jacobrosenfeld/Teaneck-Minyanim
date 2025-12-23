@@ -37,6 +37,8 @@ public class CalendarScraper {
         Document doc = Jsoup.connect(url)
                 .userAgent(USER_AGENT)
                 .timeout(TIMEOUT_MS)
+                .ignoreHttpErrors(true)  // Ignore HTTP errors
+                .ignoreContentType(true)  // Allow any content type
                 .get();
 
         log.debug("Downloaded HTML, size: {} bytes", doc.html().length());
