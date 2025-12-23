@@ -561,7 +561,9 @@ public class AdminController {
                                            @RequestParam(value = "site-url", required = false) String siteURIString,
                                            @RequestParam(value = "nusach", required = true) String nusachString,
                                            @RequestParam(value = "orgColor", required = true) String orgColor,
-                                           @RequestParam(value = "url-slug", required = false) String urlSlug) throws Exception {
+                                           @RequestParam(value = "url-slug", required = false) String urlSlug,
+                                           @RequestParam(value = "calendar", required = false) String calendar,
+                                           @RequestParam(value = "useScrapedCalendar", required = false) Boolean useScrapedCalendar) throws Exception {
 
 //        validate input
         if (name == null || name.isEmpty()) {
@@ -591,6 +593,8 @@ public class AdminController {
                 .nusach(nusach)
                 .orgColor(orgColor)
                 .urlSlug(urlSlug)
+                .calendar(calendar)
+                .useScrapedCalendar(useScrapedCalendar != null ? useScrapedCalendar : false)
                 .build();
 
         // Ensure organization has a slug (generate from name if not provided)
