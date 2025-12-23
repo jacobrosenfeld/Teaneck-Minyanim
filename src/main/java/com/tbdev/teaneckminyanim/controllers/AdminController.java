@@ -1613,6 +1613,29 @@ public class AdminController {
     @Autowired
     private com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository calendarEntryRepository;
 
+    @Autowired
+    private com.tbdev.teaneckminyanim.calendar.CalendarDebugger calendarDebugger;
+
+    /**
+     * Debug calendar page to see what can be scraped
+     */
+    @GetMapping("/admin/{organizationId}/debug-calendar")
+    @ResponseBody
+    public String debugCalendar(@PathVariable("organizationId") String organizationId) {
+        Organization org = getOrganization(organizationId);
+        if (org == null) {
+            return "Error: Organization not found";
+        }
+
+        String calendarUrl = org.getCalendar();
+        if (calendarUrl == null || calendarUrl.trim().isEmpty()) {
+            return "Error: No calendar URL configured for this organization";
+        }
+
+        log.info("Debug analysis requested for calendar: {}", calendarUrl);
+        return calendarDebugger.debugCalendarPage(calendarUrl);
+    }
+
     /**
      * Trigger manual calendar sync for an organization
      */
