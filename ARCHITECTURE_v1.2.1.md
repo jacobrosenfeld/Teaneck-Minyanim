@@ -21,7 +21,7 @@ ZmanimService → Public UI
 ### Key Components
 
 #### 1. Data Model (`model/`)
-- **Organization**: Added `use_scraped_calendar` boolean field
+- **Organization**: Added `use_scraped_calendar` Boolean field (nullable, defaults to false)
 - **OrganizationCalendarEntry**: New entity storing imported events
   - Fields: date, start_time, title, type, location, description, hebrew_date
   - Includes: fingerprint (for deduplication), enabled flag, timestamps

@@ -146,7 +146,7 @@ public class CalendarImportService {
         for (Organization org : orgs) {
             // Check if calendar import is enabled for this organization
             if (org.getCalendar() != null && !org.getCalendar().trim().isEmpty() 
-                    && org.isUseScrapedCalendar()) {
+                    && Boolean.TRUE.equals(org.getUseScrapedCalendar())) {
                 
                 log.info("Importing calendar for organization: {} ({})", org.getName(), org.getId());
                 

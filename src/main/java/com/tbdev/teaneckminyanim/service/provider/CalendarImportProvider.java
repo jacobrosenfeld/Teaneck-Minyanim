@@ -80,7 +80,7 @@ public class CalendarImportProvider implements OrgScheduleProvider {
         // 2. useScrapedCalendar is enabled
         boolean canHandle = org.getCalendar() != null 
                 && !org.getCalendar().trim().isEmpty()
-                && org.isUseScrapedCalendar();
+                && Boolean.TRUE.equals(org.getUseScrapedCalendar());
         
         log.debug("CalendarImportProvider.canHandle({}) = {}", organizationId, canHandle);
         return canHandle;

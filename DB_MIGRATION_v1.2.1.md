@@ -7,8 +7,18 @@ This migration adds support for importing calendar entries from CSV exports to o
 
 ### 1. Add column to ORGANIZATION table
 ```sql
+-- Add the column allowing NULL initially for existing data
 ALTER TABLE organization 
-ADD COLUMN USE_SCRAPED_CALENDAR BOOLEAN DEFAULT FALSE NOT NULL;
+ADD COLUMN USE_SCRAPED_CALENDAR BOOLEAN DEFAULT FALSE;
+
+-- Update existing rows to have FALSE value
+UPDATE organization SET USE_SCRAPED_CALENDAR = FALSE WHERE USE_SCRAPED_CALENDAR IS NULL;
+```
+
+**Note**: The column is defined as `BOOLEAN` (not `NOT NULL`) to allow existing organizations to have NULL values initially. The application handles NULL as FALSE. If you want to enforce NOT NULL, run the UPDATE statement first, then:
+
+```sql
+ALTER TABLE organization MODIFY COLUMN USE_SCRAPED_CALENDAR BOOLEAN DEFAULT FALSE NOT NULL;
 ```
 
 ### 2. Create ORGANIZATION_CALENDAR_ENTRY table
