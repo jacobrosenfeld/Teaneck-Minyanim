@@ -40,6 +40,9 @@ public class Organization {
     @Column(name = "CALENDAR")
     private String calendar;
 
+    @Column(name = "USE_SCRAPED_CALENDAR", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean useScrapedCalendar = false;
+
     @Column(name = "URL_SLUG", unique = true)
     private String urlSlug;
 
