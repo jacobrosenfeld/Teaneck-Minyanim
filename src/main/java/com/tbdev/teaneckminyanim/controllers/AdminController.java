@@ -10,6 +10,7 @@ import com.tbdev.teaneckminyanim.minyan.MinyanTime;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.minyan.Schedule;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 import static com.tbdev.teaneckminyanim.enums.Role.ADMIN;
 
+@Slf4j
 @Controller
 public class AdminController {
     @Autowired
@@ -1661,9 +1663,19 @@ public class AdminController {
      * View and manage imported calendar entries for an organization
      */
     @GetMapping("/admin/{orgId}/calendar-entries")
-    public ModelAndView viewCalendarEntries(@PathVariable String orgId,
-                                           @RequestParam(required = false) String successMessage,
-                                           @RequestParam(required = false) String errorMessage) {
+    public ModelAndView viewCalendarEntries(
+            @PathVariable String orgId,
+            @RequestParam(required = false) String successMessage,
+            @RequestParam(required = false) String errorMessage,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
+            @RequestParam(required = false) String filterClassification,
+            @RequestParam(required = false) String filterEnabled,
+            @RequestParam(required = false) String searchText,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false, defaultValue = "false") Boolean showNonMinyan) {
+        
         if (!isAdmin()) {
             throw new AccessDeniedException("You do not have permission to access this page.");
         }
@@ -1684,14 +1696,42 @@ public class AdminController {
             com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
                     applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
 
-            // Get all entries for this organization
+            // Build sort
+            org.springframework.data.domain.Sort sort = buildSort(sortBy, sortDir);
+
+            // Get entries with filtering
             List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entries = 
-                    entryRepo.findByOrganizationIdOrderByDateDesc(orgId);
+                    getFilteredEntries(entryRepo, orgId, filterClassification, filterEnabled, 
+                                     searchText, startDate, endDate, showNonMinyan, sort);
+
+            // Calculate statistics
+            long totalEntries = entryRepo.countByOrganizationId(orgId);
+            long enabledCount = entries.stream().filter(e -> e.isEnabled()).count();
+            long disabledCount = entries.stream().filter(e -> !e.isEnabled()).count();
+            long minyanCount = entries.stream()
+                    .filter(e -> e.getClassification() != null && e.getClassification().isMinyan())
+                    .count();
+            long nonMinyanCount = entries.stream()
+                    .filter(e -> e.getClassification() != null && e.getClassification().isNonMinyan())
+                    .count();
 
             mv.addObject("entries", entries);
-            mv.addObject("totalEntries", entries.size());
-            mv.addObject("enabledCount", entries.stream().filter(e -> e.isEnabled()).count());
-            mv.addObject("disabledCount", entries.stream().filter(e -> !e.isEnabled()).count());
+            mv.addObject("totalEntries", totalEntries);
+            mv.addObject("filteredCount", entries.size());
+            mv.addObject("enabledCount", enabledCount);
+            mv.addObject("disabledCount", disabledCount);
+            mv.addObject("minyanCount", minyanCount);
+            mv.addObject("nonMinyanCount", nonMinyanCount);
+
+            // Add filter/sort parameters back to view for persistence
+            mv.addObject("sortBy", sortBy != null ? sortBy : "date");
+            mv.addObject("sortDir", sortDir != null ? sortDir : "desc");
+            mv.addObject("filterClassification", filterClassification);
+            mv.addObject("filterEnabled", filterEnabled);
+            mv.addObject("searchText", searchText);
+            mv.addObject("startDate", startDate);
+            mv.addObject("endDate", endDate);
+            mv.addObject("showNonMinyan", showNonMinyan);
 
             if (successMessage != null) {
                 mv.addObject("successMessage", successMessage);
@@ -1702,9 +1742,114 @@ public class AdminController {
 
         } catch (Exception e) {
             mv.addObject("errorMessage", "Error loading calendar entries: " + e.getMessage());
+            log.error("Error loading calendar entries for org {}", orgId, e);
         }
 
         return mv;
+    }
+
+    /**
+     * Build Sort object from request parameters
+     */
+    private org.springframework.data.domain.Sort buildSort(String sortBy, String sortDir) {
+        String sortField = sortBy != null ? sortBy : "date";
+        org.springframework.data.domain.Sort.Direction direction = 
+                "asc".equalsIgnoreCase(sortDir) ? 
+                org.springframework.data.domain.Sort.Direction.ASC : 
+                org.springframework.data.domain.Sort.Direction.DESC;
+
+        // Map sort field names to entity field names
+        switch (sortField) {
+            case "time":
+                sortField = "startTime";
+                break;
+            case "title":
+                sortField = "title";
+                break;
+            case "type":
+                sortField = "classification";
+                break;
+            case "enabled":
+                sortField = "enabled";
+                break;
+            case "importedAt":
+                sortField = "importedAt";
+                break;
+            default:
+                sortField = "date";
+        }
+
+        return org.springframework.data.domain.Sort.by(direction, sortField)
+                .and(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "startTime"));
+    }
+
+    /**
+     * Get filtered entries based on request parameters
+     */
+    private List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> getFilteredEntries(
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo,
+            String orgId,
+            String filterClassification,
+            String filterEnabled,
+            String searchText,
+            String startDate,
+            String endDate,
+            Boolean showNonMinyan,
+            org.springframework.data.domain.Sort sort) {
+        
+        List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entries;
+
+        // Apply text search if provided
+        if (searchText != null && !searchText.trim().isEmpty()) {
+            entries = entryRepo.searchByText(orgId, searchText.trim(), sort);
+        }
+        // Apply date range filter if provided
+        else if (startDate != null && endDate != null && !startDate.isEmpty() && !endDate.isEmpty()) {
+            try {
+                java.time.LocalDate start = java.time.LocalDate.parse(startDate);
+                java.time.LocalDate end = java.time.LocalDate.parse(endDate);
+                
+                com.tbdev.teaneckminyanim.enums.MinyanClassification classification = null;
+                if (filterClassification != null && !filterClassification.isEmpty()) {
+                    classification = com.tbdev.teaneckminyanim.enums.MinyanClassification.fromString(filterClassification);
+                }
+                
+                entries = entryRepo.findInRangeWithClassification(orgId, start, end, classification, sort);
+            } catch (Exception e) {
+                log.warn("Error parsing date range: {} to {}", startDate, endDate, e);
+                entries = entryRepo.findByOrganizationId(orgId, sort);
+            }
+        }
+        // Apply classification filter
+        else if (filterClassification != null && !filterClassification.isEmpty()) {
+            try {
+                com.tbdev.teaneckminyanim.enums.MinyanClassification classification = 
+                        com.tbdev.teaneckminyanim.enums.MinyanClassification.fromString(filterClassification);
+                entries = entryRepo.findByOrganizationIdAndClassification(orgId, classification, sort);
+            } catch (Exception e) {
+                log.warn("Error parsing classification: {}", filterClassification, e);
+                entries = entryRepo.findByOrganizationId(orgId, sort);
+            }
+        }
+        // Apply enabled filter
+        else if (filterEnabled != null && !filterEnabled.isEmpty()) {
+            boolean enabled = "true".equalsIgnoreCase(filterEnabled);
+            entries = entryRepo.findByOrganizationIdAndEnabled(orgId, enabled, sort);
+        }
+        // Default: get all entries
+        else {
+            entries = entryRepo.findByOrganizationId(orgId, sort);
+        }
+
+        // Filter out non-minyan entries by default unless showNonMinyan is true
+        if (!showNonMinyan) {
+            entries = entries.stream()
+                    .filter(e -> e.getClassification() == null || 
+                                !e.getClassification().isNonMinyan())
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        return entries;
     }
 
     /**
