@@ -32,21 +32,31 @@ public class CalendarScraper {
      * Scrape calendar entries from a URL
      */
     public List<ScrapedCalendarEntry> scrapeCalendar(String url, LocalDate startDate, LocalDate endDate) throws IOException {
-        log.info("Scraping calendar from URL: {}", url);
+        log.info("Scraping calendar from URL: {} (date range: {} to {})", url, startDate, endDate);
 
         Document doc = Jsoup.connect(url)
                 .userAgent(USER_AGENT)
                 .timeout(TIMEOUT_MS)
                 .get();
 
+        log.debug("Downloaded HTML, size: {} bytes", doc.html().length());
+
         List<ScrapedCalendarEntry> entries = new ArrayList<>();
 
         // Try different common calendar structures
-        entries.addAll(parseGoogleCalendarEmbeds(doc, url, startDate, endDate));
-        entries.addAll(parseTableBasedCalendar(doc, url, startDate, endDate));
-        entries.addAll(parseListBasedCalendar(doc, url, startDate, endDate));
+        List<ScrapedCalendarEntry> googleEntries = parseGoogleCalendarEmbeds(doc, url, startDate, endDate);
+        log.debug("Found {} Google Calendar entries", googleEntries.size());
+        entries.addAll(googleEntries);
+        
+        List<ScrapedCalendarEntry> tableEntries = parseTableBasedCalendar(doc, url, startDate, endDate);
+        log.debug("Found {} table-based entries", tableEntries.size());
+        entries.addAll(tableEntries);
+        
+        List<ScrapedCalendarEntry> listEntries = parseListBasedCalendar(doc, url, startDate, endDate);
+        log.debug("Found {} list-based entries", listEntries.size());
+        entries.addAll(listEntries);
 
-        log.info("Scraped {} entries from {}", entries.size(), url);
+        log.info("Scraped {} total entries from {}", entries.size(), url);
         return entries;
     }
 

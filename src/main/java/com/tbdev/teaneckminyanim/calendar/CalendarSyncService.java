@@ -107,7 +107,23 @@ public class CalendarSyncService {
             LocalDate startDate = LocalDate.now().minusWeeks(WEEKS_TO_KEEP_PAST);
             LocalDate endDate = LocalDate.now().plusWeeks(WEEKS_TO_SCRAPE_AHEAD);
 
+            log.info("Attempting to scrape {} from {} to {}", calendarUrl, startDate, endDate);
             List<ScrapedCalendarEntry> scrapedEntries = scraper.scrapeCalendar(calendarUrl, startDate, endDate);
+            
+            if (scrapedEntries.isEmpty()) {
+                log.warn("No entries found for organization {} at URL {}", org.getName(), calendarUrl);
+                return CalendarSyncResult.builder()
+                        .organizationId(organizationId)
+                        .organizationName(org.getName())
+                        .success(true)
+                        .entriesAdded(0)
+                        .entriesUpdated(0)
+                        .entriesDisabled(0)
+                        .entriesSkipped(0)
+                        .errorMessage("No calendar entries found. The calendar format may not be supported or no events exist in the date range.")
+                        .syncTime(LocalDateTime.now())
+                        .build();
+            }
 
             int added = 0;
             int updated = 0;

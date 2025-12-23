@@ -86,13 +86,13 @@
                                     <!--                                        <div class="form-msg-success" th:text="${mainSuccess}"></div>-->
                                     <!--                                    </div>-->
                                     <button type="submit" class="btn btn-primary">Update</button>
-                                    <a th:if="${organization.calendar}" th:href="@{/admin/{orgId}/sync-calendar(orgId=${organization.id})}" class="btn btn-secondary" onclick="return confirm('This will scrape the calendar URL now. Continue?')">
-                                        <form th:action="@{/admin/{orgId}/sync-calendar(orgId=${organization.id})}" method="post" style="display:inline;">
-                                            <button type="submit" class="btn btn-secondary">Refresh Zmanim Sync</button>
-                                        </form>
-                                    </a>
-                                    <a th:if="${organization.calendar}" th:href="@{/admin/{orgId}/calendar-entries(orgId=${organization.id})}" class="btn btn-outline-primary">Manage Calendar Entries</a>
                                 </form>
+                                <div th:if="${organization.calendar}" class="mt-3">
+                                    <form th:action="@{/admin/{orgId}/sync-calendar(orgId=${organization.id})}" method="post" style="display:inline;" onsubmit="return confirm('This will scrape the calendar URL now. Continue?');">
+                                        <button type="submit" class="btn btn-secondary">Refresh Zmanim Sync</button>
+                                    </form>
+                                    <a th:href="@{/admin/{orgId}/calendar-entries(orgId=${organization.id})}" class="btn btn-outline-primary ml-2">Manage Calendar Entries</a>
+                                </div>
                             </div>
 
                             <hr>

@@ -1627,15 +1627,21 @@ public class AdminController {
 
         com.tbdev.teaneckminyanim.calendar.CalendarSyncResult result = calendarSyncService.syncOrganization(organizationId);
         
-        String message;
+        String message = null;
         String error = null;
         
         if (result.isSuccess()) {
-            message = String.format("Calendar sync completed successfully. Added: %d, Updated: %d, Disabled: %d, Skipped: %d",
-                    result.getEntriesAdded(), result.getEntriesUpdated(), result.getEntriesDisabled(), result.getEntriesSkipped());
+            if (result.getEntriesAdded() == 0 && result.getEntriesUpdated() == 0 && 
+                result.getEntriesDisabled() == 0 && result.getEntriesSkipped() == 0) {
+                // No entries processed - show warning
+                message = result.getErrorMessage() != null ? result.getErrorMessage() : 
+                         "Calendar sync completed but no entries were found.";
+            } else {
+                message = String.format("Calendar sync completed successfully. Added: %d, Updated: %d, Disabled: %d, Skipped: %d",
+                        result.getEntriesAdded(), result.getEntriesUpdated(), result.getEntriesDisabled(), result.getEntriesSkipped());
+            }
         } else {
             error = "Calendar sync failed: " + result.getErrorMessage();
-            message = null;
         }
         
         try {
