@@ -104,7 +104,7 @@ public class CalendarUrlBuilder {
                 builder.queryParam("status[]", "confirmed");
             }
 
-            String finalUrl = builder.build().toUriString();
+            String finalUrl = builder.encode().toUriString();
             log.debug("Built CSV export URL: {}", finalUrl);
             
             return finalUrl;
