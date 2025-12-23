@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 @Controller
 public class LoginController {
     @GetMapping("/admin/login")
@@ -13,6 +16,12 @@ public class LoginController {
         System.out.println("LoginController.login() called");
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/login");
+
+        // Add current time for navbar display
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a");
+        Date datenow = new Date();
+        String timenow = dateFormat.format(datenow);
+        mv.getModel().put("timenow", timenow);
 
         if (logout) {
             System.out.println("Logging out...");

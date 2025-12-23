@@ -58,13 +58,13 @@
 <body>
     <div class="wrapper">
         <!-- Navbar Section -->
-        <div id="wrapper" class="horizontal-container d-flex container-md">
-            <!-- <th:block th:include="frontnavbar"></th:block> -->
+        <div id="wrapper" class="horizontal-container d-flex container-xl">
+            <th:block th:include="frontnavbar"></th:block>
             <!-- Navbar End -->
-            <div class="container-fluid " id="main">
+            <div class="container-fluid home-container" id="main">
                 <div class="row" style="flex-direction: column;">
                     <main class="col main pt-5 mt-4 overflow-auto"
-                        style="flex-shrink: 3; padding-bottom: 65px!important;">
+                        style="flex-shrink: 3; padding-bottom: 65px!important; min-height: 70vh;">
                         <div class="row justify-content-center">
                             <div class="col-md-5" id="row-housing" style="padding: 1rem;">
                                 <!-- login box -->
@@ -106,6 +106,24 @@
             </div>
         </div>
     </div>
+    
+    <!-- Footer Section -->
+    <div class="footer-sm">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4">
+              <a class="footer-logo" href="https://teaneckminyanim.com">TB Dev</a>
+            </div>
+            <div class="col-md-4">
+              <h6>&copy; TB Dev and Teaneck Minyanim</h6>
+            </div>
+            <div class="col-md-4 text-end">
+              <h6><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h6>
+            </div>
+          </div>
+        </div>
+      </div>
+    
     <script th:src="@{/admin/login.js}"></script>
 </body>
 
