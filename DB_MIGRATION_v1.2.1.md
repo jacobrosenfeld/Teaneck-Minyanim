@@ -44,6 +44,7 @@ CREATE TABLE organization_calendar_entry (
     duplicate_reason VARCHAR(255),
     imported_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
+    scraped_at DATETIME NOT NULL,
     
     INDEX idx_org_date (organization_id, date),
     INDEX idx_org_enabled_date (organization_id, enabled, date),

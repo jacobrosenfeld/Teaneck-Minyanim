@@ -92,11 +92,15 @@ public class OrganizationCalendarEntry {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "scraped_at", nullable = false)
+    private LocalDateTime scrapedAt;
+
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
         importedAt = now;
         updatedAt = now;
+        scrapedAt = now;
     }
 
     @PreUpdate
