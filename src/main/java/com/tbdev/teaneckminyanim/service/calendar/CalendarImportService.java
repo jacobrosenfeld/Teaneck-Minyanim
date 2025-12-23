@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -36,6 +38,9 @@ public class CalendarImportService {
     private final CalendarCsvParser csvParser;
     private final OrganizationCalendarEntryRepository entryRepository;
     private final OrganizationService organizationService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private static final int HTTP_TIMEOUT_SECONDS = 30;
     private static final String USER_AGENT = "TeaneckMinyanim/1.2.1 (Calendar Import Bot)";
@@ -210,6 +215,7 @@ public class CalendarImportService {
 
     /**
      * Process parsed entries: deduplicate and save to database.
+     * Each entry is processed independently with proper error isolation.
      */
     private void processEntries(String organizationId, 
                                 List<CalendarCsvParser.ParsedEntry> parsedEntries,
@@ -252,8 +258,18 @@ public class CalendarImportService {
                     log.debug("Created new entry: {} on {}", newEntry.getTitle(), newEntry.getDate());
                 }
                 
+                // Flush and clear after each successful entry to ensure isolation
+                entityManager.flush();
+                entityManager.clear();
+                
             } catch (Exception e) {
-                log.warn("Failed to process entry: {}", parsed.getTitle(), e);
+                log.warn("Failed to process entry: {} on {}. Error: {}", 
+                        parsed.getTitle(), parsed.getDate(), e.getMessage(), e);
+                
+                // Critical: Clear the EntityManager to discard any invalid state
+                // This prevents "null id" assertion failures on subsequent operations
+                entityManager.clear();
+                
                 // Continue processing other entries
             }
         }
