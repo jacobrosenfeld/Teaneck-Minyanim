@@ -235,36 +235,56 @@ public class PlaywrightCalendarScraper {
 
     /**
      * Parse general text for date/time patterns
+     * This handles JavaScript-rendered React calendars where content is in the DOM
      */
     private List<ScrapedCalendarEntry> parseGeneralText(String html, String sourceUrl) {
         List<ScrapedCalendarEntry> entries = new ArrayList<>();
         
         try {
-            // Split by common delimiters
-            String[] lines = html.split("<br>|<div>|<p>|\\n");
+            // For React/modern JS calendars, the content is often in nested divs
+            // Extract all text content and look for patterns
+            String cleanText = html.replaceAll("<[^>]*>", " ").replaceAll("\\s+", " ");
             
-            for (String line : lines) {
-                // Remove HTML tags
-                String text = line.replaceAll("<[^>]*>", "").trim();
-                
-                if (containsMinyanKeyword(text)) {
-                    LocalDate date = extractDate(text);
-                    LocalTime time = normalizer.normalizeTime(text);
+            // Split into chunks by looking for date patterns
+            Pattern dateTimePattern = Pattern.compile(
+                "((?:January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2}).*?" +
+                "(\\d{1,2}:\\d{2}\\s*(?:am|pm|AM|PM)).*?" +
+                "(shacharit|shacharit|mincha|ma'?ariv|arvit|plag)",
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+            );
+            
+            Matcher matcher = dateTimePattern.matcher(cleanText);
+            
+            while (matcher.find()) {
+                try {
+                    String dateStr = matcher.group(1);
+                    String timeStr = matcher.group(2);
+                    String typeStr = matcher.group(3);
+                    
+                    LocalDate date = extractDate(dateStr);
+                    LocalTime time = normalizer.normalizeTime(timeStr);
                     
                     if (date != null && time != null) {
-                        String title = normalizer.normalizeTitle(text);
+                        String title = normalizer.normalizeTitle(typeStr);
+                        String rawText = (dateStr + " " + timeStr + " " + typeStr).trim();
                         
                         ScrapedCalendarEntry entry = ScrapedCalendarEntry.builder()
                                 .date(date)
                                 .time(time)
                                 .title(title)
-                                .rawText(text)
+                                .rawText(rawText)
                                 .sourceUrl(sourceUrl)
                                 .build();
                         entries.add(entry);
+                        
+                        log.debug("Parsed entry: {} at {} on {}", title, time, date);
                     }
+                } catch (Exception e) {
+                    log.debug("Failed to parse entry from match: {}", e.getMessage());
                 }
             }
+            
+            log.info("General text parsing found {} entries", entries.size());
             
         } catch (Exception e) {
             log.debug("General text parsing failed: {}", e.getMessage());
@@ -277,7 +297,47 @@ public class PlaywrightCalendarScraper {
      * Extract date from text
      */
     private LocalDate extractDate(String text) {
-        // Pattern: MM/DD/YYYY or DD/MM/YYYY or YYYY-MM-DD
+        // Try month name format first (e.g., "December 21, 2025" or "December 21")
+        Pattern monthNamePattern = Pattern.compile("(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(\\d{1,2}),?\\s*(\\d{4})?", Pattern.CASE_INSENSITIVE);
+        Matcher monthNameMatcher = monthNamePattern.matcher(text);
+        
+        if (monthNameMatcher.find()) {
+            try {
+                String monthName = monthNameMatcher.group(1);
+                int day = Integer.parseInt(monthNameMatcher.group(2));
+                String yearStr = monthNameMatcher.group(3);
+                int year = yearStr != null ? Integer.parseInt(yearStr) : LocalDate.now().getYear();
+                
+                int month = switch (monthName.toLowerCase()) {
+                    case "january" -> 1;
+                    case "february" -> 2;
+                    case "march" -> 3;
+                    case "april" -> 4;
+                    case "may" -> 5;
+                    case "june" -> 6;
+                    case "july" -> 7;
+                    case "august" -> 8;
+                    case "september" -> 9;
+                    case "october" -> 10;
+                    case "november" -> 11;
+                    case "december" -> 12;
+                    default -> 0;
+                };
+                
+                if (month > 0) {
+                    LocalDate date = LocalDate.of(year, month, day);
+                    // If the date is more than 6 months in the past, assume it's next year
+                    if (date.isBefore(LocalDate.now().minusMonths(6))) {
+                        date = date.plusYears(1);
+                    }
+                    return date;
+                }
+            } catch (Exception e) {
+                log.debug("Failed to parse month name date from: {}", monthNameMatcher.group());
+            }
+        }
+        
+        // Try numeric formats: MM/DD/YYYY or DD/MM/YYYY or YYYY-MM-DD
         Pattern datePattern = Pattern.compile("(\\d{1,2})/(\\d{1,2})/(\\d{4})|(\\d{4})-(\\d{2})-(\\d{2})");
         Matcher matcher = datePattern.matcher(text);
         
@@ -297,7 +357,7 @@ public class PlaywrightCalendarScraper {
                     return LocalDate.of(year, month, day);
                 }
             } catch (Exception e) {
-                log.debug("Failed to parse date from: {}", matcher.group());
+                log.debug("Failed to parse numeric date from: {}", matcher.group());
             }
         }
         
