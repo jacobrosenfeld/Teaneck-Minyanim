@@ -7,6 +7,7 @@ import com.tbdev.teaneckminyanim.service.OrganizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -59,11 +60,13 @@ public class CalendarImportService {
 
     /**
      * Import calendar entries for a single organization.
+     * Uses REQUIRES_NEW propagation to ensure this runs in its own transaction,
+     * preventing transaction rollback issues when exceptions are caught and handled.
      *
      * @param organizationId Organization ID
      * @return Import result with statistics
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ImportResult importCalendarForOrganization(String organizationId) {
         ImportResult result = new ImportResult();
         result.organizationId = organizationId;
