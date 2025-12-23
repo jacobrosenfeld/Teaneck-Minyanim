@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.model;
 
+import com.tbdev.teaneckminyanim.enums.MinyanClassification;
 import lombok.*;
 
 import javax.persistence.*;
@@ -85,6 +86,25 @@ public class OrganizationCalendarEntry {
 
     @Column(name = "duplicate_reason")
     private String duplicateReason;
+
+    /**
+     * Classification of this entry (MINYAN, MINCHA_MAARIV, NON_MINYAN, OTHER)
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "classification")
+    private MinyanClassification classification;
+
+    /**
+     * Explanation of why this entry was classified as it was
+     */
+    @Column(name = "classification_reason", columnDefinition = "TEXT")
+    private String classificationReason;
+
+    /**
+     * Additional notes (e.g., Shkiya time for Mincha/Maariv events)
+     */
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
 
     @Column(name = "imported_at", nullable = false)
     private LocalDateTime importedAt;

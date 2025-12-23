@@ -38,6 +38,7 @@ public class CalendarImportService {
     private final CalendarCsvParser csvParser;
     private final OrganizationCalendarEntryRepository entryRepository;
     private final OrganizationService organizationService;
+    private final MinyanClassifier minyanClassifier;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -282,6 +283,13 @@ public class CalendarImportService {
                                                   CalendarCsvParser.ParsedEntry parsed,
                                                   String fingerprint,
                                                   String sourceUrl) {
+        // Classify the entry
+        MinyanClassifier.ClassificationResult classificationResult = 
+            minyanClassifier.classify(parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate());
+        
+        // Normalize title to remove redundant words
+        String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
+        
         return OrganizationCalendarEntry.builder()
                 .organizationId(organizationId)
                 .date(parsed.getDate())
@@ -289,7 +297,7 @@ public class CalendarImportService {
                 .startDatetime(parsed.getStartDatetime())
                 .endTime(parsed.getEndTime())
                 .endDatetime(parsed.getEndDatetime())
-                .title(parsed.getTitle())
+                .title(normalizedTitle.isEmpty() ? parsed.getTitle() : normalizedTitle)
                 .type(parsed.getType())
                 .name(parsed.getName())
                 .location(parsed.getLocation())
@@ -298,6 +306,9 @@ public class CalendarImportService {
                 .rawText(parsed.getRawText())
                 .sourceUrl(sourceUrl)
                 .fingerprint(fingerprint)
+                .classification(classificationResult.classification)
+                .classificationReason(classificationResult.reason)
+                .notes(classificationResult.notes)
                 .enabled(true)
                 .importedAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -310,11 +321,18 @@ public class CalendarImportService {
     private void updateEntry(OrganizationCalendarEntry entry,
                             CalendarCsvParser.ParsedEntry parsed,
                             String sourceUrl) {
+        // Re-classify the entry
+        MinyanClassifier.ClassificationResult classificationResult = 
+            minyanClassifier.classify(parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate());
+        
+        // Normalize title to remove redundant words
+        String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
+        
         entry.setStartTime(parsed.getStartTime());
         entry.setStartDatetime(parsed.getStartDatetime());
         entry.setEndTime(parsed.getEndTime());
         entry.setEndDatetime(parsed.getEndDatetime());
-        entry.setTitle(parsed.getTitle());
+        entry.setTitle(normalizedTitle.isEmpty() ? parsed.getTitle() : normalizedTitle);
         entry.setType(parsed.getType());
         entry.setName(parsed.getName());
         entry.setLocation(parsed.getLocation());
@@ -322,6 +340,9 @@ public class CalendarImportService {
         entry.setHebrewDate(parsed.getHebrewDate());
         entry.setRawText(parsed.getRawText());
         entry.setSourceUrl(sourceUrl);
+        entry.setClassification(classificationResult.classification);
+        entry.setClassificationReason(classificationResult.reason);
+        entry.setNotes(classificationResult.notes);
         entry.setUpdatedAt(LocalDateTime.now());
     }
 
