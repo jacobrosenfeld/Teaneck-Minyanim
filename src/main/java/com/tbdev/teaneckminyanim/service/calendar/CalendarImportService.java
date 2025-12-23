@@ -123,6 +123,10 @@ public class CalendarImportService {
             log.info("Import completed for {}: {} new, {} updated, {} duplicates skipped",
                     org.getName(), result.newEntries, result.updatedEntries, result.duplicatesSkipped);
 
+        } catch (javax.net.ssl.SSLHandshakeException e) {
+            result.success = false;
+            result.errorMessage = "SSL certificate validation failed. This may be due to expired certificates on the server or missing CA certificates in the Java trust store. Details: " + e.getMessage();
+            log.error("SSL certificate error while importing calendar for organization: {}. The server's Java installation may need updated CA certificates. Try: 1) Update Java cacerts, 2) Import the site's certificate, or 3) Use HTTP if available.", organizationId, e);
         } catch (Exception e) {
             result.success = false;
             result.errorMessage = "Import failed: " + e.getMessage();
