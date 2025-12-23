@@ -39,3 +39,6 @@ src/.DS_Store
 src/main/resources/application.properties
 nohup.out
 application.properties
+
+# Calendar CSV exports
+calendar-exports/

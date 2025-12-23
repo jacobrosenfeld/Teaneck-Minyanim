@@ -25,7 +25,7 @@ public class CalendarSyncService {
 
     private final OrganizationService organizationService;
     private final OrganizationCalendarEntryRepository calendarEntryRepository;
-    private final HybridCalendarScraper hybridScraper;  // Hybrid scraper with Chrome/Jsoup fallback
+    private final CsvCalendarScraper csvScraper;  // CSV-based scraper (primary method)
     private final CalendarNormalizer normalizer;
 
     /**
@@ -108,7 +108,9 @@ public class CalendarSyncService {
             LocalDate endDate = LocalDate.now().plusWeeks(WEEKS_TO_SCRAPE_AHEAD);
 
             log.info("Attempting to scrape {} from {} to {}", calendarUrl, startDate, endDate);
-            List<ScrapedCalendarEntry> scrapedEntries = hybridScraper.scrapeCalendar(calendarUrl, startDate, endDate);
+            // Scrape calendar using CSV export
+            List<ScrapedCalendarEntry> scrapedEntries = csvScraper.scrapeCalendar(
+                    calendarUrl, organizationId, org.getName(), startDate, endDate);
             
             if (scrapedEntries.isEmpty()) {
                 log.warn("No entries found for organization {} at URL {}", org.getName(), calendarUrl);

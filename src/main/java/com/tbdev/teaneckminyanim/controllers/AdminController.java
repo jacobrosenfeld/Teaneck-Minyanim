@@ -1653,7 +1653,7 @@ public class AdminController {
             
             log.info("Organization: {}", org.getName());
             log.info("Calendar URL: {}", org.getCalendar());
-            log.info("Use Scraped Calendar: {}", org.isUseScrapedCalendar());
+            log.info("Use Scraped Calendar: {}", org.getUseScrapedCalendar());
 
             com.tbdev.teaneckminyanim.calendar.CalendarSyncResult result = calendarSyncService.syncOrganization(organizationId);
             
