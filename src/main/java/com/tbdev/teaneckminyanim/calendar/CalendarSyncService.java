@@ -25,7 +25,7 @@ public class CalendarSyncService {
 
     private final OrganizationService organizationService;
     private final OrganizationCalendarEntryRepository calendarEntryRepository;
-    private final HeadlessChromeScraper chromeScraper;  // Use headless Chrome instead of Jsoup
+    private final HybridCalendarScraper hybridScraper;  // Hybrid scraper with Chrome/Jsoup fallback
     private final CalendarNormalizer normalizer;
 
     /**
@@ -108,7 +108,7 @@ public class CalendarSyncService {
             LocalDate endDate = LocalDate.now().plusWeeks(WEEKS_TO_SCRAPE_AHEAD);
 
             log.info("Attempting to scrape {} from {} to {}", calendarUrl, startDate, endDate);
-            List<ScrapedCalendarEntry> scrapedEntries = chromeScraper.scrapeCalendar(calendarUrl, startDate, endDate);
+            List<ScrapedCalendarEntry> scrapedEntries = hybridScraper.scrapeCalendar(calendarUrl, startDate, endDate);
             
             if (scrapedEntries.isEmpty()) {
                 log.warn("No entries found for organization {} at URL {}", org.getName(), calendarUrl);

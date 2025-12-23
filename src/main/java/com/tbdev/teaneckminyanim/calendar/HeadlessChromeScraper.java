@@ -33,6 +33,7 @@ public class HeadlessChromeScraper {
 
     /**
      * Scrape calendar entries using headless Chrome
+     * Falls back to Jsoup if Chrome fails (e.g., ARM64 architecture issues)
      */
     public List<ScrapedCalendarEntry> scrapeCalendar(String url, LocalDate startDate, LocalDate endDate) {
         log.info("Scraping calendar with headless Chrome from URL: {} (date range: {} to {})", url, startDate, endDate);
@@ -87,22 +88,54 @@ public class HeadlessChromeScraper {
 
     /**
      * Create a headless Chrome WebDriver instance
+     * Updated to use chrome-headless-shell and system-installed Chromium
      */
     private WebDriver createHeadlessDriver() {
         try {
-            // Setup ChromeDriver automatically
-            WebDriverManager.chromedriver().setup();
-            
             ChromeOptions options = new ChromeOptions();
+            
+            // Try to use system-installed Chromium first
+            // Common paths for Chromium on Linux
+            String[] chromiumPaths = {
+                "/usr/bin/chromium",           // Debian/Ubuntu via yum
+                "/usr/bin/chromium-browser",   // Standard Ubuntu/Debian
+                "/usr/bin/google-chrome",      // Google Chrome
+                "/usr/bin/chrome-headless-shell" // Chrome headless shell
+            };
+            
+            boolean chromiumFound = false;
+            for (String path : chromiumPaths) {
+                java.io.File chromiumBinary = new java.io.File(path);
+                if (chromiumBinary.exists() && chromiumBinary.canExecute()) {
+                    options.setBinary(path);
+                    chromiumFound = true;
+                    log.info("Using system Chromium at: {}", path);
+                    break;
+                }
+            }
+            
+            if (!chromiumFound) {
+                log.info("System Chromium not found, falling back to WebDriverManager");
+                // Let WebDriverManager handle it
+                WebDriverManager.chromedriver().setup();
+            }
+            
+            // Headless options
             options.addArguments("--headless=new");  // New headless mode (Chrome 109+)
             options.addArguments("--no-sandbox");  // Required for Docker/containerized environments
             options.addArguments("--disable-dev-shm-usage");  // Overcome limited resource problems
-            options.addArguments("--disable-gpu");  // Applicable to Windows
+            options.addArguments("--disable-gpu");  // Disable GPU
+            options.addArguments("--disable-software-rasterizer");  // Disable software rasterizer
             options.addArguments("--window-size=1920,1080");  // Set viewport size
             options.addArguments("--user-agent=Teaneck-Minyanim/1.2 (Calendar Sync Bot)");
             options.addArguments("--disable-blink-features=AutomationControlled");  // Avoid detection
             options.addArguments("--ignore-certificate-errors");  // Ignore SSL errors
+            options.addArguments("--allow-insecure-localhost");  // Allow insecure localhost
             options.setAcceptInsecureCerts(true);  // Accept self-signed certificates
+            
+            // For ARM64 compatibility
+            options.addArguments("--disable-extensions");
+            options.addArguments("--disable-setuid-sandbox");
             
             ChromeDriver driver = new ChromeDriver(options);
             driver.manage().timeouts().pageLoadTimeout(PAGE_LOAD_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);

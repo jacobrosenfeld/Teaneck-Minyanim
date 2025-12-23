@@ -9,29 +9,63 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
- * Debug service to inspect what's actually on a calendar page using headless Chrome
+ * Debug service to inspect what's actually on a calendar page
+ * Tries headless Chrome first, falls back to Jsoup on failure (e.g., ARM64)
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CalendarDebugger {
+    
+    private final HybridCalendarScraper hybridScraper;
 
     /**
      * Download and analyze a calendar page to help debug scraping issues
      */
     public String debugCalendarPage(String url) {
         StringBuilder report = new StringBuilder();
-        report.append("=== Calendar Debug Report (Headless Chrome) ===\n");
+        report.append("=== Calendar Debug Report ===\n");
         report.append("URL: ").append(url).append("\n\n");
+
+        // Check if Chrome is available
+        if (!hybridScraper.isChromeAvailable()) {
+            report.append("⚠ Chrome scraper is disabled: ").append(hybridScraper.getChromeFailureReason()).append("\n");
+            report.append("Using Jsoup scraper instead\n\n");
+            return debugWithJsoup(url, report);
+        }
 
         WebDriver driver = null;
         try {
-            // Setup ChromeDriver automatically
-            WebDriverManager.chromedriver().setup();
-            
             ChromeOptions options = new ChromeOptions();
+            
+            // Try to use system-installed Chromium first
+            String[] chromiumPaths = {
+                "/usr/bin/chromium",
+                "/usr/bin/chromium-browser",
+                "/usr/bin/google-chrome",
+                "/usr/bin/chrome-headless-shell"
+            };
+            
+            boolean chromiumFound = false;
+            for (String path : chromiumPaths) {
+                java.io.File chromiumBinary = new java.io.File(path);
+                if (chromiumBinary.exists() && chromiumBinary.canExecute()) {
+                    options.setBinary(path);
+                    chromiumFound = true;
+                    report.append("✓ Found system Chromium at: ").append(path).append("\n");
+                    break;
+                }
+            }
+            
+            if (!chromiumFound) {
+                report.append("⚠ System Chromium not found, using WebDriverManager\n");
+                WebDriverManager.chromedriver().setup();
+            }
+            
             options.addArguments("--headless=new");
             options.addArguments("--no-sandbox");
             options.addArguments("--disable-dev-shm-usage");
@@ -131,7 +165,16 @@ public class CalendarDebugger {
             report.append("\n✓ Using headless Chrome allows scraping JavaScript-rendered calendars!\n");
 
         } catch (Exception e) {
-            report.append("\n✗ ERROR: ").append(e.getMessage()).append("\n");
+            report.append("\n✗ ERROR with Chrome: ").append(e.getMessage()).append("\n");
+            
+            // Check if this is an architecture issue
+            if (e.getMessage() != null && e.getMessage().contains("cannot execute binary file")) {
+                report.append("\n⚠ ARCHITECTURE ISSUE DETECTED\n");
+                report.append("Your server is running ARM64 architecture, but ChromeDriver is x86_64.\n");
+                report.append("Falling back to Jsoup scraper...\n\n");
+                return debugWithJsoup(url, report);
+            }
+            
             report.append("\nStack trace:\n");
             for (StackTraceElement element : e.getStackTrace()) {
                 report.append("  ").append(element.toString()).append("\n");
@@ -146,6 +189,83 @@ public class CalendarDebugger {
             }
         }
 
+        return report.toString();
+    }
+    
+    /**
+     * Fallback debug using Jsoup (for ARM64 or when Chrome fails)
+     */
+    private String debugWithJsoup(String url, StringBuilder existingReport) {
+        StringBuilder report = existingReport != null ? existingReport : new StringBuilder();
+        
+        try {
+            report.append("=== Jsoup Debug (Static HTML Only) ===\n");
+            
+            org.jsoup.nodes.Document doc = org.jsoup.Jsoup.connect(url)
+                    .userAgent("Teaneck-Minyanim/1.2 (Calendar Sync Bot)")
+                    .timeout(10000)
+                    .ignoreHttpErrors(true)
+                    .get();
+            
+            report.append("✓ Page downloaded successfully (static HTML)\n");
+            report.append("⚠ Note: JavaScript content will NOT be visible to Jsoup\n\n");
+            
+            String bodyText = doc.body().text();
+            report.append("HTML body size: ").append(bodyText.length()).append(" characters\n\n");
+            
+            // Check for date patterns
+            report.append("--- Date Pattern Detection ---\n");
+            Pattern datePattern = Pattern.compile("\\b(\\d{1,2})[/-](\\d{1,2})[/-](\\d{2,4})\\b|" +
+                    "\\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \\d{1,2}\\b");
+            java.util.regex.Matcher dateMatcher = datePattern.matcher(bodyText);
+            int dateCount = 0;
+            while (dateMatcher.find() && dateCount < 5) {
+                report.append("  - ").append(dateMatcher.group()).append("\n");
+                dateCount++;
+            }
+            if (dateCount == 0) {
+                report.append("  ✗ No date patterns found in static HTML!\n");
+                report.append("  This likely means the calendar is JavaScript-rendered.\n");
+            }
+            
+            // Check for time patterns
+            report.append("\n--- Time Pattern Detection ---\n");
+            Pattern timePattern = Pattern.compile("\\b\\d{1,2}:\\d{2}\\s*(?:AM|PM|am|pm)?\\b");
+            java.util.regex.Matcher timeMatcher = timePattern.matcher(bodyText);
+            int timeCount = 0;
+            while (timeMatcher.find() && timeCount < 5) {
+                report.append("  - ").append(timeMatcher.group()).append("\n");
+                timeCount++;
+            }
+            if (timeCount == 0) {
+                report.append("  ✗ No time patterns found in static HTML!\n");
+            }
+            
+            // Sample text
+            report.append("\n--- Sample Static HTML Text (first 500 chars) ---\n");
+            String sampleText = bodyText.replaceAll("\\s+", " ").trim();
+            report.append(sampleText.substring(0, Math.min(500, sampleText.length())));
+            if (sampleText.length() > 500) {
+                report.append("...");
+            }
+            report.append("\n");
+            
+            report.append("\n=== Recommendation ===\n");
+            if (dateCount == 0 && timeCount == 0) {
+                report.append("❌ This calendar appears to be JavaScript-rendered.\n");
+                report.append("Jsoup cannot scrape JavaScript content.\n");
+                report.append("\nOptions:\n");
+                report.append("1. Install Chrome/Chromium for x86_64 architecture\n");
+                report.append("2. Use Docker with x86_64 emulation\n");
+                report.append("3. Request an export/feed URL from the shul\n");
+            } else {
+                report.append("✓ Some date/time data found - scraping may work!\n");
+            }
+            
+        } catch (Exception e) {
+            report.append("\n✗ Jsoup also failed: ").append(e.getMessage()).append("\n");
+        }
+        
         return report.toString();
     }
 
