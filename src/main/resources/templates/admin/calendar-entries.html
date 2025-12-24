@@ -186,10 +186,17 @@
             display: inline-flex;
             gap: 0.25rem;
             align-items: center;
+            flex-wrap: nowrap;
         }
         
         .edit-form select {
             min-width: 150px;
+            max-width: 200px;
+        }
+        
+        .edit-form .btn {
+            padding: 0.25rem 0.5rem;
+            line-height: 1.2;
         }
         
         .manually-edited-indicator {
@@ -359,12 +366,12 @@
                                     
                                     <!-- Show Non-Minyan Toggle -->
                                     <div class="filter-group" style="min-width: auto;">
-                                        <label>&nbsp;</label>
-                                        <div class="form-check">
+                                        <label for="showNonMinyan">Non-Minyan</label>
+                                        <div class="form-check" style="padding-top: 0.375rem;">
                                             <input class="form-check-input" type="checkbox" id="showNonMinyan" 
                                                    name="showNonMinyan" value="true" th:checked="${showNonMinyan}">
                                             <label class="form-check-label" for="showNonMinyan">
-                                                Show Non-Minyan
+                                                Show
                                             </label>
                                         </div>
                                     </div>

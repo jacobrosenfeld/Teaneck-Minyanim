@@ -609,7 +609,7 @@ public class ZmanimService {
         for (MinyanEvent me : minyanEvents) {
             if (me.getType().isShacharis()) {
                 shacharisMinyanim.add(me);
-            } else if (me.getType().isMincha()) {
+            } else if (me.getType().isMincha() || me.getType().isMinchaMariv()) {
                 minchaMinyanim.add(me);
             } else if (me.getType().isMaariv()) {
                 maarivMinyanim.add(me);
@@ -619,8 +619,20 @@ public class ZmanimService {
         // upcoming minyanim for org
         List<MinyanEvent> nextMinyan = new ArrayList<>();
 
-        // Only compute "next minyan" for rule-based (calendar import doesn't need this special logic)
-        if (!useCalendarImport) {
+        if (useCalendarImport) {
+            // For calendar imports, find upcoming events from today's calendar entries
+            Date now = new Date();
+            Date terminationDate = new Date(now.getTime() - (60000 * 3)); // 3 minutes ago
+            
+            // Filter minyanEvents to find upcoming ones
+            for (MinyanEvent event : minyanEvents) {
+                if (event.getStartTime().after(terminationDate)) {
+                    nextMinyan.add(event);
+                }
+            }
+            log.info("Found {} upcoming calendar-imported events", nextMinyan.size());
+        } else {
+            // Only compute "next minyan" for rule-based (original logic)
             List<Minyan> enabledMinyanim2 = minyanService.findEnabledMatching(orgId);
             for (Minyan minyan : enabledMinyanim2) {
             LocalDate ref = dateToLocalDate(today);
