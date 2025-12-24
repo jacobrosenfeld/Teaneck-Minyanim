@@ -106,6 +106,24 @@ public class OrganizationCalendarEntry {
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
+    /**
+     * Flag to indicate if location was manually edited (not from import)
+     */
+    @Column(name = "location_manually_edited", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean locationManuallyEdited = false;
+
+    /**
+     * User who last manually edited this entry
+     */
+    @Column(name = "manually_edited_by")
+    private String manuallyEditedBy;
+
+    /**
+     * Timestamp of last manual edit
+     */
+    @Column(name = "manually_edited_at")
+    private LocalDateTime manuallyEditedAt;
+
     @Column(name = "imported_at", nullable = false)
     private LocalDateTime importedAt;
 

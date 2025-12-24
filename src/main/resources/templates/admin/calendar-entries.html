@@ -165,6 +165,43 @@
             color: #6c757d;
             font-style: italic;
         }
+        
+        /* Inline editing */
+        .editable-cell {
+            position: relative;
+        }
+        
+        .edit-trigger {
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+        }
+        
+        .edit-trigger:hover {
+            background-color: #e9ecef;
+        }
+        
+        .edit-form {
+            display: inline-flex;
+            gap: 0.25rem;
+            align-items: center;
+        }
+        
+        .edit-form select {
+            min-width: 150px;
+        }
+        
+        .manually-edited-indicator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #17a2b8;
+            margin-left: 0.25rem;
+            vertical-align: middle;
+            title: "Manually edited";
+        }
     </style>
 </head>
 <body>
@@ -221,6 +258,16 @@
                                                 <button type="submit" class="btn btn-primary mb-2" 
                                                         th:disabled="${organization.calendar == null or organization.calendar.isEmpty()}">
                                                     <i class="fas fa-sync"></i> Refresh Import
+                                                </button>
+                                            </form>
+                                            
+                                            <form th:action="@{/admin/{orgId}/calendar/reimport-all(orgId=${organization.id})}" 
+                                                  method="post" 
+                                                  style="display: inline;"
+                                                  onsubmit="return confirm('This will delete ALL existing entries and reimport from scratch. Any manual edits will be lost. Are you sure?');">
+                                                <button type="submit" class="btn btn-warning mb-2" 
+                                                        th:disabled="${organization.calendar == null or organization.calendar.isEmpty()}">
+                                                    <i class="fas fa-redo"></i> Reimport All (Override)
                                                 </button>
                                             </form>
                                             
@@ -430,7 +477,42 @@
                                                 </span>
                                                 <span th:unless="${entry.classification}" class="text-muted">—</span>
                                             </td>
-                                            <td th:text="${entry.location ?: '—'}"></td>
+                                            <td class="editable-cell">
+                                                <!-- Display mode -->
+                                                <span th:id="'location-display-' + ${entry.id}" 
+                                                      th:attr="data-entry-id=${entry.id}"
+                                                      class="edit-trigger"
+                                                      onclick="editLocation(this)">
+                                                    <span th:text="${entry.location ?: 'Add location'}"></span>
+                                                    <span th:if="${entry.locationManuallyEdited}" 
+                                                          class="manually-edited-indicator" 
+                                                          title="Manually edited"></span>
+                                                    <i class="fas fa-pencil-alt" style="font-size: 0.75rem; opacity: 0.5; margin-left: 0.25rem;"></i>
+                                                </span>
+                                                
+                                                <!-- Edit mode (hidden by default) -->
+                                                <form th:id="'location-form-' + ${entry.id}"
+                                                      th:action="@{/admin/{orgId}/calendar-entries/{entryId}/update-location(orgId=${organization.id},entryId=${entry.id})}" 
+                                                      method="post" 
+                                                      class="edit-form" 
+                                                      style="display: none;">
+                                                    <select name="locationId" class="form-control form-control-sm">
+                                                        <option value="">-- No location --</option>
+                                                        <option th:each="loc : ${locations}" 
+                                                                th:value="${loc.id}" 
+                                                                th:text="${loc.name}"
+                                                                th:selected="${entry.location != null and entry.location == loc.name}">
+                                                        </option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-secondary" 
+                                                            onclick="cancelEdit(this)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
                                             <td>
                                                 <span class="notes-cell" th:if="${entry.notes}" th:text="${entry.notes}"></span>
                                                 <span th:unless="${entry.notes}" class="text-muted">—</span>
@@ -481,6 +563,29 @@
         }
         
         form.submit();
+    }
+    
+    function editLocation(trigger) {
+        const entryId = trigger.getAttribute('data-entry-id');
+        const displaySpan = document.getElementById('location-display-' + entryId);
+        const editForm = document.getElementById('location-form-' + entryId);
+        
+        if (displaySpan && editForm) {
+            displaySpan.style.display = 'none';
+            editForm.style.display = 'inline-flex';
+            editForm.querySelector('select').focus();
+        }
+    }
+    
+    function cancelEdit(button) {
+        const form = button.closest('.edit-form');
+        const entryId = form.id.replace('location-form-', '');
+        const displaySpan = document.getElementById('location-display-' + entryId);
+        
+        if (displaySpan && form) {
+            form.style.display = 'none';
+            displaySpan.style.display = 'inline';
+        }
     }
 </script>
 </body>

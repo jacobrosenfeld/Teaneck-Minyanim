@@ -20,6 +20,19 @@ ALTER TABLE organization_calendar_entry
 ADD COLUMN notes TEXT NULL 
 COMMENT 'Additional notes such as Shkiya time for Mincha/Maariv entries';
 
+-- Add manual edit tracking columns
+ALTER TABLE organization_calendar_entry
+ADD COLUMN location_manually_edited BOOLEAN NOT NULL DEFAULT FALSE
+COMMENT 'Flag to indicate if location was manually edited';
+
+ALTER TABLE organization_calendar_entry
+ADD COLUMN manually_edited_by VARCHAR(255) NULL
+COMMENT 'User who last manually edited this entry';
+
+ALTER TABLE organization_calendar_entry
+ADD COLUMN manually_edited_at TIMESTAMP NULL
+COMMENT 'Timestamp of last manual edit';
+
 -- Create index on classification for faster filtering
 CREATE INDEX idx_org_classification ON organization_calendar_entry(organization_id, classification);
 
@@ -30,7 +43,8 @@ CREATE INDEX idx_org_enabled_classification ON organization_calendar_entry(organ
 -- SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE 
 -- FROM INFORMATION_SCHEMA.COLUMNS 
 -- WHERE TABLE_NAME = 'organization_calendar_entry' 
--- AND COLUMN_NAME IN ('classification', 'classification_reason', 'notes');
+-- AND COLUMN_NAME IN ('classification', 'classification_reason', 'notes', 
+--                      'location_manually_edited', 'manually_edited_by', 'manually_edited_at');
 
 -- Optional: Update existing entries to classify them retroactively
 -- This is not required as entries will be reclassified on next import.

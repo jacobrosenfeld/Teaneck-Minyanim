@@ -1723,6 +1723,11 @@ public class AdminController {
             mv.addObject("minyanCount", minyanCount);
             mv.addObject("nonMinyanCount", nonMinyanCount);
 
+            // Get locations for this organization for the dropdown
+            LocationService locationService = applicationContext.getBean(LocationService.class);
+            List<Location> locations = locationService.findMatching(orgId);
+            mv.addObject("locations", locations);
+
             // Add filter/sort parameters back to view for persistence
             mv.addObject("sortBy", sortBy != null ? sortBy : "date");
             mv.addObject("sortDir", sortDir != null ? sortDir : "desc");
@@ -1892,6 +1897,118 @@ public class AdminController {
 
         } catch (Exception e) {
             return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=" + e.getMessage());
+        }
+    }
+
+    /**
+     * Update location for a calendar entry
+     */
+    @PostMapping("/admin/{orgId}/calendar-entries/{entryId}/update-location")
+    public RedirectView updateEntryLocation(@PathVariable String orgId, 
+                                           @PathVariable Long entryId,
+                                           @RequestParam(required = false) String locationId) {
+        if (!isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to perform this action.");
+        }
+
+        try {
+            Organization org = getOrganization(orgId);
+            if (org == null) {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
+            }
+
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
+
+            Optional<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entryOpt = 
+                    entryRepo.findById(entryId);
+
+            if (entryOpt.isPresent()) {
+                com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry entry = entryOpt.get();
+                
+                // Verify entry belongs to this organization
+                if (!entry.getOrganizationId().equals(orgId)) {
+                    throw new AccessDeniedException("Entry does not belong to this organization");
+                }
+
+                // Update location
+                if (locationId != null && !locationId.isEmpty()) {
+                    LocationService locationService = applicationContext.getBean(LocationService.class);
+                    Location location = locationService.findById(locationId);
+                    if (location != null) {
+                        entry.setLocation(location.getName());
+                        entry.setLocationManuallyEdited(true);
+                        entry.setManuallyEditedBy(getCurrentUser().getUsername());
+                        entry.setManuallyEditedAt(java.time.LocalDateTime.now());
+                        entryRepo.save(entry);
+                        
+                        return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Location+updated");
+                    } else {
+                        return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Location+not+found");
+                    }
+                } else {
+                    // Clear location
+                    entry.setLocation(null);
+                    entry.setLocationManuallyEdited(true);
+                    entry.setManuallyEditedBy(getCurrentUser().getUsername());
+                    entry.setManuallyEditedAt(java.time.LocalDateTime.now());
+                    entryRepo.save(entry);
+                    
+                    return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Location+cleared");
+                }
+            } else {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Entry+not+found");
+            }
+
+        } catch (Exception e) {
+            log.error("Error updating location for entry {}: {}", entryId, e.getMessage(), e);
+            return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=" + e.getMessage());
+        }
+    }
+
+    /**
+     * Reimport all calendar entries for an organization (override all existing data)
+     */
+    @PostMapping("/admin/{orgId}/calendar/reimport-all")
+    public RedirectView reimportAllCalendarEntries(@PathVariable String orgId) {
+        if (!isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to perform this action.");
+        }
+
+        try {
+            Organization org = getOrganization(orgId);
+            if (org == null) {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
+            }
+
+            // Delete all existing entries for this organization
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
+            
+            List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> existingEntries = 
+                    entryRepo.findByOrganizationIdOrderByDateDesc(orgId);
+            
+            entryRepo.deleteAll(existingEntries);
+            log.info("Deleted {} existing entries for organization {}", existingEntries.size(), orgId);
+
+            // Trigger fresh import
+            com.tbdev.teaneckminyanim.service.calendar.CalendarImportService importService = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.service.calendar.CalendarImportService.class);
+            
+            com.tbdev.teaneckminyanim.service.calendar.CalendarImportService.ImportResult result = 
+                    importService.importCalendarForOrganization(orgId);
+
+            if (result.success) {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Reimport+complete:+" 
+                        + result.newEntries + "+entries+imported");
+            } else {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Reimport+failed:+" 
+                        + result.errorMessage);
+            }
+
+        } catch (Exception e) {
+            log.error("Error reimporting calendar for organization {}: {}", orgId, e.getMessage(), e);
+            return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Reimport+failed:+" + e.getMessage());
         }
     }
 
