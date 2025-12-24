@@ -34,39 +34,64 @@ public class MinyanClassifier {
     private static final Set<Pattern> MINCHA_MAARIV_PATTERNS = new HashSet<>();
     
     static {
-        // Allowlist patterns - case insensitive
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshacharis?\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshacharit\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bmincha\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bmaariv\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bma'?ariv\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bselichos?\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bneitz\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bnetz\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bminyan\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bdavening\\b", Pattern.CASE_INSENSITIVE));
+        // Combined Mincha/Maariv patterns (check FIRST - most specific)
+        MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s*[/&-]\\s*ma'?ariv", Pattern.CASE_INSENSITIVE));
+        MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s+and\\s+ma'?ariv", Pattern.CASE_INSENSITIVE));
+        MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s*[/&-]\\s*arvit", Pattern.CASE_INSENSITIVE));
+        MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s+and\\s+arvit", Pattern.CASE_INSENSITIVE));
         
-        // Denylist patterns - case insensitive
+        // Denylist patterns - case insensitive (check SECOND - explicit exclusions)
+        // These patterns should be explicit to avoid false positives
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bdaf\\s+yomi\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bshiur\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\blecture\\b", Pattern.CASE_INSENSITIVE));
-        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bclass\\b", Pattern.CASE_INSENSITIVE));
+        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bclass(?!ification)\\b", Pattern.CASE_INSENSITIVE)); // Exclude "classification"
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\blearning\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bstudy\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bkolel\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bgemara\\b", Pattern.CASE_INSENSITIVE));
-        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bchabura\\b", Pattern.CASE_INSENSITIVE));
+        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bchaburah?\\b", Pattern.CASE_INSENSITIVE));
+        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bdrasha?\\b", Pattern.CASE_INSENSITIVE));
+        NON_MINYAN_PATTERNS.add(Pattern.compile("\\btalk\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bmeeting\\b", Pattern.CASE_INSENSITIVE));
-        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bevent\\b", Pattern.CASE_INSENSITIVE));
-        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bprogram\\b", Pattern.CASE_INSENSITIVE));
+        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bkiddush\\b", Pattern.CASE_INSENSITIVE));
+        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bseudah?\\b", Pattern.CASE_INSENSITIVE));
+        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bmelave\\s+malka\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bworkshop\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bseminar\\b", Pattern.CASE_INSENSITIVE));
         
-        // Combined Mincha/Maariv patterns
-        MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha\\s*[/&-]\\s*ma'?ariv", Pattern.CASE_INSENSITIVE));
-        MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha\\s+and\\s+ma'?ariv", Pattern.CASE_INSENSITIVE));
-        MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha\\s*ma'?ariv", Pattern.CASE_INSENSITIVE));
+        // Allowlist patterns - case insensitive (check LAST - positive identification)
+        // Shacharis variants
+        MINYAN_PATTERNS.add(Pattern.compile("\\bshacharis\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bshacharit\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bshaharit\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bshachris\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bshachrith\\b", Pattern.CASE_INSENSITIVE));
+        
+        // Mincha variants
+        MINYAN_PATTERNS.add(Pattern.compile("\\bmincha\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bminchah\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bminha\\b", Pattern.CASE_INSENSITIVE));
+        
+        // Maariv variants
+        MINYAN_PATTERNS.add(Pattern.compile("\\bmaariv\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bma'ariv\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\barvit\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\barvis\\b", Pattern.CASE_INSENSITIVE));
+        
+        // Selichos variants
+        MINYAN_PATTERNS.add(Pattern.compile("\\bselichos\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bselichot\\b", Pattern.CASE_INSENSITIVE));
+        
+        // Neitz/Sunrise variants
+        MINYAN_PATTERNS.add(Pattern.compile("\\bneitz\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bnetz\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bsunrise\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
+        
+        // General minyan terms
+        MINYAN_PATTERNS.add(Pattern.compile("\\bminyan\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bdavening\\b", Pattern.CASE_INSENSITIVE));
     }
 
     /**

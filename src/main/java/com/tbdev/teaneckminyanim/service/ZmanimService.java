@@ -619,23 +619,33 @@ public class ZmanimService {
         // upcoming minyanim for org
         List<MinyanEvent> nextMinyan = new ArrayList<>();
 
+        // IMPORTANT: Next minyan must ALWAYS be based on TODAY, not the viewed date
+        // This ensures the "Next minyan" button shows upcoming minyanim for today
+        // even when the user is viewing a different date (e.g., tomorrow's schedule)
+        // Note: 'today' variable is already defined earlier in this method
+        LocalDate todayLocalDate = dateToLocalDate(today);
+        
         if (useCalendarImport) {
-            // For calendar imports, find upcoming events from today's calendar entries
+            // For calendar imports, get TODAY's events and filter for upcoming ones
+            log.info("Computing next minyan from calendar imports for TODAY: {}", todayLocalDate);
+            List<MinyanEvent> todayEvents = scheduleResolver.getEventsForDate(orgId, todayLocalDate);
+            
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3)); // 3 minutes ago
             
-            // Filter minyanEvents to find upcoming ones
-            for (MinyanEvent event : minyanEvents) {
+            // Filter today's events to find upcoming ones
+            for (MinyanEvent event : todayEvents) {
                 if (event.getStartTime().after(terminationDate)) {
                     nextMinyan.add(event);
                 }
             }
-            log.info("Found {} upcoming calendar-imported events", nextMinyan.size());
+            log.info("Found {} upcoming calendar-imported events for today", nextMinyan.size());
         } else {
-            // Only compute "next minyan" for rule-based (original logic)
+            // For rule-based: compute next minyan from TODAY's schedule (not viewed date)
+            log.info("Computing next minyan from rules for TODAY: {}", todayLocalDate);
             List<Minyan> enabledMinyanim2 = minyanService.findEnabledMatching(orgId);
             for (Minyan minyan : enabledMinyanim2) {
-            LocalDate ref = dateToLocalDate(today);
+            LocalDate ref = todayLocalDate; // Use TODAY, not the viewed date
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3));

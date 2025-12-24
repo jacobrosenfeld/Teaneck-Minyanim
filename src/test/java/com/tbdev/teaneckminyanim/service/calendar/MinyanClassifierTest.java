@@ -133,7 +133,7 @@ class MinyanClassifierTest {
     void testClassify_NoMatch_Other() {
         // Use something that truly doesn't match any pattern
         MinyanClassifier.ClassificationResult result = 
-            classifier.classify("Community Kiddush", null, null, LocalDate.now());
+            classifier.classify("Building Committee", null, null, LocalDate.now());
 
         assertEquals(MinyanClassification.OTHER, result.classification);
         assertNotNull(result.reason);
@@ -236,5 +236,97 @@ class MinyanClassifierTest {
             "Shkiya note should start with 'Shkiya:'");
         assertTrue(result.notes.contains(":"), 
             "Shkiya note should contain time with colon");
+    }
+    
+    // Tests for spelling variants
+    @Test
+    void testClassify_ShacharisVariants() {
+        // Test multiple spelling variants
+        String[] variants = {"Shacharis", "Shacharit", "Shaharit", "Shachris", "Shachrith"};
+        
+        for (String variant : variants) {
+            MinyanClassifier.ClassificationResult result = 
+                classifier.classify(variant, null, null, LocalDate.now());
+            
+            assertEquals(MinyanClassification.MINYAN, result.classification,
+                "Variant '" + variant + "' should be classified as MINYAN");
+        }
+    }
+    
+    @Test
+    void testClassify_MinchaVariants() {
+        String[] variants = {"Mincha", "Minchah", "Minha"};
+        
+        for (String variant : variants) {
+            MinyanClassifier.ClassificationResult result = 
+                classifier.classify(variant, null, null, LocalDate.now());
+            
+            assertEquals(MinyanClassification.MINYAN, result.classification,
+                "Variant '" + variant + "' should be classified as MINYAN");
+        }
+    }
+    
+    @Test
+    void testClassify_MaarivVariants() {
+        String[] variants = {"Maariv", "Ma'ariv", "Arvit", "Arvis"};
+        
+        for (String variant : variants) {
+            MinyanClassifier.ClassificationResult result = 
+                classifier.classify(variant, null, null, LocalDate.now());
+            
+            assertEquals(MinyanClassification.MINYAN, result.classification,
+                "Variant '" + variant + "' should be classified as MINYAN");
+        }
+    }
+    
+    @Test
+    void testClassify_DafYomiWithShacharis_ShouldBeDenyListed() {
+        // Key bug fix: "Daf Yomi Shacharis" should be NON_MINYAN, not MINYAN
+        // Denylist should win when both patterns match
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Daf Yomi before Shacharis", null, null, LocalDate.now());
+        
+        assertEquals(MinyanClassification.NON_MINYAN, result.classification,
+            "Denylist (Daf Yomi) should take priority even when allowlist (Shacharis) also matches");
+    }
+    
+    @Test
+    void testClassify_Kiddush_NonMinyan() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Kiddush", null, null, LocalDate.now());
+        
+        assertEquals(MinyanClassification.NON_MINYAN, result.classification);
+    }
+    
+    @Test
+    void testClassify_MelaveMalka_NonMinyan() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Melave Malka", null, null, LocalDate.now());
+        
+        assertEquals(MinyanClassification.NON_MINYAN, result.classification);
+    }
+    
+    @Test
+    void testClassify_Drasha_NonMinyan() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Rabbi's Drasha", null, null, LocalDate.now());
+        
+        assertEquals(MinyanClassification.NON_MINYAN, result.classification);
+    }
+    
+    @Test
+    void testClassify_SunriseMinyan() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Sunrise Minyan", null, null, LocalDate.now());
+        
+        assertEquals(MinyanClassification.MINYAN, result.classification);
+    }
+    
+    @Test
+    void testClassify_Selichot_Variant() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Selichot", null, null, LocalDate.now());
+        
+        assertEquals(MinyanClassification.MINYAN, result.classification);
     }
 }
