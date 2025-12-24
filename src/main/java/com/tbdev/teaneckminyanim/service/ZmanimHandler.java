@@ -7,6 +7,7 @@ import com.kosherjava.zmanim.hebrewcalendar.JewishDate;
 import com.kosherjava.zmanim.util.GeoLocation;
 import com.tbdev.teaneckminyanim.enums.Zman;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.util.Hashtable;
 import java.util.TimeZone;
 
 @Slf4j
+@Service
 public class ZmanimHandler {
     private final GeoLocation geoLocation;
 
