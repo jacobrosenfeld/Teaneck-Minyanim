@@ -74,6 +74,7 @@ public class MinyanClassifier {
         MINYAN_PATTERNS.add(Pattern.compile("\\bmincha\\b", Pattern.CASE_INSENSITIVE));
         MINYAN_PATTERNS.add(Pattern.compile("\\bminchah\\b", Pattern.CASE_INSENSITIVE));
         MINYAN_PATTERNS.add(Pattern.compile("\\bminha\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bearly\\s+mincha\\b", Pattern.CASE_INSENSITIVE));
         
         // Maariv variants
         MINYAN_PATTERNS.add(Pattern.compile("\\bmaariv\\b", Pattern.CASE_INSENSITIVE));
