@@ -1,6 +1,8 @@
 package com.tbdev.teaneckminyanim.repo;
 
+import com.tbdev.teaneckminyanim.enums.MinyanClassification;
 import com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -54,6 +56,55 @@ public interface OrganizationCalendarEntryRepository extends JpaRepository<Organ
      * Find all entries for an organization
      */
     List<OrganizationCalendarEntry> findByOrganizationIdOrderByDateDesc(String organizationId);
+
+    /**
+     * Find all entries for an organization with sorting
+     */
+    List<OrganizationCalendarEntry> findByOrganizationId(String organizationId, Sort sort);
+
+    /**
+     * Find entries by organization and classification
+     */
+    List<OrganizationCalendarEntry> findByOrganizationIdAndClassification(
+            String organizationId, MinyanClassification classification, Sort sort);
+
+    /**
+     * Find entries by organization, filtering by enabled status
+     */
+    List<OrganizationCalendarEntry> findByOrganizationIdAndEnabled(
+            String organizationId, boolean enabled, Sort sort);
+
+    /**
+     * Find entries by organization and classification, filtering by enabled status
+     */
+    List<OrganizationCalendarEntry> findByOrganizationIdAndClassificationAndEnabled(
+            String organizationId, MinyanClassification classification, boolean enabled, Sort sort);
+
+    /**
+     * Search entries by text in title, name, or raw text
+     */
+    @Query("SELECT e FROM OrganizationCalendarEntry e WHERE e.organizationId = :orgId " +
+            "AND (LOWER(e.title) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+            "OR LOWER(e.name) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+            "OR LOWER(e.rawText) LIKE LOWER(CONCAT('%', :searchText, '%')) " +
+            "OR LOWER(e.notes) LIKE LOWER(CONCAT('%', :searchText, '%')))")
+    List<OrganizationCalendarEntry> searchByText(
+            @Param("orgId") String organizationId,
+            @Param("searchText") String searchText,
+            Sort sort);
+
+    /**
+     * Find entries in date range with optional classification filter
+     */
+    @Query("SELECT e FROM OrganizationCalendarEntry e WHERE e.organizationId = :orgId " +
+            "AND e.date BETWEEN :startDate AND :endDate " +
+            "AND (:classification IS NULL OR e.classification = :classification)")
+    List<OrganizationCalendarEntry> findInRangeWithClassification(
+            @Param("orgId") String organizationId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("classification") MinyanClassification classification,
+            Sort sort);
 
     /**
      * Delete all entries for an organization older than a specific date
