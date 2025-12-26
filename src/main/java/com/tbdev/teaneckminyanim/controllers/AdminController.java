@@ -46,6 +46,9 @@ public class AdminController {
     @Autowired
     private TNMSettingsService tnmsettingsDAO;
 
+    @Autowired
+    private VersionService versionService;
+
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | hh:mm aa");
     TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
 
@@ -81,6 +84,7 @@ public class AdminController {
         Date today = new Date();
         dateFormat.setTimeZone(timeZone);
         mv.getModel().put("date", dateFormat.format(today));
+        mv.getModel().put("appVersion", versionService.getVersion());
     }
 
     /**

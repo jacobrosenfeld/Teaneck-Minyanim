@@ -10,6 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - CHANGELOG.md file to track version history
 - Version management guidelines in copilot instructions
+- Dynamic version number display in footer across all pages
+
+### Changed
+- Updated version to 1.1.1-SNAPSHOT
+
+## [1.1.1-SNAPSHOT] - In Development
+
+### Added
+- VersionService to dynamically read application version from Maven pom.xml
+- Version badge display in all footer templates (homepage, organization pages, admin pages)
+- CSS styling for version badge with custom styling for both public and admin pages
+
+### Changed
+- Updated ZmanimController to include version in all model views via @ModelAttribute
+- Updated AdminController to include version in admin page views
+- Enhanced footer templates to display version number in a styled badge format
 
 ## [1.1.0-SNAPSHOT] - In Development
 
@@ -46,5 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Minor**: Detailed feature descriptions with subsections (Added/Changed/Fixed)
 - **Major**: Comprehensive documentation including breaking changes and migration paths
 
-[Unreleased]: https://github.com/jacobrosenfeld/Teaneck-Minyanim/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/jacobrosenfeld/Teaneck-Minyanim/compare/v1.1.1...HEAD
+[1.1.1-SNAPSHOT]: https://github.com/jacobrosenfeld/Teaneck-Minyanim/releases/tag/v1.1.1
 [1.1.0-SNAPSHOT]: https://github.com/jacobrosenfeld/Teaneck-Minyanim/releases/tag/v1.1.0

@@ -6,6 +6,7 @@ import java.util.*;
 import com.kosherjava.zmanim.util.GeoLocation;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMSettingsService;
+import com.tbdev.teaneckminyanim.service.VersionService;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.TNMSettings;
 import com.tbdev.teaneckminyanim.service.ZmanimHandler;
@@ -22,6 +23,7 @@ public class ZmanimController {
     private final ZmanimService zmanimService;
     private final TNMSettingsService tnmSettingsDao;
     private final OrganizationService organizationService;
+    private final VersionService versionService;
 
     TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
 
@@ -51,6 +53,11 @@ public class ZmanimController {
         List<TNMSettings> settings = tnmSettingsDao.getAll();
         Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
         return settings;
+    }
+
+    @ModelAttribute("appVersion")
+    public String appVersion() {
+        return versionService.getVersion();
     }
 
     @GetMapping("/checkAseresYemeiTeshuva")
