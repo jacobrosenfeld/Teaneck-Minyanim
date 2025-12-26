@@ -132,7 +132,12 @@ public class MinyanClassifier {
         // Check for combined Mincha/Maariv first (most specific)
         for (Pattern pattern : MINCHA_MAARIV_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
+                // Generate Shkiya note and add any title qualifiers
                 String notes = generateShkiyaNote(date);
+                String titleQualifier = extractTitleQualifier(title);
+                if (titleQualifier != null && !titleQualifier.isEmpty()) {
+                    notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
+                }
                 return new ClassificationResult(
                     MinyanClassification.MINCHA_MAARIV,
                     "Matched combined Mincha/Maariv pattern: " + pattern.pattern(),
@@ -154,9 +159,12 @@ public class MinyanClassifier {
         // Check allowlist (minyan events)
         for (Pattern pattern : MINYAN_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
+                // Extract title qualifiers for minyan events
+                String titleQualifier = extractTitleQualifier(title);
                 return new ClassificationResult(
                     MinyanClassification.MINYAN,
-                    "Matched minyan pattern: " + pattern.pattern()
+                    "Matched minyan pattern: " + pattern.pattern(),
+                    titleQualifier
                 );
             }
         }
@@ -221,6 +229,45 @@ public class MinyanClassifier {
             log.error("Error computing Shkiya for date {}: {}", date, e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Extract special qualifiers from title that should be preserved as notes.
+     * Examples: "Teen Minyan" → "Teen", "Early Shacharis" → "Early"
+     * 
+     * @param title The entry title
+     * @return Qualifier string or null if none found
+     */
+    private String extractTitleQualifier(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            return null;
+        }
+        
+        String titleLower = title.toLowerCase().trim();
+        List<String> qualifiers = new ArrayList<>();
+        
+        // List of meaningful qualifiers to extract
+        String[] qualifierPatterns = {
+            "teen", "youth", "young adult", "early", "late", 
+            "fast", "quick", "express", "main", "second",
+            "women's", "men's", "kollel", "vasikin", "hanetz"
+        };
+        
+        for (String qualifier : qualifierPatterns) {
+            // Use word boundaries to match whole words
+            Pattern pattern = Pattern.compile("\\b" + Pattern.quote(qualifier) + "\\b", Pattern.CASE_INSENSITIVE);
+            if (pattern.matcher(titleLower).find()) {
+                // Preserve original casing
+                int start = titleLower.indexOf(qualifier);
+                if (start != -1) {
+                    String originalQualifier = title.substring(start, start + qualifier.length());
+                    qualifiers.add(originalQualifier);
+                }
+            }
+        }
+        
+        // Return comma-separated qualifiers if any found
+        return qualifiers.isEmpty() ? null : String.join(", ", qualifiers);
     }
 
     /**
