@@ -333,6 +333,10 @@ public class CalendarImportService {
 
     /**
      * Update an existing entry with new data.
+     * 
+     * IMPORTANT: This method re-applies the NON_MINYAN auto-disable rule during updates.
+     * If an entry's classification changes to NON_MINYAN, it will be disabled.
+     * However, if an entry was manually enabled by an admin, that manual override is preserved.
      */
     private void updateEntry(OrganizationCalendarEntry entry,
                             CalendarCsvParser.ParsedEntry parsed,
@@ -343,6 +347,21 @@ public class CalendarImportService {
         
         // Normalize title to remove redundant words
         String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
+        
+        // Core Rule: Apply NON_MINYAN auto-disable during updates
+        // UNLESS the entry was manually edited by an admin (has location_manually_edited flag)
+        boolean wasManuallyEdited = entry.isLocationManuallyEdited();
+        boolean isNonMinyan = classificationResult.classification == com.tbdev.teaneckminyanim.enums.MinyanClassification.NON_MINYAN;
+        
+        if (isNonMinyan && !wasManuallyEdited && entry.isEnabled()) {
+            // Newly classified as NON_MINYAN (or re-classified) - disable it
+            entry.setEnabled(false);
+            log.debug("Auto-disabling NON_MINYAN entry during update: {} ({})", parsed.getTitle(), classificationResult.reason);
+        } else if (!isNonMinyan && !wasManuallyEdited && !entry.isEnabled() && entry.getDuplicateReason() == null) {
+            // Entry is no longer NON_MINYAN and wasn't manually disabled or marked as duplicate - re-enable it
+            entry.setEnabled(true);
+            log.debug("Re-enabling entry that is no longer NON_MINYAN: {}", parsed.getTitle());
+        }
         
         entry.setStartTime(parsed.getStartTime());
         entry.setStartDatetime(parsed.getStartDatetime());

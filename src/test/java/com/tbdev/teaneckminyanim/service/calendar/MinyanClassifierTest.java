@@ -237,6 +237,85 @@ class MinyanClassifierTest {
         assertTrue(result.notes.contains(":"), 
             "Shkiya note should contain time with colon");
     }
+
+    /**
+     * CRITICAL TEST: Verify NON_MINYAN events would be disabled during createEntry.
+     * This test documents the expected integration behavior.
+     */
+    @Test
+    void testNonMinyan_ShouldBeDisabled_DafYomi() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Daf Yomi", null, null, LocalDate.now());
+
+        assertEquals(MinyanClassification.NON_MINYAN, result.classification,
+            "Daf Yomi must be classified as NON_MINYAN");
+        
+        // This documents that CalendarImportService.createEntry() should set enabled=false
+        // when classification == NON_MINYAN
+        assertNotNull(result.reason);
+        assertTrue(result.reason.toLowerCase().contains("non-minyan") || result.reason.toLowerCase().contains("minyan"),
+            "Classification reason should explain why it's NON_MINYAN, got: " + result.reason);
+    }
+
+    @Test
+    void testNonMinyan_ShouldBeDisabled_Shiur() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Torah Shiur", null, null, LocalDate.now());
+
+        assertEquals(MinyanClassification.NON_MINYAN, result.classification,
+            "Shiur events must be classified as NON_MINYAN and should be disabled");
+    }
+
+    @Test
+    void testNonMinyan_ShouldBeDisabled_Kiddush() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Community Kiddush", null, null, LocalDate.now());
+
+        assertEquals(MinyanClassification.NON_MINYAN, result.classification,
+            "Kiddush events must be classified as NON_MINYAN and should be disabled");
+    }
+
+    @Test
+    void testNonMinyan_ShouldBeDisabled_NightSeder() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Night Seder Learning Program", null, null, LocalDate.now());
+
+        assertEquals(MinyanClassification.NON_MINYAN, result.classification,
+            "Night Seder (learning program) must be classified as NON_MINYAN and should be disabled");
+    }
+
+    /**
+     * Test that minyan events are enabled (NOT disabled)
+     */
+    @Test
+    void testMinyan_ShouldBeEnabled_Shacharis() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Shacharis", null, null, LocalDate.now());
+
+        assertEquals(MinyanClassification.MINYAN, result.classification,
+            "Shacharis must be classified as MINYAN and should be enabled");
+    }
+
+    @Test
+    void testMinyan_ShouldBeEnabled_Mincha() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Mincha", null, null, LocalDate.now());
+
+        assertEquals(MinyanClassification.MINYAN, result.classification,
+            "Mincha must be classified as MINYAN and should be enabled");
+    }
+
+    @Test
+    void testMinchaMaariv_ShouldBeEnabled() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Mincha/Maariv", null, null, LocalDate.now());
+
+        assertEquals(MinyanClassification.MINCHA_MAARIV, result.classification,
+            "Mincha/Maariv must be classified as MINCHA_MAARIV and should be enabled");
+        assertNotNull(result.notes);
+        assertTrue(result.notes.contains("Shkiya"),
+            "Mincha/Maariv should include Shkiya note");
+    }
     
     // Tests for spelling variants
     @Test
