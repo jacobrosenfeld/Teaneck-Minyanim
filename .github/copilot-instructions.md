@@ -1,23 +1,28 @@
 # Teaneck Minyanim - AI Coding Agent Instructions
 
 ## Architecture Overview
-This is a Spring Boot application that displays Jewish prayer services (minyanim) and religious times (zmanim) for Teaneck, NJ. The system automatically calculates service times based on the Jewish calendar and location coordinates.
+This is a Spring Boot application that displays Jewish prayer services (minyanim) and religious times (zmanim) for Teaneck, NJ. The system automatically calculates service times based on the Jewish calendar and location coordinates, and supports importing events from external calendars with intelligent classification.
 
 **Key Data Flow:**
 1. `ZmanimService` calculates times using the Kosherjava library (hardcoded Teaneck coords: 40.906871, -74.020924)
-2. `Minyan` entities store per-service schedules with 11 time columns (Sunday-Shabbat, RoshChodesh, YomTov, Chanuka variants)
-3. `Schedule` class wraps these into a `MinyanTime` object per day-type
-4. `MinyanEvent` objects represent concrete events for display
-5. `Organization` owns multiple `Minyan` instances; each `Minyan` links to a `Location`
+2. **Rule-Based Minyanim**: `Minyan` entities store per-service schedules with 11 time columns (Sunday-Shabbat, RoshChodesh, YomTov, Chanuka variants)
+3. **Calendar-Imported Events**: `OrganizationCalendarEntry` entities store imported events with intelligent classification
+4. `Schedule` class wraps rule-based schedules into a `MinyanTime` object per day-type
+5. `MinyanEvent` objects represent concrete events for display (from both rule-based and imported sources)
+6. `Organization` owns multiple `Minyan` instances and calendar entries; each `Minyan` links to a `Location`
 
 ## Critical Components & Patterns
 
 ### Time Calculation Layer (`service/`)
-- **ZmanimService** (788 lines): Primary view orchestrator. Calls `ZmanimHandler` to get Jewish calendar times, filters enabled minyanim, builds `MinyanEvent` display objects
+- **ZmanimService** (788 lines): Primary view orchestrator. Calls `ZmanimHandler` to get Jewish calendar times, filters enabled minyanim from both rule-based and calendar-imported sources, builds `MinyanEvent` display objects
   - `getZmanim(Date)`: Renders homepage with all services, organized by type (Shacharis/Mincha/Maariv)
   - `org(orgId, Date)`: Renders org-specific page with Hebrew dates and zmanim display
-- **ZmanimHandler**: Wraps Kosherjava library; returns `Dictionary<Zman, Date>` of 14+ prayer times
+  - Uses `CalendarImportProvider` to fetch calendar-imported events alongside rule-based minyanim
+- **ZmanimHandler**: Wraps Kosherjava library; returns `Dictionary<Zman, Date>` of 14+ prayer times; registered as `@Service` bean
 - **MinyanService**: Simple CRUD layer. `setupMinyanObj()` populates `Schedule` from database strings
+- **CalendarImportService**: Handles import, classification, and persistence of calendar entries
+- **MinyanClassifier**: Pattern-based classification with title qualifier extraction
+- **CalendarImportProvider**: Fetches and formats calendar-imported events for display
 - **Timezone**: Hardcoded to "America/New_York"; set at app startup in `TeaneckMinyanimApplication.main()`
 
 ### Minyan Scheduling Model
@@ -27,7 +32,8 @@ This is a Spring Boot application that displays Jewish prayer services (minyanim
 - **Schedule.getMappedSchedule()**: Returns `HashMap<MinyanDay, MinyanTime>` for display
 
 ### Enums & Type Safety
-- **MinyanType**: SHACHARIS, MINCHA, MAARIV, SELICHOS, MEGILA_READING (see `displayName()` for UI strings)
+- **MinyanType**: SHACHARIS, MINCHA, MAARIV, MINCHA_MAARIV, SELICHOS, MEGILA_READING (see `displayName()` for UI strings)
+- **MinyanClassification**: MINYAN, MINCHA_MAARIV, NON_MINYAN, OTHER (for imported calendar entries)
 - **Nusach**: ASHKENAZ, SEFARD, EDOT_HAMIZRACH, ARIZAL, UNSPECIFIED (each has `is*()` helper methods)
 - **Zman**: 14+ Jewish times (ALOS_HASHACHAR, NETZ, MISHEYAKIR, etc.)
 - All enums have `fromString()` and `displayName()` methods
@@ -47,7 +53,7 @@ This is a Spring Boot application that displays Jewish prayer services (minyanim
 - **URL**: `jdbc:mariadb://localhost:3306/minyanim` (hardcoded in application.properties)
 - **Credentials**: root / passw0rd (hardcoded - see security section below)
 - **Schema**: Hibernate auto-updates via `spring.jpa.hibernate.ddl-auto=update`
-- **Tables**: Minyan, Organization, Location, Account, TNMUser, TNMSettings
+- **Tables**: Minyan, Organization, Location, Account, TNMUser, TNMSettings, OrganizationCalendarEntry
 
 ## Frontend Patterns
 - **Templating**: Thymeleaf (Spring Security integration via `thymeleaf-extras-springsecurity5`)
@@ -188,3 +194,116 @@ NOTES, NUSACH (enum), WHATSAPP, VERSION
 - **Add organization-wide setting**: Add column to `TNMSettings` entity, expose via `TNMSettingsService`, add to settings template
 - **Add new Zman type**: Add to `Zman.java` enum, implement `displayName()` switch case, reference in time calculations
 - **Modify admin form**: Edit `templates/admin/minyanim/new.html` and `update.html`; form fields post to `AdminController` with standard naming convention
+- **Add new classification pattern**: Update `MinyanClassifier` allowlist/denylist patterns
+- **Add new title qualifier**: Add to `extractTitleQualifier()` method in `MinyanClassifier`
+
+## Calendar Import System (Added v1.2.2)
+
+### Overview
+The calendar import system allows organizations to import minyan schedules from external calendars (CSV, ICS, etc.). Events are automatically classified, enriched with Jewish calendar data, and displayed alongside rule-based minyanim.
+
+### Key Components
+
+#### MinyanClassifier (`service/calendar/MinyanClassifier.java`)
+Intelligent pattern-based classification service with title processing:
+
+**Classification Types:**
+- `MINYAN` - Prayer services (Shacharis, Mincha, Maariv)
+- `MINCHA_MAARIV` - Combined afternoon/evening services (includes Shkiya calculation)
+- `NON_MINYAN` - Learning/social events (Daf Yomi, Shiur, Kiddush, Candle Lighting)
+- `OTHER` - General minyan-related events (Selichos, Sunrise Minyan)
+
+**Pattern Priority:**
+1. Combined Mincha/Maariv patterns (most specific)
+2. Denylist patterns (NON_MINYAN) - wins over allowlist
+3. Allowlist patterns (MINYAN)
+4. Default: NON_MINYAN (conservative approach)
+
+**Title Qualifier Extraction:**
+Automatically extracts qualifiers from titles and adds to notes:
+- Teen, Youth, Young Adult
+- Early, Late
+- Fast, Quick, Express
+- Main, Second
+- Women's, Men's
+- Kollel, Vasikin, Hanetz
+
+Example: "Teen Minyan" → title: "Minyan", notes: "Teen"
+
+**Shkiya Integration:**
+For MINCHA_MAARIV entries, automatically calculates and appends sunset time to notes:
+- Uses ZmanimHandler for accurate calculation
+- Format: "Shkiya: 4:38 PM"
+- Combined with extracted qualifiers if present
+
+#### CalendarImportService (`service/calendar/CalendarImportService.java`)
+Handles import, deduplication, and persistence:
+
+**Core Behaviors:**
+- NON_MINYAN events automatically set to `enabled = false`
+- Enforced during both create and update operations
+- Respects manual location edits (location_manually_edited flag)
+- Classification re-applied on reimport
+- Manually edited entries preserved unless "Reimport All" used
+
+#### CalendarImportProvider (`service/provider/CalendarImportProvider.java`)
+Fetches calendar entries for display:
+
+**Display Logic:**
+- Only fetches enabled entries (`findByOrganizationIdAndDateAndEnabledTrue`)
+- Notes field shown directly (contains Shkiya + qualifiers)
+- Description field NOT automatically appended
+- Integrates with ZmanimService for unified minyan display
+
+#### OrganizationCalendarEntry (Model)
+Database entity for imported events:
+
+**Key Fields:**
+- `classification` (enum): Event classification
+- `classificationReason` (text): Explanation of classification decision
+- `notes` (text): Shkiya time and extracted qualifiers
+- `location_manually_edited` (boolean): Manual edit tracking
+- `manually_edited_by` (varchar): Username of editor
+- `manually_edited_at` (timestamp): Edit timestamp
+- `enabled` (boolean): Display toggle (auto-disabled for NON_MINYAN)
+
+### Admin UI Features
+
+#### Calendar Entries Management (`/admin/{orgId}/calendar-entries`)
+Modern table with:
+- **Sortable columns**: date, time, title, type, enabled, importedAt (default: date ASC)
+- **Filters**: date range, text search, classification, enabled status
+- **Statistics dashboard**: Entry counts by classification
+- **Color-coded badges**: Classification (Green: MINYAN, Cyan: MINCHA_MAARIV, Gray: NON_MINYAN)
+- **Prayer type pills**: Based on title text (Blue: Shacharis, Amber: Mincha, Purple: Maariv)
+- **Inline location editing**: Click-to-edit with dropdown, manual change tracking
+- **"Show Non-Minyan" toggle**: View excluded events for debugging
+- **"Reimport All" button**: Override all entries including manual edits (with confirmation)
+
+### Best Practices
+
+**Classification Patterns:**
+- Use word boundaries (`\b`) to prevent false positives
+- Denylist should be explicit and comprehensive
+- Test with real calendar data before deploying
+- Check `classificationReason` for debugging misclassifications
+
+**Notes Field Management:**
+- Only classifier-generated content goes in notes
+- Don't append description automatically
+- Use title qualifiers for admin-controlled notes
+- Shkiya always appended for MINCHA_MAARIV
+
+**Manual Edits:**
+- Always check `location_manually_edited` flag before overwriting
+- Track editor username and timestamp
+- Provide explicit "Reimport All" for full override
+- Show visual indicator (blue dot) for manually edited fields
+
+### Testing
+See `MinyanClassifierTest.java` for comprehensive test examples:
+- 43 tests covering all classification scenarios
+- Shkiya note generation and formatting
+- Title qualifier extraction
+- Priority ordering
+- Edge cases (null, empty, combined fields)

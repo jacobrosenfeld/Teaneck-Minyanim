@@ -1,7 +1,7 @@
 # Feature Summary: Modernized Import Management UI v1.2.2
 
 ## Overview
-This release modernizes the "Manage Imported Entries" interface and implements intelligent classification of imported calendar events, with special support for combined Mincha/Maariv entries.
+This release modernizes the "Manage Imported Entries" interface and implements intelligent classification of imported calendar events, with special support for combined Mincha/Maariv entries. It also includes title qualifier extraction and conservative default classification.
 
 ## Changes Implemented
 
@@ -16,7 +16,13 @@ This release modernizes the "Manage Imported Entries" interface and implements i
   
 - **classificationReason** (text): Explains why an entry was classified as such, making the system explainable and debuggable
 
-- **notes** (text): Additional information, primarily used to display Shkiya (sunset) time for Mincha/Maariv events
+- **notes** (text): Additional information, including:
+  - Shkiya (sunset) time for Mincha/Maariv events (e.g., "Shkiya: 4:38 PM")
+  - Extracted title qualifiers (e.g., "Teen", "Early", "Women's")
+
+- **location_manually_edited** (boolean): Tracks if location was manually edited by admin
+- **manually_edited_by** (varchar): Username of person who edited
+- **manually_edited_at** (timestamp): When the manual edit occurred
 
 ### 2. Intelligent Classification System
 
@@ -47,6 +53,11 @@ A new service that automatically classifies imported entries using pattern match
 - Program
 - Workshop
 - Seminar
+- Candle Lighting (added in v1.2.2)
+- Kiddush
+- Seudah
+- Melave Malka
+- Night Seder
 
 **Combined Patterns (MINCHA_MAARIV):**
 - Mincha/Maariv
@@ -56,9 +67,11 @@ A new service that automatically classifies imported entries using pattern match
 
 #### Classification Priority
 1. **Combined Mincha/Maariv** (most specific) - takes precedence
-2. **Denylist** (explicit exclusion) - filters out non-minyan events
+2. **Denylist** (explicit exclusion) - filters out non-minyan events, wins over allowlist
 3. **Allowlist** (inclusion) - identifies minyan events
-4. **Other** (fallback) - unmatched entries
+4. **NON_MINYAN** (conservative default) - unmatched entries default to disabled for safety
+
+**Conservative Default Approach**: Events that don't match any explicit minyan pattern are classified as NON_MINYAN and disabled by default. This ensures only recognized minyanim appear in public displays.
 
 #### Shkiya Time Integration
 For entries classified as `MINCHA_MAARIV`, the system automatically:
@@ -67,10 +80,32 @@ For entries classified as `MINCHA_MAARIV`, the system automatically:
 - Uses Teaneck, NJ coordinates (40.906871, -74.020924)
 - Gracefully handles computation failures
 
-#### Title Normalization
-The system removes redundant minyan-type words from titles:
+#### Title Normalization and Qualifier Extraction
+The system intelligently processes event titles:
+
+**Redundant Word Removal:**
 - Before: "Shacharis – Shacharit"
-- After: "Shacharis" (or just removes the redundant "Shacharit")
+- After: "Shacharis" (removes redundant "Shacharit")
+
+**Title Qualifier Extraction** (New in v1.2.2):
+The classifier automatically extracts meaningful qualifiers from titles and adds them to the notes field. This allows admins to control what becomes a note through title formatting.
+
+**Supported Qualifiers:**
+- Teen, Youth, Young Adult
+- Early, Late
+- Fast, Quick, Express
+- Main, Second
+- Women's, Men's
+- Kollel
+- Vasikin, Hanetz
+
+**Examples:**
+- "Teen Minyan" → title: "Minyan", notes: "Teen"
+- "Early Shacharis" → title: "Shacharis", notes: "Early"
+- "Women's Mincha" → title: "Mincha", notes: "Women's"
+- "Fast Maariv" → title: "Maariv", notes: "Fast"
+
+**Note:** The description field is NOT automatically appended to notes. Only classifier-generated content (Shkiya times and extracted qualifiers) appears in notes.
 
 ### 3. Enhanced Controller (AdminController)
 
@@ -98,9 +133,24 @@ The system removes redundant minyan-type words from titles:
   - Cyan: MINCHA_MAARIV
   - Gray: NON_MINYAN
   - Yellow: OTHER
+- **Color-coded prayer type pills** (based on title text parsing):
+  - Blue: Shacharis/Shacharit
+  - Amber: Mincha/Minchah
+  - Purple: Maariv/Ma'ariv
+  - Cyan: Mincha/Maariv combined
 - **Statistics cards** showing counts at a glance
 - **Improved spacing and typography**
 - **Responsive design** that works on all screen sizes
+
+#### Inline Location Editing
+- **Click-to-edit** functionality for location field
+- **Dropdown populated** from organization's existing locations
+- **Manual edit tracking**: Visual indicator (blue dot) shows when location was manually edited
+- **Persistent edits**: Manual changes preserved across imports
+- **"Reimport All"** button to override all entries including manual edits (with confirmation)
+
+#### Default Sort
+- Date ascending (earliest to latest) shows most current/upcoming events first
 
 #### Interactive Features
 - **Sortable columns**: Click headers to sort by any field
@@ -146,12 +196,17 @@ New query methods in `OrganizationCalendarEntryRepository`:
 
 ### Schema Changes
 ```sql
--- Three new columns
+-- Classification and notes columns
 ALTER TABLE organization_calendar_entry ADD COLUMN classification VARCHAR(20);
 ALTER TABLE organization_calendar_entry ADD COLUMN classification_reason TEXT;
 ALTER TABLE organization_calendar_entry ADD COLUMN notes TEXT;
 
--- Two new indexes for performance
+-- Manual edit tracking columns
+ALTER TABLE organization_calendar_entry ADD COLUMN location_manually_edited BOOLEAN DEFAULT FALSE;
+ALTER TABLE organization_calendar_entry ADD COLUMN manually_edited_by VARCHAR(255);
+ALTER TABLE organization_calendar_entry ADD COLUMN manually_edited_at TIMESTAMP;
+
+-- Indexes for performance
 CREATE INDEX idx_org_classification ON organization_calendar_entry(organization_id, classification);
 CREATE INDEX idx_org_enabled_classification ON organization_calendar_entry(organization_id, enabled, classification);
 ```
@@ -253,18 +308,21 @@ No configuration changes required. All new features work with existing settings.
 ## Files Changed
 
 ### New Files
-- `src/main/java/com/tbdev/teaneckminyanim/enums/MinyanClassification.java`
-- `src/main/java/com/tbdev/teaneckminyanim/service/calendar/MinyanClassifier.java`
-- `src/test/java/com/tbdev/teaneckminyanim/service/calendar/MinyanClassifierTest.java`
-- `MIGRATION_v1.2.2.sql`
+- `src/main/java/com/tbdev/teaneckminyanim/enums/MinyanClassification.java` - Classification enum
+- `src/main/java/com/tbdev/teaneckminyanim/service/calendar/MinyanClassifier.java` - Classification logic with title qualifier extraction
+- `src/test/java/com/tbdev/teaneckminyanim/service/calendar/MinyanClassifierTest.java` - Comprehensive tests (43 tests)
+- `MIGRATION_v1.2.2.sql` - Database migration script
 - `FEATURE_SUMMARY_v1.2.2.md` (this file)
 
 ### Modified Files
-- `src/main/java/com/tbdev/teaneckminyanim/model/OrganizationCalendarEntry.java`
-- `src/main/java/com/tbdev/teaneckminyanim/repo/OrganizationCalendarEntryRepository.java`
-- `src/main/java/com/tbdev/teaneckminyanim/service/calendar/CalendarImportService.java`
-- `src/main/java/com/tbdev/teaneckminyanim/controllers/AdminController.java`
-- `src/main/resources/templates/admin/calendar-entries.html`
+- `src/main/java/com/tbdev/teaneckminyanim/model/OrganizationCalendarEntry.java` - Added classification, notes, and manual edit tracking fields
+- `src/main/java/com/tbdev/teaneckminyanim/repo/OrganizationCalendarEntryRepository.java` - New query methods
+- `src/main/java/com/tbdev/teaneckminyanim/service/calendar/CalendarImportService.java` - Auto-disable NON_MINYAN, respect manual edits
+- `src/main/java/com/tbdev/teaneckminyanim/service/provider/CalendarImportProvider.java` - Notes display logic
+- `src/main/java/com/tbdev/teaneckminyanim/service/ZmanimService.java` - Today-based next minyan
+- `src/main/java/com/tbdev/teaneckminyanim/service/ZmanimHandler.java` - Added @Service annotation
+- `src/main/java/com/tbdev/teaneckminyanim/controllers/AdminController.java` - Filtering, sorting, inline editing, reimport all
+- `src/main/resources/templates/admin/calendar-entries.html` - Modern UI with color pills and inline editing
 
 ## Deployment Instructions
 
@@ -291,6 +349,17 @@ No configuration changes required. All new features work with existing settings.
 ### Issue: Filters not working
 **Solution**: Clear browser cache, check for JavaScript errors in console
 
+## Key Improvements Summary
+
+1. **Conservative Classification**: Unmatched events default to NON_MINYAN (disabled) for safety
+2. **Title Qualifier Extraction**: Automatically extracts "Teen", "Early", "Women's", etc. from titles into notes
+3. **Candle Lighting Detection**: Added to denylist for proper exclusion
+4. **Inline Location Editing**: Click-to-edit with manual change tracking
+5. **Manual Edit Persistence**: Regular imports preserve admin edits; "Reimport All" provides explicit override
+6. **Color-Coded Pills**: Visual prayer type indicators based on title text
+7. **Smart Notes Management**: Only classifier-generated content (Shkiya + qualifiers) in notes field
+8. **Today-Based Next Minyan**: Always shows today's upcoming minyan regardless of viewed date
+
 ## Conclusion
 
-This release significantly improves the import management experience with intelligent classification, modern UI, and powerful filtering capabilities. The system is now better equipped to handle diverse calendar imports while providing administrators with the tools they need to manage entries effectively.
+This release significantly improves the import management experience with intelligent classification, modern UI, powerful filtering capabilities, and smart title processing. The system is now better equipped to handle diverse calendar imports while providing administrators with the tools they need to manage entries effectively. The conservative default approach ensures only recognized minyanim appear in public displays, while the qualifier extraction system allows flexible note generation through title formatting.
