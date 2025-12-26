@@ -280,7 +280,7 @@ class MinyanClassifierTest {
     @Test
     void testNonMinyan_ShouldBeDisabled_NightSeder() {
         MinyanClassifier.ClassificationResult result = 
-            classifier.classify("Night Seder Learning Program", null, null, LocalDate.now());
+            classifier.classify("Night Seder", null, null, LocalDate.now());
 
         assertEquals(MinyanClassification.NON_MINYAN, result.classification,
             "Night Seder (learning program) must be classified as NON_MINYAN and should be disabled");

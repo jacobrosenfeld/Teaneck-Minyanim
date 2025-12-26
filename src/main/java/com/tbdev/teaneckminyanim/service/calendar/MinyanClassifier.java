@@ -68,6 +68,7 @@ public class MinyanClassifier {
         MINYAN_PATTERNS.add(Pattern.compile("\\bshaharit\\b", Pattern.CASE_INSENSITIVE));
         MINYAN_PATTERNS.add(Pattern.compile("\\bshachris\\b", Pattern.CASE_INSENSITIVE));
         MINYAN_PATTERNS.add(Pattern.compile("\\bshachrith\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bteen\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
         
         // Mincha variants
         MINYAN_PATTERNS.add(Pattern.compile("\\bmincha\\b", Pattern.CASE_INSENSITIVE));
@@ -90,9 +91,6 @@ public class MinyanClassifier {
         MINYAN_PATTERNS.add(Pattern.compile("\\bsunrise\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
         MINYAN_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
         
-        // General minyan terms
-        MINYAN_PATTERNS.add(Pattern.compile("\\bminyan\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bdavening\\b", Pattern.CASE_INSENSITIVE));
     }
 
     /**
