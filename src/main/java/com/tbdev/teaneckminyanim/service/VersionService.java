@@ -1,11 +1,13 @@
 package com.tbdev.teaneckminyanim.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+@Slf4j
 @Service
 public class VersionService {
     
@@ -30,7 +32,7 @@ public class VersionService {
             }
         } catch (IOException e) {
             // Log the error but don't throw - return default version
-            System.err.println("Could not load version from pom.properties: " + e.getMessage());
+            log.warn("Could not load version from pom.properties: {}", e.getMessage());
         }
         
         // Fallback to reading from package if pom.properties not available (dev mode)
