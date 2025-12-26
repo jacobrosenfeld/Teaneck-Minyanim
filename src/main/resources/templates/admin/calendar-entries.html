@@ -118,6 +118,36 @@
             color: #000;
         }
         
+        /* Prayer type pills (based on title text) */
+        .prayer-pill {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-right: 0.25rem;
+        }
+        
+        .prayer-pill-shacharis {
+            background-color: #007bff;
+            color: #fff;
+        }
+        
+        .prayer-pill-mincha {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .prayer-pill-maariv {
+            background-color: #6f42c1;
+            color: #fff;
+        }
+        
+        .prayer-pill-mincha-maariv {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+        
         /* Statistics */
         .stats-row {
             display: flex;
@@ -470,6 +500,7 @@
                                             <td th:text="${#temporals.format(entry.date, 'MMM dd, yyyy')}"></td>
                                             <td th:text="${entry.startTime != null ? #temporals.format(entry.startTime, 'h:mm a') : 'N/A'}"></td>
                                             <td>
+                                                <span th:attr="data-title=${entry.title}" class="prayer-type-pill"></span>
                                                 <strong th:text="${entry.title}"></strong>
                                                 <br th:if="${entry.classificationReason}">
                                                 <small class="text-muted" th:if="${entry.classificationReason}" 
@@ -594,6 +625,43 @@
             displaySpan.style.display = 'inline';
         }
     }
+    
+    // Add prayer type pills based on title text
+    document.addEventListener('DOMContentLoaded', function() {
+        const pillElements = document.querySelectorAll('.prayer-type-pill');
+        
+        pillElements.forEach(pill => {
+            const title = (pill.getAttribute('data-title') || '').toLowerCase();
+            let pillClass = '';
+            let pillText = '';
+            
+            // Check for combined Mincha/Maariv first (most specific)
+            if ((title.includes('mincha') || title.includes('minchah')) && 
+                (title.includes('maariv') || title.includes("ma'ariv") || title.includes('arvit'))) {
+                pillClass = 'prayer-pill prayer-pill-mincha-maariv';
+                pillText = 'Mincha/Maariv';
+            }
+            // Check for individual prayer types
+            else if (title.includes('shacharis') || title.includes('shacharit') || title.includes('shaharit')) {
+                pillClass = 'prayer-pill prayer-pill-shacharis';
+                pillText = 'Shacharis';
+            }
+            else if (title.includes('mincha') || title.includes('minchah') || title.includes('minha')) {
+                pillClass = 'prayer-pill prayer-pill-mincha';
+                pillText = 'Mincha';
+            }
+            else if (title.includes('maariv') || title.includes("ma'ariv") || title.includes('arvit')) {
+                pillClass = 'prayer-pill prayer-pill-maariv';
+                pillText = 'Maariv';
+            }
+            
+            // Only add pill if we detected a prayer type
+            if (pillClass) {
+                pill.className = pillClass;
+                pill.textContent = pillText;
+            }
+        });
+    });
 </script>
 </body>
 </html>

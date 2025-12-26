@@ -130,13 +130,15 @@ class MinyanClassifierTest {
     }
 
     @Test
-    void testClassify_NoMatch_Other() {
+    void testClassify_NoMatch_NonMinyan() {
         // Use something that truly doesn't match any pattern
+        // With conservative default, unmatched events are NON_MINYAN
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Building Committee", null, null, LocalDate.now());
 
-        assertEquals(MinyanClassification.OTHER, result.classification);
+        assertEquals(MinyanClassification.NON_MINYAN, result.classification);
         assertNotNull(result.reason);
+        assertTrue(result.reason.contains("No minyan pattern matched"));
     }
 
     @Test
@@ -282,6 +284,16 @@ class MinyanClassifierTest {
 
         assertEquals(MinyanClassification.NON_MINYAN, result.classification,
             "Night Seder (learning program) must be classified as NON_MINYAN and should be disabled");
+    }
+
+    @Test
+    void testNonMinyan_ShouldBeDisabled_CandleLighting() {
+        MinyanClassifier.ClassificationResult result = 
+            classifier.classify("Candle Lighting", null, null, LocalDate.now());
+
+        assertEquals(MinyanClassification.NON_MINYAN, result.classification,
+            "Candle Lighting must be classified as NON_MINYAN and should be disabled");
+        assertTrue(result.reason.contains("candle\\s+lighting"));
     }
 
     /**
@@ -471,25 +483,26 @@ class MinyanClassifierTest {
     }
     
     /**
-     * Test that OTHER-classified events should be enabled by default (benefit of the doubt)
+     * Test that unmatched events default to NON_MINYAN (conservative approach)
      */
     @Test
-    void testClassify_OtherEventsShouldBeEnabledByDefault() {
-        String[] otherEvents = {
+    void testClassify_UnmatchedEventsDefaultToNonMinyan() {
+        String[] unmatchedEvents = {
             "Building Committee",
             "Community Event",
             "Special Occasion"
         };
         
-        for (String event : otherEvents) {
+        for (String event : unmatchedEvents) {
             MinyanClassifier.ClassificationResult result = 
                 classifier.classify(event, null, null, LocalDate.now());
             
-            assertEquals(MinyanClassification.OTHER, result.classification,
-                "Event '" + event + "' should be classified as OTHER");
+            assertEquals(MinyanClassification.NON_MINYAN, result.classification,
+                "Event '" + event + "' should be classified as NON_MINYAN (conservative default)");
             
-            // Note: OTHER events are enabled by default (benefit of the doubt)
-            // Admin can manually disable if needed
+            // Note: NON_MINYAN events are disabled by default (conservative approach)
+            // Only explicit minyan patterns are enabled
+            assertTrue(result.reason.contains("No minyan pattern matched"));
         }
     }
 }

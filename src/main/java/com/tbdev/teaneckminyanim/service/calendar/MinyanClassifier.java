@@ -59,6 +59,7 @@ public class MinyanClassifier {
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bmelave\\s+malka\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bworkshop\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bseminar\\b", Pattern.CASE_INSENSITIVE));
+        NON_MINYAN_PATTERNS.add(Pattern.compile("\\bcandle\\s+lighting\\b", Pattern.CASE_INSENSITIVE));
         
         // Allowlist patterns - case insensitive (check LAST - positive identification)
         // Shacharis variants
@@ -162,10 +163,10 @@ public class MinyanClassifier {
             }
         }
         
-        // Default to OTHER if no patterns match
+        // Default to NON_MINYAN if no patterns match (conservative approach)
         return new ClassificationResult(
-            MinyanClassification.OTHER,
-            "No specific pattern matched"
+            MinyanClassification.NON_MINYAN,
+            "No minyan pattern matched - defaulting to NON_MINYAN for safety"
         );
     }
 

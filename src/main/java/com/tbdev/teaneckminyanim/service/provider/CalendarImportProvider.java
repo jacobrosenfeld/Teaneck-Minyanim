@@ -122,10 +122,10 @@ public class CalendarImportProvider implements OrgScheduleProvider {
         // Use entry ID as parentMinyanId (prefixed to distinguish from regular minyanim)
         String parentMinyanId = "calendar-" + entry.getId();
         
-        // Combine notes and entry notes
-        String notes = entry.getDescription() != null ? entry.getDescription() : "";
-        if (entry.getNotes() != null && !entry.getNotes().isEmpty()) {
-            notes = notes.isEmpty() ? entry.getNotes() : notes + ". " + entry.getNotes();
+        // Combine notes and description - prioritize notes (contains Shkiya for Mincha/Maariv)
+        String notes = entry.getNotes() != null ? entry.getNotes() : "";
+        if (entry.getDescription() != null && !entry.getDescription().isEmpty()) {
+            notes = notes.isEmpty() ? entry.getDescription() : notes + ". " + entry.getDescription();
         }
 
         return new MinyanEvent(
