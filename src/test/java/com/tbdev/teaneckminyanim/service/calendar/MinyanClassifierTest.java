@@ -329,4 +329,88 @@ class MinyanClassifierTest {
         
         assertEquals(MinyanClassification.MINYAN, result.classification);
     }
+    
+    /**
+     * Test that verifies the core rule: NON_MINYAN classification should result in disabled entries.
+     * This test documents the expected behavior even though it tests the classifier, not the import service.
+     */
+    @Test
+    void testClassify_NonMinyanShouldBeDisabledByDefault() {
+        String[] nonMinyanEvents = {
+            "Daf Yomi",
+            "Torah Shiur",
+            "Rabbi's Lecture",
+            "Learning Class",
+            "Community Kiddush",
+            "Melave Malka",
+            "Board Meeting",
+            "Drasha",
+            "Chaburah"
+        };
+        
+        for (String event : nonMinyanEvents) {
+            MinyanClassifier.ClassificationResult result = 
+                classifier.classify(event, null, null, LocalDate.now());
+            
+            assertEquals(MinyanClassification.NON_MINYAN, result.classification,
+                "Event '" + event + "' should be classified as NON_MINYAN");
+            assertNotNull(result.reason, 
+                "Classification reason should be provided for '" + event + "'");
+            
+            // Note: The actual enabled/disabled logic is in CalendarImportService.createEntry()
+            // NON_MINYAN entries are set to enabled=false to exclude them from all minyan displays
+        }
+    }
+    
+    /**
+     * Test that MINYAN-classified events should be enabled by default
+     */
+    @Test
+    void testClassify_MinyanEventsShouldBeEnabledByDefault() {
+        String[] minyanEvents = {
+            "Shacharis",
+            "Mincha",
+            "Maariv",
+            "Mincha/Maariv",
+            "Selichos",
+            "Neitz",
+            "Sunrise Minyan"
+        };
+        
+        for (String event : minyanEvents) {
+            MinyanClassifier.ClassificationResult result = 
+                classifier.classify(event, null, null, LocalDate.now());
+            
+            assertTrue(
+                result.classification == MinyanClassification.MINYAN ||
+                result.classification == MinyanClassification.MINCHA_MAARIV,
+                "Event '" + event + "' should be classified as MINYAN or MINCHA_MAARIV");
+            
+            // Note: The actual enabled/disabled logic is in CalendarImportService.createEntry()
+            // MINYAN and MINCHA_MAARIV entries are set to enabled=true
+        }
+    }
+    
+    /**
+     * Test that OTHER-classified events should be enabled by default (benefit of the doubt)
+     */
+    @Test
+    void testClassify_OtherEventsShouldBeEnabledByDefault() {
+        String[] otherEvents = {
+            "Building Committee",
+            "Community Event",
+            "Special Occasion"
+        };
+        
+        for (String event : otherEvents) {
+            MinyanClassifier.ClassificationResult result = 
+                classifier.classify(event, null, null, LocalDate.now());
+            
+            assertEquals(MinyanClassification.OTHER, result.classification,
+                "Event '" + event + "' should be classified as OTHER");
+            
+            // Note: OTHER events are enabled by default (benefit of the doubt)
+            // Admin can manually disable if needed
+        }
+    }
 }

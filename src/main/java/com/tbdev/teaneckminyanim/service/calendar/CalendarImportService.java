@@ -278,6 +278,14 @@ public class CalendarImportService {
 
     /**
      * Create a new OrganizationCalendarEntry from parsed data.
+     * 
+     * IMPORTANT: NON_MINYAN events are disabled by default and will NOT appear in:
+     * - Org pages
+     * - Home page
+     * - "Next Minyan" displays
+     * - Map buttons
+     * 
+     * They only appear in admin/management views when explicitly filtered to show excluded items.
      */
     private OrganizationCalendarEntry createEntry(String organizationId,
                                                   CalendarCsvParser.ParsedEntry parsed,
@@ -289,6 +297,14 @@ public class CalendarImportService {
         
         // Normalize title to remove redundant words
         String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
+        
+        // Core Rule: NON_MINYAN events are disabled by default
+        // This ensures they don't appear in any user-facing minyan displays
+        boolean shouldEnable = classificationResult.classification != com.tbdev.teaneckminyanim.enums.MinyanClassification.NON_MINYAN;
+        
+        if (!shouldEnable) {
+            log.debug("Auto-disabling NON_MINYAN entry: {} ({})", parsed.getTitle(), classificationResult.reason);
+        }
         
         return OrganizationCalendarEntry.builder()
                 .organizationId(organizationId)
@@ -309,7 +325,7 @@ public class CalendarImportService {
                 .classification(classificationResult.classification)
                 .classificationReason(classificationResult.reason)
                 .notes(classificationResult.notes)
-                .enabled(true)
+                .enabled(shouldEnable)
                 .importedAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
