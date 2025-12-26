@@ -233,7 +233,7 @@ public class MinyanClassifier {
 
     /**
      * Extract special qualifiers from title that should be preserved as notes.
-     * Examples: "Teen Minyan" → "Teen", "Early Shacharis" → "Early"
+     * Examples: "Teen Minyan" → "Teen Minyan", "Early Shacharis" → "Early Shacharis"
      * 
      * @param title The entry title
      * @return Qualifier string or null if none found
@@ -246,22 +246,45 @@ public class MinyanClassifier {
         String titleLower = title.toLowerCase().trim();
         List<String> qualifiers = new ArrayList<>();
         
-        // List of meaningful qualifiers to extract
-        String[] qualifierPatterns = {
-            "teen", "youth", "young adult", "early", "late", 
-            "fast", "quick", "express", "main", "second",
-            "women's", "men's", "kollel", "vasikin", "hanetz"
+        // Multi-word phrases to extract (check these first)
+        String[] multiWordPatterns = {
+            "teen minyan", "youth minyan", "young adult minyan",
+            "early shacharis", "early shacharit", "late shacharis", "late shacharit",
+            "early mincha", "late mincha", "fast mincha",
+            "early maariv", "late maariv",
+            "women's minyan", "men's minyan"
         };
         
-        for (String qualifier : qualifierPatterns) {
-            // Use word boundaries to match whole words
-            Pattern pattern = Pattern.compile("\\b" + Pattern.quote(qualifier) + "\\b", Pattern.CASE_INSENSITIVE);
+        for (String phrase : multiWordPatterns) {
+            Pattern pattern = Pattern.compile("\\b" + Pattern.quote(phrase) + "\\b", Pattern.CASE_INSENSITIVE);
             if (pattern.matcher(titleLower).find()) {
-                // Preserve original casing
-                int start = titleLower.indexOf(qualifier);
+                // Preserve original casing by finding the phrase in the original title
+                int start = titleLower.indexOf(phrase.toLowerCase());
                 if (start != -1) {
-                    String originalQualifier = title.substring(start, start + qualifier.length());
-                    qualifiers.add(originalQualifier);
+                    String originalPhrase = title.substring(start, start + phrase.length());
+                    qualifiers.add(originalPhrase);
+                }
+            }
+        }
+        
+        // If no multi-word patterns matched, check single-word qualifiers
+        if (qualifiers.isEmpty()) {
+            String[] singleWordPatterns = {
+                "teen", "youth", "early", "late", 
+                "fast", "quick", "express", "main", "second",
+                "kollel", "vasikin", "hanetz"
+            };
+            
+            for (String qualifier : singleWordPatterns) {
+                // Use word boundaries to match whole words
+                Pattern pattern = Pattern.compile("\\b" + Pattern.quote(qualifier) + "\\b", Pattern.CASE_INSENSITIVE);
+                if (pattern.matcher(titleLower).find()) {
+                    // Preserve original casing
+                    int start = titleLower.indexOf(qualifier);
+                    if (start != -1) {
+                        String originalQualifier = title.substring(start, start + qualifier.length());
+                        qualifiers.add(originalQualifier);
+                    }
                 }
             }
         }
