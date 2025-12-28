@@ -24,8 +24,8 @@ public class MinyanClassifier {
 
     private final ZmanimHandler zmanimHandler;
 
-    // Allowlist: Patterns that indicate a minyan event
-    private static final Set<Pattern> MINYAN_PATTERNS = new HashSet<>();
+    // Allowlist: Patterns that indicate a minyan event (ordered by priority)
+    private static final List<Pattern> MINYAN_PATTERNS = new ArrayList<>();
     
     // Denylist: Patterns that indicate non-minyan events
     private static final Set<Pattern> NON_MINYAN_PATTERNS = new HashSet<>();
@@ -62,19 +62,11 @@ public class MinyanClassifier {
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bcandle\\s+lighting\\b", Pattern.CASE_INSENSITIVE));
         
         // Allowlist patterns - case insensitive (check LAST - positive identification)
-        // Shacharis variants
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshacharis\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshacharit\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshaharit\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshachris\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshachrith\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bteen\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
-        
-        // Mincha variants
+        // Mincha variants (specific before generic to avoid misclassifying early/late mincha)
+        MINYAN_PATTERNS.add(Pattern.compile("\\bearly\\s+mincha\\b", Pattern.CASE_INSENSITIVE));
         MINYAN_PATTERNS.add(Pattern.compile("\\bmincha\\b", Pattern.CASE_INSENSITIVE));
         MINYAN_PATTERNS.add(Pattern.compile("\\bminchah\\b", Pattern.CASE_INSENSITIVE));
         MINYAN_PATTERNS.add(Pattern.compile("\\bminha\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bearly\\s+mincha\\b", Pattern.CASE_INSENSITIVE));
         
         // Maariv variants
         MINYAN_PATTERNS.add(Pattern.compile("\\bmaariv\\b", Pattern.CASE_INSENSITIVE));
@@ -91,6 +83,14 @@ public class MinyanClassifier {
         MINYAN_PATTERNS.add(Pattern.compile("\\bnetz\\b", Pattern.CASE_INSENSITIVE));
         MINYAN_PATTERNS.add(Pattern.compile("\\bsunrise\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
         MINYAN_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
+
+        // Shacharis variants (kept last to let more specific patterns win first)
+        MINYAN_PATTERNS.add(Pattern.compile("\\bshacharis\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bshacharit\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bshaharit\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bshachris\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bshachrith\\b", Pattern.CASE_INSENSITIVE));
+        MINYAN_PATTERNS.add(Pattern.compile("\\bteen\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
         
     }
 
