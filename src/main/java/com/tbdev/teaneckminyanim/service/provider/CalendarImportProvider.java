@@ -149,11 +149,16 @@ public class CalendarImportProvider implements OrgScheduleProvider {
         // Check classification first - most reliable
         if (entry.getClassification() != null) {
             switch (entry.getClassification()) {
+                case SHACHARIS:
+                    return MinyanType.SHACHARIS;
+                case MINCHA:
+                    return MinyanType.MINCHA;
+                case MAARIV:
+                    return MinyanType.MAARIV;
                 case MINCHA_MAARIV:
                     return MinyanType.MINCHA_MAARIV;
-                case MINYAN:
-                    // Fall through to infer from title/type
-                    break;
+                case SELICHOS:
+                    return MinyanType.SELICHOS;
                 case NON_MINYAN:
                 case OTHER:
                     // These shouldn't appear as minyan events, but if they do, try to infer

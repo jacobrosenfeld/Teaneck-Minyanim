@@ -28,7 +28,7 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Shacharis", null, null, LocalDate.now());
 
-        assertEquals(MinyanClassification.MINYAN, result.classification);
+        assertEquals(MinyanClassification.SHACHARIS, result.classification);
         assertNotNull(result.reason);
         assertTrue(result.reason.toLowerCase().contains("shacharis"), 
             "Reason should mention the matched pattern");
@@ -39,7 +39,7 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Shacharit", null, null, LocalDate.now());
 
-        assertEquals(MinyanClassification.MINYAN, result.classification);
+        assertEquals(MinyanClassification.SHACHARIS, result.classification);
         assertNotNull(result.reason);
     }
 
@@ -48,7 +48,7 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Mincha", null, null, LocalDate.now());
 
-        assertEquals(MinyanClassification.MINYAN, result.classification);
+        assertEquals(MinyanClassification.MINCHA, result.classification);
         assertNotNull(result.reason);
     }
 
@@ -57,7 +57,7 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Maariv", null, null, LocalDate.now());
 
-        assertEquals(MinyanClassification.MINYAN, result.classification);
+        assertEquals(MinyanClassification.MAARIV, result.classification);
         assertNotNull(result.reason);
     }
 
@@ -148,8 +148,8 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result2 = 
             classifier.classify("shacharis", null, null, LocalDate.now());
 
-        assertEquals(MinyanClassification.MINYAN, result1.classification);
-        assertEquals(MinyanClassification.MINYAN, result2.classification);
+        assertEquals(MinyanClassification.SHACHARIS, result1.classification);
+        assertEquals(MinyanClassification.SHACHARIS, result2.classification);
     }
 
     @Test
@@ -157,7 +157,7 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Morning Service", "Shacharis", null, LocalDate.now());
 
-        assertEquals(MinyanClassification.MINYAN, result.classification);
+        assertEquals(MinyanClassification.SHACHARIS, result.classification);
         assertNotNull(result.reason);
     }
 
@@ -166,13 +166,13 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Service", null, "Join us for Mincha", LocalDate.now());
 
-        assertEquals(MinyanClassification.MINYAN, result.classification);
+        assertEquals(MinyanClassification.MINCHA, result.classification);
         assertNotNull(result.reason);
     }
 
     @Test
     void testNormalizeTitle_RemovesRedundantMinyanWords() {
-        String result = classifier.normalizeTitle("Shacharis", MinyanClassification.MINYAN);
+        String result = classifier.normalizeTitle("Shacharis", MinyanClassification.SHACHARIS);
         
         // The normalizer should remove redundant words, but if result is empty, returns original
         // So we just check that it doesn't throw and returns something
@@ -181,7 +181,7 @@ class MinyanClassifierTest {
 
     @Test
     void testNormalizeTitle_PreservesNonRedundantWords() {
-        String result = classifier.normalizeTitle("Shacharis Early Minyan", MinyanClassification.MINYAN);
+        String result = classifier.normalizeTitle("Shacharis Early Minyan", MinyanClassification.SHACHARIS);
         
         // Should keep meaningful content (either "Early" and "Minyan", or result is empty if all removed)
         assertTrue(result.contains("Early") || result.contains("Minyan") || result.isEmpty(),
@@ -190,13 +190,13 @@ class MinyanClassifierTest {
 
     @Test
     void testNormalizeTitle_HandlesNull() {
-        String result = classifier.normalizeTitle(null, MinyanClassification.MINYAN);
+        String result = classifier.normalizeTitle(null, MinyanClassification.SHACHARIS);
         assertNull(result, "Should handle null input");
     }
 
     @Test
     void testNormalizeTitle_HandlesEmpty() {
-        String result = classifier.normalizeTitle("", MinyanClassification.MINYAN);
+        String result = classifier.normalizeTitle("", MinyanClassification.SHACHARIS);
         assertEquals("", result, "Should handle empty input");
     }
 
@@ -304,8 +304,8 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Shacharis", null, null, LocalDate.now());
 
-        assertEquals(MinyanClassification.MINYAN, result.classification,
-            "Shacharis must be classified as MINYAN and should be enabled");
+        assertEquals(MinyanClassification.SHACHARIS, result.classification,
+            "Shacharis must be classified as SHACHARIS and should be enabled");
     }
 
     @Test
@@ -313,8 +313,8 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Mincha", null, null, LocalDate.now());
 
-        assertEquals(MinyanClassification.MINYAN, result.classification,
-            "Mincha must be classified as MINYAN and should be enabled");
+        assertEquals(MinyanClassification.MINCHA, result.classification,
+            "Mincha must be classified as MINCHA and should be enabled");
     }
 
     @Test
@@ -339,8 +339,8 @@ class MinyanClassifierTest {
             MinyanClassifier.ClassificationResult result = 
                 classifier.classify(variant, null, null, LocalDate.now());
             
-            assertEquals(MinyanClassification.MINYAN, result.classification,
-                "Variant '" + variant + "' should be classified as MINYAN");
+            assertEquals(MinyanClassification.SHACHARIS, result.classification,
+                "Variant '" + variant + "' should be classified as SHACHARIS");
         }
     }
     
@@ -352,8 +352,8 @@ class MinyanClassifierTest {
             MinyanClassifier.ClassificationResult result = 
                 classifier.classify(variant, null, null, LocalDate.now());
             
-            assertEquals(MinyanClassification.MINYAN, result.classification,
-                "Variant '" + variant + "' should be classified as MINYAN");
+            assertEquals(MinyanClassification.MINCHA, result.classification,
+                "Variant '" + variant + "' should be classified as MINCHA");
         }
     }
     
@@ -365,8 +365,8 @@ class MinyanClassifierTest {
             MinyanClassifier.ClassificationResult result = 
                 classifier.classify(variant, null, null, LocalDate.now());
             
-            assertEquals(MinyanClassification.MINYAN, result.classification,
-                "Variant '" + variant + "' should be classified as MINYAN");
+            assertEquals(MinyanClassification.MAARIV, result.classification,
+                "Variant '" + variant + "' should be classified as MAARIV");
         }
     }
     
@@ -410,7 +410,7 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Sunrise Minyan", null, null, LocalDate.now());
         
-        assertEquals(MinyanClassification.MINYAN, result.classification);
+        assertEquals(MinyanClassification.SHACHARIS, result.classification);
     }
     
     @Test
@@ -418,7 +418,7 @@ class MinyanClassifierTest {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Selichot", null, null, LocalDate.now());
         
-        assertEquals(MinyanClassification.MINYAN, result.classification);
+        assertEquals(MinyanClassification.SELICHOS, result.classification);
     }
     
     /**
@@ -473,12 +473,15 @@ class MinyanClassifierTest {
                 classifier.classify(event, null, null, LocalDate.now());
             
             assertTrue(
-                result.classification == MinyanClassification.MINYAN ||
-                result.classification == MinyanClassification.MINCHA_MAARIV,
-                "Event '" + event + "' should be classified as MINYAN or MINCHA_MAARIV");
+                result.classification == MinyanClassification.SHACHARIS ||
+                result.classification == MinyanClassification.MINCHA ||
+                result.classification == MinyanClassification.MAARIV ||
+                result.classification == MinyanClassification.MINCHA_MAARIV ||
+                result.classification == MinyanClassification.SELICHOS,
+                "Event '" + event + "' should be classified as a specific minyan type");
             
             // Note: The actual enabled/disabled logic is in CalendarImportService.createEntry()
-            // MINYAN and MINCHA_MAARIV entries are set to enabled=true
+            // All minyan types (SHACHARIS, MINCHA, MAARIV, MINCHA_MAARIV, SELICHOS) are set to enabled=true
         }
     }
     

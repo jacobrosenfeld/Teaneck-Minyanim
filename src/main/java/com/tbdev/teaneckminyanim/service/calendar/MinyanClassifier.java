@@ -24,14 +24,23 @@ public class MinyanClassifier {
 
     private final ZmanimHandler zmanimHandler;
 
-    // Allowlist: Patterns that indicate a minyan event (ordered by priority)
-    private static final List<Pattern> MINYAN_PATTERNS = new ArrayList<>();
-    
     // Denylist: Patterns that indicate non-minyan events
     private static final Set<Pattern> NON_MINYAN_PATTERNS = new HashSet<>();
     
     // Combined Mincha/Maariv patterns
     private static final Set<Pattern> MINCHA_MAARIV_PATTERNS = new HashSet<>();
+    
+    // Shacharis patterns
+    private static final Set<Pattern> SHACHARIS_PATTERNS = new HashSet<>();
+    
+    // Mincha patterns
+    private static final Set<Pattern> MINCHA_PATTERNS = new HashSet<>();
+    
+    // Maariv patterns
+    private static final Set<Pattern> MAARIV_PATTERNS = new HashSet<>();
+    
+    // Selichos patterns
+    private static final Set<Pattern> SELICHOS_PATTERNS = new HashSet<>();
     
     static {
         // Combined Mincha/Maariv patterns (check FIRST - most specific)
@@ -61,37 +70,33 @@ public class MinyanClassifier {
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bseminar\\b", Pattern.CASE_INSENSITIVE));
         NON_MINYAN_PATTERNS.add(Pattern.compile("\\bcandle\\s+lighting\\b", Pattern.CASE_INSENSITIVE));
         
-        // Allowlist patterns - case insensitive (check LAST - positive identification)
-        // Mincha variants (specific before generic to avoid misclassifying early/late mincha)
-        MINYAN_PATTERNS.add(Pattern.compile("\\bearly\\s+mincha\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bmincha\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bminchah\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bminha\\b", Pattern.CASE_INSENSITIVE));
+        // Shacharis patterns (Shacharis and sunrise-related minyanim)
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bshacharis\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bshacharit\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bshaharit\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bshachris\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bshachrith\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bneitz\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bnetz\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bsunrise\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bteen\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
         
-        // Maariv variants
-        MINYAN_PATTERNS.add(Pattern.compile("\\bmaariv\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bma'ariv\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\barvit\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\barvis\\b", Pattern.CASE_INSENSITIVE));
+        // Mincha patterns (including early mincha)
+        MINCHA_PATTERNS.add(Pattern.compile("\\bearly\\s+mincha\\b", Pattern.CASE_INSENSITIVE));
+        MINCHA_PATTERNS.add(Pattern.compile("\\bmincha\\b", Pattern.CASE_INSENSITIVE));
+        MINCHA_PATTERNS.add(Pattern.compile("\\bminchah\\b", Pattern.CASE_INSENSITIVE));
+        MINCHA_PATTERNS.add(Pattern.compile("\\bminha\\b", Pattern.CASE_INSENSITIVE));
         
-        // Selichos variants
-        MINYAN_PATTERNS.add(Pattern.compile("\\bselichos\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bselichot\\b", Pattern.CASE_INSENSITIVE));
+        // Maariv patterns
+        MAARIV_PATTERNS.add(Pattern.compile("\\bmaariv\\b", Pattern.CASE_INSENSITIVE));
+        MAARIV_PATTERNS.add(Pattern.compile("\\bma'ariv\\b", Pattern.CASE_INSENSITIVE));
+        MAARIV_PATTERNS.add(Pattern.compile("\\barvit\\b", Pattern.CASE_INSENSITIVE));
+        MAARIV_PATTERNS.add(Pattern.compile("\\barvis\\b", Pattern.CASE_INSENSITIVE));
         
-        // Neitz/Sunrise variants
-        MINYAN_PATTERNS.add(Pattern.compile("\\bneitz\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bnetz\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bsunrise\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
-
-        // Shacharis variants (kept last to let more specific patterns win first)
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshacharis\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshacharit\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshaharit\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshachris\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bshachrith\\b", Pattern.CASE_INSENSITIVE));
-        MINYAN_PATTERNS.add(Pattern.compile("\\bteen\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
-        
+        // Selichos patterns
+        SELICHOS_PATTERNS.add(Pattern.compile("\\bselichos\\b", Pattern.CASE_INSENSITIVE));
+        SELICHOS_PATTERNS.add(Pattern.compile("\\bselichot\\b", Pattern.CASE_INSENSITIVE));
     }
 
     /**
@@ -147,7 +152,7 @@ public class MinyanClassifier {
             }
         }
         
-        // Check denylist first (explicit non-minyan events)
+        // Check denylist (explicit non-minyan events)
         for (Pattern pattern : NON_MINYAN_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
                 return new ClassificationResult(
@@ -157,14 +162,51 @@ public class MinyanClassifier {
             }
         }
         
-        // Check allowlist (minyan events)
-        for (Pattern pattern : MINYAN_PATTERNS) {
+        // Check specific minyan types (in order of specificity)
+        
+        // Check Selichos
+        for (Pattern pattern : SELICHOS_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
-                // Extract title qualifiers for minyan events
                 String titleQualifier = extractTitleQualifier(title);
                 return new ClassificationResult(
-                    MinyanClassification.MINYAN,
-                    "Matched minyan pattern: " + pattern.pattern(),
+                    MinyanClassification.SELICHOS,
+                    "Matched Selichos pattern: " + pattern.pattern(),
+                    titleQualifier
+                );
+            }
+        }
+        
+        // Check Shacharis (including sunrise minyanim)
+        for (Pattern pattern : SHACHARIS_PATTERNS) {
+            if (pattern.matcher(combinedText).find()) {
+                String titleQualifier = extractTitleQualifier(title);
+                return new ClassificationResult(
+                    MinyanClassification.SHACHARIS,
+                    "Matched Shacharis pattern: " + pattern.pattern(),
+                    titleQualifier
+                );
+            }
+        }
+        
+        // Check Mincha (separate from combined Mincha/Maariv)
+        for (Pattern pattern : MINCHA_PATTERNS) {
+            if (pattern.matcher(combinedText).find()) {
+                String titleQualifier = extractTitleQualifier(title);
+                return new ClassificationResult(
+                    MinyanClassification.MINCHA,
+                    "Matched Mincha pattern: " + pattern.pattern(),
+                    titleQualifier
+                );
+            }
+        }
+        
+        // Check Maariv (separate from combined Mincha/Maariv)
+        for (Pattern pattern : MAARIV_PATTERNS) {
+            if (pattern.matcher(combinedText).find()) {
+                String titleQualifier = extractTitleQualifier(title);
+                return new ClassificationResult(
+                    MinyanClassification.MAARIV,
+                    "Matched Maariv pattern: " + pattern.pattern(),
                     titleQualifier
                 );
             }
@@ -309,8 +351,8 @@ public class MinyanClassifier {
         
         String normalized = title.trim();
         
-        // Remove redundant classification words
-        if (classification == MinyanClassification.MINYAN || classification == MinyanClassification.MINCHA_MAARIV) {
+        // Remove redundant classification words for minyan types
+        if (classification.isMinyan()) {
             // Remove standalone minyan type words if they duplicate the classification
             normalized = normalized.replaceAll("(?i)\\b(shacharis?|shacharit|mincha|ma'?ariv|selichos?)\\b", "");
         }
