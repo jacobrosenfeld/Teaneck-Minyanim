@@ -38,6 +38,7 @@ public class CalendarImportService {
     private final CalendarCsvParser csvParser;
     private final OrganizationCalendarEntryRepository entryRepository;
     private final OrganizationService organizationService;
+    private final MinyanClassifier minyanClassifier;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -277,11 +278,34 @@ public class CalendarImportService {
 
     /**
      * Create a new OrganizationCalendarEntry from parsed data.
+     * 
+     * IMPORTANT: NON_MINYAN events are disabled by default and will NOT appear in:
+     * - Org pages
+     * - Home page
+     * - "Next Minyan" displays
+     * - Map buttons
+     * 
+     * They only appear in admin/management views when explicitly filtered to show excluded items.
      */
     private OrganizationCalendarEntry createEntry(String organizationId,
                                                   CalendarCsvParser.ParsedEntry parsed,
                                                   String fingerprint,
                                                   String sourceUrl) {
+        // Classify the entry
+        MinyanClassifier.ClassificationResult classificationResult = 
+            minyanClassifier.classify(parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate());
+        
+        // Normalize title to remove redundant words
+        String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
+        
+        // Core Rule: NON_MINYAN events are disabled by default
+        // This ensures they don't appear in any user-facing minyan displays
+        boolean shouldEnable = classificationResult.classification != com.tbdev.teaneckminyanim.enums.MinyanClassification.NON_MINYAN;
+        
+        if (!shouldEnable) {
+            log.debug("Auto-disabling NON_MINYAN entry: {} ({})", parsed.getTitle(), classificationResult.reason);
+        }
+        
         return OrganizationCalendarEntry.builder()
                 .organizationId(organizationId)
                 .date(parsed.getDate())
@@ -289,7 +313,7 @@ public class CalendarImportService {
                 .startDatetime(parsed.getStartDatetime())
                 .endTime(parsed.getEndTime())
                 .endDatetime(parsed.getEndDatetime())
-                .title(parsed.getTitle())
+                .title(normalizedTitle.isEmpty() ? parsed.getTitle() : normalizedTitle)
                 .type(parsed.getType())
                 .name(parsed.getName())
                 .location(parsed.getLocation())
@@ -298,7 +322,10 @@ public class CalendarImportService {
                 .rawText(parsed.getRawText())
                 .sourceUrl(sourceUrl)
                 .fingerprint(fingerprint)
-                .enabled(true)
+                .classification(classificationResult.classification)
+                .classificationReason(classificationResult.reason)
+                .notes(classificationResult.notes)
+                .enabled(shouldEnable)
                 .importedAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -306,15 +333,41 @@ public class CalendarImportService {
 
     /**
      * Update an existing entry with new data.
+     * 
+     * IMPORTANT: This method re-applies the NON_MINYAN auto-disable rule during updates.
+     * If an entry's classification changes to NON_MINYAN, it will be disabled.
+     * However, if an entry was manually enabled by an admin, that manual override is preserved.
      */
     private void updateEntry(OrganizationCalendarEntry entry,
                             CalendarCsvParser.ParsedEntry parsed,
                             String sourceUrl) {
+        // Re-classify the entry
+        MinyanClassifier.ClassificationResult classificationResult = 
+            minyanClassifier.classify(parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate());
+        
+        // Normalize title to remove redundant words
+        String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
+        
+        // Core Rule: Apply NON_MINYAN auto-disable during updates
+        // UNLESS the entry was manually edited by an admin (has location_manually_edited flag)
+        boolean wasManuallyEdited = entry.isLocationManuallyEdited();
+        boolean isNonMinyan = classificationResult.classification == com.tbdev.teaneckminyanim.enums.MinyanClassification.NON_MINYAN;
+        
+        if (isNonMinyan && !wasManuallyEdited && entry.isEnabled()) {
+            // Newly classified as NON_MINYAN (or re-classified) - disable it
+            entry.setEnabled(false);
+            log.debug("Auto-disabling NON_MINYAN entry during update: {} ({})", parsed.getTitle(), classificationResult.reason);
+        } else if (!isNonMinyan && !wasManuallyEdited && !entry.isEnabled() && entry.getDuplicateReason() == null) {
+            // Entry is no longer NON_MINYAN and wasn't manually disabled or marked as duplicate - re-enable it
+            entry.setEnabled(true);
+            log.debug("Re-enabling entry that is no longer NON_MINYAN: {}", parsed.getTitle());
+        }
+        
         entry.setStartTime(parsed.getStartTime());
         entry.setStartDatetime(parsed.getStartDatetime());
         entry.setEndTime(parsed.getEndTime());
         entry.setEndDatetime(parsed.getEndDatetime());
-        entry.setTitle(parsed.getTitle());
+        entry.setTitle(normalizedTitle.isEmpty() ? parsed.getTitle() : normalizedTitle);
         entry.setType(parsed.getType());
         entry.setName(parsed.getName());
         entry.setLocation(parsed.getLocation());
@@ -322,6 +375,9 @@ public class CalendarImportService {
         entry.setHebrewDate(parsed.getHebrewDate());
         entry.setRawText(parsed.getRawText());
         entry.setSourceUrl(sourceUrl);
+        entry.setClassification(classificationResult.classification);
+        entry.setClassificationReason(classificationResult.reason);
+        entry.setNotes(classificationResult.notes);
         entry.setUpdatedAt(LocalDateTime.now());
     }
 

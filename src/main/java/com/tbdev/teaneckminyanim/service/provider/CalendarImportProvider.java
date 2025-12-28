@@ -98,11 +98,11 @@ public class CalendarImportProvider implements OrgScheduleProvider {
 
     /**
      * Convert OrganizationCalendarEntry to MinyanEvent.
-     * Attempts to infer MinyanType from the title/type field.
+     * Attempts to infer MinyanType from the title/type field and classification.
      */
     private MinyanEvent convertToMinyanEvent(OrganizationCalendarEntry entry, Organization org) {
-        // Determine MinyanType from entry title/type
-        MinyanType minyanType = inferMinyanType(entry.getTitle(), entry.getType());
+        // Determine MinyanType from entry title/type/classification
+        MinyanType minyanType = inferMinyanType(entry);
 
         // Convert LocalDateTime to Date
         Date startTime = null;
@@ -121,6 +121,10 @@ public class CalendarImportProvider implements OrgScheduleProvider {
         // Create MinyanEvent
         // Use entry ID as parentMinyanId (prefixed to distinguish from regular minyanim)
         String parentMinyanId = "calendar-" + entry.getId();
+        
+        // Use notes field directly (contains Shkiya for Mincha/Maariv and extracted qualifiers like "Teen")
+        // Do NOT append description automatically - that's handled by classifier
+        String notes = entry.getNotes() != null ? entry.getNotes() : "";
 
         return new MinyanEvent(
                 parentMinyanId,
@@ -131,20 +135,39 @@ public class CalendarImportProvider implements OrgScheduleProvider {
                 entry.getLocation() != null ? entry.getLocation() : "",
                 startTime,
                 org.getNusach() != null ? org.getNusach() : Nusach.UNSPECIFIED,
-                entry.getDescription() != null ? entry.getDescription() : "",
+                notes,
                 org.getOrgColor() != null ? org.getOrgColor() : "#000000",
                 "" // WhatsApp link not available from calendar imports
         );
     }
 
     /**
-     * Infer MinyanType from entry title or type field.
+     * Infer MinyanType from entry, checking classification first, then title/type.
      * Looks for keywords like "Shacharis", "Mincha", "Maariv", etc.
      */
-    private MinyanType inferMinyanType(String title, String type) {
-        String combined = (title + " " + (type != null ? type : "")).toLowerCase();
+    private MinyanType inferMinyanType(OrganizationCalendarEntry entry) {
+        // Check classification first - most reliable
+        if (entry.getClassification() != null) {
+            switch (entry.getClassification()) {
+                case MINCHA_MAARIV:
+                    return MinyanType.MINCHA_MAARIV;
+                case MINYAN:
+                    // Fall through to infer from title/type
+                    break;
+                case NON_MINYAN:
+                case OTHER:
+                    // These shouldn't appear as minyan events, but if they do, try to infer
+                    break;
+            }
+        }
+        
+        // Infer from title and type
+        String combined = (entry.getTitle() + " " + (entry.getType() != null ? entry.getType() : "")).toLowerCase();
 
-        if (combined.contains("shacharis") || combined.contains("shacharit") || combined.contains("morning")) {
+        // Check for combined Mincha/Maariv first (most specific)
+        if (combined.contains("mincha") && (combined.contains("maariv") || combined.contains("ma'ariv") || combined.contains("arvit"))) {
+            return MinyanType.MINCHA_MAARIV;
+        } else if (combined.contains("shacharis") || combined.contains("shacharit") || combined.contains("morning")) {
             return MinyanType.SHACHARIS;
         } else if (combined.contains("mincha") || combined.contains("minchah") || combined.contains("afternoon")) {
             return MinyanType.MINCHA;

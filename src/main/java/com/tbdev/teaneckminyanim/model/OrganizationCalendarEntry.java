@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.model;
 
+import com.tbdev.teaneckminyanim.enums.MinyanClassification;
 import lombok.*;
 
 import javax.persistence.*;
@@ -85,6 +86,43 @@ public class OrganizationCalendarEntry {
 
     @Column(name = "duplicate_reason")
     private String duplicateReason;
+
+    /**
+     * Classification of this entry (MINYAN, MINCHA_MAARIV, NON_MINYAN, OTHER)
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "classification")
+    private MinyanClassification classification;
+
+    /**
+     * Explanation of why this entry was classified as it was
+     */
+    @Column(name = "classification_reason", columnDefinition = "TEXT")
+    private String classificationReason;
+
+    /**
+     * Additional notes (e.g., Shkiya time for Mincha/Maariv events)
+     */
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
+
+    /**
+     * Flag to indicate if location was manually edited (not from import)
+     */
+    @Column(name = "location_manually_edited", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean locationManuallyEdited = false;
+
+    /**
+     * User who last manually edited this entry
+     */
+    @Column(name = "manually_edited_by")
+    private String manuallyEditedBy;
+
+    /**
+     * Timestamp of last manual edit
+     */
+    @Column(name = "manually_edited_at")
+    private LocalDateTime manuallyEditedAt;
 
     @Column(name = "imported_at", nullable = false)
     private LocalDateTime importedAt;
