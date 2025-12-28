@@ -101,7 +101,10 @@
         }
         
         /* Badge styles */
-        .badge-minyan {
+        .badge-shacharis,
+        .badge-mincha,
+        .badge-maariv,
+        .badge-selichos {
             background-color: #28a745;
         }
         
@@ -367,8 +370,12 @@
                                         <label for="filterClassification">Event Type</label>
                                         <select class="form-control" id="filterClassification" name="filterClassification">
                                             <option value="">All Types</option>
-                                            <option value="MINYAN" th:selected="${filterClassification == 'MINYAN'}">Minyan</option>
+                                            <option value="SHACHARIS" th:selected="${filterClassification == 'SHACHARIS'}">Shacharis</option>
+                                            <option value="MINCHA" th:selected="${filterClassification == 'MINCHA'}">Mincha</option>
+                                            <option value="MAARIV" th:selected="${filterClassification == 'MAARIV'}">Maariv</option>
                                             <option value="MINCHA_MAARIV" th:selected="${filterClassification == 'MINCHA_MAARIV'}">Mincha/Maariv</option>
+                                            <option value="SELICHOS" th:selected="${filterClassification == 'SELICHOS'}">Selichos</option>
+                                            <option value="NON_MINYAN" th:selected="${filterClassification == 'NON_MINYAN'}">Non-Minyan</option>
                                             <option value="OTHER" th:selected="${filterClassification == 'OTHER'}">Other</option>
                                         </select>
                                     </div>
@@ -508,7 +515,10 @@
                                             </td>
                                             <td>
                                                 <span th:if="${entry.classification}" 
-                                                      th:class="${'badge badge-' + (entry.classification.name() == 'MINYAN' ? 'minyan' : 
+                                                      th:class="${'badge badge-' + (entry.classification.name() == 'SHACHARIS' ? 'shacharis' : 
+                                                                                    entry.classification.name() == 'MINCHA' ? 'mincha' :
+                                                                                    entry.classification.name() == 'MAARIV' ? 'maariv' :
+                                                                                    entry.classification.name() == 'SELICHOS' ? 'selichos' :
                                                                                     entry.classification.name() == 'MINCHA_MAARIV' ? 'mincha-maariv' :
                                                                                     entry.classification.name() == 'NON_MINYAN' ? 'non-minyan' : 'other')}"
                                                       th:text="${entry.classification.displayName}">
