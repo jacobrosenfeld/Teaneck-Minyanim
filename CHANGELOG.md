@@ -5,6 +5,30 @@ All notable changes to the Teaneck Minyanim project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.5] - 2024-12-29
+
+### Added
+
+#### Homepage Notification System
+- New popup notification feature for homepage announcements with smart display controls
+- Cookie-based tracking system to limit notification displays per user
+- Expiration date support for time-limited announcements
+- Max displays configuration to control how many times a user sees a notification
+- Modern Bootstrap modal UI for notifications with icon and styled buttons
+- Automatic notification dismissal after expiration date
+- Admin settings panel enhancements with new fields for notification management
+  - Expiration Date field (optional, date picker)
+  - Max Displays Per User field (optional, 1-100 range)
+- JavaScript NotificationManager utility with cookie management
+- Settings table now displays expiration date and max displays columns
+- Persistent tracking using browser cookies (stored for 1 year)
+
+### Changed
+- Enhanced TNMSettings entity with `expirationDate` (String) and `maxDisplays` (Integer) fields
+- Updated AdminController.updateSettings() to handle new notification configuration fields
+- Improved settings modal form with better organization and helper text
+- Updated homepage to load notification-popup.js for popup management
+
 ## [1.2.4] - 2024-12-29
 
 ### Changed

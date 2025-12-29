@@ -424,6 +424,30 @@
        <!-- Scroll To Top Ends-->
 
       </div> <!-- Main -->
+      
+      <!-- Notification Popup Script -->
+      <script th:inline="javascript">
+        /*<![CDATA[*/
+        (function() {
+            var homePageAnnouncement = /*[[${settings.?[setting == 'Home Page Announcement'].get(0)}]]*/ null;
+            
+            if (homePageAnnouncement && homePageAnnouncement.enabled === 'Enabled') {
+                window.notificationData = {
+                    enabled: true,
+                    id: homePageAnnouncement.id,
+                    title: 'Announcement',
+                    message: homePageAnnouncement.text,
+                    maxDisplays: homePageAnnouncement.maxDisplays,
+                    expirationDate: homePageAnnouncement.expirationDate
+                };
+            } else {
+                window.notificationData = { enabled: false };
+            }
+        })();
+        /*]]>*/
+      </script>
+      <script type="text/javascript" src="/notification-popup.js"></script>
+      
       <script type="text/javascript" src="/minyan-table.js"></script>
       <script type="text/javascript" src="/assets/js/custom.js"></script>
       <script type="text/javascript" src="/edot.js"></script>

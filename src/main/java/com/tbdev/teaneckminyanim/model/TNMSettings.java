@@ -30,4 +30,10 @@ public class TNMSettings {
     @Column(name = "TYPE", nullable = false)
     private String type;
 
+    @Column(name = "EXPIRATION_DATE", nullable = true)
+    private String expirationDate;
+
+    @Column(name = "MAX_DISPLAYS", nullable = true)
+    private Integer maxDisplays;
+
 }

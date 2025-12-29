@@ -953,11 +953,21 @@ public class AdminController {
             @RequestParam(value = "enabled", required = false) String newEnabled,
             @RequestParam(value = "id", required = true) String id,
             @RequestParam(value = "text", required = false) String newText,
-            @RequestParam(value = "type", required = false) String type
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "expirationDate", required = false) String expirationDate,
+            @RequestParam(value = "maxDisplays", required = false) Integer maxDisplays
     ) {
         TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);
 
-        TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText, type);
+        TNMSettings settings = new TNMSettings();
+        settings.setId(settingtoUpdate.getId());
+        settings.setSetting(setting);
+        settings.setEnabled(newEnabled);
+        settings.setText(newText);
+        settings.setType(type);
+        settings.setExpirationDate(expirationDate);
+        settings.setMaxDisplays(maxDisplays);
+        
         if (tnmsettingsDAO.update(settings)) {
             // return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
             RedirectView redirectView = new RedirectView("/admin/settings", true);
