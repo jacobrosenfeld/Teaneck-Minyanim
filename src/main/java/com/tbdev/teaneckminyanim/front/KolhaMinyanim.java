@@ -85,7 +85,7 @@ public class KolhaMinyanim {
 
     public String getFormattedStartTime() {
 //        return startTime.toString();
-        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
         if (dynamicTimeString != null) {
             timeFormat.setTimeZone(timeZone);
             return timeFormat.format(startTime) +  " (" + dynamicTimeString + ")";
