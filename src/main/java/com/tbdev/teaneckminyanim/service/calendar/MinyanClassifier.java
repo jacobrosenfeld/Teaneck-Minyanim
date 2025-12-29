@@ -161,13 +161,12 @@ public class MinyanClassifier {
         // Check if time is before 12pm for nusach-based classification
         boolean isBeforeNoon = time != null && time.isBefore(LocalTime.NOON);
         
-        // If NS is in title AND time is before 12pm, force classification as Shacharis with Nusach Sefard note
+        // If NS is in title AND time is before 12pm, force classification as Shacharis (note handled via nusach field, not notes)
         if ((hasNS || hasNusachSefard) && isBeforeNoon) {
-            String notes = "Nusach Sefard";
             return new ClassificationResult(
                 MinyanType.SHACHARIS,
                 "Matched Nusach Sefard before 12pm - classified as Shacharis",
-                notes
+                null
             );
         }
         
@@ -179,13 +178,12 @@ public class MinyanClassifier {
             );
         }
         
-        // If Sephardic is in title AND time is before 12pm, force classification as Shacharis with Edot Hamizrach note
+        // If Sephardic is in title AND time is before 12pm, force classification as Shacharis (note handled via nusach field, not notes)
         if (hasSephardic && isBeforeNoon) {
-            String notes = "Edot Hamizrach";
             return new ClassificationResult(
                 MinyanType.SHACHARIS,
                 "Matched Sephardic before 12pm - classified as Shacharis",
-                notes
+                null
             );
         }
         
@@ -197,10 +195,6 @@ public class MinyanClassifier {
                 // Remove Netz-related qualifiers (hanetz, vasikin, netz, neitz, sunrise) to avoid duplication
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     titleQualifier = titleQualifier.replaceAll("(?i)\\b(hanetz|vasikin|netz|neitz|sunrise)\\b,?\\s*", "").trim();
-                }
-                // Add NS note if present
-                if (hasNS) {
-                    netzNote = netzNote != null ? netzNote + ". Nusach Sefard" : "Nusach Sefard";
                 }
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     netzNote = netzNote != null ? netzNote + ". " + titleQualifier : titleQualifier;
@@ -219,10 +213,6 @@ public class MinyanClassifier {
                 // Generate Shkiya note and add any title qualifiers
                 String notes = generateShkiyaNote(date);
                 String titleQualifier = extractTitleQualifier(title);
-                // Add NS note if present
-                if (hasNS) {
-                    notes = notes != null ? notes + ". Nusach Sefard" : "Nusach Sefard";
-                }
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
                 }
@@ -251,10 +241,6 @@ public class MinyanClassifier {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
                 String notes = null;
-                // Add NS note if present
-                if (hasNS) {
-                    notes = "Nusach Sefard";
-                }
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
                 }
@@ -271,10 +257,6 @@ public class MinyanClassifier {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
                 String notes = null;
-                // Add NS note if present
-                if (hasNS) {
-                    notes = "Nusach Sefard";
-                }
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
                 }
@@ -291,10 +273,6 @@ public class MinyanClassifier {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
                 String notes = null;
-                // Add NS note if present
-                if (hasNS) {
-                    notes = "Nusach Sefard";
-                }
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
                 }
@@ -311,10 +289,6 @@ public class MinyanClassifier {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
                 String notes = null;
-                // Add NS note if present
-                if (hasNS) {
-                    notes = "Nusach Sefard";
-                }
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
                 }
@@ -330,7 +304,7 @@ public class MinyanClassifier {
         // But still add NS note if present
         String notes = null;
         if (hasNS) {
-            notes = "Nusach Sefard";
+            notes = null;
         }
         return new ClassificationResult(
             MinyanType.NON_MINYAN,
@@ -446,8 +420,7 @@ public class MinyanClassifier {
 
     /**
      * Extract special qualifiers from title that should be preserved as notes.
-     * Examples: "Teen Minyan" → "Teen Minyan", "Early Shacharis" → "Early Shacharis"
-     * "NS Minyan" → "Nusach Sefard", "Sephardic Minyan" → "Edot Hamizrach"
+    * Examples: "Teen Minyan" → "Teen Minyan", "Early Shacharis" → "Early Shacharis"
      * 
      * @param title The entry title
      * @return Qualifier string or null if none found
@@ -459,18 +432,6 @@ public class MinyanClassifier {
         
         String titleLower = title.toLowerCase().trim();
         List<String> qualifiers = new ArrayList<>();
-        
-        // Check for NS abbreviation (Nusach Sefard)
-        Pattern nsPattern = Pattern.compile("\\bNS\\b", Pattern.CASE_INSENSITIVE);
-        if (nsPattern.matcher(title).find()) {
-            qualifiers.add("Nusach Sefard");
-        }
-        
-        // Check for "Sephardic" or "Sephardi" (maps to Edot Hamizrach)
-        Pattern sephardicPattern = Pattern.compile("\\bsephardic?\\b", Pattern.CASE_INSENSITIVE);
-        if (sephardicPattern.matcher(title).find()) {
-            qualifiers.add("Edot Hamizrach");
-        }
         
         // Multi-word phrases to extract (check these first)
         String[] multiWordPatterns = {

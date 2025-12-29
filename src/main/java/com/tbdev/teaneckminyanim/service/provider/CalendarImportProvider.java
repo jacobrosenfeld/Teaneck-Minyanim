@@ -122,6 +122,10 @@ public class CalendarImportProvider implements OrgScheduleProvider {
         // Use entry ID as parentMinyanId (prefixed to distinguish from regular minyanim)
         String parentMinyanId = "calendar-" + entry.getId();
         
+        // Derive nusach from entry title/notes; default to organization nusach if no hints found
+        Nusach organizationNusach = org.getNusach() != null ? org.getNusach() : Nusach.UNSPECIFIED;
+        Nusach entryNusach = inferNusach(entry, organizationNusach);
+
         // Use notes field directly (contains Shkiya for Mincha/Maariv and extracted qualifiers like "Teen")
         // Do NOT append description automatically - that's handled by classifier
         String notes = entry.getNotes() != null ? entry.getNotes() : "";
@@ -130,15 +134,39 @@ public class CalendarImportProvider implements OrgScheduleProvider {
                 parentMinyanId,
                 minyanType,
                 org.getName(),
-                org.getNusach() != null ? org.getNusach() : Nusach.UNSPECIFIED,
+                organizationNusach,
                 org.getId(),
                 entry.getLocation() != null ? entry.getLocation() : "",
                 startTime,
-                org.getNusach() != null ? org.getNusach() : Nusach.UNSPECIFIED,
+                entryNusach,
                 notes,
                 org.getOrgColor() != null ? org.getOrgColor() : "#000000",
                 "" // WhatsApp link not available from calendar imports
         );
+    }
+
+    /**
+     * Infer nusach from the entry content. If no explicit clue is found, fall back to the provided default.
+     * Sephardic/Sephardi => Edot Hamizrach; Sefard/Nusach Sefard/NS => Sefard; Ashkenaz stays Ashkenaz.
+     */
+    private Nusach inferNusach(OrganizationCalendarEntry entry, Nusach defaultNusach) {
+        String title = entry.getTitle() != null ? entry.getTitle() : "";
+        String notes = entry.getNotes() != null ? entry.getNotes() : "";
+        String combined = (title + " " + notes).toLowerCase();
+
+        if (combined.matches(".*\\b(sephardic|sephardi)\\b.*")) {
+            return Nusach.EDOT_HAMIZRACH;
+        }
+
+        if (combined.matches(".*\\bsefard\\b.*") || combined.matches(".*\\bnusach\\s+sefard\\b.*") || combined.matches(".*\\bNS\\b.*")) {
+            return Nusach.SEFARD;
+        }
+
+        if (combined.matches(".*\\bashkenaz\\b.*")) {
+            return Nusach.ASHKENAZ;
+        }
+
+        return defaultNusach;
     }
 
     /**
