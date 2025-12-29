@@ -1814,9 +1814,9 @@ public class AdminController {
                 java.time.LocalDate start = java.time.LocalDate.parse(startDate);
                 java.time.LocalDate end = java.time.LocalDate.parse(endDate);
                 
-                com.tbdev.teaneckminyanim.enums.MinyanClassification classification = null;
+                com.tbdev.teaneckminyanim.minyan.MinyanType classification = null;
                 if (filterClassification != null && !filterClassification.isEmpty()) {
-                    classification = com.tbdev.teaneckminyanim.enums.MinyanClassification.fromString(filterClassification);
+                    classification = com.tbdev.teaneckminyanim.minyan.MinyanType.fromString(filterClassification);
                 }
                 
                 entries = entryRepo.findInRangeWithClassification(orgId, start, end, classification, sort);
@@ -1828,8 +1828,8 @@ public class AdminController {
         // Apply classification filter
         else if (filterClassification != null && !filterClassification.isEmpty()) {
             try {
-                com.tbdev.teaneckminyanim.enums.MinyanClassification classification = 
-                        com.tbdev.teaneckminyanim.enums.MinyanClassification.fromString(filterClassification);
+                com.tbdev.teaneckminyanim.minyan.MinyanType classification = 
+                        com.tbdev.teaneckminyanim.minyan.MinyanType.fromString(filterClassification);
                 entries = entryRepo.findByOrganizationIdAndClassification(orgId, classification, sort);
             } catch (Exception e) {
                 log.warn("Error parsing classification: {}", filterClassification, e);
