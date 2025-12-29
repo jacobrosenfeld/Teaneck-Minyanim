@@ -61,7 +61,10 @@
             }
             const expDate = new Date(expirationDate);
             const today = new Date();
+            // Set both to start of day for proper comparison
             today.setHours(0, 0, 0, 0);
+            expDate.setHours(0, 0, 0, 0);
+            // Notification expires AFTER the expiration date (inclusive of that day)
             return today > expDate;
         },
 
@@ -96,6 +99,16 @@
             // Increment view count
             this.incrementViewCount(notificationId);
 
+            // Escape HTML to prevent XSS
+            const escapeHtml = function(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            };
+
+            const safeTitle = escapeHtml(title);
+            const safeMessage = escapeHtml(message);
+
             // Create modal HTML
             const modalHtml = `
                 <div class="modal fade" id="notification-popup-modal" tabindex="-1" aria-labelledby="notification-popup-label" aria-hidden="true">
@@ -103,12 +116,12 @@
                         <div class="modal-content">
                             <div class="modal-header bg-primary text-white">
                                 <h5 class="modal-title" id="notification-popup-label">
-                                    <i class="bi bi-megaphone-fill me-2"></i>${title}
+                                    <i class="bi bi-megaphone-fill me-2"></i>${safeTitle}
                                 </h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <p class="mb-0">${message}</p>
+                                <p class="mb-0">${safeMessage}</p>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>

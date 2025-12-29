@@ -958,6 +958,25 @@ public class AdminController {
             @RequestParam(value = "maxDisplays", required = false) Integer maxDisplays
     ) {
         TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);
+        
+        // Validate setting exists
+        if (settingtoUpdate == null) {
+            return settings("Setting not found with id: " + id, null);
+        }
+
+        // Validate expiration date format if provided
+        if (expirationDate != null && !expirationDate.isEmpty()) {
+            if (!expirationDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                return settings(null, "Invalid expiration date format. Please use YYYY-MM-DD format.");
+            }
+        }
+
+        // Validate maxDisplays range if provided
+        if (maxDisplays != null) {
+            if (maxDisplays < 1 || maxDisplays > 100) {
+                return settings(null, "Max displays must be between 1 and 100.");
+            }
+        }
 
         TNMSettings settings = new TNMSettings();
         settings.setId(settingtoUpdate.getId());

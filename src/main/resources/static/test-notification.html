@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification System Test Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Notification System Test Page</h1>
+        <p class="lead">This page tests the notification popup functionality.</p>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Test Controls</h3>
+            </div>
+            <div class="card-body">
+                <button id="btn-show-basic" class="btn btn-primary mb-2">Show Basic Notification</button>
+                <button id="btn-show-limited" class="btn btn-warning mb-2">Show Limited (Max 3 Displays)</button>
+                <button id="btn-show-expiring" class="btn btn-danger mb-2">Show Expiring (Tomorrow)</button>
+                <button id="btn-show-expired" class="btn btn-secondary mb-2">Show Expired (Yesterday)</button>
+                <button id="btn-clear-cookies" class="btn btn-info mb-2">Clear All Notification Cookies</button>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Cookie Status</h3>
+            </div>
+            <div class="card-body">
+                <pre id="cookie-status">No notification cookies set</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Test Results</h3>
+            </div>
+            <div class="card-body">
+                <ul id="test-results" class="list-group">
+                    <li class="list-group-item">Waiting for tests...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/notification-popup.js"></script>
+    <script>
+        // Helper functions
+        function addTestResult(message, success = true) {
+            const list = document.getElementById('test-results');
+            if (list.children.length === 1 && list.children[0].textContent === 'Waiting for tests...') {
+                list.innerHTML = '';
+            }
+            const li = document.createElement('li');
+            li.className = 'list-group-item list-group-item-' + (success ? 'success' : 'danger');
+            li.textContent = message;
+            list.appendChild(li);
+        }
+
+        function updateCookieStatus() {
+            const cookies = document.cookie.split(';').filter(c => c.trim().startsWith('notification_views_'));
+            const statusDiv = document.getElementById('cookie-status');
+            if (cookies.length === 0) {
+                statusDiv.textContent = 'No notification cookies set';
+            } else {
+                statusDiv.textContent = cookies.map(c => c.trim()).join('\n');
+            }
+        }
+
+        function getTomorrowDate() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            return tomorrow.toISOString().split('T')[0];
+        }
+
+        function getYesterdayDate() {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            return yesterday.toISOString().split('T')[0];
+        }
+
+        // Test 1: Basic notification (no limits)
+        document.getElementById('btn-show-basic').addEventListener('click', function() {
+            window.notificationData = {
+                enabled: true,
+                id: 'test-basic',
+                title: 'Basic Test',
+                message: 'This is a basic notification with no limits.',
+                maxDisplays: null,
+                expirationDate: null
+            };
+            NotificationManager.init();
+            addTestResult('Basic notification triggered');
+            updateCookieStatus();
+        });
+
+        // Test 2: Limited displays (max 3)
+        document.getElementById('btn-show-limited').addEventListener('click', function() {
+            const viewCount = NotificationManager.getViewCount('test-limited');
+            window.notificationData = {
+                enabled: true,
+                id: 'test-limited',
+                title: 'Limited Display Test',
+                message: 'This notification will show maximum 3 times. Current count: ' + viewCount,
+                maxDisplays: 3,
+                expirationDate: null
+            };
+            NotificationManager.init();
+            addTestResult('Limited notification triggered (Count: ' + (viewCount + 1) + '/3)');
+            updateCookieStatus();
+        });
+
+        // Test 3: Expiring notification (tomorrow)
+        document.getElementById('btn-show-expiring').addEventListener('click', function() {
+            const tomorrow = getTomorrowDate();
+            window.notificationData = {
+                enabled: true,
+                id: 'test-expiring',
+                title: 'Expiring Test',
+                message: 'This notification expires tomorrow (' + tomorrow + ').',
+                maxDisplays: null,
+                expirationDate: tomorrow
+            };
+            NotificationManager.init();
+            addTestResult('Expiring notification triggered (Expires: ' + tomorrow + ')');
+            updateCookieStatus();
+        });
+
+        // Test 4: Expired notification (yesterday)
+        document.getElementById('btn-show-expired').addEventListener('click', function() {
+            const yesterday = getYesterdayDate();
+            window.notificationData = {
+                enabled: true,
+                id: 'test-expired',
+                title: 'Expired Test',
+                message: 'This notification expired yesterday and should NOT show.',
+                maxDisplays: null,
+                expirationDate: yesterday
+            };
+            const shouldShow = NotificationManager.shouldShowNotification('test-expired', null, yesterday);
+            NotificationManager.init();
+            if (!shouldShow) {
+                addTestResult('✓ Expired notification correctly blocked', true);
+            } else {
+                addTestResult('✗ Expired notification was shown (BUG)', false);
+            }
+            updateCookieStatus();
+        });
+
+        // Clear cookies
+        document.getElementById('btn-clear-cookies').addEventListener('click', function() {
+            const cookies = document.cookie.split(';');
+            let clearedCount = 0;
+            cookies.forEach(cookie => {
+                const name = cookie.split('=')[0].trim();
+                if (name.startsWith('notification_views_')) {
+                    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                    clearedCount++;
+                }
+            });
+            addTestResult('Cleared ' + clearedCount + ' notification cookies');
+            updateCookieStatus();
+        });
+
+        // Initial cookie status
+        updateCookieStatus();
+
+        // Run automated tests
+        setTimeout(function() {
+            addTestResult('=== Starting Automated Tests ===', true);
+            
+            // Test cookie functions
+            NotificationManager.setCookie('test_cookie', 'test_value', 1);
+            const value = NotificationManager.getCookie('test_cookie');
+            if (value === 'test_value') {
+                addTestResult('✓ Cookie get/set works', true);
+            } else {
+                addTestResult('✗ Cookie get/set failed', false);
+            }
+
+            // Test view count
+            const count1 = NotificationManager.getViewCount('test-counter');
+            const count2 = NotificationManager.incrementViewCount('test-counter');
+            const count3 = NotificationManager.getViewCount('test-counter');
+            if (count1 === 0 && count2 === 1 && count3 === 1) {
+                addTestResult('✓ View count tracking works', true);
+            } else {
+                addTestResult('✗ View count tracking failed', false);
+            }
+
+            // Test expiration check
+            const tomorrow = getTomorrowDate();
+            const yesterday = getYesterdayDate();
+            const notExpired = NotificationManager.isExpired(tomorrow);
+            const isExpired = NotificationManager.isExpired(yesterday);
+            if (!notExpired && isExpired) {
+                addTestResult('✓ Expiration checking works', true);
+            } else {
+                addTestResult('✗ Expiration checking failed', false);
+            }
+
+            // Test shouldShow logic
+            const shouldShow1 = NotificationManager.shouldShowNotification('test-should-show', 5, tomorrow);
+            const shouldShow2 = NotificationManager.shouldShowNotification('test-should-not-show', 1, tomorrow);
+            NotificationManager.incrementViewCount('test-should-not-show');
+            const shouldShow3 = NotificationManager.shouldShowNotification('test-should-not-show', 1, tomorrow);
+            
+            if (shouldShow1 && shouldShow2 && !shouldShow3) {
+                addTestResult('✓ Should-show logic works', true);
+            } else {
+                addTestResult('✗ Should-show logic failed', false);
+            }
+
+            updateCookieStatus();
+            addTestResult('=== Automated Tests Complete ===', true);
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -429,16 +429,18 @@
       <script th:inline="javascript">
         /*<![CDATA[*/
         (function() {
+            // Use Thymeleaf's JavaScript inline mode which automatically escapes values
             var homePageAnnouncement = /*[[${settings.?[setting == 'Home Page Announcement'].get(0)}]]*/ null;
             
             if (homePageAnnouncement && homePageAnnouncement.enabled === 'Enabled') {
                 window.notificationData = {
                     enabled: true,
-                    id: homePageAnnouncement.id,
+                    // Use separate inline variables for safe JavaScript escaping
+                    id: /*[[${settings.?[setting == 'Home Page Announcement'].get(0).id}]]*/ '',
                     title: 'Announcement',
-                    message: homePageAnnouncement.text,
-                    maxDisplays: homePageAnnouncement.maxDisplays,
-                    expirationDate: homePageAnnouncement.expirationDate
+                    message: /*[[${settings.?[setting == 'Home Page Announcement'].get(0).text}]]*/ '',
+                    maxDisplays: /*[[${settings.?[setting == 'Home Page Announcement'].get(0).maxDisplays}]]*/ null,
+                    expirationDate: /*[[${settings.?[setting == 'Home Page Announcement'].get(0).expirationDate}]]*/ null
                 };
             } else {
                 window.notificationData = { enabled: false };
