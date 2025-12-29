@@ -51,7 +51,7 @@ public class MinyanClassifier {
         MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s+and\\s+ma'?ariv", Pattern.CASE_INSENSITIVE));
         MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s*[/&-]\\s*arvit", Pattern.CASE_INSENSITIVE));
         MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s+and\\s+arvit", Pattern.CASE_INSENSITIVE));
-        MINCHA_MAARIV_PATTERNS.add(Pattern.compile("zman+mincha", Pattern.CASE_INSENSITIVE));
+        MINCHA_MAARIV_PATTERNS.add(Pattern.compile("zman\\s+mincha", Pattern.CASE_INSENSITIVE));
         
         // Denylist patterns - case insensitive (check SECOND - explicit exclusions)
         // These patterns should be explicit to avoid false positives
@@ -111,7 +111,7 @@ public class MinyanClassifier {
         
         // Netz Hachama patterns (sunrise minyanim - classified as Shacharis with Netz time in notes)
         NETZ_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
-        NETZ_PATTERNS.add(Pattern.compile("\\bNetz+Minyan\\b", Pattern.CASE_INSENSITIVE));
+        NETZ_PATTERNS.add(Pattern.compile("\\bNetz\\s+Minyan\\b", Pattern.CASE_INSENSITIVE));
 
     }
 
@@ -155,6 +155,9 @@ public class MinyanClassifier {
         // Check for "NS" (Nusach Sefard) in title - track this for later note addition
         boolean hasNS = title != null && title.matches("(?i).*\\bNS\\b.*");
         boolean isNSBeforeNoon = hasNS && time != null && time.isBefore(LocalTime.NOON);
+        
+        // Check for "Sephardic" (Edot Hamizrach) in title - track this for later note addition
+        boolean hasSephardic = title != null && title.matches("(?i).*\\bsephardic?\\b.*");
         
         // If NS is in title AND time is before 12pm, force classification as Shacharis
         if (isNSBeforeNoon) {
@@ -424,7 +427,7 @@ public class MinyanClassifier {
     /**
      * Extract special qualifiers from title that should be preserved as notes.
      * Examples: "Teen Minyan" → "Teen Minyan", "Early Shacharis" → "Early Shacharis"
-     * "NS Minyan" → "Nusach Sefard"
+     * "NS Minyan" → "Nusach Sefard", "Sephardic Minyan" → "Edot Hamizrach"
      * 
      * @param title The entry title
      * @return Qualifier string or null if none found
@@ -441,6 +444,12 @@ public class MinyanClassifier {
         Pattern nsPattern = Pattern.compile("\\bNS\\b", Pattern.CASE_INSENSITIVE);
         if (nsPattern.matcher(title).find()) {
             qualifiers.add("Nusach Sefard");
+        }
+        
+        // Check for "Sephardic" or "Sephardi" (maps to Edot Hamizrach)
+        Pattern sephardicPattern = Pattern.compile("\\bsephardic?\\b", Pattern.CASE_INSENSITIVE);
+        if (sephardicPattern.matcher(title).find()) {
+            qualifiers.add("Edot Hamizrach");
         }
         
         // Multi-word phrases to extract (check these first)
