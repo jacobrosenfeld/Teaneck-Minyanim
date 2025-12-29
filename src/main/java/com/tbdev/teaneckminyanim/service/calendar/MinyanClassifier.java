@@ -152,19 +152,39 @@ public class MinyanClassifier {
         
         log.debug("Classifying entry: {}", combinedText);
         
-        // Check for "NS" (Nusach Sefard) in title - track this for later note addition
+        // Check for nusach indicators in title
         boolean hasNS = title != null && title.matches("(?i).*\\bNS\\b.*");
-        boolean isNSBeforeNoon = hasNS && time != null && time.isBefore(LocalTime.NOON);
-        
-        // Check for "Sephardic" (Edot Hamizrach) in title - track this for later note addition
+        boolean hasNusachSefard = title != null && title.matches("(?i).*\\bNusach\\s+Sefard\\b.*");
+        boolean hasAshkenaz = title != null && title.matches("(?i).*\\bAshkenaz\\b.*");
         boolean hasSephardic = title != null && title.matches("(?i).*\\bsephardic?\\b.*");
         
-        // If NS is in title AND time is before 12pm, force classification as Shacharis
-        if (isNSBeforeNoon) {
+        // Check if time is before 12pm for nusach-based classification
+        boolean isBeforeNoon = time != null && time.isBefore(LocalTime.NOON);
+        
+        // If NS is in title AND time is before 12pm, force classification as Shacharis with Nusach Sefard note
+        if ((hasNS || hasNusachSefard) && isBeforeNoon) {
             String notes = "Nusach Sefard";
             return new ClassificationResult(
                 MinyanType.SHACHARIS,
-                "Matched NS abbreviation before 12pm - classified as Shacharis",
+                "Matched Nusach Sefard before 12pm - classified as Shacharis",
+                notes
+            );
+        }
+        
+        // If Ashkenaz is in title AND time is before 12pm, force classification as Shacharis (no note for Ashkenaz as it's default)
+        if (hasAshkenaz && isBeforeNoon) {
+            return new ClassificationResult(
+                MinyanType.SHACHARIS,
+                "Matched Ashkenaz before 12pm - classified as Shacharis"
+            );
+        }
+        
+        // If Sephardic is in title AND time is before 12pm, force classification as Shacharis with Edot Hamizrach note
+        if (hasSephardic && isBeforeNoon) {
+            String notes = "Edot Hamizrach";
+            return new ClassificationResult(
+                MinyanType.SHACHARIS,
+                "Matched Sephardic before 12pm - classified as Shacharis",
                 notes
             );
         }
@@ -458,7 +478,7 @@ public class MinyanClassifier {
             "early shacharis", "early shacharit", "late shacharis", "late shacharit",
             "early mincha", "late mincha", "fast mincha",
             "early maariv", "late maariv",
-            "women's minyan", "men's minyan"
+            "slow paced", "women's minyan", "men's minyan"
         };
         
         for (String phrase : multiWordPatterns) {
