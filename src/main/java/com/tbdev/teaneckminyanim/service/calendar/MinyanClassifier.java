@@ -86,6 +86,7 @@ public class MinyanClassifier {
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bteen\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bShc\\b", Pattern.CASE_INSENSITIVE));
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bShac\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bHashkamah\\b", Pattern.CASE_INSENSITIVE));
 
 
         // Mincha patterns (including early mincha)
