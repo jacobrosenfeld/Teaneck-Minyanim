@@ -136,12 +136,6 @@ public class MinyanEvent {
         String result = "";
         if (locationName != null) {
             result += locationName;
-
-            if (organizationNusach != nusach && nusach != Nusach.UNSPECIFIED) {
-                result += String.format(" (%s)", nusach.displayName());
-            }
-        } else if (organizationNusach != nusach && nusach != Nusach.UNSPECIFIED) {
-            result += nusach.displayName();
         }
 
         return result;
