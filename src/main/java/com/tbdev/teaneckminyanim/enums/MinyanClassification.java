@@ -1,8 +1,11 @@
 package com.tbdev.teaneckminyanim.enums;
 
+import com.tbdev.teaneckminyanim.minyan.MinyanType;
+
 /**
  * Classification for imported calendar entries to distinguish minyan types and other events.
  * Each minyan type (Shacharis, Mincha, Maariv, etc.) has its own enum value for robust pattern matching.
+ * This enum is synchronized with MinyanType for seamless conversion between calendar imports and rule-based minyanim.
  */
 public enum MinyanClassification {
     SHACHARIS("Shacharis"),
@@ -33,6 +36,63 @@ public enum MinyanClassification {
             }
         }
         return OTHER;
+    }
+
+    /**
+     * Convert this classification to the corresponding MinyanType.
+     * Returns null for NON_MINYAN and OTHER classifications.
+     * 
+     * @return Corresponding MinyanType, or null if not applicable
+     */
+    public MinyanType toMinyanType() {
+        switch (this) {
+            case SHACHARIS:
+                return MinyanType.SHACHARIS;
+            case MINCHA:
+                return MinyanType.MINCHA;
+            case MAARIV:
+                return MinyanType.MAARIV;
+            case MINCHA_MAARIV:
+                return MinyanType.MINCHA_MAARIV;
+            case SELICHOS:
+                return MinyanType.SELICHOS;
+            case NON_MINYAN:
+            case OTHER:
+                return null;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Create a MinyanClassification from a MinyanType.
+     * Useful for converting rule-based minyan types to classifications.
+     * 
+     * @param minyanType The MinyanType to convert
+     * @return Corresponding MinyanClassification, or OTHER for MEGILA_READING
+     */
+    public static MinyanClassification fromMinyanType(MinyanType minyanType) {
+        if (minyanType == null) {
+            return OTHER;
+        }
+        
+        switch (minyanType) {
+            case SHACHARIS:
+                return SHACHARIS;
+            case MINCHA:
+                return MINCHA;
+            case MAARIV:
+                return MAARIV;
+            case MINCHA_MAARIV:
+                return MINCHA_MAARIV;
+            case SELICHOS:
+                return SELICHOS;
+            case MEGILA_READING:
+                // MEGILA_READING doesn't have a direct classification equivalent
+                return OTHER;
+            default:
+                return OTHER;
+        }
     }
 
     /**
