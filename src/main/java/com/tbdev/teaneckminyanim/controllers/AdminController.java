@@ -10,6 +10,7 @@ import com.tbdev.teaneckminyanim.minyan.MinyanTime;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.minyan.Schedule;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 import static com.tbdev.teaneckminyanim.enums.Role.ADMIN;
 
+@Slf4j
 @Controller
 public class AdminController {
     @Autowired
@@ -565,7 +567,9 @@ public class AdminController {
                                            @RequestParam(value = "site-url", required = false) String siteURIString,
                                            @RequestParam(value = "nusach", required = true) String nusachString,
                                            @RequestParam(value = "orgColor", required = true) String orgColor,
-                                           @RequestParam(value = "url-slug", required = false) String urlSlug) throws Exception {
+                                           @RequestParam(value = "url-slug", required = false) String urlSlug,
+                                           @RequestParam(value = "calendar", required = false) String calendar,
+                                           @RequestParam(value = "useScrapedCalendar", required = false) Boolean useScrapedCalendar) throws Exception {
 
 //        validate input
         if (name == null || name.isEmpty()) {
@@ -595,6 +599,8 @@ public class AdminController {
                 .nusach(nusach)
                 .orgColor(orgColor)
                 .urlSlug(urlSlug)
+                .calendar(calendar)
+                .useScrapedCalendar(useScrapedCalendar != null ? useScrapedCalendar : false)
                 .build();
 
         // Ensure organization has a slug (generate from name if not provided)
@@ -947,11 +953,54 @@ public class AdminController {
             @RequestParam(value = "enabled", required = false) String newEnabled,
             @RequestParam(value = "id", required = true) String id,
             @RequestParam(value = "text", required = false) String newText,
-            @RequestParam(value = "type", required = false) String type
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "expirationDate", required = false) String expirationDate,
+            @RequestParam(value = "maxDisplays", required = false) Integer maxDisplays
     ) {
         TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);
+        
+        // Validate setting exists
+        if (settingtoUpdate == null) {
+            return settings("Setting not found with id: " + id, null);
+        }
 
-        TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText, type);
+        // Validate expiration date format if provided
+        if (expirationDate != null && !expirationDate.isEmpty()) {
+            if (!expirationDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                return settings(null, "Invalid expiration date format. Please use YYYY-MM-DD format.");
+            }
+            // Validate that the date is actually valid
+            try {
+                java.time.LocalDate.parse(expirationDate);
+            } catch (java.time.format.DateTimeParseException e) {
+                return settings(null, "Invalid expiration date. Please enter a valid date.");
+            }
+        }
+
+        // Validate maxDisplays range if provided
+        if (maxDisplays != null) {
+            if (maxDisplays < 1 || maxDisplays > 100) {
+                return settings(null, "Max displays must be between 1 and 100.");
+            }
+        }
+
+        TNMSettings settings = new TNMSettings();
+        settings.setId(settingtoUpdate.getId());
+        settings.setSetting(setting);
+        settings.setEnabled(newEnabled);
+        settings.setText(newText);
+        settings.setType(type);
+        settings.setExpirationDate(expirationDate);
+        settings.setMaxDisplays(maxDisplays);
+        
+        // Auto-increment version if text has changed (resets view tracking)
+        Long currentVersion = settingtoUpdate.getVersion() != null ? settingtoUpdate.getVersion() : 0L;
+        if (newText != null && !newText.equals(settingtoUpdate.getText())) {
+            settings.setVersion(currentVersion + 1);
+        } else {
+            settings.setVersion(currentVersion);
+        }
+        
         if (tnmsettingsDAO.update(settings)) {
             // return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
             RedirectView redirectView = new RedirectView("/admin/settings", true);
@@ -1604,4 +1653,412 @@ public class AdminController {
             }
         }
     }
+
+    // ==================== Calendar Import Endpoints ====================
+
+    /**
+     * Manual trigger for calendar import for a specific organization
+     */
+    @PostMapping("/admin/{orgId}/calendar/import")
+    public ModelAndView triggerCalendarImport(@PathVariable String orgId) {
+        if (!isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to access this page.");
+        }
+
+        try {
+            Organization org = getOrganization(orgId);
+            if (org == null) {
+                ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
+                mv.addObject("errorMessage", "Organization not found");
+                return mv;
+            }
+
+            // Check if calendar URL is configured
+            if (org.getCalendar() == null || org.getCalendar().trim().isEmpty()) {
+                ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
+                mv.addObject("errorMessage", "No calendar URL configured");
+                return mv;
+            }
+
+            // Trigger import
+            com.tbdev.teaneckminyanim.service.calendar.CalendarImportService importService = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.service.calendar.CalendarImportService.class);
+            
+            com.tbdev.teaneckminyanim.service.calendar.CalendarImportService.ImportResult result = 
+                    importService.importCalendarForOrganization(orgId);
+
+            ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
+            
+            if (result.success) {
+                mv.addObject("successMessage", 
+                        String.format("Import successful: %d new, %d updated, %d duplicates skipped",
+                                result.newEntries, result.updatedEntries, result.duplicatesSkipped));
+            } else {
+                mv.addObject("errorMessage", "Import failed: " + result.errorMessage);
+            }
+            
+            return mv;
+
+        } catch (Exception e) {
+            ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
+            mv.addObject("errorMessage", "Import error: " + e.getMessage());
+            return mv;
+        }
+    }
+
+    /**
+     * View and manage imported calendar entries for an organization
+     */
+    @GetMapping("/admin/{orgId}/calendar-entries")
+    public ModelAndView viewCalendarEntries(
+            @PathVariable String orgId,
+            @RequestParam(required = false) String successMessage,
+            @RequestParam(required = false) String errorMessage,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
+            @RequestParam(required = false) String filterClassification,
+            @RequestParam(required = false) String filterEnabled,
+            @RequestParam(required = false) String searchText,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false, defaultValue = "false") Boolean showNonMinyan) {
+        
+        if (!isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to access this page.");
+        }
+
+        ModelAndView mv = new ModelAndView("admin/calendar-entries");
+        addStandardPageData(mv);
+
+        try {
+            Organization org = getOrganization(orgId);
+            if (org == null) {
+                mv.setViewName("redirect:/admin");
+                return mv;
+            }
+
+            mv.addObject("organization", org);
+
+            // Get repository bean
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
+
+            // Build sort
+            org.springframework.data.domain.Sort sort = buildSort(sortBy, sortDir);
+
+            // Get entries with filtering
+            List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entries = 
+                    getFilteredEntries(entryRepo, orgId, filterClassification, filterEnabled, 
+                                     searchText, startDate, endDate, showNonMinyan, sort);
+
+            // Calculate statistics
+            long totalEntries = entryRepo.countByOrganizationId(orgId);
+            long enabledCount = entries.stream().filter(e -> e.isEnabled()).count();
+            long disabledCount = entries.stream().filter(e -> !e.isEnabled()).count();
+            long minyanCount = entries.stream()
+                    .filter(e -> e.getClassification() != null && e.getClassification().isMinyan())
+                    .count();
+            long nonMinyanCount = entries.stream()
+                    .filter(e -> e.getClassification() != null && e.getClassification().isNonMinyan())
+                    .count();
+
+            mv.addObject("entries", entries);
+            mv.addObject("totalEntries", totalEntries);
+            mv.addObject("filteredCount", entries.size());
+            mv.addObject("enabledCount", enabledCount);
+            mv.addObject("disabledCount", disabledCount);
+            mv.addObject("minyanCount", minyanCount);
+            mv.addObject("nonMinyanCount", nonMinyanCount);
+
+            // Get locations for this organization for the dropdown
+            LocationService locationService = applicationContext.getBean(LocationService.class);
+            List<Location> locations = locationService.findMatching(orgId);
+            mv.addObject("locations", locations);
+
+            // Add filter/sort parameters back to view for persistence
+            mv.addObject("sortBy", sortBy != null ? sortBy : "date");
+            mv.addObject("sortDir", sortDir != null ? sortDir : "desc");
+            mv.addObject("filterClassification", filterClassification);
+            mv.addObject("filterEnabled", filterEnabled);
+            mv.addObject("searchText", searchText);
+            mv.addObject("startDate", startDate);
+            mv.addObject("endDate", endDate);
+            mv.addObject("showNonMinyan", showNonMinyan);
+
+            if (successMessage != null) {
+                mv.addObject("successMessage", successMessage);
+            }
+            if (errorMessage != null) {
+                mv.addObject("errorMessage", errorMessage);
+            }
+
+        } catch (Exception e) {
+            mv.addObject("errorMessage", "Error loading calendar entries: " + e.getMessage());
+            log.error("Error loading calendar entries for org {}", orgId, e);
+        }
+
+        return mv;
+    }
+
+    /**
+     * Build Sort object from request parameters
+     */
+    private org.springframework.data.domain.Sort buildSort(String sortBy, String sortDir) {
+        String sortField = sortBy != null ? sortBy : "date";
+        org.springframework.data.domain.Sort.Direction direction = 
+                "asc".equalsIgnoreCase(sortDir) ? 
+                org.springframework.data.domain.Sort.Direction.ASC : 
+                org.springframework.data.domain.Sort.Direction.DESC;
+
+        // Map sort field names to entity field names
+        switch (sortField) {
+            case "time":
+                sortField = "startTime";
+                break;
+            case "title":
+                sortField = "title";
+                break;
+            case "type":
+                sortField = "classification";
+                break;
+            case "enabled":
+                sortField = "enabled";
+                break;
+            case "importedAt":
+                sortField = "importedAt";
+                break;
+            default:
+                sortField = "date";
+        }
+
+        return org.springframework.data.domain.Sort.by(direction, sortField)
+                .and(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "startTime"));
+    }
+
+    /**
+     * Get filtered entries based on request parameters
+     */
+    private List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> getFilteredEntries(
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo,
+            String orgId,
+            String filterClassification,
+            String filterEnabled,
+            String searchText,
+            String startDate,
+            String endDate,
+            Boolean showNonMinyan,
+            org.springframework.data.domain.Sort sort) {
+        
+        List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entries;
+
+        // Apply text search if provided
+        if (searchText != null && !searchText.trim().isEmpty()) {
+            entries = entryRepo.searchByText(orgId, searchText.trim(), sort);
+        }
+        // Apply date range filter if provided
+        else if (startDate != null && endDate != null && !startDate.isEmpty() && !endDate.isEmpty()) {
+            try {
+                java.time.LocalDate start = java.time.LocalDate.parse(startDate);
+                java.time.LocalDate end = java.time.LocalDate.parse(endDate);
+                
+                com.tbdev.teaneckminyanim.minyan.MinyanType classification = null;
+                if (filterClassification != null && !filterClassification.isEmpty()) {
+                    classification = com.tbdev.teaneckminyanim.minyan.MinyanType.fromString(filterClassification);
+                }
+                
+                entries = entryRepo.findInRangeWithClassification(orgId, start, end, classification, sort);
+            } catch (Exception e) {
+                log.warn("Error parsing date range: {} to {}", startDate, endDate, e);
+                entries = entryRepo.findByOrganizationId(orgId, sort);
+            }
+        }
+        // Apply classification filter
+        else if (filterClassification != null && !filterClassification.isEmpty()) {
+            try {
+                com.tbdev.teaneckminyanim.minyan.MinyanType classification = 
+                        com.tbdev.teaneckminyanim.minyan.MinyanType.fromString(filterClassification);
+                entries = entryRepo.findByOrganizationIdAndClassification(orgId, classification, sort);
+            } catch (Exception e) {
+                log.warn("Error parsing classification: {}", filterClassification, e);
+                entries = entryRepo.findByOrganizationId(orgId, sort);
+            }
+        }
+        // Apply enabled filter
+        else if (filterEnabled != null && !filterEnabled.isEmpty()) {
+            boolean enabled = "true".equalsIgnoreCase(filterEnabled);
+            entries = entryRepo.findByOrganizationIdAndEnabled(orgId, enabled, sort);
+        }
+        // Default: get all entries
+        else {
+            entries = entryRepo.findByOrganizationId(orgId, sort);
+        }
+
+        // Filter out non-minyan entries by default unless showNonMinyan is true
+        if (!showNonMinyan) {
+            entries = entries.stream()
+                    .filter(e -> e.getClassification() == null || 
+                                !e.getClassification().isNonMinyan())
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        return entries;
+    }
+
+    /**
+     * Toggle enabled/disabled status for a calendar entry
+     */
+    @PostMapping("/admin/{orgId}/calendar-entries/{entryId}/toggle")
+    public RedirectView toggleCalendarEntry(@PathVariable String orgId, @PathVariable Long entryId) {
+        if (!isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to perform this action.");
+        }
+
+        try {
+            Organization org = getOrganization(orgId);
+            if (org == null) {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
+            }
+
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
+
+            Optional<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entryOpt = 
+                    entryRepo.findById(entryId);
+
+            if (entryOpt.isPresent()) {
+                com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry entry = entryOpt.get();
+                
+                // Verify entry belongs to this organization
+                if (!entry.getOrganizationId().equals(orgId)) {
+                    throw new AccessDeniedException("Entry does not belong to this organization");
+                }
+
+                // Toggle enabled status
+                entry.setEnabled(!entry.isEnabled());
+                entryRepo.save(entry);
+
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Entry+status+updated");
+            } else {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Entry+not+found");
+            }
+
+        } catch (Exception e) {
+            return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=" + e.getMessage());
+        }
+    }
+
+    /**
+     * Update location for a calendar entry
+     */
+    @PostMapping("/admin/{orgId}/calendar-entries/{entryId}/update-location")
+    public RedirectView updateEntryLocation(@PathVariable String orgId, 
+                                           @PathVariable Long entryId,
+                                           @RequestParam(required = false) String locationId) {
+        if (!isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to perform this action.");
+        }
+
+        try {
+            Organization org = getOrganization(orgId);
+            if (org == null) {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
+            }
+
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
+
+            Optional<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entryOpt = 
+                    entryRepo.findById(entryId);
+
+            if (entryOpt.isPresent()) {
+                com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry entry = entryOpt.get();
+                
+                // Verify entry belongs to this organization
+                if (!entry.getOrganizationId().equals(orgId)) {
+                    throw new AccessDeniedException("Entry does not belong to this organization");
+                }
+
+                // Update location
+                if (locationId != null && !locationId.isEmpty()) {
+                    LocationService locationService = applicationContext.getBean(LocationService.class);
+                    Location location = locationService.findById(locationId);
+                    if (location != null) {
+                        entry.setLocation(location.getName());
+                        entry.setLocationManuallyEdited(true);
+                        entry.setManuallyEditedBy(getCurrentUser().getUsername());
+                        entry.setManuallyEditedAt(java.time.LocalDateTime.now());
+                        entryRepo.save(entry);
+                        
+                        return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Location+updated");
+                    } else {
+                        return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Location+not+found");
+                    }
+                } else {
+                    // Clear location
+                    entry.setLocation(null);
+                    entry.setLocationManuallyEdited(true);
+                    entry.setManuallyEditedBy(getCurrentUser().getUsername());
+                    entry.setManuallyEditedAt(java.time.LocalDateTime.now());
+                    entryRepo.save(entry);
+                    
+                    return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Location+cleared");
+                }
+            } else {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Entry+not+found");
+            }
+
+        } catch (Exception e) {
+            log.error("Error updating location for entry {}: {}", entryId, e.getMessage(), e);
+            return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=" + e.getMessage());
+        }
+    }
+
+    /**
+     * Reimport all calendar entries for an organization (override all existing data)
+     */
+    @PostMapping("/admin/{orgId}/calendar/reimport-all")
+    public RedirectView reimportAllCalendarEntries(@PathVariable String orgId) {
+        if (!isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to perform this action.");
+        }
+
+        try {
+            Organization org = getOrganization(orgId);
+            if (org == null) {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
+            }
+
+            // Delete all existing entries for this organization
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
+            
+            List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> existingEntries = 
+                    entryRepo.findByOrganizationIdOrderByDateDesc(orgId);
+            
+            entryRepo.deleteAll(existingEntries);
+            log.info("Deleted {} existing entries for organization {}", existingEntries.size(), orgId);
+
+            // Trigger fresh import
+            com.tbdev.teaneckminyanim.service.calendar.CalendarImportService importService = 
+                    applicationContext.getBean(com.tbdev.teaneckminyanim.service.calendar.CalendarImportService.class);
+            
+            com.tbdev.teaneckminyanim.service.calendar.CalendarImportService.ImportResult result = 
+                    importService.importCalendarForOrganization(orgId);
+
+            if (result.success) {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Reimport+complete:+" 
+                        + result.newEntries + "+entries+imported");
+            } else {
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Reimport+failed:+" 
+                        + result.errorMessage);
+            }
+
+        } catch (Exception e) {
+            log.error("Error reimporting calendar for organization {}: {}", orgId, e.getMessage(), e);
+            return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Reimport+failed:+" + e.getMessage());
+        }
+    }
+
+    @Autowired
+    private org.springframework.context.ApplicationContext applicationContext;
 }

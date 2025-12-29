@@ -424,6 +424,34 @@
        <!-- Scroll To Top Ends-->
 
       </div> <!-- Main -->
+      
+      <!-- Notification Popup Script -->
+      <script th:inline="javascript">
+        /*<![CDATA[*/
+        (function() {
+            // Use Thymeleaf's JavaScript inline mode which automatically escapes values
+            // Safe navigation with null checks for Home Page Popup setting
+            var popupSettings = /*[[${settings.?[setting == 'Home Page Popup']}]]*/ [];
+            var homePagePopup = popupSettings.length > 0 ? popupSettings[0] : null;
+            
+            if (homePagePopup && homePagePopup.enabled === 'Enabled') {
+                window.notificationData = {
+                    enabled: true,
+                    id: homePagePopup.id || '',
+                    title: 'Announcement',
+                    message: homePagePopup.text || '',
+                    maxDisplays: homePagePopup.maxDisplays || null,
+                    expirationDate: homePagePopup.expirationDate || null,
+                    version: homePagePopup.version || 0
+                };
+            } else {
+                window.notificationData = { enabled: false };
+            }
+        })();
+        /*]]>*/
+      </script>
+      <script type="text/javascript" src="/notification-popup.js"></script>
+      
       <script type="text/javascript" src="/minyan-table.js"></script>
       <script type="text/javascript" src="/assets/js/custom.js"></script>
       <script type="text/javascript" src="/edot.js"></script>
