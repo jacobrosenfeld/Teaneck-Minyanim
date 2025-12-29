@@ -111,6 +111,7 @@ public class MinyanClassifier {
         
         // Netz Hachama patterns (sunrise minyanim - classified as Shacharis with Netz time in notes)
         NETZ_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
+        NETZ_PATTERNS.add(Pattern.compile("\\bNetz+Minyan\\b", Pattern.CASE_INSENSITIVE));
 
     }
 
