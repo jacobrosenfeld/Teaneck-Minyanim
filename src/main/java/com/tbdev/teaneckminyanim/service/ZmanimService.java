@@ -47,6 +47,7 @@ public class ZmanimService {
     private final LocationService locationDAO;
     private final OrganizationService organizationDAO;
     private final MinyanService minyanService;
+    private final com.tbdev.teaneckminyanim.service.provider.OrgScheduleResolver scheduleResolver;
 
 
     public ModelAndView getZmanim(Date date) {
@@ -443,12 +444,26 @@ public class ZmanimService {
             throw new Exception("Sorry, there was an error finding the organization.");
         }
 
-        List<Minyan> enabledMinyanim = minyanService.findEnabledMatching(orgId);
         List<MinyanEvent> minyanEvents = new ArrayList<>();
-        // boolean usesLocations;
-        // boolean nusachChanges;
-        // Nusach lastNusach;
-        // boolean usesNotes;
+        
+        // Check if calendar import is enabled for this organization
+        boolean useCalendarImport = scheduleResolver.isCalendarImportEnabled(orgId);
+        
+        if (useCalendarImport) {
+            log.info("Using calendar import provider for organization: {}", orgId);
+            // Get events from calendar import provider
+            LocalDate localDateRef = dateToLocalDate(date);
+            List<MinyanEvent> calendarEvents = scheduleResolver.getEventsForDate(orgId, localDateRef);
+            minyanEvents.addAll(calendarEvents);
+            log.info("Added {} calendar-imported events", calendarEvents.size());
+        } else {
+            log.info("Using rule-based provider for organization: {}", orgId);
+            // Use existing rule-based logic
+            List<Minyan> enabledMinyanim = minyanService.findEnabledMatching(orgId);
+            // boolean usesLocations;
+            // boolean nusachChanges;
+            // Nusach lastNusach;
+            // boolean usesNotes;
 
         for (Minyan minyan : enabledMinyanim) {
             LocalDate ref = dateToLocalDate(date);
@@ -583,6 +598,8 @@ public class ZmanimService {
                 }
             }
         }
+        } // End of else block for rule-based provider
+        
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
         mv.getModel().put("allminyanim", minyanEvents);
 
@@ -592,7 +609,7 @@ public class ZmanimService {
         for (MinyanEvent me : minyanEvents) {
             if (me.getType().isShacharis()) {
                 shacharisMinyanim.add(me);
-            } else if (me.getType().isMincha()) {
+            } else if (me.getType().isMincha() || me.getType().isMinchaMariv()) {
                 minchaMinyanim.add(me);
             } else if (me.getType().isMaariv()) {
                 maarivMinyanim.add(me);
@@ -602,8 +619,33 @@ public class ZmanimService {
         // upcoming minyanim for org
         List<MinyanEvent> nextMinyan = new ArrayList<>();
 
-        for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(today);
+        // IMPORTANT: Next minyan must ALWAYS be based on TODAY, not the viewed date
+        // This ensures the "Next minyan" button shows upcoming minyanim for today
+        // even when the user is viewing a different date (e.g., tomorrow's schedule)
+        // Note: 'today' variable is already defined earlier in this method
+        LocalDate todayLocalDate = dateToLocalDate(today);
+        
+        if (useCalendarImport) {
+            // For calendar imports, get TODAY's events and filter for upcoming ones
+            log.info("Computing next minyan from calendar imports for TODAY: {}", todayLocalDate);
+            List<MinyanEvent> todayEvents = scheduleResolver.getEventsForDate(orgId, todayLocalDate);
+            
+            Date now = new Date();
+            Date terminationDate = new Date(now.getTime() - (60000 * 3)); // 3 minutes ago
+            
+            // Filter today's events to find upcoming ones
+            for (MinyanEvent event : todayEvents) {
+                if (event.getStartTime().after(terminationDate)) {
+                    nextMinyan.add(event);
+                }
+            }
+            log.info("Found {} upcoming calendar-imported events for today", nextMinyan.size());
+        } else {
+            // For rule-based: compute next minyan from TODAY's schedule (not viewed date)
+            log.info("Computing next minyan from rules for TODAY: {}", todayLocalDate);
+            List<Minyan> enabledMinyanim2 = minyanService.findEnabledMatching(orgId);
+            for (Minyan minyan : enabledMinyanim2) {
+            LocalDate ref = todayLocalDate; // Use TODAY, not the viewed date
             Date startDate = minyan.getStartDate(ref);
             Date now = new Date();
             Date terminationDate = new Date(now.getTime() - (60000 * 3));
@@ -745,6 +787,8 @@ public class ZmanimService {
                 }
             }
         }
+        } // End of if (!useCalendarImport) for nextMinyan
+        
         nextMinyan.sort(Comparator.comparing(MinyanEvent::getStartTime));
         
         // Populate organization slugs for next minyan events
