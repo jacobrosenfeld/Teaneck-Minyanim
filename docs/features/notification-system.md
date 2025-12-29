@@ -51,10 +51,19 @@ Version 1.2.5 introduces a sophisticated homepage notification popup system that
 - **Enabled**: Notification will be shown to users (subject to expiration and display limits)
 - **Disabled**: Notification will not be shown to anyone
 
-#### Message Text
+#### Message Text (Markdown Supported)
 - The announcement message shown in the popup
-- Keep concise and clear (recommended: under 200 characters)
-- Supports plain text only
+- Supports markdown formatting for rich text styling
+- Keep concise and clear (recommended: under 300 characters with formatting)
+- Markdown features supported:
+  - **Bold text**: `**bold**`
+  - *Italic text*: `*italic*`
+  - [Links](url): `[link text](https://example.com)`
+  - `Code`: `` `code` ``
+  - Lists: `- list item`
+  - Headers: `## Header`
+- All markdown is rendered with site styling (Montserrat font, #275ed8 link color)
+- HTML is automatically escaped for security
 
 #### Expiration Date
 - Optional field
@@ -72,6 +81,52 @@ Version 1.2.5 introduces a sophisticated homepage notification popup system that
   - Set to 3 for important but less urgent updates
   - Set to 5 for feature announcements
   - Leave empty for ongoing notifications
+
+## Markdown Formatting Examples
+
+### Basic Formatting
+```markdown
+**Important**: Version 1.2.5 is now available!
+
+Visit our *help page* for more information.
+```
+
+### With Links
+```markdown
+Check out the [new features](https://example.com/features) in this release!
+```
+
+### Lists and Headers
+```markdown
+## What's New
+
+- Improved performance
+- Better mobile support
+- Enhanced security
+
+Learn more at our `documentation` page.
+```
+
+### Complete Example
+```markdown
+## Version 1.2.5 Released!
+
+**New features** include:
+
+- *Markdown styling* in notifications
+- `Code formatting` support
+- [Documentation updates](https://example.com)
+
+Visit our site for full details.
+```
+
+**Rendered Output:**
+- Bold text appears with font-weight: 600
+- Italic text is styled appropriately
+- Links are colored #275ed8 (site blue) and open in new tab
+- Code appears with gray background
+- Lists are properly indented with bullets
+- Headers use Montserrat font with proper sizing
 
 ## Technical Implementation
 
@@ -92,8 +147,10 @@ JavaScript module that handles:
 - Cookie management (get, set, read view counts)
 - Expiration checking
 - Display limit enforcement
-- Modal creation and display
+- **Markdown parsing** (bold, italic, links, code, lists, headers)
+- Modal creation and display with site styling
 - Bootstrap 5 integration
+- XSS protection (HTML escaping before markdown parsing)
 
 #### Integration in homepage.html
 ```javascript

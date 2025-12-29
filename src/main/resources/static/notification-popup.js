@@ -89,6 +89,48 @@
         },
 
         /**
+         * Parse markdown to HTML with safe rendering
+         */
+        parseMarkdown: function(text) {
+            if (!text) return '';
+            
+            // Simple markdown parser (supports bold, italic, links, lists, code)
+            let html = text;
+            
+            // Escape HTML first for safety
+            html = html.replace(/&/g, '&amp;')
+                       .replace(/</g, '&lt;')
+                       .replace(/>/g, '&gt;');
+            
+            // Headers (##, ###)
+            html = html.replace(/^### (.+)$/gm, '<h5 style="font-weight: 600; margin: 0.75rem 0 0.5rem 0; font-family: \'Montserrat\', sans-serif;">$1</h5>');
+            html = html.replace(/^## (.+)$/gm, '<h4 style="font-weight: 600; margin: 1rem 0 0.5rem 0; font-family: \'Montserrat\', sans-serif;">$1</h4>');
+            
+            // Bold **text**
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight: 600;">$1</strong>');
+            
+            // Italic *text*
+            html = html.replace(/\*(.+?)\*/g, '<em style="font-style: italic;">$1</em>');
+            
+            // Links [text](url)
+            html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" style="color: #275ed8; text-decoration: underline;" target="_blank" rel="noopener noreferrer">$1</a>');
+            
+            // Code `code`
+            html = html.replace(/`(.+?)`/g, '<code style="background-color: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em;">$1</code>');
+            
+            // Unordered lists (- item)
+            html = html.replace(/^- (.+)$/gm, '<li style="margin-left: 1.5rem;">$1</li>');
+            html = html.replace(/(<li[^>]*>.*<\/li>\n?)+/g, '<ul style="margin: 0.5rem 0; padding-left: 1rem; list-style-type: disc;">$&</ul>');
+            
+            // Line breaks (two spaces or \n\n becomes <br>)
+            html = html.replace(/  \n/g, '<br>');
+            html = html.replace(/\n\n/g, '<br><br>');
+            html = html.replace(/\n/g, ' ');
+            
+            return html;
+        },
+
+        /**
          * Show notification modal
          */
         showNotification: function(notificationId, title, message, maxDisplays, expirationDate) {
@@ -99,7 +141,7 @@
             // Increment view count
             this.incrementViewCount(notificationId);
 
-            // Escape HTML to prevent XSS
+            // Escape HTML for title
             const escapeHtml = function(text) {
                 const div = document.createElement('div');
                 div.textContent = text;
@@ -107,7 +149,9 @@
             };
 
             const safeTitle = escapeHtml(title);
-            const safeMessage = escapeHtml(message);
+            
+            // Parse markdown for message (already safe as it escapes HTML first)
+            const formattedMessage = this.parseMarkdown(message);
 
             // Create modal HTML with site styling (#275ed8 primary color)
             const modalHtml = `
@@ -121,10 +165,10 @@
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body" style="padding: 1.5rem; font-family: 'Montserrat', sans-serif;">
-                                <p class="mb-0" style="font-size: 1rem; line-height: 1.6;">${safeMessage}</p>
+                                <div style="font-size: 1rem; line-height: 1.6;">${formattedMessage}</div>
                             </div>
                             <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem 1.5rem;">
-                                <button type="button" class="btn btn-cta" data-bs-dismiss="modal" style="background-color: #275ed8 !important; color: #fff !important; border: none; font-family: 'Montserrat', sans-serif; font-weight: 600; border-radius: 4px; font-size: 14px; letter-spacing: 0.5px;">Got it!</button>
+                                <button type="button" class="btn btn-cta" data-bs-dismiss="modal" style="background-color: #275ed8 !important; color: #fff !important; border: none; padding: 8px 24px; font-family: 'Montserrat', sans-serif; font-weight: 600; border-radius: 4px; font-size: 14px; letter-spacing: 0.5px;">Got it!</button>
                             </div>
                         </div>
                     </div>

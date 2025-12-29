@@ -100,8 +100,11 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="text">Message Text</label>
-                                <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
+                                <label for="text">Message Text (Markdown Supported)</label>
+                                <textarea class="form-control" th:id="${'new-text-' + settings.id}" name="text" rows="5" th:text="${settings.text}"></textarea>
+                                <small class="form-text text-muted">
+                                    Supports markdown: **bold**, *italic*, [link](url), `code`, - list items, ## headers
+                                </small>
                             </div>
 
                             <div class="form-group mt-3">

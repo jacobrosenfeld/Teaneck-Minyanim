@@ -20,6 +20,7 @@
                 <button id="btn-show-limited" class="btn btn-warning mb-2">Show Limited (Max 3 Displays)</button>
                 <button id="btn-show-expiring" class="btn btn-danger mb-2">Show Expiring (Tomorrow)</button>
                 <button id="btn-show-expired" class="btn btn-secondary mb-2">Show Expired (Yesterday)</button>
+                <button id="btn-show-markdown" class="btn btn-success mb-2">Show Markdown Styled</button>
                 <button id="btn-clear-cookies" class="btn btn-info mb-2">Clear All Notification Cookies</button>
             </div>
         </div>
@@ -147,6 +148,21 @@
             } else {
                 addTestResult('✗ Expired notification was shown (BUG)', false);
             }
+            updateCookieStatus();
+        });
+
+        // Test 5: Markdown styling
+        document.getElementById('btn-show-markdown').addEventListener('click', function() {
+            window.notificationData = {
+                enabled: true,
+                id: 'test-markdown',
+                title: 'Markdown Test',
+                message: '## New Features\n\n**Version 1.2.5** introduces:\n\n- *Markdown styling* support\n- `Code formatting`\n- [Links to pages](https://example.com)\n\nVisit our site for more details!',
+                maxDisplays: null,
+                expirationDate: null
+            };
+            NotificationManager.init();
+            addTestResult('Markdown notification triggered');
             updateCookieStatus();
         });
 
