@@ -1777,7 +1777,7 @@ public class AdminController {
 
             // Add filter/sort parameters back to view for persistence
             mv.addObject("sortBy", sortBy != null ? sortBy : "date");
-            mv.addObject("sortDir", sortDir != null ? sortDir : "desc");
+            mv.addObject("sortDir", sortDir != null ? sortDir : "asc");
             mv.addObject("filterClassification", filterClassification);
             mv.addObject("filterEnabled", filterEnabled);
             mv.addObject("searchText", searchText);
