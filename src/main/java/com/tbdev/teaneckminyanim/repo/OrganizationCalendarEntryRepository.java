@@ -1,6 +1,6 @@
 package com.tbdev.teaneckminyanim.repo;
 
-import com.tbdev.teaneckminyanim.enums.MinyanClassification;
+import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -66,7 +66,7 @@ public interface OrganizationCalendarEntryRepository extends JpaRepository<Organ
      * Find entries by organization and classification
      */
     List<OrganizationCalendarEntry> findByOrganizationIdAndClassification(
-            String organizationId, MinyanClassification classification, Sort sort);
+            String organizationId, MinyanType classification, Sort sort);
 
     /**
      * Find entries by organization, filtering by enabled status
@@ -78,7 +78,7 @@ public interface OrganizationCalendarEntryRepository extends JpaRepository<Organ
      * Find entries by organization and classification, filtering by enabled status
      */
     List<OrganizationCalendarEntry> findByOrganizationIdAndClassificationAndEnabled(
-            String organizationId, MinyanClassification classification, boolean enabled, Sort sort);
+            String organizationId, MinyanType classification, boolean enabled, Sort sort);
 
     /**
      * Search entries by text in title, name, or raw text
@@ -103,7 +103,7 @@ public interface OrganizationCalendarEntryRepository extends JpaRepository<Organ
             @Param("orgId") String organizationId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
-            @Param("classification") MinyanClassification classification,
+            @Param("classification") MinyanType classification,
             Sort sort);
 
     /**

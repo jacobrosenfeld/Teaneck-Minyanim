@@ -1,6 +1,6 @@
 package com.tbdev.teaneckminyanim.model;
 
-import com.tbdev.teaneckminyanim.enums.MinyanClassification;
+import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import lombok.*;
 
 import javax.persistence.*;
@@ -88,11 +88,11 @@ public class OrganizationCalendarEntry {
     private String duplicateReason;
 
     /**
-     * Classification of this entry (MINYAN, MINCHA_MAARIV, NON_MINYAN, OTHER)
+     * Classification of this entry (SHACHARIS, MINCHA, MAARIV, MINCHA_MAARIV, SELICHOS, NON_MINYAN, OTHER)
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "classification")
-    private MinyanClassification classification;
+    private MinyanType classification;
 
     /**
      * Explanation of why this entry was classified as it was

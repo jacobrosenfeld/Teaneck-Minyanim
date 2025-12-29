@@ -300,7 +300,7 @@ public class CalendarImportService {
         
         // Core Rule: NON_MINYAN events are disabled by default
         // This ensures they don't appear in any user-facing minyan displays
-        boolean shouldEnable = classificationResult.classification != com.tbdev.teaneckminyanim.enums.MinyanClassification.NON_MINYAN;
+        boolean shouldEnable = classificationResult.classification != com.tbdev.teaneckminyanim.minyan.MinyanType.NON_MINYAN;
         
         if (!shouldEnable) {
             log.debug("Auto-disabling NON_MINYAN entry: {} ({})", parsed.getTitle(), classificationResult.reason);
@@ -351,7 +351,7 @@ public class CalendarImportService {
         // Core Rule: Apply NON_MINYAN auto-disable during updates
         // UNLESS the entry was manually edited by an admin (has location_manually_edited flag)
         boolean wasManuallyEdited = entry.isLocationManuallyEdited();
-        boolean isNonMinyan = classificationResult.classification == com.tbdev.teaneckminyanim.enums.MinyanClassification.NON_MINYAN;
+        boolean isNonMinyan = classificationResult.classification == com.tbdev.teaneckminyanim.minyan.MinyanType.NON_MINYAN;
         
         if (isNonMinyan && !wasManuallyEdited && entry.isEnabled()) {
             // Newly classified as NON_MINYAN (or re-classified) - disable it

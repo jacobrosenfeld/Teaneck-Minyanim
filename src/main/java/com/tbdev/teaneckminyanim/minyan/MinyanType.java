@@ -1,11 +1,12 @@
 package com.tbdev.teaneckminyanim.minyan;
 
-import com.tbdev.teaneckminyanim.enums.MinyanClassification;
-
 /**
- * Type of minyan (prayer service).
- * This enum is synchronized with MinyanClassification for seamless conversion 
- * between rule-based minyanim and calendar imports.
+ * Type of minyan (prayer service) or calendar event.
+ * Used for both rule-based minyanim and imported calendar entries.
+ * 
+ * Prayer service types: SHACHARIS, MINCHA, MAARIV, MINCHA_MAARIV, SELICHOS, MEGILA_READING
+ * Non-prayer types: NON_MINYAN (learning/social events), OTHER (unclassified events)
+ * Legacy: MINYAN (generic prayer service - for backward compatibility only)
  */
 public enum MinyanType {
     SHACHARIS("SHACHARIS"),
@@ -13,7 +14,11 @@ public enum MinyanType {
     MAARIV("MAARIV"),
     MINCHA_MAARIV("MINCHA_MAARIV"),
     SELICHOS("SELICHOS"),
-    MEGILA_READING("MEGILAREADING");
+    MEGILA_READING("MEGILAREADING"),
+    NON_MINYAN("NON_MINYAN"),
+    OTHER("OTHER"),
+    @Deprecated
+    MINYAN("MINYAN");  // Legacy - kept for database backward compatibility
 
     private String text;
 
@@ -33,7 +38,8 @@ public enum MinyanType {
                 }
             }
         }
-            throw new IllegalArgumentException("No constant with text " + text + " found");
+        // Return OTHER instead of throwing exception for unknown values
+        return OTHER;
     }
 
 
@@ -52,6 +58,12 @@ public enum MinyanType {
                 return "SELICHOS";
             case MEGILA_READING:
                 return "MEGILAREADING";
+            case NON_MINYAN:
+                return "NON_MINYAN";
+            case OTHER:
+                return "OTHER";
+            case MINYAN:
+                return "MINYAN";
             default:
                 return null;
         }
@@ -71,65 +83,32 @@ public enum MinyanType {
                 return "Selichos";
             case MEGILA_READING:
                 return "Megila Reading";
-            default:
-                return null;
-        }
-    }
-
-    /**
-     * Convert this MinyanType to the corresponding MinyanClassification.
-     * 
-     * @return Corresponding MinyanClassification, or OTHER for MEGILA_READING
-     */
-    public MinyanClassification toMinyanClassification() {
-        switch (this) {
-            case SHACHARIS:
-                return MinyanClassification.SHACHARIS;
-            case MINCHA:
-                return MinyanClassification.MINCHA;
-            case MAARIV:
-                return MinyanClassification.MAARIV;
-            case MINCHA_MAARIV:
-                return MinyanClassification.MINCHA_MAARIV;
-            case SELICHOS:
-                return MinyanClassification.SELICHOS;
-            case MEGILA_READING:
-                // MEGILA_READING doesn't have a direct classification equivalent
-                return MinyanClassification.OTHER;
-            default:
-                return MinyanClassification.OTHER;
-        }
-    }
-
-    /**
-     * Create a MinyanType from a MinyanClassification.
-     * Returns null for NON_MINYAN and OTHER classifications.
-     * 
-     * @param classification The MinyanClassification to convert
-     * @return Corresponding MinyanType, or null if not applicable
-     */
-    public static MinyanType fromMinyanClassification(MinyanClassification classification) {
-        if (classification == null) {
-            return null;
-        }
-        
-        switch (classification) {
-            case SHACHARIS:
-                return SHACHARIS;
-            case MINCHA:
-                return MINCHA;
-            case MAARIV:
-                return MAARIV;
-            case MINCHA_MAARIV:
-                return MINCHA_MAARIV;
-            case SELICHOS:
-                return SELICHOS;
             case NON_MINYAN:
+                return "Non-Minyan";
             case OTHER:
-                return null;
+                return "Other";
+            case MINYAN:
+                return "Minyan";  // Legacy
             default:
                 return null;
         }
+    }
+
+    /**
+     * Check if this type represents a minyan event (any prayer service).
+     * Returns true for prayer services, false for non-prayer events.
+     */
+    public boolean isMinyan() {
+        return this == SHACHARIS || this == MINCHA || this == MAARIV || 
+               this == MINCHA_MAARIV || this == SELICHOS || this == MEGILA_READING ||
+               this == MINYAN;  // Legacy support
+    }
+
+    /**
+     * Check if this type represents a non-minyan event (learning/social events).
+     */
+    public boolean isNonMinyan() {
+        return this == NON_MINYAN;
     }
 
     public boolean isShacharis() {

@@ -147,15 +147,12 @@ public class CalendarImportProvider implements OrgScheduleProvider {
      */
     private MinyanType inferMinyanType(OrganizationCalendarEntry entry) {
         // Check classification first - most reliable
-        if (entry.getClassification() != null) {
-            MinyanType type = MinyanType.fromMinyanClassification(entry.getClassification());
-            if (type != null) {
-                return type;
-            }
-            // Fall through if classification is NON_MINYAN or OTHER
+        // Since classification is now MinyanType, we can use it directly
+        if (entry.getClassification() != null && entry.getClassification().isMinyan()) {
+            return entry.getClassification();
         }
         
-        // Infer from title and type
+        // Infer from title and type if classification is NON_MINYAN or OTHER or null
         String combined = (entry.getTitle() + " " + (entry.getType() != null ? entry.getType() : "")).toLowerCase();
 
         // Check for combined Mincha/Maariv first (most specific)

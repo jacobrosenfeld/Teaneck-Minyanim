@@ -1,6 +1,6 @@
 package com.tbdev.teaneckminyanim.service.calendar;
 
-import com.tbdev.teaneckminyanim.enums.MinyanClassification;
+import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.enums.Zman;
 import com.tbdev.teaneckminyanim.service.ZmanimHandler;
 import lombok.RequiredArgsConstructor;
@@ -103,17 +103,17 @@ public class MinyanClassifier {
      * Classification result with reason
      */
     public static class ClassificationResult {
-        public MinyanClassification classification;
+        public MinyanType classification;
         public String reason;
         public String notes;
         
-        public ClassificationResult(MinyanClassification classification, String reason) {
+        public ClassificationResult(MinyanType classification, String reason) {
             this.classification = classification;
             this.reason = reason;
             this.notes = null;
         }
         
-        public ClassificationResult(MinyanClassification classification, String reason, String notes) {
+        public ClassificationResult(MinyanType classification, String reason, String notes) {
             this.classification = classification;
             this.reason = reason;
             this.notes = notes;
@@ -145,7 +145,7 @@ public class MinyanClassifier {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
                 }
                 return new ClassificationResult(
-                    MinyanClassification.MINCHA_MAARIV,
+                    MinyanType.MINCHA_MAARIV,
                     "Matched combined Mincha/Maariv pattern: " + pattern.pattern(),
                     notes
                 );
@@ -156,7 +156,7 @@ public class MinyanClassifier {
         for (Pattern pattern : NON_MINYAN_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
                 return new ClassificationResult(
-                    MinyanClassification.NON_MINYAN,
+                    MinyanType.NON_MINYAN,
                     "Matched non-minyan pattern: " + pattern.pattern()
                 );
             }
@@ -169,7 +169,7 @@ public class MinyanClassifier {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
                 return new ClassificationResult(
-                    MinyanClassification.SELICHOS,
+                    MinyanType.SELICHOS,
                     "Matched Selichos pattern: " + pattern.pattern(),
                     titleQualifier
                 );
@@ -181,7 +181,7 @@ public class MinyanClassifier {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
                 return new ClassificationResult(
-                    MinyanClassification.SHACHARIS,
+                    MinyanType.SHACHARIS,
                     "Matched Shacharis pattern: " + pattern.pattern(),
                     titleQualifier
                 );
@@ -193,7 +193,7 @@ public class MinyanClassifier {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
                 return new ClassificationResult(
-                    MinyanClassification.MINCHA,
+                    MinyanType.MINCHA,
                     "Matched Mincha pattern: " + pattern.pattern(),
                     titleQualifier
                 );
@@ -205,7 +205,7 @@ public class MinyanClassifier {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
                 return new ClassificationResult(
-                    MinyanClassification.MAARIV,
+                    MinyanType.MAARIV,
                     "Matched Maariv pattern: " + pattern.pattern(),
                     titleQualifier
                 );
@@ -214,7 +214,7 @@ public class MinyanClassifier {
         
         // Default to NON_MINYAN if no patterns match (conservative approach)
         return new ClassificationResult(
-            MinyanClassification.NON_MINYAN,
+            MinyanType.NON_MINYAN,
             "No minyan pattern matched - defaulting to NON_MINYAN for safety"
         );
     }
@@ -344,7 +344,7 @@ public class MinyanClassifier {
      * @param classification Entry classification
      * @return Normalized title with redundant words removed
      */
-    public String normalizeTitle(String title, MinyanClassification classification) {
+    public String normalizeTitle(String title, MinyanType classification) {
         if (title == null || title.trim().isEmpty()) {
             return title;
         }
