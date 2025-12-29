@@ -443,7 +443,7 @@ public class ZmanimService {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("org");
 
-        dateFormat.setTimeZone(timeZone);
+        dateFormat.setTimeZone(settingsService.getTimeZone());
 
         mv.getModel().put("date", dateFormat.format(date));
         mv.getModel().put("onlyDate", onlyDateFormat.format(date));

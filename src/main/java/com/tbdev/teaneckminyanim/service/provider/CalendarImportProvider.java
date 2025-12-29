@@ -44,9 +44,6 @@ public class CalendarImportProvider implements OrgScheduleProvider {
             return events;
         }
         Organization org = orgOpt.get();
-        
-        // Get ZoneId from settings
-        ZoneId zoneId = settingsService.getZoneId();
 
         // Fetch calendar entries for the date
         List<OrganizationCalendarEntry> entries = 
@@ -106,6 +103,9 @@ public class CalendarImportProvider implements OrgScheduleProvider {
     private MinyanEvent convertToMinyanEvent(OrganizationCalendarEntry entry, Organization org) {
         // Determine MinyanType from entry title/type/classification
         MinyanType minyanType = inferMinyanType(entry);
+
+        // Get ZoneId from settings
+        ZoneId zoneId = settingsService.getZoneId();
 
         // Convert LocalDateTime to Date
         Date startTime = null;

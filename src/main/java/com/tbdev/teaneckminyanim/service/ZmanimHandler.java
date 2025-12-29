@@ -32,6 +32,15 @@ public class ZmanimHandler {
     }
 
     /**
+     * No-arg constructor for direct instantiation (fallback to defaults).
+     * Used by TimeRule and other legacy code paths.
+     */
+    public ZmanimHandler() {
+        this.settingsService = null;
+        this.geoLocation = null; // Will use fallback defaults
+    }
+
+    /**
      * Constructor for testing with explicit GeoLocation.
      */
     public ZmanimHandler(GeoLocation geoLocation) {
