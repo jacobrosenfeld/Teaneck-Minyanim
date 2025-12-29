@@ -97,13 +97,13 @@ public class MinyanEvent {
 
     public String getFormattedStartTimeOnly() {
 //        return startTime.toString();
-        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
             return timeFormat.format(startTime);
         }
 
     public String getFormattedStartTime() {
         //        return startTime.toString();
-                SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
+                SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
                 if (dynamicTimeString != null) {
                     timeFormat.setTimeZone(timeZone);
                     return timeFormat.format(startTime) +  " (" + dynamicTimeString + ")";

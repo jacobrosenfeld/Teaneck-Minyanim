@@ -47,7 +47,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="site-url">Website</label>
-                                        <input type="text" class="form-control" name="site-url" id="site-url" aria-describedby="site-url-help" th:value="${organization.websiteURI}">
+                                        <input type="text" class="form-control" name="site-url" id="site-url" aria-describedby="site-url-help" th:value="${organization.websiteURIStr}">
                                         <small id="site-url-help" class="form-text text-muted">Optional: This website link will be displayed publically. Make sure NOT to include http://</small>
                                     </div>
                                     <div class="form-group">
@@ -72,7 +72,7 @@
                                     
                                     <hr class="my-4">
                                     
-                                    <h5>Calendar Import Settings (v1.2.1)</h5>
+                                    <h5>Calendar Import Settings</h5>
                                     <p class="text-muted small">Import minyan times from your calendar system instead of using rule-based generation.</p>
                                     
                                     <div class="form-group">

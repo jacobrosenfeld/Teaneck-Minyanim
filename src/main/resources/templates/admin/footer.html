@@ -8,11 +8,11 @@
 </head>
 <body>
 <footer class="bg-light text-lg-start" id="footer">
-    <div class="p-3" id="footer-content">
-        Thank you for being a part of Teaneck Minyanim. Please email <a class="link" href="mailto:info@teaneckminyan.com">info@teaneckminyanim.com</a> with any questions or concerns.
-    </div>
-    <div class="text-center pb-2">
+    <div class="p-3 d-flex justify-content-between align-items-center" id="footer-content">
+        <div>
+            Thank you for being a part of Teaneck Minyanim. Please email <a class="link" href="mailto:info@teaneckminyan.com">info@teaneckminyanim.com</a> with any questions or concerns.
         <span class="version-badge" th:text="'v' + ${appVersion}"></span>
+        </div>
     </div>
 </footer>
 </body>

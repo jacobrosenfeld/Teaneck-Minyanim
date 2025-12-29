@@ -36,11 +36,11 @@ public class ZmanimService {
     GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
 
     Calendar calendar = Calendar.getInstance();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm aa");
+    SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm aa");
     SimpleDateFormat onlyDateFormat = new SimpleDateFormat("EEEE, MMMM d");
     SimpleDateFormat strippedDayFormat = new SimpleDateFormat("MMMM d");
     SimpleDateFormat timeFormatSec = new SimpleDateFormat("h:mm:ss aa");
-    SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
+    SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
 
     ZmanimHandler zmanimHandler = new ZmanimHandler(geoLocation);
 
