@@ -430,18 +430,18 @@
         /*<![CDATA[*/
         (function() {
             // Use Thymeleaf's JavaScript inline mode which automatically escapes values
-            // Safe navigation with null checks
-            var announcementSettings = /*[[${settings.?[setting == 'Home Page Announcement']}]]*/ [];
-            var homePageAnnouncement = announcementSettings.length > 0 ? announcementSettings[0] : null;
+            // Safe navigation with null checks for Home Page Popup setting
+            var popupSettings = /*[[${settings.?[setting == 'Home Page Popup']}]]*/ [];
+            var homePagePopup = popupSettings.length > 0 ? popupSettings[0] : null;
             
-            if (homePageAnnouncement && homePageAnnouncement.enabled === 'Enabled') {
+            if (homePagePopup && homePagePopup.enabled === 'Enabled') {
                 window.notificationData = {
                     enabled: true,
-                    id: homePageAnnouncement.id || '',
+                    id: homePagePopup.id || '',
                     title: 'Announcement',
-                    message: homePageAnnouncement.text || '',
-                    maxDisplays: homePageAnnouncement.maxDisplays || null,
-                    expirationDate: homePageAnnouncement.expirationDate || null
+                    message: homePagePopup.text || '',
+                    maxDisplays: homePagePopup.maxDisplays || null,
+                    expirationDate: homePagePopup.expirationDate || null
                 };
             } else {
                 window.notificationData = { enabled: false };

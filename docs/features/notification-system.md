@@ -3,13 +3,18 @@
 ## Overview
 Version 1.2.5 introduces a sophisticated homepage notification popup system that allows administrators to display important announcements to users with intelligent controls for expiration and display frequency.
 
+**Important**: This system is separate from the existing "Home Page Announcement" banner. There are now two distinct announcement systems:
+- **Home Page Announcement**: The existing banner shown at the top of the homepage
+- **Home Page Popup**: The new modal popup notification system (this feature)
+
 ## Features
 
 ### 1. Popup Notification Modal
-- Modern Bootstrap 5 modal design with icon and styled buttons
+- Modern modal design with site-specific styling (#275ed8 blue)
+- Montserrat font family matching site design
 - Centered display that doesn't disrupt user experience
-- Automatically dismissed with "Got it!" button
-- Clean, professional appearance matching site design
+- Automatically dismissed with styled "Got it!" button
+- Clean, professional appearance matching homepage aesthetic
 
 ### 2. Expiration Date Control
 - Set an expiration date for time-limited announcements
@@ -35,8 +40,10 @@ Version 1.2.5 introduces a sophisticated homepage notification popup system that
 
 ### Accessing Settings
 1. Navigate to Admin Panel → Settings
-2. Find "Home Page Announcement" in the settings table
+2. Find "Home Page Popup" in the settings table
 3. Click "Edit" button to open configuration modal
+
+**Note**: "Home Page Announcement" is a separate setting for the banner at the top of the page. The popup uses "Home Page Popup".
 
 ### Configuration Options
 
@@ -72,6 +79,10 @@ Version 1.2.5 introduces a sophisticated homepage notification popup system that
 ```sql
 ALTER TABLE SETTINGS ADD COLUMN EXPIRATION_DATE VARCHAR(255) NULL;
 ALTER TABLE SETTINGS ADD COLUMN MAX_DISPLAYS INT NULL;
+
+-- New setting entry
+INSERT INTO SETTINGS (ID, SETTING, ENABLED, TEXT, TYPE)
+VALUES ('home-page-popup', 'Home Page Popup', 'Disabled', 'Default message', 'text');
 ```
 
 ### Frontend Components

@@ -109,22 +109,22 @@
             const safeTitle = escapeHtml(title);
             const safeMessage = escapeHtml(message);
 
-            // Create modal HTML
+            // Create modal HTML with site styling (#275ed8 primary color)
             const modalHtml = `
                 <div class="modal fade" id="notification-popup-modal" tabindex="-1" aria-labelledby="notification-popup-label" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-primary text-white">
-                                <h5 class="modal-title" id="notification-popup-label">
+                        <div class="modal-content" style="border-radius: 8px; border: none;">
+                            <div class="modal-header text-white" style="background-color: #275ed8; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                                <h5 class="modal-title" id="notification-popup-label" style="font-family: 'Montserrat', sans-serif; font-weight: 600;">
                                     <i class="bi bi-megaphone-fill me-2"></i>${safeTitle}
                                 </h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body">
-                                <p class="mb-0">${safeMessage}</p>
+                            <div class="modal-body" style="padding: 1.5rem; font-family: 'Montserrat', sans-serif;">
+                                <p class="mb-0" style="font-size: 1rem; line-height: 1.6;">${safeMessage}</p>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                            <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem 1.5rem;">
+                                <button type="button" class="btn btn-cta" data-bs-dismiss="modal" style="background-color: #275ed8 !important; color: #fff !important; border: none; padding: 8px 24px; font-family: 'Montserrat', sans-serif; font-weight: 600; border-radius: 4px; font-size: 14px; letter-spacing: 0.5px;">Got it!</button>
                             </div>
                         </div>
                     </div>
