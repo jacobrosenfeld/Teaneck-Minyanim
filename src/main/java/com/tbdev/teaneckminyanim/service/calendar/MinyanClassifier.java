@@ -42,6 +42,9 @@ public class MinyanClassifier {
     // Selichos patterns
     private static final Set<Pattern> SELICHOS_PATTERNS = new HashSet<>();
     
+    // Netz Hachama patterns (sunrise minyanim with special zman note)
+    private static final Set<Pattern> NETZ_PATTERNS = new HashSet<>();
+    
     static {
         // Combined Mincha/Maariv patterns (check FIRST - most specific)
         MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s*[/&-]\\s*ma'?ariv", Pattern.CASE_INSENSITIVE));
@@ -81,12 +84,16 @@ public class MinyanClassifier {
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bsunrise\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bteen\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
-        
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bShc\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bShac\\b", Pattern.CASE_INSENSITIVE));
+
+
         // Mincha patterns (including early mincha)
         MINCHA_PATTERNS.add(Pattern.compile("\\bearly\\s+mincha\\b", Pattern.CASE_INSENSITIVE));
         MINCHA_PATTERNS.add(Pattern.compile("\\bmincha\\b", Pattern.CASE_INSENSITIVE));
         MINCHA_PATTERNS.add(Pattern.compile("\\bminchah\\b", Pattern.CASE_INSENSITIVE));
         MINCHA_PATTERNS.add(Pattern.compile("\\bminha\\b", Pattern.CASE_INSENSITIVE));
+        MINCHA_PATTERNS.add(Pattern.compile("\\bMnc\\b", Pattern.CASE_INSENSITIVE));
         
         // Maariv patterns
         MAARIV_PATTERNS.add(Pattern.compile("\\bmaariv\\b", Pattern.CASE_INSENSITIVE));
@@ -97,6 +104,10 @@ public class MinyanClassifier {
         // Selichos patterns
         SELICHOS_PATTERNS.add(Pattern.compile("\\bselichos\\b", Pattern.CASE_INSENSITIVE));
         SELICHOS_PATTERNS.add(Pattern.compile("\\bselichot\\b", Pattern.CASE_INSENSITIVE));
+        
+        // Netz Hachama patterns (sunrise minyanim - classified as Shacharis with Netz time in notes)
+        NETZ_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
+
     }
 
     /**
@@ -127,13 +138,52 @@ public class MinyanClassifier {
      * @param type Entry type
      * @param description Entry description
      * @param date Entry date (for computing Shkiya for Mincha/Maariv)
+     * @param time Entry time (for NS abbreviation classification)
      * @return Classification result with reason
      */
-    public ClassificationResult classify(String title, String type, String description, LocalDate date) {
+    public ClassificationResult classify(String title, String type, String description, LocalDate date, LocalTime time) {
         // Combine all text fields for analysis
         String combinedText = combineFields(title, type, description);
         
         log.debug("Classifying entry: {}", combinedText);
+        
+        // Check for "NS" (Nusach Sefard) in title - track this for later note addition
+        boolean hasNS = title != null && title.matches("(?i).*\\bNS\\b.*");
+        boolean isNSBeforeNoon = hasNS && time != null && time.isBefore(LocalTime.NOON);
+        
+        // If NS is in title AND time is before 12pm, force classification as Shacharis
+        if (isNSBeforeNoon) {
+            String notes = "Nusach Sefard";
+            return new ClassificationResult(
+                MinyanType.SHACHARIS,
+                "Matched NS abbreviation before 12pm - classified as Shacharis",
+                notes
+            );
+        }
+        
+        // Check for Netz Hachama patterns (sunrise minyanim) - high priority for Shacharis
+        for (Pattern pattern : NETZ_PATTERNS) {
+            if (pattern.matcher(combinedText).find()) {
+                String netzNote = generateNetzHachamaNote(date);
+                String titleQualifier = extractTitleQualifier(title);
+                // Remove Netz-related qualifiers (hanetz, vasikin, netz, neitz, sunrise) to avoid duplication
+                if (titleQualifier != null && !titleQualifier.isEmpty()) {
+                    titleQualifier = titleQualifier.replaceAll("(?i)\\b(hanetz|vasikin|netz|neitz|sunrise)\\b,?\\s*", "").trim();
+                }
+                // Add NS note if present
+                if (hasNS) {
+                    netzNote = netzNote != null ? netzNote + ". Nusach Sefard" : "Nusach Sefard";
+                }
+                if (titleQualifier != null && !titleQualifier.isEmpty()) {
+                    netzNote = netzNote != null ? netzNote + ". " + titleQualifier : titleQualifier;
+                }
+                return new ClassificationResult(
+                    MinyanType.SHACHARIS,
+                    "Matched Netz Hachama pattern: " + pattern.pattern(),
+                    netzNote
+                );
+            }
+        }
         
         // Check for combined Mincha/Maariv first (most specific)
         for (Pattern pattern : MINCHA_MAARIV_PATTERNS) {
@@ -141,6 +191,10 @@ public class MinyanClassifier {
                 // Generate Shkiya note and add any title qualifiers
                 String notes = generateShkiyaNote(date);
                 String titleQualifier = extractTitleQualifier(title);
+                // Add NS note if present
+                if (hasNS) {
+                    notes = notes != null ? notes + ". Nusach Sefard" : "Nusach Sefard";
+                }
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
                 }
@@ -168,10 +222,18 @@ public class MinyanClassifier {
         for (Pattern pattern : SELICHOS_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
+                String notes = null;
+                // Add NS note if present
+                if (hasNS) {
+                    notes = "Nusach Sefard";
+                }
+                if (titleQualifier != null && !titleQualifier.isEmpty()) {
+                    notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
+                }
                 return new ClassificationResult(
                     MinyanType.SELICHOS,
                     "Matched Selichos pattern: " + pattern.pattern(),
-                    titleQualifier
+                    notes
                 );
             }
         }
@@ -180,10 +242,18 @@ public class MinyanClassifier {
         for (Pattern pattern : SHACHARIS_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
+                String notes = null;
+                // Add NS note if present
+                if (hasNS) {
+                    notes = "Nusach Sefard";
+                }
+                if (titleQualifier != null && !titleQualifier.isEmpty()) {
+                    notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
+                }
                 return new ClassificationResult(
                     MinyanType.SHACHARIS,
                     "Matched Shacharis pattern: " + pattern.pattern(),
-                    titleQualifier
+                    notes
                 );
             }
         }
@@ -192,10 +262,18 @@ public class MinyanClassifier {
         for (Pattern pattern : MINCHA_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
+                String notes = null;
+                // Add NS note if present
+                if (hasNS) {
+                    notes = "Nusach Sefard";
+                }
+                if (titleQualifier != null && !titleQualifier.isEmpty()) {
+                    notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
+                }
                 return new ClassificationResult(
                     MinyanType.MINCHA,
                     "Matched Mincha pattern: " + pattern.pattern(),
-                    titleQualifier
+                    notes
                 );
             }
         }
@@ -204,19 +282,47 @@ public class MinyanClassifier {
         for (Pattern pattern : MAARIV_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
                 String titleQualifier = extractTitleQualifier(title);
+                String notes = null;
+                // Add NS note if present
+                if (hasNS) {
+                    notes = "Nusach Sefard";
+                }
+                if (titleQualifier != null && !titleQualifier.isEmpty()) {
+                    notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
+                }
                 return new ClassificationResult(
                     MinyanType.MAARIV,
                     "Matched Maariv pattern: " + pattern.pattern(),
-                    titleQualifier
+                    notes
                 );
             }
         }
         
         // Default to NON_MINYAN if no patterns match (conservative approach)
+        // But still add NS note if present
+        String notes = null;
+        if (hasNS) {
+            notes = "Nusach Sefard";
+        }
         return new ClassificationResult(
             MinyanType.NON_MINYAN,
-            "No minyan pattern matched - defaulting to NON_MINYAN for safety"
+            "No minyan pattern matched - defaulting to NON_MINYAN for safety",
+            notes
         );
+    }
+
+    /**
+     * Classify a calendar entry based on its title, type, and description.
+     * Convenience method without time parameter for backward compatibility.
+     * 
+     * @param title Entry title
+     * @param type Entry type
+     * @param description Entry description
+     * @param date Entry date (for computing Shkiya for Mincha/Maariv)
+     * @return Classification result with reason
+     */
+    public ClassificationResult classify(String title, String type, String description, LocalDate date) {
+        return classify(title, type, description, date, null);
     }
 
     /**
@@ -236,6 +342,42 @@ public class MinyanClassifier {
         }
         
         return combined.toString();
+    }
+
+    /**
+     * Generate a note with Netz Hachama (sunrise) time for a given date.
+     * Used for Netz minyan entries.
+     * 
+     * @param date The date to compute Netz Hachama for
+     * @return Formatted note string, or null if Netz cannot be computed
+     */
+    private String generateNetzHachamaNote(LocalDate date) {
+        if (date == null) {
+            return null;
+        }
+        
+        try {
+            Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(date);
+            Date netz = zmanim.get(Zman.NETZ);
+            
+            if (netz != null) {
+                // Convert Date to LocalTime for formatting
+                LocalTime netzTime = netz.toInstant()
+                    .atZone(java.time.ZoneId.of("America/New_York"))
+                    .toLocalTime();
+                
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
+                String formattedTime = netzTime.format(formatter);
+                
+                return "Vasikin Minyan. Netz : " + formattedTime;
+            } else {
+                log.warn("Unable to compute Netz Hachama for date: {}", date);
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("Error computing Netz Hachama for date {}: {}", date, e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -277,6 +419,7 @@ public class MinyanClassifier {
     /**
      * Extract special qualifiers from title that should be preserved as notes.
      * Examples: "Teen Minyan" → "Teen Minyan", "Early Shacharis" → "Early Shacharis"
+     * "NS Minyan" → "Nusach Sefard"
      * 
      * @param title The entry title
      * @return Qualifier string or null if none found
@@ -288,6 +431,12 @@ public class MinyanClassifier {
         
         String titleLower = title.toLowerCase().trim();
         List<String> qualifiers = new ArrayList<>();
+        
+        // Check for NS abbreviation (Nusach Sefard)
+        Pattern nsPattern = Pattern.compile("\\bNS\\b", Pattern.CASE_INSENSITIVE);
+        if (nsPattern.matcher(title).find()) {
+            qualifiers.add("Nusach Sefard");
+        }
         
         // Multi-word phrases to extract (check these first)
         String[] multiWordPatterns = {
@@ -310,7 +459,7 @@ public class MinyanClassifier {
             }
         }
         
-        // If no multi-word patterns matched, check single-word qualifiers
+        // If no multi-word patterns matched (and no NS found), check single-word qualifiers
         if (qualifiers.isEmpty()) {
             String[] singleWordPatterns = {
                 "teen", "youth", "early", "late", 
