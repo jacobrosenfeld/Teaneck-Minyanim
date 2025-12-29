@@ -5,6 +5,32 @@ All notable changes to the Teaneck Minyanim project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.7] - 2024-12-29
+
+### Added
+
+#### Nusach Sefard (NS) Classification Enhancement
+- Intelligent detection of "NS" abbreviation in event titles
+- Automatic addition of "Nusach Sefard" note to all events containing NS
+- Special handling: NS events before 12pm are forced to Shacharis classification with "Nusach Sefard" notes
+- NS abbreviation is then processed through all remaining classification rules, allowing hybrid classifications (e.g., "NS Mincha" → Mincha with Nusach Sefard)
+- Example: "NS" at 11:00 AM → Shacharis with notes "Nusach Sefard"
+- Example: "NS Mincha" at 2:00 PM → Mincha with notes "Nusach Sefard"
+
+#### Netz Hachama (Sunrise Minyan) Support
+- New automatic detection of sunrise minyan terms: Hanetz, Netz, Neitz, Vasikin, Sunrise, Hanetz Hachama
+- All Netz patterns automatically classified as Shacharis
+- Automatic calculation and display of Netz Hachama time (sunrise time for that specific day)
+- Format: "Netz Hachama: 6:45 AM" appended to notes
+- Integrates with existing ZmanimHandler for accurate Jewish calendar-based calculations
+- Combines with NS and title qualifiers (e.g., "Early Netz" → Shacharis with "Netz Hachama: 6:45 AM. Early")
+- Example: "Netz Minyan" → Shacharis with notes "Netz Hachama: 6:45 AM"
+
+### Changed
+- MinyanClassifier now processes NS and Netz patterns early in classification pipeline for high priority
+- NS detection continues through all remaining classification rules instead of early return for hybrid event support
+- Enhanced note generation to combine Shkiya (Mincha/Maariv), Netz Hachama (sunrise), NS, and title qualifiers
+
 ## [1.2.6] - 2024-12-29
 
 ### Fixed
