@@ -170,6 +170,10 @@ public class MinyanClassifier {
             if (pattern.matcher(combinedText).find()) {
                 String netzNote = generateNetzHachamaNote(date);
                 String titleQualifier = extractTitleQualifier(title);
+                // Remove Netz-related qualifiers (hanetz, vasikin, netz, neitz, sunrise) to avoid duplication
+                if (titleQualifier != null && !titleQualifier.isEmpty()) {
+                    titleQualifier = titleQualifier.replaceAll("(?i)\\b(hanetz|vasikin|netz|neitz|sunrise)\\b,?\\s*", "").trim();
+                }
                 // Add NS note if present
                 if (hasNS) {
                     netzNote = netzNote != null ? netzNote + ". Nusach Sefard" : "Nusach Sefard";
