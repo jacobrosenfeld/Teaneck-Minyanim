@@ -91,6 +91,22 @@ mvn test
 - Form validation is minimal; relies on browser validation
 - Schedule times stored as strings ("HH:MM" or "NETZ+5") - parsed at runtime
 
+## Version Management
+- **ALWAYS increment the version number for changes that necessitate a PR**
+  - Use semantic versioning: patch (`x.x.1`) for UI updates/fixes, minor (`x.1.0`) for new features, major (`1.x.0`) for breaking changes
+  - Update the `pom.xml` version field (located at line 13: `<version>1.1.0-SNAPSHOT</version>`)
+  - Add a corresponding entry to `CHANGELOG.md`:
+    - **Patch versions (`x.x.1`)**: Short, 2-line summary of changes under appropriate subsections (Added/Changed/Fixed/Removed)
+    - **Minor versions (`x.1.0`)**: Longer entries with detailed feature descriptions, organized by subsections (Added/Changed/Fixed/Deprecated/Removed/Security)
+    - **Major versions (`1.x.0`)**: Comprehensive entries documenting breaking changes and migration paths, with detailed explanations of impacts
+- Apply these instructions specifically to Teaneck-Minyanim: 
+  - Document all user-facing changes (UI updates, new features, behavior changes)
+  - Document infrastructure updates (dependency upgrades, database schema changes, configuration changes)
+  - Document fixes that impact functionality or dependencies
+  - Follow the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format with sections: Added, Changed, Deprecated, Removed, Fixed, Security
+  - Place new entries under `[Unreleased]` section at the top of CHANGELOG.md
+  - When releasing, move unreleased changes to a new version section with date: `## [x.y.z] - YYYY-MM-DD`
+
 ## MinyanTime & Schedule Parsing
 
 ### Time Format Rules

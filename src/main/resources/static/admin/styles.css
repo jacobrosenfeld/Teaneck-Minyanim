@@ -89,6 +89,21 @@ a {
     background-color: #F6F5F5!important;
 }
 
+/* Version Badge Styling */
+.version-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #035174;
+    background-color: rgba(3, 81, 116, 0.1);
+    border: 1px solid rgba(3, 81, 116, 0.3);
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    text-transform: lowercase;
+}
+
 @media (max-width: 992px) {
     .col-lg-3 {
         padding-top: 10px;
