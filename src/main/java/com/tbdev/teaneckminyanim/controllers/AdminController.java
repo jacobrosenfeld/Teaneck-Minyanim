@@ -993,6 +993,14 @@ public class AdminController {
         settings.setExpirationDate(expirationDate);
         settings.setMaxDisplays(maxDisplays);
         
+        // Auto-increment version if text has changed (resets view tracking)
+        Long currentVersion = settingtoUpdate.getVersion() != null ? settingtoUpdate.getVersion() : 0L;
+        if (newText != null && !newText.equals(settingtoUpdate.getText())) {
+            settings.setVersion(currentVersion + 1);
+        } else {
+            settings.setVersion(currentVersion);
+        }
+        
         if (tnmsettingsDAO.update(settings)) {
             // return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
             RedirectView redirectView = new RedirectView("/admin/settings", true);

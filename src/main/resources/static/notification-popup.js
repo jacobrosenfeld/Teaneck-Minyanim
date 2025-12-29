@@ -32,21 +32,21 @@
         },
 
         /**
-         * Get current view count for a notification
+         * Get current view count for a notification version
          */
-        getViewCount: function(notificationId) {
-            const cookieName = 'notification_views_' + notificationId;
+        getViewCount: function(notificationId, version) {
+            const cookieName = 'notification_views_' + notificationId + '_v' + version;
             const count = this.getCookie(cookieName);
             return count ? parseInt(count, 10) : 0;
         },
 
         /**
-         * Increment view count for a notification
+         * Increment view count for a notification version
          */
-        incrementViewCount: function(notificationId) {
-            const currentCount = this.getViewCount(notificationId);
+        incrementViewCount: function(notificationId, version) {
+            const currentCount = this.getViewCount(notificationId, version);
             const newCount = currentCount + 1;
-            const cookieName = 'notification_views_' + notificationId;
+            const cookieName = 'notification_views_' + notificationId + '_v' + version;
             // Store for 1 year
             this.setCookie(cookieName, newCount, 365);
             return newCount;
@@ -71,15 +71,15 @@
         /**
          * Check if notification should be shown
          */
-        shouldShowNotification: function(notificationId, maxDisplays, expirationDate) {
+        shouldShowNotification: function(notificationId, maxDisplays, expirationDate, version) {
             // Check expiration
             if (this.isExpired(expirationDate)) {
                 return false;
             }
 
-            // Check view count
+            // Check view count (version-specific)
             if (maxDisplays && maxDisplays > 0) {
-                const viewCount = this.getViewCount(notificationId);
+                const viewCount = this.getViewCount(notificationId, version);
                 if (viewCount >= maxDisplays) {
                     return false;
                 }
@@ -89,12 +89,12 @@
         },
 
         /**
-         * Parse markdown to HTML with safe rendering
+         * Parse markdown to HTML with safe rendering and multiline support
          */
         parseMarkdown: function(text) {
             if (!text) return '';
             
-            // Simple markdown parser (supports bold, italic, links, lists, code)
+            // Simple markdown parser (supports bold, italic, links, lists, code, multiline)
             let html = text;
             
             // Escape HTML first for safety
@@ -102,15 +102,15 @@
                        .replace(/</g, '&lt;')
                        .replace(/>/g, '&gt;');
             
-            // Headers (##, ###)
+            // Headers (##, ###) - must be on their own line
             html = html.replace(/^### (.+)$/gm, '<h5 style="font-weight: 600; margin: 0.75rem 0 0.5rem 0; font-family: \'Montserrat\', sans-serif;">$1</h5>');
             html = html.replace(/^## (.+)$/gm, '<h4 style="font-weight: 600; margin: 1rem 0 0.5rem 0; font-family: \'Montserrat\', sans-serif;">$1</h4>');
             
-            // Bold **text**
-            html = html.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight: 600;">$1</strong>');
+            // Bold **text** (can span multiple words)
+            html = html.replace(/\*\*(.+?)\*\*/gs, '<strong style="font-weight: 600;">$1</strong>');
             
-            // Italic *text*
-            html = html.replace(/\*(.+?)\*/g, '<em style="font-style: italic;">$1</em>');
+            // Italic *text* (can span multiple words)
+            html = html.replace(/\*(.+?)\*/gs, '<em style="font-style: italic;">$1</em>');
             
             // Links [text](url)
             html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" style="color: #275ed8; text-decoration: underline;" target="_blank" rel="noopener noreferrer">$1</a>');
@@ -118,14 +118,21 @@
             // Code `code`
             html = html.replace(/`(.+?)`/g, '<code style="background-color: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em;">$1</code>');
             
-            // Unordered lists (- item)
+            // Unordered lists (- item) - must be on their own line
             html = html.replace(/^- (.+)$/gm, '<li style="margin-left: 1.5rem;">$1</li>');
-            html = html.replace(/(<li[^>]*>.*<\/li>\n?)+/g, '<ul style="margin: 0.5rem 0; padding-left: 1rem; list-style-type: disc;">$&</ul>');
+            html = html.replace(/(<li[^>]*>.*?<\/li>\s*)+/gs, '<ul style="margin: 0.5rem 0; padding-left: 1rem; list-style-type: disc;">$&</ul>');
             
-            // Line breaks (two spaces or \n\n becomes <br>)
-            html = html.replace(/  \n/g, '<br>');
-            html = html.replace(/\n\n/g, '<br><br>');
-            html = html.replace(/\n/g, ' ');
+            // Paragraph breaks: double newline becomes paragraph break
+            html = html.replace(/\n\n+/g, '</p><p style="margin: 0.5rem 0;">');
+            
+            // Single newlines within paragraphs become <br>
+            html = html.replace(/\n/g, '<br>');
+            
+            // Wrap in paragraph tags
+            html = '<p style="margin: 0.5rem 0;">' + html + '</p>';
+            
+            // Clean up empty paragraphs
+            html = html.replace(/<p[^>]*>\s*<\/p>/g, '');
             
             return html;
         },
@@ -133,13 +140,15 @@
         /**
          * Show notification modal
          */
-        showNotification: function(notificationId, title, message, maxDisplays, expirationDate) {
-            if (!this.shouldShowNotification(notificationId, maxDisplays, expirationDate)) {
+        showNotification: function(notificationId, title, message, maxDisplays, expirationDate, version) {
+            version = version || 0; // Default to 0 if not provided
+            
+            if (!this.shouldShowNotification(notificationId, maxDisplays, expirationDate, version)) {
                 return;
             }
 
-            // Increment view count
-            this.incrementViewCount(notificationId);
+            // Increment view count (version-specific)
+            this.incrementViewCount(notificationId, version);
 
             // Escape HTML for title
             const escapeHtml = function(text) {
@@ -203,7 +212,8 @@
                     notificationData.title,
                     notificationData.message,
                     notificationData.maxDisplays,
-                    notificationData.expirationDate
+                    notificationData.expirationDate,
+                    notificationData.version
                 );
             }
         }

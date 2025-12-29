@@ -36,4 +36,7 @@ public class TNMSettings {
     @Column(name = "MAX_DISPLAYS", nullable = true)
     private Integer maxDisplays;
 
+    @Column(name = "VERSION", nullable = true)
+    private Long version;
+
 }

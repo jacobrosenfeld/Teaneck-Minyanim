@@ -151,18 +151,19 @@
             updateCookieStatus();
         });
 
-        // Test 5: Markdown styling
+        // Test 5: Markdown styling with multiline
         document.getElementById('btn-show-markdown').addEventListener('click', function() {
             window.notificationData = {
                 enabled: true,
                 id: 'test-markdown',
                 title: 'Markdown Test',
-                message: '## New Features\n\n**Version 1.2.5** introduces:\n\n- *Markdown styling* support\n- `Code formatting`\n- [Links to pages](https://example.com)\n\nVisit our site for more details!',
+                message: '## New Features\n\n**Version 1.2.5** introduces:\n\n- *Markdown styling* support\n- `Code formatting`\n- [Links to pages](https://example.com)\n\nThis is a second paragraph showing multiline support.\n\nVisit our site for more details!',
                 maxDisplays: null,
-                expirationDate: null
+                expirationDate: null,
+                version: 1
             };
             NotificationManager.init();
-            addTestResult('Markdown notification triggered');
+            addTestResult('Markdown notification triggered (v1)');
             updateCookieStatus();
         });
 
