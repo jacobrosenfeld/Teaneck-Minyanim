@@ -106,12 +106,8 @@ public class MinyanClassifier {
         SELICHOS_PATTERNS.add(Pattern.compile("\\bselichot\\b", Pattern.CASE_INSENSITIVE));
         
         // Netz Hachama patterns (sunrise minyanim - classified as Shacharis with Netz time in notes)
-        NETZ_PATTERNS.add(Pattern.compile("\\bhanetz\\b", Pattern.CASE_INSENSITIVE));
-        NETZ_PATTERNS.add(Pattern.compile("\\bnetz\\b", Pattern.CASE_INSENSITIVE));
-        NETZ_PATTERNS.add(Pattern.compile("\\bneitz\\b", Pattern.CASE_INSENSITIVE));
         NETZ_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
-        NETZ_PATTERNS.add(Pattern.compile("\\bsunrise\\b", Pattern.CASE_INSENSITIVE));
-        NETZ_PATTERNS.add(Pattern.compile("\\bhanetz hachama\\b", Pattern.CASE_INSENSITIVE));
+
     }
 
     /**
