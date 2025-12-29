@@ -81,8 +81,10 @@ public class MinyanClassifier {
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bsunrise\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bteen\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
-        SHACHARIS_PATTERNS.add(Pattern.compile("\\bShc.\\b", Pattern.CASE_INSENSITIVE));
-        
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bShc\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(Pattern.compile("\\bShac\\b", Pattern.CASE_INSENSITIVE));
+
+
         // Mincha patterns (including early mincha)
         MINCHA_PATTERNS.add(Pattern.compile("\\bearly\\s+mincha\\b", Pattern.CASE_INSENSITIVE));
         MINCHA_PATTERNS.add(Pattern.compile("\\bmincha\\b", Pattern.CASE_INSENSITIVE));
@@ -128,13 +130,24 @@ public class MinyanClassifier {
      * @param type Entry type
      * @param description Entry description
      * @param date Entry date (for computing Shkiya for Mincha/Maariv)
+     * @param time Entry time (for NS abbreviation classification)
      * @return Classification result with reason
      */
-    public ClassificationResult classify(String title, String type, String description, LocalDate date) {
+    public ClassificationResult classify(String title, String type, String description, LocalDate date, LocalTime time) {
         // Combine all text fields for analysis
         String combinedText = combineFields(title, type, description);
         
         log.debug("Classifying entry: {}", combinedText);
+        
+        // Check for "NS" abbreviation with time-based logic
+        if (title != null && title.trim().equalsIgnoreCase("NS") && time != null && time.isBefore(LocalTime.NOON)) {
+            String notes = "Nusach Sefard";
+            return new ClassificationResult(
+                MinyanType.SHACHARIS,
+                "Matched NS abbreviation before 12pm - classified as Shacharis",
+                notes
+            );
+        }
         
         // Check for combined Mincha/Maariv first (most specific)
         for (Pattern pattern : MINCHA_MAARIV_PATTERNS) {
@@ -221,6 +234,20 @@ public class MinyanClassifier {
     }
 
     /**
+     * Classify a calendar entry based on its title, type, and description.
+     * Convenience method without time parameter for backward compatibility.
+     * 
+     * @param title Entry title
+     * @param type Entry type
+     * @param description Entry description
+     * @param date Entry date (for computing Shkiya for Mincha/Maariv)
+     * @return Classification result with reason
+     */
+    public ClassificationResult classify(String title, String type, String description, LocalDate date) {
+        return classify(title, type, description, date, null);
+    }
+
+    /**
      * Combine and normalize text fields for classification.
      */
     private String combineFields(String title, String type, String description) {
@@ -278,6 +305,7 @@ public class MinyanClassifier {
     /**
      * Extract special qualifiers from title that should be preserved as notes.
      * Examples: "Teen Minyan" → "Teen Minyan", "Early Shacharis" → "Early Shacharis"
+     * "NS Minyan" → "Nusach Sefard"
      * 
      * @param title The entry title
      * @return Qualifier string or null if none found
@@ -289,6 +317,12 @@ public class MinyanClassifier {
         
         String titleLower = title.toLowerCase().trim();
         List<String> qualifiers = new ArrayList<>();
+        
+        // Check for NS abbreviation (Nusach Sefard)
+        Pattern nsPattern = Pattern.compile("\\bNS\\b", Pattern.CASE_INSENSITIVE);
+        if (nsPattern.matcher(title).find()) {
+            qualifiers.add("Nusach Sefard");
+        }
         
         // Multi-word phrases to extract (check these first)
         String[] multiWordPatterns = {
@@ -311,7 +345,7 @@ public class MinyanClassifier {
             }
         }
         
-        // If no multi-word patterns matched, check single-word qualifiers
+        // If no multi-word patterns matched (and no NS found), check single-word qualifiers
         if (qualifiers.isEmpty()) {
             String[] singleWordPatterns = {
                 "teen", "youth", "early", "late", 
