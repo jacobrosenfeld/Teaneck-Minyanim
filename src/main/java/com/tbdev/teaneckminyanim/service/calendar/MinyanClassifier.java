@@ -369,7 +369,7 @@ public class MinyanClassifier {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
                 String formattedTime = netzTime.format(formatter);
                 
-                return "Netz Hachama: " + formattedTime;
+                return "Netz Hachama: " + formattedTime + " Vasikin";
             } else {
                 log.warn("Unable to compute Netz Hachama for date: {}", date);
                 return null;
