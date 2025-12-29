@@ -293,7 +293,7 @@ public class CalendarImportService {
                                                   String sourceUrl) {
         // Classify the entry
         MinyanClassifier.ClassificationResult classificationResult = 
-            minyanClassifier.classify(parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate());
+            minyanClassifier.classify(parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate(), parsed.getStartTime());
         
         // Normalize title to remove redundant words
         String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
@@ -343,7 +343,7 @@ public class CalendarImportService {
                             String sourceUrl) {
         // Re-classify the entry
         MinyanClassifier.ClassificationResult classificationResult = 
-            minyanClassifier.classify(parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate());
+            minyanClassifier.classify(parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate(), parsed.getStartTime());
         
         // Normalize title to remove redundant words
         String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
