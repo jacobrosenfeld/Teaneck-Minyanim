@@ -9,8 +9,8 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class KolhaMinyanim {
-    TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
-
+    // Timezone is set globally in TeaneckMinyanimApplication from settings
+    
     private MinyanType type;
 
     private String organizationName;
@@ -87,7 +87,8 @@ public class KolhaMinyanim {
 //        return startTime.toString();
         SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
         if (dynamicTimeString != null) {
-            timeFormat.setTimeZone(timeZone);
+            // Use system default timezone (set from ApplicationSettings)
+            timeFormat.setTimeZone(TimeZone.getDefault());
             return timeFormat.format(startTime) +  " (" + dynamicTimeString + ")";
         } else {
 //            time zone already set in db

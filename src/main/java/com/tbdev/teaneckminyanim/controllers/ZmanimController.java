@@ -24,16 +24,7 @@ public class ZmanimController {
     private final TNMSettingsService tnmSettingsDao;
     private final OrganizationService organizationService;
     private final VersionService versionService;
-
-    TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
-
-    String locationName = "Teaneck, NJ";
-    double latitude = 40.906871;
-    double longitude = -74.020924;
-    double elevation = 24;
-    GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
-
-    ZmanimHandler zmanimHandler = new ZmanimHandler(geoLocation);
+    private final ZmanimHandler zmanimHandler;
 
     @GetMapping("/")
     public ModelAndView home() {

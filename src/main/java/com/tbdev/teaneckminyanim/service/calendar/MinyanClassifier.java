@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 public class MinyanClassifier {
 
     private final ZmanimHandler zmanimHandler;
+    private final com.tbdev.teaneckminyanim.service.ApplicationSettingsService settingsService;
 
     // Denylist: Patterns that indicate non-minyan events
     private static final Set<Pattern> NON_MINYAN_PATTERNS = new HashSet<>();
@@ -365,7 +366,7 @@ public class MinyanClassifier {
             if (netz != null) {
                 // Convert Date to LocalTime for formatting
                 LocalTime netzTime = netz.toInstant()
-                    .atZone(java.time.ZoneId.of("America/New_York"))
+                    .atZone(settingsService.getZoneId())
                     .toLocalTime();
                 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
@@ -401,7 +402,7 @@ public class MinyanClassifier {
             if (shkiya != null) {
                 // Convert Date to LocalTime for formatting
                 LocalTime shkiyaTime = shkiya.toInstant()
-                    .atZone(java.time.ZoneId.of("America/New_York"))
+                    .atZone(settingsService.getZoneId())
                     .toLocalTime();
                 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");

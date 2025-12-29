@@ -27,13 +27,13 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class ZmanimService {
-    TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
-
-    String locationName = "Teaneck, NJ";
-    double latitude = 40.906871;
-    double longitude = -74.020924;
-    double elevation = 24;
-    GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
+    
+    private final ApplicationSettingsService settingsService;
+    private final LocationService locationDAO;
+    private final OrganizationService organizationDAO;
+    private final MinyanService minyanService;
+    private final com.tbdev.teaneckminyanim.service.provider.OrgScheduleResolver scheduleResolver;
+    private final ZmanimHandler zmanimHandler;
 
     Calendar calendar = Calendar.getInstance();
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm aa");
@@ -42,12 +42,6 @@ public class ZmanimService {
     SimpleDateFormat timeFormatSec = new SimpleDateFormat("h:mm:ss aa");
     SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
 
-    ZmanimHandler zmanimHandler = new ZmanimHandler(geoLocation);
-
-    private final LocationService locationDAO;
-    private final OrganizationService organizationDAO;
-    private final MinyanService minyanService;
-    private final com.tbdev.teaneckminyanim.service.provider.OrgScheduleResolver scheduleResolver;
 
 
     public ModelAndView getZmanim(Date date) {
@@ -56,6 +50,9 @@ public class ZmanimService {
 
         log.info("DEBUG: Adding dates to model");
 
+        // Get timezone from settings
+        TimeZone timeZone = settingsService.getTimeZone();
+        
         // adding dates to model data
         setTimeZone(timeZone);
         // String month = calendar.getDisplayName(Calendar.MONTH, Calendar.LONG,
