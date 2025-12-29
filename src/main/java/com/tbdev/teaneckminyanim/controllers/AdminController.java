@@ -953,11 +953,54 @@ public class AdminController {
             @RequestParam(value = "enabled", required = false) String newEnabled,
             @RequestParam(value = "id", required = true) String id,
             @RequestParam(value = "text", required = false) String newText,
-            @RequestParam(value = "type", required = false) String type
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "expirationDate", required = false) String expirationDate,
+            @RequestParam(value = "maxDisplays", required = false) Integer maxDisplays
     ) {
         TNMSettings settingtoUpdate = tnmsettingsDAO.findById(id);
+        
+        // Validate setting exists
+        if (settingtoUpdate == null) {
+            return settings("Setting not found with id: " + id, null);
+        }
 
-        TNMSettings settings = new TNMSettings(setting, newEnabled, settingtoUpdate.getId(), newText, type);
+        // Validate expiration date format if provided
+        if (expirationDate != null && !expirationDate.isEmpty()) {
+            if (!expirationDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                return settings(null, "Invalid expiration date format. Please use YYYY-MM-DD format.");
+            }
+            // Validate that the date is actually valid
+            try {
+                java.time.LocalDate.parse(expirationDate);
+            } catch (java.time.format.DateTimeParseException e) {
+                return settings(null, "Invalid expiration date. Please enter a valid date.");
+            }
+        }
+
+        // Validate maxDisplays range if provided
+        if (maxDisplays != null) {
+            if (maxDisplays < 1 || maxDisplays > 100) {
+                return settings(null, "Max displays must be between 1 and 100.");
+            }
+        }
+
+        TNMSettings settings = new TNMSettings();
+        settings.setId(settingtoUpdate.getId());
+        settings.setSetting(setting);
+        settings.setEnabled(newEnabled);
+        settings.setText(newText);
+        settings.setType(type);
+        settings.setExpirationDate(expirationDate);
+        settings.setMaxDisplays(maxDisplays);
+        
+        // Auto-increment version if text has changed (resets view tracking)
+        Long currentVersion = settingtoUpdate.getVersion() != null ? settingtoUpdate.getVersion() : 0L;
+        if (newText != null && !newText.equals(settingtoUpdate.getText())) {
+            settings.setVersion(currentVersion + 1);
+        } else {
+            settings.setVersion(currentVersion);
+        }
+        
         if (tnmsettingsDAO.update(settings)) {
             // return settings ("Successfully updated setting with name '" + settings.getSetting() + "'.", null);
             RedirectView redirectView = new RedirectView("/admin/settings", true);
