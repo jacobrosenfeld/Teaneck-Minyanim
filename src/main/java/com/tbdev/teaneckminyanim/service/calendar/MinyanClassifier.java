@@ -158,36 +158,7 @@ public class MinyanClassifier {
         boolean hasAshkenaz = title != null && title.matches("(?i).*\\bAshkenaz\\b.*");
         boolean hasSephardic = title != null && title.matches("(?i).*\\bsephardic?\\b.*");
         
-        // Check if time is before 12pm for nusach-based classification
-        boolean isBeforeNoon = time != null && time.isBefore(LocalTime.NOON);
-        
-        // If NS is in title AND time is before 12pm, force classification as Shacharis (note handled via nusach field, not notes)
-        if ((hasNS || hasNusachSefard) && isBeforeNoon) {
-            return new ClassificationResult(
-                MinyanType.SHACHARIS,
-                "Matched Nusach Sefard before 12pm - classified as Shacharis",
-                null
-            );
-        }
-        
-        // If Ashkenaz is in title AND time is before 12pm, force classification as Shacharis (no note for Ashkenaz as it's default)
-        if (hasAshkenaz && isBeforeNoon) {
-            return new ClassificationResult(
-                MinyanType.SHACHARIS,
-                "Matched Ashkenaz before 12pm - classified as Shacharis"
-            );
-        }
-        
-        // If Sephardic is in title AND time is before 12pm, force classification as Shacharis (note handled via nusach field, not notes)
-        if (hasSephardic && isBeforeNoon) {
-            return new ClassificationResult(
-                MinyanType.SHACHARIS,
-                "Matched Sephardic before 12pm - classified as Shacharis",
-                null
-            );
-        }
-        
-        // Check for Netz Hachama patterns (sunrise minyanim) - high priority for Shacharis
+        // Check for Netz Hachama patterns (sunrise minyanim) - should run before other Shacharis shortcuts
         for (Pattern pattern : NETZ_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
                 String netzNote = generateNetzHachamaNote(date);
@@ -205,6 +176,35 @@ public class MinyanClassifier {
                     netzNote
                 );
             }
+        }
+
+        // Check if time is before 12pm for nusach-based classification
+        boolean isBeforeNoon = time != null && time.isBefore(LocalTime.NOON);
+
+        // If NS is in title AND time is before 12pm, force classification as Shacharis (note handled via nusach field, not notes)
+        if ((hasNS || hasNusachSefard) && isBeforeNoon) {
+            return new ClassificationResult(
+                MinyanType.SHACHARIS,
+                "Matched Nusach Sefard before 12pm - classified as Shacharis",
+                null
+            );
+        }
+
+        // If Ashkenaz is in title AND time is before 12pm, force classification as Shacharis (no note for Ashkenaz as it's default)
+        if (hasAshkenaz && isBeforeNoon) {
+            return new ClassificationResult(
+                MinyanType.SHACHARIS,
+                "Matched Ashkenaz before 12pm - classified as Shacharis"
+            );
+        }
+
+        // If Sephardic is in title AND time is before 12pm, force classification as Shacharis (note handled via nusach field, not notes)
+        if (hasSephardic && isBeforeNoon) {
+            return new ClassificationResult(
+                MinyanType.SHACHARIS,
+                "Matched Sephardic before 12pm - classified as Shacharis",
+                null
+            );
         }
         
         // Check for combined Mincha/Maariv first (most specific)
