@@ -1,23 +1,89 @@
 # Homepage Notification Popup - Visual Design (Updated v1.2.5)
 
-## Modal Appearance - Site-Styled Version
+## Modal Appearance - Site-Styled with Markdown Support
 
-The notification popup now matches the Teaneck Minyanim site styling with the primary blue color (#275ed8) and Montserrat font:
+The notification popup now matches the Teaneck Minyanim site styling with the primary blue color (#275ed8) and Montserrat font, with full markdown formatting support:
 
 ```
 ┌────────────────────────────────────────────────────────┐
 │  🔔 Announcement                             [X]      │  <- Site blue (#275ed8)
 ├────────────────────────────────────────────────────────┤
 │                                                        │
-│  Version 1.2.5 released! Setting up the system        │
-│  for pulling accurate times from shul websites.        │
+│  New Features                                          │  <- ## Header
 │                                                        │
-│  (Montserrat font, clean spacing)                     │
+│  Version 1.2.5 includes:                               │  <- **bold**
+│                                                        │
+│  • Markdown styling support                            │  <- - list
+│  • Code formatting                                     │  <- - list
+│  • Link support                                        │  <- - list
+│                                                        │
+│  Visit our documentation page for details.             │  <- [link](url)
+│                                                        │
+│  (Montserrat font, site-styled formatting)             │
 │                                                        │
 ├────────────────────────────────────────────────────────┤
 │                                       [  Got it!  ]    │  <- Styled .btn-cta
 └────────────────────────────────────────────────────────┘
 ```
+
+## Markdown Formatting Examples
+
+### Basic Example
+**Input (Admin Panel):**
+```markdown
+**Important**: Version 1.2.5 is now available!
+```
+
+**Rendered Output:**
+- "Important" appears in **bold** (font-weight: 600)
+- Rest in regular weight
+
+### With Links and Italic
+**Input:**
+```markdown
+Check out the [new features](https://example.com) - they're *amazing*!
+```
+
+**Rendered Output:**
+- "new features" is a clickable link in #275ed8 blue
+- "amazing" appears in *italic*
+- Link opens in new tab
+
+### Lists with Headers
+**Input:**
+```markdown
+## What's New
+
+- Improved performance
+- Better mobile support
+- Enhanced security
+```
+
+**Rendered Output:**
+- "What's New" is a header (h4 style, Montserrat 600)
+- Three bulleted items with proper indentation
+- Each item on its own line
+
+### Complete Notification Example
+**Input:**
+```markdown
+## Version 1.2.5 Released!
+
+**New features** include:
+
+- *Markdown styling* in notifications
+- `Code formatting` support
+- [Documentation updates](https://example.com)
+
+Visit our site for full details.
+```
+
+**Rendered Output:**
+- Bold header at top
+- "New features" in bold
+- Three bulleted items with mixed formatting
+- Link in site blue color
+- Clean spacing between elements
 
 ## Key Visual Features (Updated)
 
@@ -29,13 +95,21 @@ The notification popup now matches the Teaneck Minyanim site styling with the pr
 - **Close button**: White X button on the right
 - **Border Radius**: 8px top corners
 
-### Body
+### Body (with Markdown Support)
 - **Background**: White
 - **Text**: Dark gray/black, left-aligned
 - **Font**: Montserrat, regular weight
 - **Font Size**: 1rem (16px)
 - **Line Height**: 1.6 for readability
 - **Padding**: 1.5rem for comfortable spacing
+- **Markdown Styling**:
+  - Bold: font-weight 600
+  - Italic: font-style italic
+  - Links: #275ed8 color, underlined, open in new tab
+  - Code: gray background (#f5f5f5), monospace, slightly smaller
+  - Lists: 1.5rem left margin, disc bullets, 0.5rem top/bottom spacing
+  - Headers: Montserrat 600, appropriate sizing (h4/h5)
+  - All HTML escaped first for security
 
 ### Footer
 - **Background**: White with subtle top border
@@ -170,7 +244,51 @@ border-radius: 4px;
 font-family: 'Montserrat', sans-serif;
 font-weight: 600; /* Semi-bold for headers and buttons */
 font-weight: 400; /* Regular for body text */
+
+/* Markdown Elements */
+strong { font-weight: 600; }
+em { font-style: italic; }
+a { color: #275ed8; text-decoration: underline; }
+code { background-color: #f5f5f5; padding: 2px 6px; border-radius: 3px; }
+ul { margin: 0.5rem 0; padding-left: 1rem; list-style-type: disc; }
+li { margin-left: 1.5rem; }
+h4, h5 { font-family: 'Montserrat', sans-serif; font-weight: 600; }
 ```
+
+## Markdown Styling Guide
+
+### Supported Syntax
+
+| Markdown | Rendered As | Styling |
+|----------|-------------|---------|
+| `**text**` | **Bold** | font-weight: 600 |
+| `*text*` | *Italic* | font-style: italic |
+| `[text](url)` | Link | color: #275ed8, underline, new tab |
+| `` `code` `` | Code | gray bg, monospace, smaller |
+| `- item` | • List item | proper indentation, disc bullet |
+| `## Header` | Header | Montserrat 600, larger size |
+
+### Security Features
+- All user input is HTML-escaped first
+- Markdown parsing happens after escaping
+- No raw HTML allowed in notifications
+- Links automatically get `rel="noopener noreferrer"`
+- XSS protection maintained throughout
+
+### Best Practices for Notifications
+
+**Do:**
+- Use **bold** for important information
+- Use lists for multiple items
+- Include [links] for additional resources
+- Keep headers concise (## or ###)
+- Use `code` for technical terms
+
+**Don't:**
+- Overuse formatting (keep it clean)
+- Create very long lists (max 5 items)
+- Use too many nested formats
+- Write overly long messages (300 chars max recommended)
 
 ## Testing Scenarios
 
@@ -181,3 +299,7 @@ Use the test page at `/test-notification.html` to verify:
 - ✅ Modal appears centered
 - ✅ Responsive behavior on mobile
 - ✅ "Home Page Popup" setting is used (not "Home Page Announcement")
+- ✅ Markdown formatting renders correctly
+- ✅ Links open in new tabs
+- ✅ Code blocks have proper background
+- ✅ Lists are properly indented
