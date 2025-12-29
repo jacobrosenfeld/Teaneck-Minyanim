@@ -168,7 +168,7 @@
                                 <div style="font-size: 1rem; line-height: 1.6;">${formattedMessage}</div>
                             </div>
                             <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem 1.5rem;">
-                                <button type="button" class="btn btn-cta" data-bs-dismiss="modal" style="background-color: #275ed8 !important; color: #fff !important; border: none; padding: 8px 24px; font-family: 'Montserrat', sans-serif; font-weight: 600; border-radius: 4px; font-size: 14px; letter-spacing: 0.5px;">Got it!</button>
+                                <button type="button" class="btn btn-cta" data-bs-dismiss="modal" style="background-color: #275ed8 !important; color: #fff !important; border: none; font-family: 'Montserrat', sans-serif; font-weight: 600; border-radius: 4px; font-size: 14px; letter-spacing: 0.5px;">Got it!</button>
                             </div>
                         </div>
                     </div>
