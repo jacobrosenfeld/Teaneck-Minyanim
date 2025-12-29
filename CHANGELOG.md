@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed website field not persisting in organization admin panel. The issue was caused by the builder setting the transient `websiteURI` field instead of the persistent `websiteURIStr` field in both create and update operations.
+- Other minor cosmetic cleanups. 
 
 ## [1.2.5] - 2024-12-29
 
