@@ -120,27 +120,51 @@ public class ZmanimService {
 
         log.info(": Fetching minyanim");
 
-        // get minyanim closest in time to now
-        // todo: only get items with non null time for date
-        List<Minyan> enabledMinyanim = minyanService.getEnabled();
         List<MinyanEvent> minyanEvents = new ArrayList<>();
+        LocalDate localDateRef = dateToLocalDate(date);
+        Date now = new Date();
+        Date terminationDate = new Date(now.getTime() - (60000 * 8));
 
-        log.info(": Filtering through minyanim");
+        // Get all organizations
+        List<Organization> allOrganizations = organizationDAO.getAll();
+        log.info("Processing {} organizations for homepage", allOrganizations.size());
 
-        for (Minyan minyan : enabledMinyanim) {
-            LocalDate ref = dateToLocalDate(date);
+        // For each organization, check if calendar import is enabled and get events accordingly
+        for (Organization org : allOrganizations) {
+            String orgId = org.getId();
+            boolean useCalendarImport = scheduleResolver.isCalendarImportEnabled(orgId);
+            
+            if (useCalendarImport) {
+                log.info("Using calendar import provider for organization: {} ({})", org.getName(), orgId);
+                // Get events from calendar import provider
+                List<MinyanEvent> calendarEvents = scheduleResolver.getEventsForDate(orgId, localDateRef);
+                
+                // Filter calendar events based on time (same logic as rule-based)
+                for (MinyanEvent event : calendarEvents) {
+                    if (event.getStartTime() != null && 
+                        (event.getStartTime().after(terminationDate) || !sameDayOfMonth(now, date))) {
+                        minyanEvents.add(event);
+                    }
+                }
+                log.info("Added {} calendar-imported events from {}", calendarEvents.size(), org.getName());
+            } else {
+                log.info("Using rule-based provider for organization: {} ({})", org.getName(), orgId);
+                // Use existing rule-based logic for this organization
+                List<Minyan> orgMinyanim = minyanService.findEnabledMatching(orgId);
+                
+                LocalDate ref = localDateRef;
+                Calendar shekiyaMinusOneMinute = Calendar.getInstance();
+                shekiyaMinusOneMinute.setTime(zmanim.get(Zman.SHEKIYA));
+                shekiyaMinusOneMinute.add(Calendar.MINUTE, -1);
+                Calendar mgMinusOneMinute = Calendar.getInstance();
+                mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
+                mgMinusOneMinute.add(Calendar.MINUTE, -1);
+                boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
+
+        for (Minyan minyan : orgMinyanim) {
             Date startDate = minyan.getStartDate(ref);
-            Date now = new Date();
-            Date terminationDate = new Date(now.getTime() - (60000 * 8));
             log.info("SD: " + startDate);
             log.info("TD: " + terminationDate);
-            Calendar shekiyaMinusOneMinute = Calendar.getInstance();
-            shekiyaMinusOneMinute.setTime(zmanim.get(Zman.SHEKIYA));
-            shekiyaMinusOneMinute.add(Calendar.MINUTE, -1);
-            Calendar mgMinusOneMinute = Calendar.getInstance();
-            mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
-            mgMinusOneMinute.add(Calendar.MINUTE, -1);
-            boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
             // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
             // != startDate.getDate())) {
             // if (startDate != null && (startDate.after(terminationDate))) {
@@ -287,13 +311,48 @@ public class ZmanimService {
              * }
              */
         }
+            } // End of rule-based provider loop for this organization
+        } // End of organization loop
+
+        log.info("Total events collected for homepage: {}", minyanEvents.size());
+        
         // KolhaMinyanim insertion
         List<KolhaMinyanim> kolhaMinyanims = new ArrayList<>();
 
-        for (Minyan minyan : enabledMinyanim) {
+        // Process all organizations again for KolhaMinyanim
+        for (Organization org : allOrganizations) {
+            String orgId = org.getId();
+            boolean useCalendarImport = scheduleResolver.isCalendarImportEnabled(orgId);
+            
+            if (useCalendarImport) {
+                // For calendar imports, convert MinyanEvents to KolhaMinyanim
+                List<MinyanEvent> calendarEvents = scheduleResolver.getEventsForDate(orgId, localDateRef);
+                for (MinyanEvent event : calendarEvents) {
+                    if (event.getStartTime() != null) {
+                        // Use the correct fields from MinyanEvent
+                        String parentMinyanId = "imported"; // Calendar events don't have a parent minyan ID
+                        String dynamicTimeStr = event.dynamicTimeString();
+                        kolhaMinyanims.add(new KolhaMinyanim(
+                            parentMinyanId,
+                            event.getType(),
+                            event.getOrganizationName(),
+                            org.getNusach(), // Use org nusach as organizationNusach
+                            event.getOrganizationId(),
+                            event.getLocationName(),
+                            event.getStartTime(),
+                            dynamicTimeStr != null ? dynamicTimeStr : "",
+                            event.getNusach(),
+                            event.getNotes(),
+                            event.getOrgColor()
+                        ));
+                    }
+                }
+            } else {
+                // Use rule-based minyanim for this organization
+                List<Minyan> orgMinyanim = minyanService.findEnabledMatching(orgId);
+        for (Minyan minyan : orgMinyanim) {
             LocalDate ref = dateToLocalDate(date);
             Date startDate = minyan.getStartDate(ref);
-            Date now = new Date();
             log.info("SD: " + startDate);
             if (startDate != null) {
                 String organizationName;
@@ -339,6 +398,9 @@ public class ZmanimService {
                 }
             }
         }
+            } // End of rule-based provider for KolhaMinyanim
+        } // End of organization loop for KolhaMinyanim
+        
         kolhaMinyanims.sort(Comparator.comparing(KolhaMinyanim::getStartTime));
         
         // Populate organization slugs for KolhaMinyanim objects

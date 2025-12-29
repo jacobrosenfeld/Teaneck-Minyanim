@@ -5,6 +5,25 @@ All notable changes to the Teaneck Minyanim project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Homepage now uses calendar/CSV scraped data when available for organizations
+- Updated ZmanimService.getZmanim() to check each organization for calendar import status
+- Homepage prioritizes calendar data over rule-based data, maintaining consistency with org pages
+
+## [1.2.3] - 2024-12-29
+
+### Added
+- Homepage integration with calendar/CSV scraping functionality
+- Automatic detection of calendar-enabled organizations on homepage
+- Unified data sourcing across homepage, org pages, and admin panel
+
+### Changed
+- Homepage now processes all organizations individually to determine data source
+- Calendar-imported events displayed alongside rule-based events on homepage
+- KolhaMinyanim section updated to include calendar-imported events
+
 ## [1.2.2] - 2024-12-26
 
 ### Added
