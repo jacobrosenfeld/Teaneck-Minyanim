@@ -29,12 +29,21 @@ Version 1.2.5 introduces a sophisticated homepage notification popup system that
 - Leave empty for unlimited displays
 - Useful for important but non-critical announcements
 
-### 4. Cookie-Based Tracking
-- Each notification tracked separately by its unique ID
-- View count stored in browser cookies: `notification_views_{id}`
+### 4. Cookie-Based Tracking with Version Control
+- Each notification version tracked separately
+- View count stored in browser cookies: `notification_views_{id}_v{version}`
 - Cookies persist for 1 year for long-term tracking
 - Privacy-friendly (no server-side user tracking required)
 - Works for anonymous users without login
+- **Version Auto-Increment**: When notification text is updated, version increments automatically
+- **Smart Reset**: Users see updated notifications even if they hit max displays on previous version
+
+### 5. Multiline Markdown Support
+- Full paragraph and line break support
+- Bold/italic can span multiple lines
+- Proper paragraph spacing with double newlines
+- Line breaks within paragraphs preserved
+- Lists and headers support multiline content
 
 ## Admin Configuration
 
@@ -107,15 +116,19 @@ Check out the [new features](https://example.com/features) in this release!
 Learn more at our `documentation` page.
 ```
 
-### Complete Example
+### Complete Multiline Example
 ```markdown
-## Version 1.2.5 Released!
+## Version 1.2.7 Released!
 
 **New features** include:
 
 - *Markdown styling* in notifications
 - `Code formatting` support
 - [Documentation updates](https://example.com)
+
+This is a second paragraph with more details.
+You can have multiple sentences on separate lines
+and they'll flow naturally.
 
 Visit our site for full details.
 ```
@@ -124,6 +137,59 @@ Visit our site for full details.
 - Bold text appears with font-weight: 600
 - Italic text is styled appropriately
 - Links are colored #275ed8 (site blue) and open in new tab
+- Double newlines create paragraph breaks
+- Single newlines within paragraphs become line breaks
+- Lists are properly formatted with bullets
+- Headers use Montserrat font with proper sizing
+
+## Version Tracking & View Count Reset
+
+### How Version Tracking Works
+
+When you update notification text in the admin panel, the system automatically:
+1. Detects the text change
+2. Increments the version number (e.g., 0 → 1, 1 → 2)
+3. Starts fresh view tracking for the new version
+
+### Example Scenario
+
+**Initial Notification (Version 0):**
+```markdown
+## Version 1.2.5 Released!
+Check out the new features.
+```
+- User sees it 3 times (maxDisplays: 3)
+- Cookie: `notification_views_home-page-popup_v0 = 3`
+- User won't see version 0 again
+
+**Updated Notification (Version 1, auto-incremented):**
+```markdown
+## Version 1.2.7 Released!
+Major improvements and bug fixes.
+```
+- Version automatically increments to 1
+- User sees new notification immediately!
+- Cookie: `notification_views_home-page-popup_v1 = 1`
+- Old cookie (v0) remains but is ignored
+
+### Benefits
+
+- **No manual reset needed**: Admins just update the text
+- **Users stay informed**: They see important updates even if they hit display limits
+- **Version history**: Old cookies persist, allowing analytics if needed
+- **Simple**: No complex workflows or buttons to reset tracking
+
+### When Version Increments
+
+✅ **Version DOES increment when:**
+- Notification text is changed (even minor edits)
+- Text is updated through admin panel
+
+❌ **Version DOES NOT increment when:**
+- Only expiration date is changed
+- Only max displays is changed
+- Notification is enabled/disabled
+- No text change occurs
 - Code appears with gray background
 - Lists are properly indented with bullets
 - Headers use Montserrat font with proper sizing
