@@ -98,24 +98,23 @@
                                 <!-- Hidden input to store the value of the disabled select -->
                                 <input type="hidden" name="enabledHidden" th:value="${settings.enabled == 'n/a' ? 'n/a' : settings.enabled}">
                             </div>
-                        </td>
                             
-                        <td>
-                            <label for="text">Message Text</label>
-                            <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
-                        </td>
+                            <div class="form-group">
+                                <label for="text">Message Text</label>
+                                <input th:type="${settings.type}" class="form-control" th:id="${'new-text-' + settings.id}" name="text" th:aria-describedby="${'new-text-help-' + settings.id}" th:value="${settings.text}">
+                            </div>
 
-                        <div class="form-group mt-3">
-                            <label th:for="${'new-expiration-date-' + settings.id}">Expiration Date (Optional)</label>
-                            <input type="date" class="form-control" th:id="${'new-expiration-date-' + settings.id}" name="expirationDate" th:value="${settings.expirationDate}">
-                            <small class="form-text text-muted">Leave empty for no expiration. Format: YYYY-MM-DD</small>
-                        </div>
+                            <div class="form-group mt-3">
+                                <label th:for="${'new-expiration-date-' + settings.id}">Expiration Date (Optional)</label>
+                                <input type="date" class="form-control" th:id="${'new-expiration-date-' + settings.id}" name="expirationDate" th:value="${settings.expirationDate}">
+                                <small class="form-text text-muted">Leave empty for no expiration. Format: YYYY-MM-DD</small>
+                            </div>
 
-                        <div class="form-group">
-                            <label th:for="${'new-max-displays-' + settings.id}">Max Displays Per User (Optional)</label>
-                            <input type="number" class="form-control" th:id="${'new-max-displays-' + settings.id}" name="maxDisplays" th:value="${settings.maxDisplays}" min="1" max="100">
-                            <small class="form-text text-muted">Leave empty for unlimited displays. Max: 100</small>
-                        </div>
+                            <div class="form-group">
+                                <label th:for="${'new-max-displays-' + settings.id}">Max Displays Per User (Optional)</label>
+                                <input type="number" class="form-control" th:id="${'new-max-displays-' + settings.id}" name="maxDisplays" th:value="${settings.maxDisplays}" min="1" max="100">
+                                <small class="form-text text-muted">Leave empty for unlimited displays. Max: 100</small>
+                            </div>
 
                         </div>
                         <hr>

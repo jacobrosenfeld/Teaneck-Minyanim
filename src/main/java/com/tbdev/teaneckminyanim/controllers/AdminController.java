@@ -969,6 +969,12 @@ public class AdminController {
             if (!expirationDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
                 return settings(null, "Invalid expiration date format. Please use YYYY-MM-DD format.");
             }
+            // Validate that the date is actually valid
+            try {
+                java.time.LocalDate.parse(expirationDate);
+            } catch (java.time.format.DateTimeParseException e) {
+                return settings(null, "Invalid expiration date. Please enter a valid date.");
+            }
         }
 
         // Validate maxDisplays range if provided
