@@ -5,6 +5,103 @@ All notable changes to the Teaneck Minyanim project will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.3.0] - 2024-12-29
+
+### Added
+
+#### Application Settings System
+- **Strongly-Typed Settings Architecture**: New `ApplicationSettings` entity with type-safe configuration management
+- **SettingKey Enum**: Type-safe enum for all application setting keys with defaults, types, and validation rules
+- **ApplicationSettingsService**: Centralized service for managing application-wide settings with:
+  - Type-safe getters (getString, getInteger, getDouble, getBoolean)
+  - Convenience methods for common settings (getGeoLocation, getTimeZone, etc.)
+  - Comprehensive validation framework (latitude/longitude ranges, timezone validity, cron expressions)
+  - Settings caching for performance
+  - Automatic default value initialization on startup
+  - Category-based grouping for UI organization
+- **Application Settings UI**: Modern admin interface for managing app-wide configuration
+  - Settings grouped by category (Location & Coordinates, Timezone, Calendar Import)
+  - Edit modal with validation hints per setting type
+  - Success/error feedback with auto-dismissal
+  - Cache refresh functionality for manual database changes
+  - Super admin only access
+- **ApplicationSettingsController**: RESTful controller for settings management with validation
+- **Hardcoded Values Inventory**: Comprehensive documentation of all moved configuration values
+
+#### Configurable Application Settings
+The following settings are now configurable via the Application Settings page:
+1. **Location Name** (String): Display name for Zmanim calculations (default: "Teaneck, NJ")
+2. **Latitude** (Double): Geographic latitude with validation (-90 to 90, default: 40.906871)
+3. **Longitude** (Double): Geographic longitude with validation (-180 to 180, default: -74.020924)
+4. **Elevation** (Double): Elevation in meters with validation (0 to 9000, default: 24)
+5. **Timezone** (String): Application timezone with validation (default: "America/New_York")
+6. **Calendar Import Cron** (String): Schedule for automatic calendar imports with cron validation (default: "0 0 2 * * SUN")
+7. **Calendar Cleanup Days** (Integer): Threshold for old entry cleanup with positive integer validation (default: 30)
+
+### Changed
+
+#### Settings Refactoring
+- **ZmanimService**: Now injects and uses ApplicationSettingsService for timezone and coordinates
+- **ZmanimHandler**: Refactored to use ApplicationSettingsService with lazy GeoLocation initialization
+  - Added no-arg constructor for backward compatibility with TimeRule and legacy code
+  - Maintains fallback to default values when settings service unavailable
+- **ZmanimController**: Removed hardcoded coordinates, now uses injected ZmanimHandler
+- **AdminController**: Uses ApplicationSettingsService for timezone in date formatting
+- **TeaneckMinyanimApplication**: Sets system default timezone from settings after ApplicationContext initialization
+- **MinyanEvent & KolhaMinyanim**: Use system default timezone (set globally from settings)
+- **CalendarImportProvider**: Uses ApplicationSettingsService for ZoneId in datetime conversions
+- **MinyanClassifier**: Uses ApplicationSettingsService for timezone in Netz and Shkiya calculations
+- **Admin Sidebar**: Split settings into "Application Settings" and "Notification Settings" for clarity
+
+#### Database Schema
+- New `APPLICATION_SETTINGS` table with columns:
+  - `SETTING_KEY` (VARCHAR 100, primary key): Unique setting identifier
+  - `SETTING_VALUE` (TEXT): Setting value as string
+  - `SETTING_TYPE` (VARCHAR 50): Data type for validation
+  - `DESCRIPTION` (TEXT): Human-readable description
+  - `CATEGORY` (VARCHAR 100): UI grouping category
+  - `VERSION` (LONG): Optimistic locking version
+
+### Deprecated
+- Hardcoded timezone values in service classes (replaced with settings service)
+- Hardcoded geographic coordinates in multiple classes (replaced with centralized settings)
+- Direct instantiation of GeoLocation objects (replaced with settings service method)
+
+### Removed
+- Hardcoded "America/New_York" timezone strings (7 occurrences removed)
+- Hardcoded Teaneck, NJ coordinates (latitude, longitude, elevation) from 6 classes
+- Hardcoded location name strings
+
+### Fixed
+- Timezone now consistently applied across all services via centralized settings
+- GeoLocation calculations now use single source of truth for coordinates
+- Settings cache ensures performance while maintaining configurability
+- Validation prevents invalid coordinate, timezone, and cron expression values
+
+### Security
+- Application Settings page restricted to super admin users only
+- Validation prevents injection of invalid timezone or coordinate values
+- Settings changes logged with username for audit trail
+
+### Migration Notes
+
+#### For Existing Deployments
+1. On first startup, ApplicationSettings will auto-initialize with default values matching previous hardcoded values
+2. No data migration required - new settings table created automatically via Hibernate
+3. Existing TNMSettings table remains unchanged (used for notifications)
+4. To customize settings, navigate to Admin > Application Settings after upgrade
+5. Settings are cached in memory - use "Refresh Cache" button if manually updating database
+
+#### Breaking Changes
+- None - all changes are backward compatible with fallback defaults
+
+#### Performance Impact
+- Settings are cached on startup for optimal performance
+- No additional database queries during normal operation
+- Timezone set globally once at application startup
+
 ## [1.2.7] - 2024-12-29
 
 ### Added
