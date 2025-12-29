@@ -51,6 +51,7 @@ public class MinyanClassifier {
         MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s+and\\s+ma'?ariv", Pattern.CASE_INSENSITIVE));
         MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s*[/&-]\\s*arvit", Pattern.CASE_INSENSITIVE));
         MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s+and\\s+arvit", Pattern.CASE_INSENSITIVE));
+        MINCHA_MAARIV_PATTERNS.add(Pattern.compile("zman+mincha", Pattern.CASE_INSENSITIVE));
         
         // Denylist patterns - case insensitive (check SECOND - explicit exclusions)
         // These patterns should be explicit to avoid false positives
