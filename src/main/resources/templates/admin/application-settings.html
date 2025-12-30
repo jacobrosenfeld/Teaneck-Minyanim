@@ -14,7 +14,20 @@
     <meta name="msapplication-TileColor" content="#275ed8">
     <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1RbZVAqL1WCoVSnvgoYpP74ifdbrKvN5/NgJ5DZ2iI6N6D2qOAh" crossorigin="anonymous">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLoa6Zb7Meevd+You33Sk3vp5+Ndzo7Q7in1JVrw5MwQJR3p6db8rrMnnf" crossorigin="anonymous"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Moment.js -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <!-- Moment Timezone -->
+    <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.43/builds/moment-timezone-with-data.min.js"></script>
     
     <style>
         .settings-section {
@@ -59,6 +72,26 @@
         }
         .btn-refresh {
             margin-top: 1rem;
+        }
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #modalSettingColorPicker {
+            flex-shrink: 0;
+            cursor: pointer;
+            height: 38px;
+            border-radius: 0.25rem;
+            border: 1px solid #ced4da;
+        }
+        #modalSettingColorPicker:hover {
+            border-color: #80bdff;
+        }
+        #modalSettingValue {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            text-transform: lowercase;
         }
     </style>
 </head>
@@ -143,14 +176,14 @@
 <div class="modal fade" id="editSettingModal" tabindex="-1" aria-labelledby="editSettingModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editSettingModalLabel">Edit Setting</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form method="post" th:action="@{/admin/application-settings/update}" id="editSettingForm">
-                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="modalSettingValue">Value <span class="text-danger">*</span></label>
+                        <div class="color-picker-wrapper" id="settingValueWrapper">
+                            <input type="color" class="form-control" id="modalSettingColorPicker" style="display: none;" title="Pick a color">
+                            <input type="text" class="form-control" name="settingValue" id="modalSettingValue" required>
+                        </div>
+                        <small class="form-text text-muted" id="modalValueHint"></small>
+                    </div>="modal-body">
                     <input type="hidden" name="settingKey" id="modalSettingKey">
                     
                     <div class="form-group">
@@ -181,6 +214,7 @@
     </div>
 </div>
 
+<script th:src="@{/admin/timezone.js}"></script>
 <script>
     const colorPicker = document.getElementById('modalSettingColorPicker');
     const settingValueInput = document.getElementById('modalSettingValue');
@@ -201,7 +235,6 @@
     function showColorPicker(value) {
         const normalized = normalizeHexColor(value) || '#275ed8';
         colorPicker.style.display = 'block';
-        settingValueInput.classList.add('ml-2');
         settingValueInput.setAttribute('pattern', '#[0-9a-fA-F]{6}');
         colorPicker.value = normalized;
         settingValueInput.value = normalized;
@@ -209,7 +242,6 @@
 
     function hideColorPicker(value) {
         colorPicker.style.display = 'none';
-        settingValueInput.classList.remove('ml-2');
         settingValueInput.removeAttribute('pattern');
         settingValueInput.value = value;
     }
@@ -265,6 +297,11 @@
         }
 
         valueHint.textContent = hint;
+
+        // Initialize Select2 for timezone field if it exists
+        if (key === 'timezone') {
+            initializeTimezoneSelect2();
+        }
     }
     
     // Auto-dismiss alerts after 5 seconds
