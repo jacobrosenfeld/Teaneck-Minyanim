@@ -54,6 +54,11 @@ public class AdminController {
     @Autowired
     private ApplicationSettingsService settingsService;
 
+    @ModelAttribute("siteName")
+    public String siteName() {
+        return settingsService.getSiteName();
+    }
+
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | hh:mm aa");
 
     private boolean isAdmin() {

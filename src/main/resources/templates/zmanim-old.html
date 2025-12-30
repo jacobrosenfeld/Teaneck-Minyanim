@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Teaneck Minyanim Minyanim</title>
+    <title th:text="@{|${siteName} ?: 'Minyan Manager'|}">Minyan Manager</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
     <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css} "/>

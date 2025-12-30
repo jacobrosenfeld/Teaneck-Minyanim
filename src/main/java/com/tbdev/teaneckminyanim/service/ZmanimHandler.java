@@ -57,8 +57,8 @@ public class ZmanimHandler {
                 geoLocation = settingsService.getGeoLocation();
             } else {
                 // Fallback for tests or when settings service is not available
-                TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
-                geoLocation = new GeoLocation("Teaneck, NJ", 40.906871, -74.020924, 24, timeZone);
+                TimeZone timeZone = TimeZone.getTimeZone("Asia/Jerusalem");
+                geoLocation = new GeoLocation("Jerusalem, Israel", 31.7683, 35.2137, 24, timeZone);
             }
         }
         return geoLocation;

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Teaneck Minyanim</title>
+    <title th:text="${siteName} ?: 'Minyanim Platform'"></title>
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
@@ -47,7 +47,7 @@
                   <h5 class="mb-1" th:text="${banner.message}" />
                 </div>
                 <!-- <div class="jumbotron alert alert-secondary text-center">
-                  <h5 class="mb-1">Welcome to Teaneck Minyanim. You can find minyanim for today on the home page and navigate to other days using the arrows below. Please note the times are formulaic and may not be precise. We are working on improving the system. </h5>
+                  <h5 class="mb-1" th:text="@{|Welcome to ${siteName} ?: 'Minyanim Platform'. You can find minyanim for today on the home page and navigate to other days using the arrows below. Please note the times are formulaic and may not be precise. We are working on improving the system.|}"></h5>
                   <h4>If you would like to volunteer please contact us at info@teaneckminyanim.com.</h4>
                 </div> -->
                 <!-- Date Nav Buttons -->
@@ -165,6 +165,7 @@
                             </div>
                             <div class="col-lg-4" id="zmanim-box">
                               <div class="card-text">
+                                <!-- @TODO: update for settings... -->
                                 <h3>Zmanim for Teaneck, NJ</h3>
                               </div>
                               <div class="col">
@@ -315,7 +316,7 @@
              <div class="row text-center">
                <div class="col-sm-12">
                  <div class="intro">
-                   <h2>About Teaneck Minyanim</h2>
+                   <h2 th:text="@{|About ${siteName} ?: 'Minyanim Platform'|}"></h2>
                  </div>
                </div>
                <div class="col-sm-4">
@@ -344,7 +345,7 @@
                </div>
                <div class="col-md-12">
                  <div class="yd-link">
-                   <a href="#info">Learn More About Teaneck Minyanim</a>
+                   <a href="#info" th:text="@{|Learn More About ${siteName} ?: 'Minyanim Platform'|}"></a>
                  </div>
                </div>
 
@@ -359,7 +360,7 @@
             <div class="cta-content">
               <h1>Bug? Question? Comment?</h1><h5><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h5>
               <hr>
-              <h3>Subscribe now to stay up to date on Teaneck Minyanim updates and news!</h3>
+              <h3 th:text="@{|Subscribe now to stay up to date on ${siteName} ?: 'Minyanim Platform' updates and news!|}"></h3>
                <div class="form wow fadeIn" data-wow-delay="0.2s">
                 <form id="chimp-form" class="subscribe-form wow zoomIn" action="https://sendy.josephjacobs.org/subscribe" method="POST" accept-charset="utf-8">
                   <input type="text" name="name" id="name" placeholder="Enter your name"/>
@@ -394,7 +395,7 @@
                 <a class="footer-logo" href="https://teaneckminyanim.com">TB Dev</a>
               </div>
               <div class="col-md-4">
-                <h6>&copy; TB Dev and Teaneck Minyanim</h6>
+                <h6 th:text="@{|© TB Dev and ${siteName} ?: 'Minyanim Platform'|}"></h6>
               </div>
               <div class="col-md-4 text-end">
                 <h6><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h6>

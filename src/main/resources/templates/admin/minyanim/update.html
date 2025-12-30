@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Update Minyan - Teaneck Minyanim</title>
+    <title th:text="@{|Update Minyan - ${siteName} ?: 'Minyan Manager'|}">Update Minyan - Minyan Manager</title>
     <link rel="icon" href="/assets/icons/favicon.png" type="image/png" sizes="16x16">
     <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css} "/>
     <link th:rel="stylesheet" th:href="@{/styles.css}">
@@ -43,7 +43,7 @@
                     <hr>
 
                     <p class="lead d-none">
-                        The minyan defined below will be created with automatically be enabled and show on the public Teaneck Minyanim site.
+                        <span th:text="@{|The minyan defined below will be created, automatically enabled, and shown on the public ${siteName} ?: 'Minyan Manager' site.|}">The minyan defined below will be created with automatically be enabled and show on the public Minyan Manager site.</span>
                     </p>
 
                     <div class="row my-4 footer-pusher">

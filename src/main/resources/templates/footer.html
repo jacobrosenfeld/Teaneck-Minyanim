@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Footer - Teaneck Minyanim</title>
+    <title th:text="@{|Footer - ${siteName} ?: 'Minyanim Platform'|}"></title>
 
     <link th:rel="stylesheet" th:href="@{/admin/styles.css}">
     
@@ -16,7 +16,7 @@
               <a class="footer-logo" href="#">TB Dev</a>
             </div>
             <div class="col-md-4">
-              <h6>&copy; TB Dev and Teaneck Minyanim</h6>
+              <h6 th:text="@{|© TB Dev and ${siteName} ?: 'Minyanim Platform'|}"></h6>
             </div>
             <div class="col-md-4 text-end">
               <h6><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h6>
