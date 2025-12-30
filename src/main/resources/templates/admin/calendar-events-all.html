@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Calendar Events - [[${organization.name}]]</title>
+    <title>Master Calendar - All Organizations</title>
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
     <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css}"/>
@@ -262,17 +262,14 @@
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h2>Calendar Events - <span th:text="${organization.name}">Organization</span></h2>
+                            <h2>Master Calendar - All Organizations</h2>
                             <div>
-                                <form method="post" th:action="@{/admin/{orgId}/calendar-events/rematerialize(orgId=${organization.id})}" 
-                                      style="display: inline;" onsubmit="return confirm('Rematerialize calendar events for this organization?')">
+                                <form method="post" action="/admin/calendar-events/rematerialize-all" 
+                                      style="display: inline;" onsubmit="return confirm('Rematerialize calendar events for ALL organizations?')">
                                     <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-sync-alt"></i> Rematerialize
+                                        <i class="fas fa-sync-alt"></i> Rematerialize All
                                     </button>
                                 </form>
-                                <a th:href="@{/admin/{orgId}/minyanim(orgId=${organization.id})}" class="btn btn-secondary">
-                                    <i class="fas fa-arrow-left"></i> Back to Minyanim
-                                </a>
                             </div>
                         </div>
 
@@ -302,8 +299,18 @@
 
         <!-- Filter Panel -->
         <div class="filter-panel">
-            <form method="get" th:action="@{/admin/{orgId}/calendar-events(orgId=${organization.id})}">
+            <form method="get" action="/admin/calendar-events/all">
                 <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Organization</label>
+                        <select name="organizationId" class="form-control">
+                            <option value="">All Organizations</option>
+                            <option th:each="org : ${organizations}" 
+                                    th:value="${org.id}" 
+                                    th:text="${org.name}"
+                                    th:selected="${org.id == organizationFilter}">Organization</option>
+                        </select>
+                    </div>
                     <div class="filter-group">
                         <label>Start Date</label>
                         <input type="date" name="startDate" th:value="${startDate}" class="form-control">
@@ -353,6 +360,7 @@
             <table class="events-table table">
                 <thead>
                     <tr>
+                        <th>Organization</th>
                         <th>Date</th>
                         <th>Time</th>
                         <th>Type</th>
@@ -366,6 +374,7 @@
                 <tbody>
                     <tr th:each="event : ${events}" 
                         th:classappend="${!event.enabled} ? 'disabled' : ''">
+                        <td><span th:text="${event.organizationId}">Org</span></td>
                         <td th:text="${#temporals.format(event.date, 'EEE, MMM d, yyyy')}">Date</td>
                         <td>
                             <span th:text="${#temporals.format(event.startTime, 'h:mm a')}">Time</span>
@@ -390,23 +399,12 @@
                                   title="Manually edited"></span>
                         </td>
                         <td>
-                            <form method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/update(orgId=${organization.id},eventId=${event.id})}" 
-                                  style="display: inline;">
-                                <select name="locationId" class="form-control form-control-sm" 
-                                        onchange="this.form.submit()">
-                                    <option value="">No location</option>
-                                    <option th:each="loc : ${locations}" 
-                                            th:value="${loc.id}" 
-                                            th:text="${loc.name}"
-                                            th:selected="${loc.id == event.locationId}">Location</option>
-                                </select>
-                            </form>
-                            <small th:if="${event.locationName}" th:text="${event.locationName}" style="color: #666;"></small>
+                            <span th:if="${event.locationName}" th:text="${event.locationName}">Location</span>
+                            <span th:unless="${event.locationName}" style="color: #999;">-</span>
                         </td>
                         <td>
                             <form method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/update(orgId=${organization.id},eventId=${event.id})}" 
+                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/update(orgId=${event.organizationId},eventId=${event.id})}" 
                                   style="display: inline;">
                                 <input type="text" name="notes" 
                                        th:value="${event.notes}" 
@@ -422,7 +420,7 @@
                         </td>
                         <td style="white-space: nowrap;">
                             <form method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/toggle(orgId=${organization.id},eventId=${event.id})}" 
+                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/toggle(orgId=${event.organizationId},eventId=${event.id})}" 
                                   style="display: inline;">
                                 <button type="submit" class="action-btn btn-toggle" 
                                         th:text="${event.enabled} ? 'Disable' : 'Enable'">Toggle</button>
@@ -431,7 +429,7 @@
                                     onclick="alert('Edit functionality coming soon')">Edit</button>
                             <form th:if="${event.source.name() == 'MANUAL'}" 
                                   method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/delete(orgId=${organization.id},eventId=${event.id})}" 
+                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/delete(orgId=${event.organizationId},eventId=${event.id})}" 
                                   style="display: inline;"
                                   onsubmit="return confirm('Delete this manual event?')">
                                 <button type="submit" class="action-btn btn-delete">Delete</button>

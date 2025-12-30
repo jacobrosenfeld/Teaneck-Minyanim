@@ -20,6 +20,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,6 +42,85 @@ public class CalendarEventsAdminController {
     private final TNMUserService userService;
 
     /**
+     * Master calendar view for super admin (all organizations)
+     */
+    @GetMapping("/admin/calendar-events/all")
+    public ModelAndView viewAllCalendarEvents(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String organizationId,
+            @RequestParam(required = false) String minyanType,
+            @RequestParam(required = false) String source,
+            @RequestParam(required = false) String enabled,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir) {
+        
+        ModelAndView mv = new ModelAndView("admin/calendar-events-all");
+        
+        // Add current user for sidebar
+        mv.addObject("user", userService.getCurrentUser());
+        
+        // Check if super admin
+        if (!userService.isSuperAdmin()) {
+            throw new AccessDeniedException("Only super admins can access master calendar");
+        }
+        
+        // Default date range to materialization window
+        CalendarMaterializationService.WindowBounds bounds = materializationService.getWindowBounds();
+        LocalDate effectiveStartDate = startDate != null ? startDate : bounds.getStartDate();
+        LocalDate effectiveEndDate = endDate != null ? endDate : bounds.getEndDate();
+        
+        // Get all organizations for filter
+        List<Organization> allOrganizations = organizationService.getAll();
+        mv.addObject("organizations", allOrganizations);
+        
+        // Query events across all organizations or specific one
+        List<CalendarEvent> events;
+        if (organizationId != null && !organizationId.isEmpty()) {
+            events = queryEventsWithFilters(organizationId, effectiveStartDate, effectiveEndDate, 
+                    minyanType, source, enabled, buildSort(sortBy, sortDir));
+        } else {
+            // Get events from all organizations
+            events = new ArrayList<>();
+            for (Organization org : allOrganizations) {
+                events.addAll(queryEventsWithFilters(org.getId(), effectiveStartDate, effectiveEndDate, 
+                        minyanType, source, enabled, buildSort(sortBy, sortDir)));
+            }
+        }
+        
+        // Add to model
+        mv.addObject("events", events);
+        mv.addObject("startDate", effectiveStartDate);
+        mv.addObject("endDate", effectiveEndDate);
+        mv.addObject("organizationFilter", organizationId);
+        mv.addObject("minyanTypeFilter", minyanType);
+        mv.addObject("sourceFilter", source);
+        mv.addObject("enabledFilter", enabled);
+        mv.addObject("sortBy", sortBy != null ? sortBy : "date");
+        mv.addObject("sortDir", sortDir != null ? sortDir : "asc");
+        
+        // Add filter options
+        mv.addObject("minyanTypes", MinyanType.values());
+        mv.addObject("eventSources", EventSource.values());
+        mv.addObject("windowBounds", bounds);
+        
+        // Statistics across all orgs
+        long totalEvents = events.size();
+        long enabledEvents = events.stream().filter(CalendarEvent::isEnabled).count();
+        long rulesEvents = events.stream().filter(e -> e.getSource() == EventSource.RULES).count();
+        long importedEvents = events.stream().filter(e -> e.getSource() == EventSource.IMPORTED).count();
+        long manualEvents = events.stream().filter(e -> e.getSource() == EventSource.MANUAL).count();
+        
+        mv.addObject("totalEvents", totalEvents);
+        mv.addObject("enabledEvents", enabledEvents);
+        mv.addObject("rulesEvents", rulesEvents);
+        mv.addObject("importedEvents", importedEvents);
+        mv.addObject("manualEvents", manualEvents);
+        
+        return mv;
+    }
+
+    /**
      * Display calendar events for an organization with filters
      */
     @GetMapping("/admin/{orgId}/calendar-events")
@@ -55,6 +135,9 @@ public class CalendarEventsAdminController {
             @RequestParam(required = false) String sortDir) {
         
         ModelAndView mv = new ModelAndView("admin/calendar-events");
+        
+        // Add current user for sidebar
+        mv.addObject("user", userService.getCurrentUser());
         
         // Check authorization
         if (!userService.canAccessOrganization(orgId)) {
