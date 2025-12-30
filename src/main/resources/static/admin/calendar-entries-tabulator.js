@@ -168,12 +168,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 field: "location",
                 sorter: "string",
                 width: 180,
-                editor: "list",
-                editorParams: {
-                    values: locationOptions,
-                    clearable: true,
-                    autocomplete: true
-                },
                 formatter: function(cell) {
                     const row = cell.getRow().getData();
                     const location = cell.getValue() || 'Add location';
@@ -181,10 +175,62 @@ document.addEventListener('DOMContentLoaded', function() {
                         '<span class="manually-edited-indicator" title="Manually edited"></span>' : '';
                     return `<span style="cursor: pointer;">${location}${manuallyEdited}</span>`;
                 },
-                cellEdited: function(cell) {
+                cellClick: function(e, cell) {
+                    // Show edit UI when cell is clicked
                     const row = cell.getRow().getData();
-                    const locationId = cell.getValue();
-                    updateLocation(row.id, locationId);
+                    const currentLocation = row.location || '';
+                    
+                    // Find the locationId that matches the current location name
+                    let currentLocationId = '';
+                    for (const [id, name] of Object.entries(locationOptions)) {
+                        if (name === currentLocation) {
+                            currentLocationId = id;
+                            break;
+                        }
+                    }
+                    
+                    // Create select element
+                    const select = document.createElement('select');
+                    select.className = 'form-control form-control-sm';
+                    select.style.width = '150px';
+                    
+                    // Add options
+                    for (const [id, name] of Object.entries(locationOptions)) {
+                        const option = document.createElement('option');
+                        option.value = id;
+                        option.textContent = name;
+                        if (id === currentLocationId) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    }
+                    
+                    // Replace cell content with select
+                    const cellEl = cell.getElement();
+                    cellEl.innerHTML = '';
+                    cellEl.appendChild(select);
+                    select.focus();
+                    
+                    // Handle save
+                    const saveEdit = function() {
+                        const newLocationId = select.value;
+                        const newLocationName = locationOptions[newLocationId];
+                        
+                        // Update backend
+                        updateLocation(row.id, newLocationId);
+                        
+                        // Update row data
+                        row.location = newLocationName;
+                        cell.setValue(newLocationName);
+                    };
+                    
+                    // Handle cancel
+                    const cancelEdit = function() {
+                        cell.setValue(currentLocation);
+                    };
+                    
+                    select.addEventListener('change', saveEdit);
+                    select.addEventListener('blur', cancelEdit);
                 },
                 headerFilter: "input",
                 headerFilterPlaceholder: "Filter location..."
