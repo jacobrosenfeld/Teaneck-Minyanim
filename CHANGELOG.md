@@ -45,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added explicit patterns for `/org/**`, `/assets/**`, and `/favicon.ico`
   - Added patterns for calendar entries: `/admin/*/calendar-entries/**`
   - Fixes PatternParseException preventing access to org pages, admin pages, and static resources
+- **CSRF Protection Configuration**: Restored explicit CSRF disable to match original behavior
+  - Changed `.csrf(csrf -> { })` to `.csrf(csrf -> csrf.disable())` to properly disable CSRF protection
+  - Maintains backward compatibility with original Spring Security 5.x configuration
+  - Prevents breaking changes for existing forms and API endpoints that don't use CSRF tokens
 
 ### Technical Details
 
