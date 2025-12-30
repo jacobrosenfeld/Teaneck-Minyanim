@@ -165,7 +165,10 @@
                     
                     <div class="form-group">
                         <label for="modalSettingValue">Value <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="settingValue" id="modalSettingValue" required>
+                        <div class="d-flex align-items-center" id="settingValueWrapper">
+                            <input type="color" class="form-control" id="modalSettingColorPicker" style="max-width: 140px; display: none;">
+                            <input type="text" class="form-control" name="settingValue" id="modalSettingValue" required>
+                        </div>
                         <small class="form-text text-muted" id="modalValueHint"></small>
                     </div>
                 </div>
@@ -179,6 +182,55 @@
 </div>
 
 <script>
+    const colorPicker = document.getElementById('modalSettingColorPicker');
+    const settingValueInput = document.getElementById('modalSettingValue');
+    const valueHint = document.getElementById('modalValueHint');
+
+    function normalizeHexColor(rawValue) {
+        if (!rawValue) {
+            return '';
+        }
+        const trimmed = rawValue.trim();
+        const match = trimmed.match(/^#?[0-9a-fA-F]{6}$/);
+        if (!match) {
+            return '';
+        }
+        return trimmed.startsWith('#') ? trimmed.toLowerCase() : `#${trimmed.toLowerCase()}`;
+    }
+
+    function showColorPicker(value) {
+        const normalized = normalizeHexColor(value) || '#275ed8';
+        colorPicker.style.display = 'block';
+        settingValueInput.classList.add('ml-2');
+        settingValueInput.setAttribute('pattern', '#[0-9a-fA-F]{6}');
+        colorPicker.value = normalized;
+        settingValueInput.value = normalized;
+    }
+
+    function hideColorPicker(value) {
+        colorPicker.style.display = 'none';
+        settingValueInput.classList.remove('ml-2');
+        settingValueInput.removeAttribute('pattern');
+        settingValueInput.value = value;
+    }
+
+    colorPicker.addEventListener('input', function() {
+        if (colorPicker.style.display === 'none') {
+            return;
+        }
+        settingValueInput.value = colorPicker.value;
+    });
+    
+    settingValueInput.addEventListener('input', function() {
+        if (colorPicker.style.display === 'none') {
+            return;
+        }
+        const normalized = normalizeHexColor(settingValueInput.value);
+        if (normalized) {
+            colorPicker.value = normalized;
+        }
+    });
+
     function prepareEditModal(button) {
         const key = button.getAttribute('data-key');
         const value = button.getAttribute('data-value');
@@ -187,7 +239,6 @@
         
         document.getElementById('modalSettingKey').value = key;
         document.getElementById('modalSettingKeyDisplay').value = key;
-        document.getElementById('modalSettingValue').value = value;
         document.getElementById('modalSettingDescription').textContent = description;
         
         // Set input hints based on type
@@ -205,7 +256,15 @@
                 hint = 'Enter a text value';
             }
         }
-        document.getElementById('modalValueHint').textContent = hint;
+
+        if (key === 'site.app.color') {
+            showColorPicker(value);
+            hint = 'Pick a hex color (#RRGGBB).';
+        } else {
+            hideColorPicker(value);
+        }
+
+        valueHint.textContent = hint;
     }
     
     // Auto-dismiss alerts after 5 seconds

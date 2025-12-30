@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow negative elevation values (down to -500m) in application settings validation to support below-sea-level locations.
 - Timezone selector now uses regex-friendly fuzzy search (supports mid-string queries and common aliases like “Jerusalem” → “Israel”).
 - Replaced hardcoded "Teaneck Minyanim" labels in public and admin templates with the configurable `site.name` setting and neutral fallbacks to keep branding consistent with application settings.
+- Application Settings modal now includes a hex color picker for `site.app.color` to reduce invalid theme color entries.
 
 ## [1.3.0] - 2024-12-29
 
