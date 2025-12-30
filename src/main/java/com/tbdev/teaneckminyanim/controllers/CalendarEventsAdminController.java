@@ -40,6 +40,17 @@ public class CalendarEventsAdminController {
     private final CalendarMaterializationService materializationService;
     private final CalendarMaterializationScheduler materializationScheduler;
     private final TNMUserService userService;
+    private final ApplicationSettingsService settingsService;
+
+    @ModelAttribute("siteName")
+    public String siteName() {
+        return settingsService.getSiteName();
+    }
+    
+    @ModelAttribute("supportEmail")
+    public String supportEmail() {
+        return settingsService.getSupportEmail();
+    }
 
     /**
      * Master calendar view for super admin (all organizations)
