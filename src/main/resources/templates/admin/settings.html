@@ -348,15 +348,14 @@
         if (key === 'site.app.color') {
             showColorPicker(value);
             hint = 'Pick a hex color (#RRGGBB).';
+        } else if (key === 'timezone') {
+            // For timezone, show the input and initialize Select2 autocomplete
+            colorPicker.style.display = 'none';
+            settingValueInput.style.display = 'block';
+            settingValueInput.value = value;
+            initializeTimezoneSelect2();
         } else {
             hideColorPicker(value);
-        }
-
-        valueHint.textContent = hint;
-
-        // Initialize Select2 for timezone field if it exists
-        if (key === 'timezone') {
-            initializeTimezoneSelect2();
         }
     }
     

@@ -178,6 +178,8 @@ $(document).ready(function() {
 // Initialize timezone autocomplete for settings modal
 function initializeTimezoneSelect2() {
     const settingValueInput = document.getElementById('modalSettingValue');
+    if (!settingValueInput) return;
+
     const $input = $(settingValueInput);
 
     // Destroy existing Select2 if present
@@ -186,60 +188,46 @@ function initializeTimezoneSelect2() {
     }
 
     const timezones = moment.tz.names();
+    
+    // Build data array with search text
     const timezoneData = timezones.map(tz => ({
         id: tz,
         text: tz,
-        search: buildSearchText(tz)
+        search: buildSearchText(tz).toLowerCase()
     }));
 
-    // Initialize Select2 as autocomplete
+    // Initialize Select2 as an autocomplete input
     $input.select2({
-        placeholder: 'Search timezones...',
+        placeholder: 'Search and select a timezone...',
         width: '100%',
         data: timezoneData,
+        allowClear: true,
         matcher: function(params, data) {
-            // Show all results if no search term
-            if (!params.term) {
+            // Empty search returns all
+            if (!params.term || params.term.trim() === '') {
                 return data;
             }
             
-            // Build regex for fuzzy matching
-            const regex = buildRegex(params.term);
+            // Build search term regex
+            const searchTerm = params.term.toLowerCase().trim();
+            const regex = buildRegex(searchTerm);
             
-            // Check against timezone name and search field
-            if (regex.test(data.text) || regex.test(data.search)) {
+            // Match against timezone name or search aliases
+            const textMatch = regex.test(data.text.toLowerCase());
+            const searchMatch = regex.test(data.search);
+            
+            if (textMatch || searchMatch) {
                 return data;
             }
 
             return null;
         },
-        templateResult: function(data) {
-            // Format the dropdown options
-            if (!data.id) return data.text;
-            return data.text;
-        },
-        templateSelection: function(data) {
-            // Format the selected value display
-            if (!data.id) return data.text;
-            return data.text;
-        },
-        dropdownParent: $('#editAppSettingModal'),
-        minimumInputLength: 0,
-        allowClear: true
+        dropdownParent: $('#editAppSettingModal')
     });
 
-    // Set current value if it exists
+    // Set current value
     const currentValue = settingValueInput.value;
-    if (currentValue) {
+    if (currentValue && timezones.includes(currentValue)) {
         $input.val(currentValue).trigger('change.select2');
     }
-
-    // Sync changes back to the input
-    $input.on('select2:select', function(e) {
-        settingValueInput.value = e.params.data.id;
-    });
-
-    $input.on('select2:unselect', function() {
-        settingValueInput.value = '';
-    });
 }
