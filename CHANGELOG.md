@@ -7,6 +7,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2025-12-30
+
+### Added
+
+#### Modern Admin Panel Design System
+- **Comprehensive CSS Design System** (`design-system.css`):
+  - Complete design token system with CSS custom properties for colors, typography, spacing
+  - 60+ design tokens for consistent theming across the admin panel
+  - Modern component library: buttons (4 variants × 3 sizes), cards, forms, badges, alerts, tables
+  - Utility classes for flexbox, spacing, typography, and display patterns
+  - Professional blue-based color palette with primary, secondary, accent, and neutral colors
+  - Responsive design with mobile-first approach and breakpoints at 768px and 480px
+
+#### Modern Navigation Components
+- **Redesigned Admin Navbar**:
+  - Clean, fixed header with primary brand color and modern styling
+  - Logo and site name branding with improved typography
+  - Responsive hamburger menu for mobile devices
+  - Current time display in monospace font
+  - Organization badge with pill-style design
+  - Smooth animations and hover effects
+
+- **Redesigned Admin Sidebar**:
+  - Fixed sidebar with organized sections (Organization, Administration, Account)
+  - Icon-based navigation using SVG icons for all menu items
+  - Active link highlighting with left border accent
+  - Smooth hover transitions and visual feedback
+  - Collapsible on mobile devices with toggle animation
+  - Semantic organization of menu structure
+
+#### Shared Layout System
+- **Reusable Thymeleaf Layout Template** (`layout.html`):
+  - Consistent header/sidebar/content structure across all admin pages
+  - Page title and description blocks for consistent page headers
+  - Global toast notification system for success/error messages
+  - Responsive sidebar toggle functionality with smooth animations
+  - Proper spacing and margins using design system tokens
+  - Mobile-responsive design with automatic sidebar collapse
+
+#### Enhanced Calendar Events Page
+- **Modern Redesign with Design System Integration**:
+  - Statistics grid with hover-animated stat cards
+  - Collapsible filter panel with toggle functionality
+  - Modern table design with cleaner borders, better spacing, sticky header
+  - Enhanced badges using design system colors with proper contrast
+  - Beautiful empty state with icon and helpful messaging
+  - Info box redesigned with modern card styling
+
+- **User Experience Improvements**:
+  - Collapsible filters: Click header to toggle filter visibility with smooth animation
+  - Toast notifications for success/error messages instead of page alerts
+  - Modern form controls using design system styles with focus states
+  - Improved button styling with hover effects and transitions
+  - Better inline editing controls with focus indicators
+  - Responsive grid layouts with proper breakpoints
+
+### Changed
+
+#### Navigation Structure
+- Reorganized sidebar menu into logical sections with separators
+- Updated menu item ordering for better workflow
+- Added icons to all navigation items for better visual recognition
+- Improved mobile navigation experience with collapsible sidebar
+
+#### Visual Design
+- Updated color scheme to use design system tokens throughout
+- Improved typography with consistent font sizes, weights, and line heights
+- Enhanced spacing using systematic 8px-based spacing scale
+- Modernized button designs with multiple variants and sizes
+- Updated form controls with better focus states and validation feedback
+
+### Technical Improvements
+
+#### CSS Architecture
+- **Design Token System**: All colors, spacing, typography defined as CSS custom properties
+- **Component-Based Styling**: Clear, BEM-inspired class names for components
+- **Utility-First Approach**: Common patterns available as utility classes
+- **Responsive Design**: Mobile-first with breakpoints at 768px and 480px
+- **Performance**: No !important declarations, clean CSS cascade
+
+#### JavaScript Features
+- Sidebar toggle with smooth animations
+- Filter panel collapse/expand functionality
+- Toast notification system for better user feedback
+- Form submission handling with loading states
+- Event delegation for dynamic content
+
+#### Browser Support
+- Modern evergreen browsers (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)
+- CSS custom properties (no IE11 support required)
+- Flexbox and Grid layouts for modern layout capabilities
+- ES6 JavaScript features for cleaner code
+
+### Documentation
+- Added comprehensive inline documentation in design-system.css
+- Documented all design tokens with usage examples
+- Created detailed PR descriptions with implementation notes
+- Maintained backward compatibility with existing functionality
+
 ## [1.4.0] - 2025-12-30
 
 ### Added
