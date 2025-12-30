@@ -1,0 +1,481 @@
+/* Admin Calendar Events Page Styles */
+
+/* ========================================
+   Calendar View Component
+   ======================================== */
+
+.calendar-view {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    display: none; /* Hidden by default, shown via JS toggle */
+}
+
+.calendar-view.active {
+    display: block;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 1rem;
+}
+
+.month-year {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: #035174;
+}
+
+.calendar-grid {
+    width: 100%;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.weekday {
+    text-align: center;
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.875rem;
+    padding: 0.5rem 0;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+}
+
+.calendar-day {
+    min-height: 100px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    background: white;
+    position: relative;
+    transition: box-shadow 0.2s;
+}
+
+.calendar-day:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.calendar-day.other-month {
+    opacity: 0.4;
+    background: #f8f9fa;
+}
+
+.calendar-day.today {
+    background: #f0f8ff;
+    border-color: #007bff;
+    border-width: 2px;
+}
+
+.day-number {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: #495057;
+}
+
+.calendar-day.today .day-number {
+    color: #007bff;
+}
+
+.day-events {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.event-pill {
+    font-size: 0.65rem;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.125rem;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.1s;
+    position: relative;
+}
+
+.event-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    z-index: 1;
+}
+
+.event-pill.source-imported {
+    background: #d4edda;
+    border-left: 3px solid #28a745;
+    color: #155724;
+}
+
+.event-pill.source-rules {
+    background: #d1ecf1;
+    border-left: 3px solid #17a2b8;
+    color: #0c5460;
+}
+
+.event-pill.source-manual {
+    background: #ffe5d0;
+    border-left: 3px solid #fd7e14;
+    color: #833c0c;
+}
+
+.event-pill-time {
+    font-weight: 600;
+    margin-bottom: 0.125rem;
+}
+
+.event-pill-title {
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ========================================
+   Agenda View Enhancements
+   ======================================== */
+
+.agenda-view {
+    background: white;
+    display: block; /* Shown by default */
+}
+
+.agenda-view.hidden {
+    display: none;
+}
+
+.agenda-date-group {
+    margin-bottom: 2rem;
+}
+
+.agenda-date-header {
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #035174;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #035174;
+    border-radius: 0.25rem;
+}
+
+.event-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s;
+    background: white;
+}
+
+.event-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.event-time {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #035174;
+}
+
+.event-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.badge-source {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+}
+
+.badge-source-imported {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-source-rules {
+    background-color: #007bff;
+    color: white;
+}
+
+.badge-source-manual {
+    background-color: #fd7e14;
+    color: white;
+}
+
+.event-body {
+    margin-bottom: 0.75rem;
+}
+
+.event-location {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.event-location i {
+    color: #035174;
+}
+
+.event-notes {
+    font-size: 0.875rem;
+    font-style: italic;
+    color: #6c757d;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-left: 3px solid #17a2b8;
+    border-radius: 0.25rem;
+}
+
+.event-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   View Toggle Button
+   ======================================== */
+
+.view-toggle-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.view-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #035174;
+    background: white;
+    color: #035174;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.view-toggle-btn:hover {
+    background: #035174;
+    color: white;
+}
+
+.view-toggle-btn i {
+    font-size: 1rem;
+}
+
+/* ========================================
+   Filter Panel Enhancements
+   ======================================== */
+
+.filter-panel .card-header {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.filter-panel .card-header:hover {
+    background-color: #f8f9fa;
+}
+
+.filter-panel .card-header h5 {
+    margin: 0;
+}
+
+.filter-collapse-icon {
+    transition: transform 0.2s;
+}
+
+.filter-collapse-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+/* ========================================
+   Source Badge Colors (Enhanced)
+   ======================================== */
+
+.badge.badge-source-imported {
+    background-color: #28a745;
+}
+
+.badge.badge-source-rules {
+    background-color: #007bff;
+}
+
+.badge.badge-source-manual {
+    background-color: #fd7e14;
+}
+
+/* ========================================
+   Empty States
+   ======================================== */
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.empty-state h4 {
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    margin-bottom: 0;
+}
+
+/* ========================================
+   Loading States
+   ======================================== */
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #035174;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 768px) {
+    .calendar-days {
+        grid-template-columns: repeat(1, 1fr);
+    }
+    
+    .calendar-day {
+        min-height: auto;
+        padding: 0.75rem;
+    }
+    
+    .day-number {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .event-pill {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .event-pill-title {
+        white-space: normal;
+    }
+    
+    .event-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .event-time {
+        font-size: 1.1rem;
+    }
+    
+    .event-badges {
+        width: 100%;
+    }
+    
+    .event-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .event-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .calendar-days {
+        grid-template-columns: repeat(7, 1fr);
+    }
+    
+    .calendar-day {
+        min-height: 80px;
+    }
+    
+    .event-pill {
+        font-size: 0.6rem;
+    }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+
+@media print {
+    .event-actions,
+    .view-toggle-container,
+    .filter-panel {
+        display: none;
+    }
+    
+    .calendar-day {
+        break-inside: avoid;
+    }
+    
+    .event-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+}

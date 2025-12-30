@@ -16,18 +16,45 @@
 </head>
 <body>
 <div class="border-end bg-white sidebar" id="sidebar-wrapper">
-    <div class="sidebar-heading border-bottom bg-light">Start Bootstrap </div>
+    <div class="sidebar-heading border-bottom bg-light">Teaneck Minyanim Admin</div>
     <div class="list-group list-group-flush">
 <!--        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" href="/admin/dashboard">Dashboard</a>-->
-        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{|/admin/${user.getOrganizationId()}/locations|}" th:if="${!user.isSuperAdmin()}">Locations</a>
-        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{|/admin/${user.getOrganizationId()}/minyanim|}" th:if="${!user.isSuperAdmin()}">Minyan Schedule</a>
-        <a  class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" href="/admin/organizations" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">Organizations</a>
-        <a  class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{/admin/organization?id=} + ${user.getOrganizationId()}" th:if="${!user.isSuperAdmin()}">My Organization</a>
-        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" href="/admin/new-organization" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">Create an Organization</a>
-        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" href="/admin/accounts" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">Accounts</a>
-        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{/admin/account?id=} + ${user.id}">My Account</a>
-        <a  class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" href="/admin/settings" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">Application Settings</a>
-        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{/admin/logout}">Logout</a>
+        
+        <!-- Organization Admin Navigation -->
+        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{|/admin/${user.getOrganizationId()}/locations|}" th:if="${!user.isSuperAdmin()}">
+            <i class="fas fa-map-marker-alt"></i> Locations
+        </a>
+        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{|/admin/${user.getOrganizationId()}/minyanim|}" th:if="${!user.isSuperAdmin()}">
+            <i class="fas fa-calendar-check"></i> Minyan Schedule
+        </a>
+        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{|/admin/${user.getOrganizationId()}/calendar-entries|}" th:if="${!user.isSuperAdmin()}">
+            <i class="fas fa-calendar-alt"></i> Calendar Entries
+        </a>
+        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{/admin/organization?id=} + ${user.getOrganizationId()}" th:if="${!user.isSuperAdmin()}">
+            <i class="fas fa-building"></i> My Organization
+        </a>
+        
+        <!-- Super Admin Navigation -->
+        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" href="/admin/organizations" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+            <i class="fas fa-building"></i> Organizations
+        </a>
+        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" href="/admin/new-organization" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+            <i class="fas fa-plus-circle"></i> Create Organization
+        </a>
+        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" href="/admin/accounts" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+            <i class="fas fa-users"></i> Accounts
+        </a>
+        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" href="/admin/settings" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+            <i class="fas fa-cog"></i> Application Settings
+        </a>
+        
+        <!-- Common Navigation -->
+        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{/admin/account?id=} + ${user.id}">
+            <i class="fas fa-user"></i> My Account
+        </a>
+        <a class="list-group-item list-group-item-action list-group-item-light p-3 sidebar-slip" th:href="@{/admin/logout}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
     </div>
 </div>
 </body>

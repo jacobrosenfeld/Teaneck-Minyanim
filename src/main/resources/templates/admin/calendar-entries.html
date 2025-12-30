@@ -5,6 +5,11 @@
     <title>Calendar Entries - [[${organization.name}]]</title>
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    
+    <!-- Link to external CSS file for calendar events -->
+    <link rel="stylesheet" th:href="@{/admin/calendar-events.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
     <style>
         /* Modern table styling */
         .table-container {
@@ -435,11 +440,18 @@
                         </div>
                     </div>
 
-                    <!-- Entries Table -->
-                    <div class="card">
+                    <!-- View Toggle -->
+                    <div class="view-toggle-container">
+                        <button id="viewToggleBtn" class="view-toggle-btn" data-view="agenda">
+                            <i class="fas fa-calendar-alt"></i> Calendar View
+                        </button>
+                    </div>
+                    
+                    <!-- Entries Table (Agenda View) -->
+                    <div class="card agenda-view">
                         <div class="card-header">
                             <h5 class="mb-0">
-                                <i class="fas fa-calendar"></i> Entries
+                                <i class="fas fa-list"></i> Agenda View
                                 <small class="text-muted">([[${filteredCount}]] entries)</small>
                             </h5>
                         </div>
@@ -589,6 +601,53 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Calendar View (Initially Hidden) -->
+                    <div class="calendar-view">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-calendar-alt"></i> Calendar View
+                                    <small class="text-muted">([[${filteredCount}]] entries)</small>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Calendar Component -->
+                                <div class="calendar-header">
+                                    <button class="btn btn-sm btn-outline-secondary prev-month-btn">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <h4 class="month-year">January 2025</h4>
+                                    <button class="btn btn-sm btn-outline-secondary next-month-btn">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="calendar-grid">
+                                    <div class="calendar-weekdays">
+                                        <div class="weekday">Sun</div>
+                                        <div class="weekday">Mon</div>
+                                        <div class="weekday">Tue</div>
+                                        <div class="weekday">Wed</div>
+                                        <div class="weekday">Thu</div>
+                                        <div class="weekday">Fri</div>
+                                        <div class="weekday">Sat</div>
+                                    </div>
+                                    
+                                    <div class="calendar-days">
+                                        <!-- Calendar days will be populated dynamically -->
+                                        <!-- For now, showing a simple placeholder -->
+                                        <div class="empty-state">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <h4>Calendar View Coming Soon</h4>
+                                            <p>The calendar view component will display events in a month/week grid format.</p>
+                                            <p>For now, please use the Agenda View above.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 </main>
             </div>
@@ -673,5 +732,9 @@
         });
     });
 </script>
+
+<!-- Include calendar events JavaScript -->
+<script th:src="@{/admin/calendar-events.js}"></script>
+
 </body>
 </html>
