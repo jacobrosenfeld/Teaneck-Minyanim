@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import com.kosherjava.zmanim.util.GeoLocation;
+import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMSettingsService;
 import com.tbdev.teaneckminyanim.service.VersionService;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
 public class ZmanimController {
     private final ZmanimService zmanimService;
     private final TNMSettingsService tnmSettingsDao;
+    private final ApplicationSettingsService applicationSettingsService;
     private final OrganizationService organizationService;
     private final VersionService versionService;
     private final ZmanimHandler zmanimHandler;
@@ -40,10 +42,20 @@ public class ZmanimController {
 
     @ModelAttribute("settings")
     public List<TNMSettings> settings() {
-        // Load and return the settings here
+        // Load and return the notification settings only (Home Page Announcement, Home Page Popup)
         List<TNMSettings> settings = tnmSettingsDao.getAll();
         Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
         return settings;
+    }
+    
+    @ModelAttribute("siteName")
+    public String siteName() {
+        return applicationSettingsService.getSiteName();
+    }
+    
+    @ModelAttribute("appColor")
+    public String appColor() {
+        return applicationSettingsService.getAppColor();
     }
 
     @ModelAttribute("appVersion")

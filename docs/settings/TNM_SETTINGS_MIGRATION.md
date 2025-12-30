@@ -1,20 +1,37 @@
 # TNMSettings to ApplicationSettings Migration Guide
 
 ## Overview
-This guide explains how to migrate duplicate settings from the `SETTINGS` table (TNMSettings) to the new `APPLICATION_SETTINGS` table.
+This guide explains how to migrate duplicate settings from the `SETTINGS` table (TNMSettings) to the new `APPLICATION_SETTINGS` table, and rename the `SETTINGS` table to `NOTIFICATIONS`.
+
+## Database Changes
+
+### Table Rename: SETTINGS → NOTIFICATIONS
+The `SETTINGS` table has been renamed to `NOTIFICATIONS` to better reflect its purpose (storing user-facing notifications like homepage announcements and popups, not configuration settings).
+
+**SQL to rename the table:**
+```sql
+-- Rename the SETTINGS table to NOTIFICATIONS
+RENAME TABLE SETTINGS TO NOTIFICATIONS;
+```
+
+**Important Notes:**
+- The TNMSettings entity in the code now points to the `NOTIFICATIONS` table
+- This change is **required** for the v1.3.0 code to work correctly
+- Perform this rename **before** deploying the new code
+- If using Hibernate auto-update, it will create a new NOTIFICATIONS table if it doesn't find one
 
 ## Settings Migration Plan
 
-### Settings to DELETE from TNMSettings (SETTINGS table)
+### Settings to DELETE from TNMSettings (NOTIFICATIONS table)
 These are now managed by ApplicationSettings:
 
 | TNMSettings ID | Setting Name | New ApplicationSettings Key | Action |
 |----------------|--------------|----------------------------|---------|
-| (ID for "Site location") | Site location (City, State) | `location.name` | DELETE from SETTINGS |
-| (ID for "Latitude") | Latitude | `location.latitude` | DELETE from SETTINGS |
-| (ID for "Longitude") | Longitude | `location.longitude` | DELETE from SETTINGS |
-| (ID for "Elevation") | Elevation | `location.elevation` | DELETE from SETTINGS |
-| (ID for "Time Zone") | Time Zone | `timezone` | DELETE from SETTINGS |
+| (ID for "Site location") | Site location (City, State) | `location.name` | DELETE from NOTIFICATIONS |
+| (ID for "Latitude") | Latitude | `location.latitude` | DELETE from NOTIFICATIONS |
+| (ID for "Longitude") | Longitude | `location.longitude` | DELETE from NOTIFICATIONS |
+| (ID for "Elevation") | Elevation | `location.elevation` | DELETE from NOTIFICATIONS |
+| (ID for "Time Zone") | Time Zone | `timezone` | DELETE from NOTIFICATIONS |
 
 ### New Settings Added to ApplicationSettings
 These settings were in TNMSettings but are now properly typed in ApplicationSettings:
@@ -25,7 +42,7 @@ These settings were in TNMSettings but are now properly typed in ApplicationSett
 | App Color | `site.app.color` | "#275ed8" | Hex color code |
 | Mapbox Access Token | `mapbox.access.token` | "" | API token for maps |
 
-### Settings to KEEP in TNMSettings (SETTINGS table)
+### Settings to KEEP in TNMSettings (NOTIFICATIONS table)
 These are notification-specific and should remain:
 
 | Setting | Purpose | Keep/Delete |
@@ -38,7 +55,7 @@ These are notification-specific and should remain:
 ### Step 1: Migrate existing TNMSettings values to ApplicationSettings
 
 ```sql
--- Migrate Site Name (if it exists in SETTINGS table)
+-- Migrate Site Name (if it exists in NOTIFICATIONS table)
 INSERT INTO APPLICATION_SETTINGS (SETTING_KEY, SETTING_VALUE, SETTING_TYPE, DESCRIPTION, CATEGORY, VERSION)
 SELECT 
     'site.name',
@@ -47,7 +64,7 @@ SELECT
     'Name of the website displayed in the header and browser title',
     'Site Branding & Appearance',
     0
-FROM SETTINGS 
+FROM NOTIFICATIONS 
 WHERE SETTING = 'Site Name'
 ON DUPLICATE KEY UPDATE SETTING_VALUE = VALUES(SETTING_VALUE);
 
@@ -60,7 +77,7 @@ SELECT
     'Primary theme color for the application (hex color code, e.g., #275ed8)',
     'Site Branding & Appearance',
     0
-FROM SETTINGS 
+FROM NOTIFICATIONS 
 WHERE SETTING = 'App Color'
 ON DUPLICATE KEY UPDATE SETTING_VALUE = VALUES(SETTING_VALUE);
 
@@ -73,7 +90,7 @@ SELECT
     'Access token for Mapbox API (required for map features)',
     'External Services',
     0
-FROM SETTINGS 
+FROM NOTIFICATIONS 
 WHERE SETTING = 'Mapbox Access Token'
 ON DUPLICATE KEY UPDATE SETTING_VALUE = VALUES(SETTING_VALUE);
 ```
@@ -84,7 +101,7 @@ ON DUPLICATE KEY UPDATE SETTING_VALUE = VALUES(SETTING_VALUE);
 
 ```sql
 -- Delete duplicate location/coordinate settings
-DELETE FROM SETTINGS WHERE SETTING IN (
+DELETE FROM NOTIFICATIONS WHERE SETTING IN (
     'Site location (City, State)',
     'Latitude',
     'Longitude',
@@ -93,7 +110,7 @@ DELETE FROM SETTINGS WHERE SETTING IN (
 );
 
 -- Optionally delete the newly migrated settings if you want them ONLY in ApplicationSettings
-DELETE FROM SETTINGS WHERE SETTING IN (
+DELETE FROM NOTIFICATIONS WHERE SETTING IN (
     'Site Name',
     'App Color',
     'Mapbox Access Token'
@@ -110,7 +127,7 @@ DELETE FROM SETTINGS WHERE SETTING IN (
 
 2. Verify current values in TNMSettings:
    ```sql
-   SELECT ID, SETTING, TEXT FROM SETTINGS 
+   SELECT ID, SETTING, TEXT FROM NOTIFICATIONS 
    WHERE SETTING IN (
        'Site Name', 'App Color', 'Site location (City, State)',
        'Latitude', 'Longitude', 'Elevation', 'Time Zone', 
@@ -140,7 +157,7 @@ DELETE FROM SETTINGS WHERE SETTING IN (
 1. **ONLY after verifying the application works correctly**, run the delete SQL from Step 2
 2. Verify TNMSettings only contains notification-related settings:
    ```sql
-   SELECT ID, SETTING FROM SETTINGS;
+   SELECT ID, SETTING FROM NOTIFICATIONS;
    ```
    Should only show: Home Page Announcement, Home Page Popup
 
@@ -185,7 +202,7 @@ You can optionally also delete these (as they're now in ApplicationSettings):
 
 ## Settings to Keep in TNMSettings
 
-**KEEP** these in the SETTINGS table (they use notification-specific features like expiration dates and max displays):
+**KEEP** these in the NOTIFICATIONS table (they use notification-specific features like expiration dates and max displays):
 
 1. **Home Page Announcement** - Notification with enabled/disabled, expiration, max displays
 2. **Home Page Popup** - Notification with enabled/disabled, expiration, max displays
