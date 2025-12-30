@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Allow negative elevation values (down to -500m) in application settings validation to support below-sea-level locations.
 - Replaced hardcoded "Teaneck Minyanim" labels in public and admin templates with the configurable `site.name` setting and neutral fallbacks to keep branding consistent with application settings.
 
 ## [1.3.0] - 2024-12-29

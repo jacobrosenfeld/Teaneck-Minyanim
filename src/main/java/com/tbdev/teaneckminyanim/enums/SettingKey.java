@@ -102,7 +102,7 @@ public enum SettingKey {
             case LOCATION_LONGITUDE:
                 return "Longitude coordinate for Zmanim calculations (-180 to 180)";
             case LOCATION_ELEVATION:
-                return "Elevation in meters above sea level (0 to 9000)";
+                return "Elevation in meters above sea level (-500 to 9000)";
             case TIMEZONE:
                 return "Timezone for all date/time calculations (e.g., America/New_York)";
             case MAPBOX_ACCESS_TOKEN:

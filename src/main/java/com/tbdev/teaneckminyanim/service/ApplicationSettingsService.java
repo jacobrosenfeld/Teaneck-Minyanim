@@ -297,8 +297,8 @@ public class ApplicationSettingsService {
     private void validateElevation(String value) throws ValidationException {
         try {
             double elev = Double.parseDouble(value);
-            if (elev < 0 || elev > 9000) {
-                throw new ValidationException("Elevation must be between 0 and 9000 meters");
+            if (elev < -1500 || elev > 9000) {
+                throw new ValidationException("Elevation must be between -1500 and 9000 meters");
             }
         } catch (NumberFormatException e) {
             throw new ValidationException("Elevation must be a valid number");
