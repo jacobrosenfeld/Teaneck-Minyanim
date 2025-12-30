@@ -10,34 +10,162 @@
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-T2P4J8V');</script>
     <!-- End Google Tag Manager -->
+    <style>
+        .admin-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--navbar-height, 3.5rem);
+            background-color: var(--bg-navbar, #275ed8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--space-6, 1.5rem);
+            z-index: var(--z-fixed, 1030);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3, 0.75rem);
+            color: var(--text-inverse, #ffffff);
+            font-size: var(--font-size-lg, 1.125rem);
+            font-weight: var(--font-weight-semibold, 600);
+            text-decoration: none;
+            margin-right: var(--space-6, 1.5rem);
+        }
+        
+        .admin-navbar-brand:hover {
+            color: var(--text-inverse, #ffffff);
+            text-decoration: none;
+        }
+        
+        .admin-navbar-logo {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .admin-navbar-toggle {
+            display: none;
+            padding: var(--space-2, 0.5rem);
+            background: transparent;
+            border: none;
+            color: var(--text-inverse, #ffffff);
+            cursor: pointer;
+            margin-right: var(--space-3, 0.75rem);
+        }
+        
+        .admin-navbar-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md, 0.375rem);
+        }
+        
+        .admin-navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2, 0.5rem);
+            flex: 1;
+        }
+        
+        .admin-navbar-link {
+            padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: var(--font-size-sm, 0.875rem);
+            text-decoration: none;
+            border-radius: var(--radius-md, 0.375rem);
+            transition: all var(--transition-fast, 150ms ease);
+        }
+        
+        .admin-navbar-link:hover {
+            color: var(--text-inverse, #ffffff);
+            background-color: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+        }
+        
+        .admin-navbar-link.active {
+            color: var(--text-inverse, #ffffff);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .admin-navbar-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4, 1rem);
+            margin-left: auto;
+        }
+        
+        .admin-navbar-time {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: var(--font-size-xs, 0.75rem);
+            font-weight: var(--font-weight-medium, 500);
+            font-family: var(--font-mono, monospace);
+        }
+        
+        .admin-navbar-org {
+            padding: var(--space-2, 0.5rem) var(--space-4, 1rem);
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-full, 9999px);
+            color: var(--text-inverse, #ffffff);
+            font-size: var(--font-size-sm, 0.875rem);
+            font-weight: var(--font-weight-medium, 500);
+        }
+        
+        @media (max-width: 768px) {
+            .admin-navbar-toggle {
+                display: block;
+            }
+            
+            .admin-navbar-menu {
+                display: none;
+            }
+            
+            .admin-navbar-time {
+                display: none;
+            }
+            
+            .admin-navbar {
+                padding: 0 var(--space-4, 1rem);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .admin-navbar-org {
+                font-size: var(--font-size-xs, 0.75rem);
+                padding: var(--space-1, 0.25rem) var(--space-3, 0.75rem);
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T2P4J8V"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-<nav class="navbar fixed-top navbar-expand-md navbar-dark bg-primary mb-3">
-    <div class="flex-row d-flex">
-        <button type="button" class="navbar-toggler mr-2" title="Toggle sidebar" id="sidebar-toggler">
-            <span class="navbar-toggler-icon"></span>
+    
+    <nav class="admin-navbar">
+        <button type="button" class="admin-navbar-toggle" id="sidebar-toggler" aria-label="Toggle sidebar">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 4h14M3 10h14M3 16h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
         </button>
-        <img href="/admin/dashboard" src="/assets/icons/favicon.svg" height="40" alt="TM Logo">
-        <a class="navbar-brand" href="/admin/dashboard" th:text="${siteName} ?: 'Minyan Manager'">Minyan Manager</a>
-
-    </div>
-    <div class="navbar-collapse collapse" id="collapsingNavbar">
-        <ul class="navbar-nav">
-            <li class="nav-item active">
-                <a class="nav-link" href="/admin/dashboard">Admin Panel <span class="sr-only">Admin Panel</span></a>
-            </li>
-            <li class="nav-item ">
-                <a class="nav-link" th:if="${not #strings.isEmpty(organization)}" th:text="${organization.name}"><span class="sr-only" th:if="${not #strings.isEmpty(organization)}"th:text="${organization.name}"></span></a>
-            </li>
-        </ul>
-        <ul class="navbar-nav ml-auto">
-            <span class="navbar-text time-shower" th:text="${date}"></span>
-        </ul>
-    </div>
-</nav>
+        
+        <a class="admin-navbar-brand" href="/admin/dashboard">
+            <img src="/assets/icons/favicon.svg" class="admin-navbar-logo" alt="Logo">
+            <span th:text="${siteName} ?: 'Minyan Manager'">Minyan Manager</span>
+        </a>
+        
+        <div class="admin-navbar-menu">
+            <a class="admin-navbar-link active" href="/admin/dashboard">Admin Panel</a>
+        </div>
+        
+        <div class="admin-navbar-right">
+            <span class="admin-navbar-time" th:text="${date}">Loading...</span>
+            <div class="admin-navbar-org" th:if="${not #strings.isEmpty(organization)}" th:text="${organization.name}">
+                Organization
+            </div>
+        </div>
+    </nav>
 </body>
 </html>
