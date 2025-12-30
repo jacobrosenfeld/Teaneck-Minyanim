@@ -25,7 +25,6 @@ public class MinyanTime {
             time = new Time(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
         } else if (rawTime.startsWith("R")) { //Example RSHEKIYA:10 - this is Dynamic, for shekiya zman, with offset of 10
             String[] parts = rawTime.substring(1).split(":"); 
-//          TODO: VERIFY THIS WORKS WITH NEGATIVE OFFSETS
 //          TODO: FIX valueOf
             if (parts.length == 2) {
                 rule = new TimeRule(Zman.fromString(parts[0]), Integer.parseInt(parts[1]));

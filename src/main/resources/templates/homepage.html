@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Teaneck Minyanim</title>
+    <title th:text="${siteName} ?: 'Minyanim Platform'"></title>
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
@@ -35,18 +35,19 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6026762329140546"
      crossorigin="anonymous"></script>
   </head>
-  <body>
+  <body th:with="displaySiteName=${siteName} ?: 'Minyanim Platform'">
       <!-- Navbar Section -->
       <div class="horizontal-container d-flex container-xl" id="wrapper">
         <th:block th:include="frontnavbar"></th:block>
         <!-- Navbar End -->
         <div class="container-fluid home-container" id="main">
               <main class="col main pt-5 mt-4 overflow-auto">
-                <div class="jumbotron alert alert-secondary text-center" th:if="${settings.?[setting == 'Home Page Announcement'].![enabled].get(0) == 'Enabled'}">
-                  <h5 class="mb-1" th:text="${settings.?[setting == 'Home Page Announcement'].![text].get(0)}" />
+                <!-- Banner Notifications -->
+                <div th:each="banner : ${bannerNotifications}" class="jumbotron alert alert-secondary text-center" th:if="${banner.enabled}">
+                  <h5 class="mb-1" th:text="${banner.message}" />
                 </div>
                 <!-- <div class="jumbotron alert alert-secondary text-center">
-                  <h5 class="mb-1">Welcome to Teaneck Minyanim. You can find minyanim for today on the home page and navigate to other days using the arrows below. Please note the times are formulaic and may not be precise. We are working on improving the system. </h5>
+                  <h5 class="mb-1" th:text="@{|Welcome to ${displaySiteName}. You can find minyanim for today on the home page and navigate to other days using the arrows below. Please note the times are formulaic and may not be precise. We are working on improving the system.|}"></h5>
                   <h4>If you would like to volunteer please contact us at info@teaneckminyanim.com.</h4>
                 </div> -->
                 <!-- Date Nav Buttons -->
@@ -164,6 +165,7 @@
                             </div>
                             <div class="col-lg-4" id="zmanim-box">
                               <div class="card-text">
+                                <!-- @TODO: update for settings... -->
                                 <h3>Zmanim for Teaneck, NJ</h3>
                               </div>
                               <div class="col">
@@ -314,7 +316,7 @@
              <div class="row text-center">
                <div class="col-sm-12">
                  <div class="intro">
-                   <h2>About Teaneck Zmanim</h2>
+                   <h2 th:text="@{|About ${displaySiteName}|}"></h2>
                  </div>
                </div>
                <div class="col-sm-4">
@@ -343,7 +345,7 @@
                </div>
                <div class="col-md-12">
                  <div class="yd-link">
-                   <a href="#info">Learn More About Teaneck Minyanim</a>
+                   <a href="#info" th:text="@{|Learn More About ${displaySiteName}|}"></a>
                  </div>
                </div>
 
@@ -358,7 +360,7 @@
             <div class="cta-content">
               <h1>Bug? Question? Comment?</h1><h5><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h5>
               <hr>
-              <h3>Subscribe now to stay up to date on Teaneck Minyanim updates and news!</h3>
+              <h3 th:text="@{|Subscribe now to stay up to date on ${displaySiteName} updates and news!|}"></h3>
                <div class="form wow fadeIn" data-wow-delay="0.2s">
                 <form id="chimp-form" class="subscribe-form wow zoomIn" action="https://sendy.josephjacobs.org/subscribe" method="POST" accept-charset="utf-8">
                   <input type="text" name="name" id="name" placeholder="Enter your name"/>
@@ -393,7 +395,7 @@
                 <a class="footer-logo" href="https://teaneckminyanim.com">TB Dev</a>
               </div>
               <div class="col-md-4">
-                <h6>&copy; TB Dev and Teaneck Minyanim</h6>
+                <h6 th:text="@{|© TB Dev and ${displaySiteName}|}"></h6>
               </div>
               <div class="col-md-4 text-end">
                 <h6><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h6>
@@ -429,23 +431,23 @@
       <script th:inline="javascript">
         /*<![CDATA[*/
         (function() {
-            // Use Thymeleaf's JavaScript inline mode which automatically escapes values
-            // Safe navigation with null checks for Home Page Popup setting
-            var popupSettings = /*[[${settings.?[setting == 'Home Page Popup']}]]*/ [];
-            var homePagePopup = popupSettings.length > 0 ? popupSettings[0] : null;
+            // Load all popup notifications and pass to notification-popup.js
+            var popupNotifications = /*[[${popupNotifications}]]*/ [];
             
-            if (homePagePopup && homePagePopup.enabled === 'Enabled') {
-                window.notificationData = {
-                    enabled: true,
-                    id: homePagePopup.id || '',
-                    title: 'Announcement',
-                    message: homePagePopup.text || '',
-                    maxDisplays: homePagePopup.maxDisplays || null,
-                    expirationDate: homePagePopup.expirationDate || null,
-                    version: homePagePopup.version || 0
-                };
+            if (popupNotifications && popupNotifications.length > 0) {
+                // Convert to format expected by notification-popup.js
+                window.notificationData = popupNotifications.map(function(popup) {
+                    return {
+                        enabled: popup.enabled,
+                        id: popup.id || '',
+                        title: popup.title || 'Announcement',
+                        message: popup.message || '',
+                        maxDisplays: popup.maxDisplays || null,
+                        expirationDate: popup.expirationDate || null
+                    };
+                });
             } else {
-                window.notificationData = { enabled: false };
+                window.notificationData = [];
             }
         })();
         /*]]>*/

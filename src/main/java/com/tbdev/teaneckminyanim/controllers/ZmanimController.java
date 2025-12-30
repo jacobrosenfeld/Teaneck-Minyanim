@@ -4,9 +4,12 @@ import java.time.LocalDate;
 import java.util.*;
 
 import com.kosherjava.zmanim.util.GeoLocation;
+import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
+import com.tbdev.teaneckminyanim.service.NotificationService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMSettingsService;
 import com.tbdev.teaneckminyanim.service.VersionService;
+import com.tbdev.teaneckminyanim.model.Notification;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.TNMSettings;
 import com.tbdev.teaneckminyanim.service.ZmanimHandler;
@@ -22,18 +25,11 @@ import org.springframework.web.servlet.ModelAndView;
 public class ZmanimController {
     private final ZmanimService zmanimService;
     private final TNMSettingsService tnmSettingsDao;
+    private final NotificationService notificationService;
+    private final ApplicationSettingsService applicationSettingsService;
     private final OrganizationService organizationService;
     private final VersionService versionService;
-
-    TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
-
-    String locationName = "Teaneck, NJ";
-    double latitude = 40.906871;
-    double longitude = -74.020924;
-    double elevation = 24;
-    GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
-
-    ZmanimHandler zmanimHandler = new ZmanimHandler(geoLocation);
+    private final ZmanimHandler zmanimHandler;
 
     @GetMapping("/")
     public ModelAndView home() {
@@ -49,10 +45,30 @@ public class ZmanimController {
 
     @ModelAttribute("settings")
     public List<TNMSettings> settings() {
-        // Load and return the settings here
+        // Legacy support - Load and return the old notification settings
         List<TNMSettings> settings = tnmSettingsDao.getAll();
         Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
         return settings;
+    }
+    
+    @ModelAttribute("bannerNotifications")
+    public List<Notification> bannerNotifications() {
+        return notificationService.getActiveBanners();
+    }
+    
+    @ModelAttribute("popupNotifications")
+    public List<Notification> popupNotifications() {
+        return notificationService.getActivePopups();
+    }
+    
+    @ModelAttribute("siteName")
+    public String siteName() {
+        return applicationSettingsService.getSiteName();
+    }
+    
+    @ModelAttribute("appColor")
+    public String appColor() {
+        return applicationSettingsService.getAppColor();
     }
 
     @ModelAttribute("appVersion")

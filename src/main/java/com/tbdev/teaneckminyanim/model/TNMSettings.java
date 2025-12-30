@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "SETTINGS")
+@Table(name = "NOTIFICATIONS")
 public class TNMSettings {
 
     @Id

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+<head th:with="displaySiteName=${siteName} ?: 'Minyanim Platform'">
   <meta charset="utf-8">
-  <title th:text="@{|${org.getName()} - Teaneck Minyanim|}"></title>
+  <title th:text="@{|${org.getName()} - ${displaySiteName}|}"></title>
   <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
   <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
@@ -31,7 +31,7 @@
     var address = /*[[${org.getAddress()}]]*/ "";
     var shulname = /*[[${org.getName()}]]*/ "";
     var shulcolor = /*[[${org.getOrgColor()}]]*/ "";
-    var mapboxaccesstoken = /*[[${settings.?[setting == 'Mapbox Access Token'].![text].get(0)}]]*/ "";
+    var mapboxaccesstoken = /*[[${mapboxAccessToken}]]*/ "";
     /*]]>*/
   </script>
   <script th:if="${upcoming != null}" th:inline="javascript">
@@ -271,7 +271,7 @@
           <h1>Bug? Question? Comment?</h1>
           <h5><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h5>
           <hr>
-          <h3>Subscribe now to stay up to date on Teaneck Minyanim updates and news!</h3>
+          <h3 th:text="@{|Subscribe now to stay up to date on ${displaySiteName} updates and news!|}"></h3>
           <div class="form wow fadeIn" data-wow-delay="0.2s">
             <form id="chimp-form" class="subscribe-form wow zoomIn" action="https://sendy.josephjacobs.org/subscribe"
               method="POST" accept-charset="utf-8">
@@ -302,7 +302,7 @@
             <a class="footer-logo" href="https://teaneckminyanim.com">TB Dev</a>
           </div>
           <div class="col-md-4">
-            <h6>&copy; TB Dev and Teaneck Minyanim</h6>
+            <h6 th:text="@{|© TB Dev and ${displaySiteName}|}"></h6>
           </div>
           <div class="col-md-4 text-end">
             <h6><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h6>

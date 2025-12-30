@@ -29,7 +29,7 @@ public class CalendarImportProvider implements OrgScheduleProvider {
 
     private final OrganizationCalendarEntryRepository entryRepository;
     private final OrganizationService organizationService;
-    private static final ZoneId ZONE_ID = ZoneId.of("America/New_York");
+    private final com.tbdev.teaneckminyanim.service.ApplicationSettingsService settingsService;
 
     @Override
     public List<MinyanEvent> getEventsForDate(String organizationId, LocalDate date) {
@@ -104,13 +104,16 @@ public class CalendarImportProvider implements OrgScheduleProvider {
         // Determine MinyanType from entry title/type/classification
         MinyanType minyanType = inferMinyanType(entry);
 
+        // Get ZoneId from settings
+        ZoneId zoneId = settingsService.getZoneId();
+
         // Convert LocalDateTime to Date
         Date startTime = null;
         if (entry.getStartDatetime() != null) {
-            startTime = Date.from(entry.getStartDatetime().atZone(ZONE_ID).toInstant());
+            startTime = Date.from(entry.getStartDatetime().atZone(zoneId).toInstant());
         } else if (entry.getStartTime() != null && entry.getDate() != null) {
             startTime = Date.from(
-                    entry.getDate().atTime(entry.getStartTime()).atZone(ZONE_ID).toInstant());
+                    entry.getDate().atTime(entry.getStartTime()).atZone(zoneId).toInstant());
         }
 
         if (startTime == null) {

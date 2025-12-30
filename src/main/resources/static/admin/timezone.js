@@ -1,15 +1,124 @@
+// Fuzzy, regex-friendly matcher for Select2 timezone search
+function buildRegex(term) {
+    const escaped = term.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const flexible = escaped.replace(/\s+/g, '.*');
+    return new RegExp(flexible, 'i');
+}
+
+// Synonym map for common aliases (e.g., Jerusalem → Israel)
+const TIMEZONE_SYNONYMS = {
+    jerusalem: ['israel'],
+    tel_aviv: ['israel'],
+    telaviv: ['israel'],
+    telaviv_yafo: ['israel'],
+    new_york: ['ny', 'newyork', 'new york'],
+    los_angeles: ['la', 'losangeles', 'los angeles'],
+    chicago: ['chi', 'illinois', 'il'],
+    denver: ['mountain', 'colorado', 'co'],
+    phoenix: ['arizona', 'az'],
+    dallas: ['texas', 'tx', 'dfw'],
+    houston: ['texas', 'tx'],
+    miami: ['florida', 'fl'],
+    toronto: ['canada', 'ca', 'ontario', 'on'],
+    vancouver: ['canada', 'ca', 'bc', 'british columbia'],
+    mexico_city: ['mexico', 'cdmx'],
+    sao_paulo: ['brazil', 'br'],
+    buenos_aires: ['argentina'],
+    santiago: ['chile'],
+    lima: ['peru'],
+    bogota: ['colombia'],
+    london: ['uk', 'united kingdom', 'england', 'gb', 'great britain'],
+    paris: ['france', 'fra'],
+    berlin: ['germany', 'deutschland', 'deu'],
+    madrid: ['spain', 'es'],
+    lisbon: ['portugal', 'pt'],
+    rome: ['italy', 'ita'],
+    athens: ['greece', 'gr'],
+    istanbul: ['turkey', 'tuerkiye', 'turkiye', 'tr'],
+    cairo: ['egypt'],
+    johannesburg: ['south africa', 'za'],
+    nairobi: ['kenya'],
+    dubai: ['uae', 'united arab emirates'],
+    riyadh: ['saudi', 'saudi arabia', 'ksa'],
+    moscow: ['russia', 'ru'],
+    kyiv: ['ukraine', 'ua', 'kiev'],
+    tehran: ['iran'],
+    karachi: ['pakistan', 'pk'],
+    delhi: ['india', 'in', 'new delhi'],
+    mumbai: ['india', 'in', 'bombay'],
+    kolkata: ['india', 'in', 'calcutta'],
+    hong_kong: ['hk', 'hongkong', 'hong kong'],
+    shanghai: ['china', 'cn'],
+    beijing: ['china', 'cn', 'peking'],
+    singapore: ['sg', 'sin', 'sing', 'singapore'],
+    tokyo: ['japan', 'jp'],
+    seoul: ['korea', 'south korea', 'kr'],
+    manila: ['philippines', 'ph'],
+    bangkok: ['thailand', 'th'],
+    hanoi: ['vietnam', 'vn'],
+    jakarta: ['indonesia', 'id'],
+    sydney: ['australia', 'au', 'nsw'],
+    melbourne: ['australia', 'au'],
+    brisbane: ['australia', 'au', 'queensland', 'qld'],
+    perth: ['australia', 'au', 'wa'],
+    auckland: ['new zealand', 'nz'],
+    honolulu: ['hawaii', 'hi', 'hon']
+};
+
+function buildSearchText(timezone) {
+    const parts = timezone.split(/[\/_]/).map(p => p.toLowerCase());
+    const extras = [];
+    parts.forEach(p => {
+        if (TIMEZONE_SYNONYMS[p]) {
+            extras.push(...TIMEZONE_SYNONYMS[p]);
+        }
+    });
+    return parts.concat(extras).join(' ');
+}
+
+function customMatcher(params, data) {
+    if ($.trim(params.term) === '') {
+        return data;
+    }
+
+    if (typeof data.text === 'undefined') {
+        return null;
+    }
+
+    const regex = buildRegex(params.term);
+    const searchField = (data.element && data.element.dataset.search)
+        ? data.element.dataset.search
+        : data.text.toLowerCase().replace(/[\/_]/g, ' ');
+
+    if (regex.test(data.text) || regex.test(searchField)) {
+        return data;
+    }
+
+    if (data.children && data.children.length) {
+        const match = $.extend(true, {}, data);
+        match.children = [];
+
+        for (let i = 0; i < data.children.length; i++) {
+            const child = customMatcher(params, data.children[i]);
+            if (child) {
+                match.children.push(child);
+            }
+        }
+
+        if (match.children.length) {
+            return match;
+        }
+    }
+
+    return null;
+}
+
 // Function to populate the timezone input with Select2 dropdown
 function populateTimezones() {
-    // Target the timezone inputs
     const timezoneInputs = $('input[type="timezone"]');
-    
-    // Get all timezones using moment-timezone
     const timezones = moment.tz.names();
-    
-    // Object to store timezones grouped by region
     const timezonesByRegion = {};
-    
-    // Group timezones by region
+
     timezones.forEach(timezone => {
         const region = timezone.split('/')[0];
         if (!timezonesByRegion[region]) {
@@ -17,51 +126,179 @@ function populateTimezones() {
         }
         timezonesByRegion[region].push(timezone);
     });
-    
-    // Initialize Select2 for each timezone input
+
     timezoneInputs.each(function() {
         const inputElement = $(this);
         const inputName = inputElement.attr('name');
-        
-        // Create a select element to replace the input element
+        const currentValue = inputElement.val();
+
         const selectElement = $('<select></select>').attr('name', inputName + '_select');
         inputElement.after(selectElement).hide();
-        
-        // Clear existing options
         selectElement.empty();
-        
-        // Iterate over regions
+
         for (const region in timezonesByRegion) {
-            // Create optgroup for the region
             const optgroup = $('<optgroup label="' + region + '"></optgroup>');
-            // Append timezones for the region
             timezonesByRegion[region].forEach(timezone => {
-                optgroup.append($('<option></option>').attr('value', timezone).text(timezone));
+                optgroup.append(
+                    $('<option></option>')
+                        .attr('value', timezone)
+                        .attr('data-search', buildSearchText(timezone))
+                        .text(timezone)
+                );
             });
-            // Append optgroup to select element
             selectElement.append(optgroup);
         }
-        
-        // Enable searching within the dropdown and set dropdownParent to the modal element
+
         selectElement.select2({
             placeholder: 'Select a timezone',
             debug: true,
             dropdownCssClass: 'select2-dropdown--below',
             width: '100%',
             search: true,
-            dropdownParent: selectElement.closest('.modal') // Assuming the select element is within a modal
+            matcher: customMatcher,
+            dropdownParent: selectElement.closest('.modal')
         });
 
-        // Listen for change event and update the corresponding input field
+        if (currentValue) {
+            selectElement.val(currentValue).trigger('change.select2');
+            inputElement.val(currentValue);
+        }
+
         selectElement.on('change', function() {
             const selectedValue = $(this).val();
-            inputElement.val(selectedValue).trigger('change'); // Trigger change event for input field if needed
+            inputElement.val(selectedValue).trigger('change');
         });
     });
 }
 
-// Call the function to populate the timezone input with Select2 when the page loads
 $(document).ready(function() {
-    console.log('DOMContentLoaded event triggered.');
     populateTimezones();
 });
+
+// Initialize timezone autocomplete for settings modal using custom dropdown
+function initializeTimezoneSelect2() {
+    const settingValueInput = document.getElementById('modalSettingValue');
+    const timezoneDropdown = document.getElementById('timezoneDropdown');
+    
+    if (!settingValueInput || !timezoneDropdown) return;
+
+    const timezones = moment.tz.names();
+    let filteredTimezones = [];
+    let selectedIndex = -1;
+
+    function renderDropdown(searchTerm = '') {
+        timezoneDropdown.innerHTML = '';
+        selectedIndex = -1;
+        
+        if (searchTerm.trim() === '') {
+            filteredTimezones = timezones.slice(0, 50); // Show first 50 if no search
+        } else {
+            const regex = buildRegex(searchTerm);
+            filteredTimezones = timezones.filter(tz => {
+                const search = buildSearchText(tz).toLowerCase();
+                return regex.test(tz) || regex.test(search);
+            }).slice(0, 100); // Limit to 100 results
+        }
+        
+        if (filteredTimezones.length === 0) {
+            const noResult = document.createElement('div');
+            noResult.className = 'timezone-option';
+            noResult.textContent = 'No timezones found';
+            noResult.style.color = '#999';
+            noResult.style.cursor = 'default';
+            timezoneDropdown.appendChild(noResult);
+            return;
+        }
+        
+        filteredTimezones.forEach((tz, index) => {
+            const option = document.createElement('div');
+            option.className = 'timezone-option';
+            option.textContent = tz;
+            option.dataset.index = index;
+            option.dataset.value = tz;
+            
+            option.addEventListener('click', function() {
+                settingValueInput.value = tz;
+                timezoneDropdown.style.display = 'none';
+            });
+            
+            option.addEventListener('mouseover', function() {
+                selectedIndex = index;
+                updateSelection();
+            });
+            
+            timezoneDropdown.appendChild(option);
+        });
+    }
+
+    function updateSelection() {
+        document.querySelectorAll('.timezone-option').forEach((opt, i) => {
+            opt.classList.toggle('selected', i === selectedIndex);
+        });
+        
+        if (selectedIndex >= 0 && selectedIndex < filteredTimezones.length) {
+            const selected = document.querySelector(`[data-index="${selectedIndex}"]`);
+            if (selected) {
+                selected.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }
+
+    // Handle input changes
+    settingValueInput.addEventListener('input', function() {
+        const searchTerm = this.value;
+        renderDropdown(searchTerm);
+        timezoneDropdown.style.display = filteredTimezones.length > 0 ? 'block' : 'none';
+    });
+
+    // Handle focus
+    settingValueInput.addEventListener('focus', function() {
+        if (this.value.trim() === '') {
+            renderDropdown();
+            timezoneDropdown.style.display = 'block';
+        }
+    });
+
+    // Handle keyboard navigation
+    settingValueInput.addEventListener('keydown', function(e) {
+        if (!timezoneDropdown.style.display || timezoneDropdown.style.display === 'none') {
+            if (e.key === 'ArrowDown') {
+                renderDropdown(this.value);
+                timezoneDropdown.style.display = 'block';
+                selectedIndex = 0;
+                updateSelection();
+            }
+            return;
+        }
+        
+        switch(e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, filteredTimezones.length - 1);
+                updateSelection();
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelection();
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (selectedIndex >= 0 && selectedIndex < filteredTimezones.length) {
+                    settingValueInput.value = filteredTimezones[selectedIndex];
+                    timezoneDropdown.style.display = 'none';
+                }
+                break;
+            case 'Escape':
+                timezoneDropdown.style.display = 'none';
+                break;
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target !== settingValueInput && !timezoneDropdown.contains(e.target)) {
+            timezoneDropdown.style.display = 'none';
+        }
+    });
+}

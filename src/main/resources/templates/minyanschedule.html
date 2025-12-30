@@ -44,7 +44,7 @@
                             <i class="fa fa-print"></i> Printable Format
                         </a>
                     </div>
-                    <p class="lead d-none d-sm-block">Manage and add new minyanim for [(${organization.name})] on the Teaneck Minyanim platform.</p>
+                    <p class="lead d-none d-sm-block" th:text="@{|Manage and add new minyanim for ${organization.name} on the ${siteName} ?: 'Minyan Manager' platform.|}">Manage and add new minyanim for [(${organization.name})] on the Minyan Manager platform.</p>
 
                     <hr>
 

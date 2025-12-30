@@ -51,8 +51,15 @@ public class AdminController {
     @Autowired
     private VersionService versionService;
 
+    @Autowired
+    private ApplicationSettingsService settingsService;
+
+    @ModelAttribute("siteName")
+    public String siteName() {
+        return settingsService.getSiteName();
+    }
+
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | hh:mm aa");
-    TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
 
     private boolean isAdmin() {
         return SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority(ADMIN.getName()));
@@ -84,7 +91,7 @@ public class AdminController {
         mv.addObject("user", getCurrentUser());
 
         Date today = new Date();
-        dateFormat.setTimeZone(timeZone);
+        dateFormat.setTimeZone(settingsService.getTimeZone());
         mv.getModel().put("date", dateFormat.format(today));
         mv.getModel().put("appVersion", versionService.getVersion());
     }
@@ -194,10 +201,11 @@ public class AdminController {
 
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/settings");
-
-        List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
-        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
-        mv.addObject("settings", settings);
+        
+        // Get application settings grouped by category
+        Map<String, List<com.tbdev.teaneckminyanim.model.ApplicationSettings>> applicationSettingsByCategory = 
+                this.settingsService.getSettingsByCategory();
+        mv.addObject("applicationSettingsByCategory", applicationSettingsByCategory);
 
         addStandardPageData(mv);
 
@@ -333,7 +341,6 @@ public class AdminController {
                 return addOrganization(true, null, null);
             } else {
                 System.out.println("Account creation failed. Deleting organization from database...");
-//                TODO: REMOVE ORGANIZATION FROM DATABASE
                 if (this.organizationService.delete(organization)) {
                     System.out.println("Organization deleted successfully.");
                 } else {
@@ -1007,6 +1014,33 @@ public class AdminController {
             return new ModelAndView(redirectView);
         } else {
             return settings(null, "Sorry, an error occurred. The setting could not be updated.");
+        }
+    }
+    
+    @RequestMapping(value = "/admin/settings/update-application-setting", method = RequestMethod.POST)
+    public ModelAndView updateApplicationSetting(
+            @RequestParam("settingKey") String settingKey,
+            @RequestParam("settingValue") String settingValue) {
+        
+        if (!isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to perform this action");
+        }
+
+        try {
+            // Update the setting
+            settingsService.updateSettingByKey(settingKey, settingValue);
+            
+            log.info("Application setting updated: {} = {} by user {}", 
+                    settingKey, settingValue, getCurrentUser().getUsername());
+            
+            return settings("Application setting updated successfully!", null);
+            
+        } catch (com.tbdev.teaneckminyanim.service.ApplicationSettingsService.ValidationException e) {
+            log.warn("Validation error updating setting {}: {}", settingKey, e.getMessage());
+            return settings(null, "Validation error: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Error updating setting {}: {}", settingKey, e.getMessage(), e);
+            return settings(null, "Error updating setting: " + e.getMessage());
         }
     }
 

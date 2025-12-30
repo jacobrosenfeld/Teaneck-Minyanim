@@ -7,6 +7,7 @@ import com.kosherjava.zmanim.hebrewcalendar.JewishDate;
 import com.kosherjava.zmanim.util.GeoLocation;
 import com.tbdev.teaneckminyanim.enums.Zman;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -21,20 +22,46 @@ import java.util.TimeZone;
 @Slf4j
 @Service
 public class ZmanimHandler {
-    private final GeoLocation geoLocation;
+    private final ApplicationSettingsService settingsService;
+    private GeoLocation geoLocation;
 
+    @Autowired
+    public ZmanimHandler(ApplicationSettingsService settingsService) {
+        this.settingsService = settingsService;
+        this.geoLocation = null; // Will be lazily initialized
+    }
+
+    /**
+     * No-arg constructor for direct instantiation (fallback to defaults).
+     * Used by TimeRule and other legacy code paths.
+     */
+    public ZmanimHandler() {
+        this.settingsService = null;
+        this.geoLocation = null; // Will use fallback defaults
+    }
+
+    /**
+     * Constructor for testing with explicit GeoLocation.
+     */
     public ZmanimHandler(GeoLocation geoLocation) {
+        this.settingsService = null;
         this.geoLocation = geoLocation;
     }
 
-    public ZmanimHandler() {
-        TimeZone timeZone = TimeZone.getTimeZone("America/New_York");
-        String locationName = "Teaneck, NJ";
-        double latitude = 40.906871;
-        double longitude = -74.020924;
-        double elevation = 24;
-        GeoLocation geoLocation = new GeoLocation(locationName, latitude, longitude, elevation, timeZone);
-        this.geoLocation = geoLocation;
+    /**
+     * Get GeoLocation from settings (lazy initialization).
+     */
+    private GeoLocation getGeoLocation() {
+        if (geoLocation == null) {
+            if (settingsService != null) {
+                geoLocation = settingsService.getGeoLocation();
+            } else {
+                // Fallback for tests or when settings service is not available
+                TimeZone timeZone = TimeZone.getTimeZone("Asia/Jerusalem");
+                geoLocation = new GeoLocation("Jerusalem, Israel", 31.7683, 35.2137, 24, timeZone);
+            }
+        }
+        return geoLocation;
     }
 
     public Dictionary<Zman, Date> getZmanimForNow() {
@@ -44,7 +71,7 @@ public class ZmanimHandler {
     public Dictionary<Zman, Date> getZmanim(LocalDate date) {
         Dictionary<Zman, Date> dictionary = new Hashtable();
 
-        ComplexZmanimCalendar complexZmanimCalendar = new ComplexZmanimCalendar(geoLocation);
+        ComplexZmanimCalendar complexZmanimCalendar = new ComplexZmanimCalendar(getGeoLocation());
         complexZmanimCalendar.getCalendar().set(date.getYear(), date.getMonth().getValue() - 1, date.getDayOfMonth());
 
         dictionary.put(Zman.ALOS_HASHACHAR, complexZmanimCalendar.getAlosHashachar());

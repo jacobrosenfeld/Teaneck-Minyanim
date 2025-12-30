@@ -1,11 +1,13 @@
 package com.tbdev.teaneckminyanim.service.calendar;
 
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
+import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.ZmanimHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,12 +17,21 @@ import static org.junit.jupiter.api.Assertions.*;
 class MinyanClassifierTest {
 
     private MinyanClassifier classifier;
+    private ApplicationSettingsService stubSettingsService;
 
     @BeforeEach
     void setUp() {
+        // Create a simple stub for ApplicationSettingsService
+        stubSettingsService = new ApplicationSettingsService(null) {
+            @Override
+            public ZoneId getZoneId() {
+                return ZoneId.of("America/New_York");
+            }
+        };
+        
         // Use real ZmanimHandler since mocking is having dependency issues
         ZmanimHandler zmanimHandler = new ZmanimHandler();
-        classifier = new MinyanClassifier(zmanimHandler);
+        classifier = new MinyanClassifier(zmanimHandler, stubSettingsService);
     }
 
     @Test
