@@ -295,56 +295,6 @@
 <script th:src="@{/webjars/popper.js/1.16.0/umd/popper.min.js}"></script>
 <script th:src="@{/webjars/bootstrap/4.6.1/js/bootstrap.min.js}"></script>
 
-<script> 
-                                                                th:value="${loc.id}" 
-                                                                th:text="${loc.name}"
-                                                                th:selected="${entry.location != null and entry.location == loc.name}">
-                                                        </option>
-                                                    </select>
-                                                    <button type="submit" class="btn btn-sm btn-success">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm btn-secondary" 
-                                                            onclick="cancelEdit(this)">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                            <td>
-                                                <span class="notes-cell" th:if="${entry.notes}" th:text="${entry.notes}"></span>
-                                                <span th:unless="${entry.notes}" class="text-muted">—</span>
-                                            </td>
-                                            <td>
-                                                <span th:if="${entry.enabled}" class="badge badge-success">Enabled</span>
-                                                <span th:unless="${entry.enabled}" class="badge badge-secondary">Disabled</span>
-                                                <small th:if="${entry.duplicateReason}" 
-                                                       class="text-muted d-block mt-1" 
-                                                       th:text="${entry.duplicateReason}"></small>
-                                            </td>
-                                            <td>
-                                                <form th:action="@{/admin/{orgId}/calendar-entries/{entryId}/toggle(orgId=${organization.id},entryId=${entry.id})}" 
-                                                      method="post" style="display: inline;">
-                                                    <button type="submit" class="btn btn-sm" 
-                                                            th:classappend="${entry.enabled} ? 'btn-outline-secondary' : 'btn-outline-success'">
-                                                        <i th:class="${entry.enabled} ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                                                        <span th:if="${entry.enabled}">Disable</span>
-                                                        <span th:unless="${entry.enabled}">Enable</span>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                </main>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
 // Tabulator initialization
 document.addEventListener('DOMContentLoaded', function() {
