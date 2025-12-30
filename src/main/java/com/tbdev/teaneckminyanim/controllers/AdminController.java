@@ -341,7 +341,6 @@ public class AdminController {
                 return addOrganization(true, null, null);
             } else {
                 System.out.println("Account creation failed. Deleting organization from database...");
-//                TODO: REMOVE ORGANIZATION FROM DATABASE
                 if (this.organizationService.delete(organization)) {
                     System.out.println("Organization deleted successfully.");
                 } else {
