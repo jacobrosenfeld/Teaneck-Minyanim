@@ -867,6 +867,11 @@ public class ZmanimService {
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
 
+        // Add application settings for frontend use
+        mv.getModel().put("mapboxAccessToken", settingsService.getMapboxAccessToken());
+        mv.getModel().put("siteName", settingsService.getSiteName());
+        mv.getModel().put("appColor", settingsService.getAppColor());
+
         // mv.getModel().put("usesLocations", minyanEvents.)
 
         return mv;
