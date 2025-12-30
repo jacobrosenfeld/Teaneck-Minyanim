@@ -71,7 +71,11 @@
             <div class="col-housing main h-100 overflow-auto">
                 <main class="col main pt-5 mt-3 overflow-auto">
                     <h3 class="lead d-sm-block">Application Settings</h3>
-                    <p class="text-muted">Configure application-wide settings and notifications</p>
+                    <p class="text-muted">Configure application-wide settings for location, timezone, calendar import, and external services. 
+                        <a href="/admin/notifications" class="btn btn-sm btn-outline-primary ms-2">
+                            <i class="bi bi-megaphone"></i> Manage Notifications
+                        </a>
+                    </p>
                     
                     <hr class="d-none d-sm-block">
                     
@@ -119,42 +123,6 @@
                                             </button>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Notification Settings (TNMSettings) -->
-                            <h3 class="mb-3 mt-5">Notification Settings</h3>
-                            <div class="settings-section">
-                                <h4>Homepage Notifications</h4>
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Setting</th>
-                                                <th>Enabled</th>
-                                                <th class="text-wrap" style="max-width: 200px;">Message</th>
-                                                <th>Expiration</th>
-                                                <th>Max Displays</th>
-                                                <th>Edit</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr th:each="settings: ${notificationSettings}">
-                                                <td th:text="${settings.setting}"></td>
-                                                <td>
-                                                    <span class="badge badge-success" th:if="${settings.enabled} == 'Enabled'">Enabled</span>
-                                                    <span class="badge badge-danger" th:if="${settings.enabled} == 'Disabled'">Disabled</span>
-                                                    <span class="badge badge-secondary" th:if="${settings.enabled} == 'n/a'">N/A</span>
-                                                </td>
-                                                <td class="text-wrap" style="max-width: 200px; word-wrap: break-word; white-space: normal;" th:text="${settings.text}"></td>
-                                                <td th:text="${settings.expirationDate != null ? settings.expirationDate : 'N/A'}"></td>
-                                                <td th:text="${settings.maxDisplays != null ? settings.maxDisplays : 'N/A'}"></td>
-                                                <td>
-                                                    <button class="btn btn-outline-dark btn-sm" data-toggle="modal" th:data-target="${'#update-notification-modal-' + settings.id}">Edit</button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
                                 </div>
                             </div>
                             
