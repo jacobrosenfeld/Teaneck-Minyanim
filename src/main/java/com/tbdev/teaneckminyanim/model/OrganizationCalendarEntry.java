@@ -3,7 +3,7 @@ package com.tbdev.teaneckminyanim.model;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
