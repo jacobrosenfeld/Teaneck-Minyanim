@@ -38,6 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Changed `WHERE m.enabled = 1` to `WHERE m.enabled = true` for Hibernate 6.x compatibility
   - Fixes query validation errors when starting the application
   - Affects `findByEnabled()` and `findByOrganizationIdAndEnabled()` methods
+- **Spring Security 6.0 PathPattern Compatibility**: Fixed URL patterns to comply with PathPattern syntax
+  - Changed `/**/*.css` and `/**/*.js` to `**.css` and `**.js` (double asterisk patterns must be at start/end)
+  - Changed `/admin/**/locations` to `/admin/*/locations` (single asterisk for single path segment)
+  - Changed `/admin/**/minyanim/**` to `/admin/*/minyanim/**`
+  - Added explicit patterns for `/org/**`, `/assets/**`, and `/favicon.ico`
+  - Added patterns for calendar entries: `/admin/*/calendar-entries/**`
+  - Fixes PatternParseException preventing access to org pages, admin pages, and static resources
 
 ### Technical Details
 
@@ -45,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Spring Boot 3.x requires Java 17 or later (already compatible)
 - Jakarta EE namespace is mandatory for all javax.* imports
 - Spring Security 6.x no longer supports WebSecurityConfigurerAdapter
+- Spring Security 6.x uses PathPattern instead of AntPathMatcher by default, with stricter pattern syntax rules
 - Hibernate 6.x is now the underlying JPA provider
 - Hibernate 6.x requires boolean literals (true/false) instead of numeric values (0/1) in JPQL queries
 
@@ -68,6 +76,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 3. Update IDE auto-imports to prefer jakarta.* over javax.*
 4. Spring Security DSL now uses lambda expressions consistently
 5. JPQL queries must use boolean literals (true/false) instead of numeric values (0/1) for boolean fields
+6. URL patterns must comply with PathPattern syntax:
+   - Double asterisk `**` can only be at the start or end of a pattern
+   - Use single asterisk `*` to match a single path segment
+   - Patterns like `/**/*.css` should be `**.css` or `/static/**/*.css`
 
 #### For Deployment
 1. No data migration required - schema remains unchanged
