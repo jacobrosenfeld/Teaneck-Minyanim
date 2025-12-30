@@ -33,17 +33,28 @@
     
     <style>
         /* Layout Structure */
-        .admin-layout {
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        body.admin-layout {
             display: flex;
+            flex-direction: column;
             min-height: 100vh;
             background-color: var(--bg-body, #f8f9fa);
         }
         
         .admin-main {
-            flex: 1;
+            flex: 1 1 auto;
             margin-left: var(--sidebar-width, 16rem);
             margin-top: var(--navbar-height, 3.5rem);
             transition: margin-left var(--transition-base, 200ms ease);
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: calc(100vh - var(--navbar-height, 3.5rem));
         }
         
         .admin-main.sidebar-collapsed {
@@ -53,6 +64,7 @@
         .admin-content {
             padding: var(--space-6, 1.5rem);
             max-width: var(--container-max-width, 1400px);
+            width: 100%;
             margin: 0 auto;
         }
         
