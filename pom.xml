@@ -110,7 +110,7 @@
       <dependency>
           <groupId>com.google.protobuf</groupId>
           <artifactId>protobuf-java</artifactId>
-          <version>3.19.1</version> <!-- Use the latest version available -->
+            <version>[3.25.5,)</version> <!-- Use the latest version available -->
       </dependency>
 
       <!-- Apache Commons CSV for robust CSV parsing -->
