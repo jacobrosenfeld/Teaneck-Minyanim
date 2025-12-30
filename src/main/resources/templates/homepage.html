@@ -42,8 +42,9 @@
         <!-- Navbar End -->
         <div class="container-fluid home-container" id="main">
               <main class="col main pt-5 mt-4 overflow-auto">
-                <div class="jumbotron alert alert-secondary text-center" th:if="${settings.?[setting == 'Home Page Announcement'].![enabled].get(0) == 'Enabled'}">
-                  <h5 class="mb-1" th:text="${settings.?[setting == 'Home Page Announcement'].![text].get(0)}" />
+                <!-- Banner Notifications -->
+                <div th:each="banner : ${bannerNotifications}" class="jumbotron alert alert-secondary text-center" th:if="${banner.enabled}">
+                  <h5 class="mb-1" th:text="${banner.message}" />
                 </div>
                 <!-- <div class="jumbotron alert alert-secondary text-center">
                   <h5 class="mb-1">Welcome to Teaneck Minyanim. You can find minyanim for today on the home page and navigate to other days using the arrows below. Please note the times are formulaic and may not be precise. We are working on improving the system. </h5>
@@ -429,23 +430,23 @@
       <script th:inline="javascript">
         /*<![CDATA[*/
         (function() {
-            // Use Thymeleaf's JavaScript inline mode which automatically escapes values
-            // Safe navigation with null checks for Home Page Popup setting
-            var popupSettings = /*[[${settings.?[setting == 'Home Page Popup']}]]*/ [];
-            var homePagePopup = popupSettings.length > 0 ? popupSettings[0] : null;
+            // Load all popup notifications and pass to notification-popup.js
+            var popupNotifications = /*[[${popupNotifications}]]*/ [];
             
-            if (homePagePopup && homePagePopup.enabled === 'Enabled') {
-                window.notificationData = {
-                    enabled: true,
-                    id: homePagePopup.id || '',
-                    title: 'Announcement',
-                    message: homePagePopup.text || '',
-                    maxDisplays: homePagePopup.maxDisplays || null,
-                    expirationDate: homePagePopup.expirationDate || null,
-                    version: homePagePopup.version || 0
-                };
+            if (popupNotifications && popupNotifications.length > 0) {
+                // Convert to format expected by notification-popup.js
+                window.notificationData = popupNotifications.map(function(popup) {
+                    return {
+                        enabled: popup.enabled,
+                        id: popup.id || '',
+                        title: popup.title || 'Announcement',
+                        message: popup.message || '',
+                        maxDisplays: popup.maxDisplays || null,
+                        expirationDate: popup.expirationDate || null
+                    };
+                });
             } else {
-                window.notificationData = { enabled: false };
+                window.notificationData = [];
             }
         })();
         /*]]>*/

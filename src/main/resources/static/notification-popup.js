@@ -32,21 +32,21 @@
         },
 
         /**
-         * Get current view count for a notification version
+         * Get current view count for a notification
          */
-        getViewCount: function(notificationId, version) {
-            const cookieName = 'notification_views_' + notificationId + '_v' + version;
+        getViewCount: function(notificationId) {
+            const cookieName = 'notification_views_' + notificationId;
             const count = this.getCookie(cookieName);
             return count ? parseInt(count, 10) : 0;
         },
 
         /**
-         * Increment view count for a notification version
+         * Increment view count for a notification
          */
-        incrementViewCount: function(notificationId, version) {
-            const currentCount = this.getViewCount(notificationId, version);
+        incrementViewCount: function(notificationId) {
+            const currentCount = this.getViewCount(notificationId);
             const newCount = currentCount + 1;
-            const cookieName = 'notification_views_' + notificationId + '_v' + version;
+            const cookieName = 'notification_views_' + notificationId;
             // Store for 1 year
             this.setCookie(cookieName, newCount, 365);
             return newCount;
@@ -71,15 +71,15 @@
         /**
          * Check if notification should be shown
          */
-        shouldShowNotification: function(notificationId, maxDisplays, expirationDate, version) {
+        shouldShowNotification: function(notificationId, maxDisplays, expirationDate) {
             // Check expiration
             if (this.isExpired(expirationDate)) {
                 return false;
             }
 
-            // Check view count (version-specific)
+            // Check view count
             if (maxDisplays && maxDisplays > 0) {
-                const viewCount = this.getViewCount(notificationId, version);
+                const viewCount = this.getViewCount(notificationId);
                 if (viewCount >= maxDisplays) {
                     return false;
                 }
@@ -140,15 +140,13 @@
         /**
          * Show notification modal
          */
-        showNotification: function(notificationId, title, message, maxDisplays, expirationDate, version) {
-            version = version || 0; // Default to 0 if not provided
-            
-            if (!this.shouldShowNotification(notificationId, maxDisplays, expirationDate, version)) {
+        showNotification: function(notificationId, title, message, maxDisplays, expirationDate) {
+            if (!this.shouldShowNotification(notificationId, maxDisplays, expirationDate)) {
                 return;
             }
 
-            // Increment view count (version-specific)
-            this.incrementViewCount(notificationId, version);
+            // Increment view count
+            this.incrementViewCount(notificationId);
 
             // Escape HTML for title
             const escapeHtml = function(text) {
@@ -203,17 +201,36 @@
 
         /**
          * Initialize notification from page data
+         * Supports both single notification (legacy) and array of notifications (new)
          */
         init: function() {
             const notificationData = window.notificationData;
-            if (notificationData && notificationData.enabled) {
+            
+            // Handle array of notifications (new format)
+            if (Array.isArray(notificationData) && notificationData.length > 0) {
+                // Show first active notification that should be displayed
+                for (let i = 0; i < notificationData.length; i++) {
+                    const notification = notificationData[i];
+                    if (notification.enabled) {
+                        this.showNotification(
+                            notification.id,
+                            notification.title,
+                            notification.message,
+                            notification.maxDisplays,
+                            notification.expirationDate
+                        );
+                        break; // Only show one popup at a time
+                    }
+                }
+            }
+            // Handle single notification (legacy format)
+            else if (notificationData && notificationData.enabled) {
                 this.showNotification(
                     notificationData.id,
                     notificationData.title,
                     notificationData.message,
                     notificationData.maxDisplays,
-                    notificationData.expirationDate,
-                    notificationData.version
+                    notificationData.expirationDate
                 );
             }
         }
