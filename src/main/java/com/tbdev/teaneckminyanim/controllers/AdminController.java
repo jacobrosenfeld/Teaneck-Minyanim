@@ -12,6 +12,7 @@ import com.tbdev.teaneckminyanim.minyan.Schedule;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -1696,47 +1697,55 @@ public class AdminController {
             com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
                     applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
 
-            // Build sort
-            org.springframework.data.domain.Sort sort = buildSort(sortBy, sortDir);
-
-            // Get entries with filtering
-            List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entries = 
-                    getFilteredEntries(entryRepo, orgId, filterClassification, filterEnabled, 
-                                     searchText, startDate, endDate, showNonMinyan, sort);
+            // Get ALL entries for client-side filtering (no server-side filtering)
+            Sort sortOrder = Sort.by(Sort.Direction.ASC, "date")
+                .and(Sort.by(Sort.Direction.ASC, "startTime"));
+            
+            List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> allEntries = 
+                    entryRepo.findByOrganizationId(orgId, sortOrder);
 
             // Calculate statistics
-            long totalEntries = entryRepo.countByOrganizationId(orgId);
-            long enabledCount = entries.stream().filter(e -> e.isEnabled()).count();
-            long disabledCount = entries.stream().filter(e -> !e.isEnabled()).count();
-            long minyanCount = entries.stream()
+            long totalEntries = allEntries.size();
+            long enabledCount = allEntries.stream().filter(e -> e.isEnabled()).count();
+            long disabledCount = allEntries.stream().filter(e -> !e.isEnabled()).count();
+            long minyanCount = allEntries.stream()
                     .filter(e -> e.getClassification() != null && e.getClassification().isMinyan())
                     .count();
-            long nonMinyanCount = entries.stream()
+            long nonMinyanCount = allEntries.stream()
                     .filter(e -> e.getClassification() != null && e.getClassification().isNonMinyan())
                     .count();
 
-            mv.addObject("entries", entries);
             mv.addObject("totalEntries", totalEntries);
-            mv.addObject("filteredCount", entries.size());
+            mv.addObject("filteredCount", totalEntries);
             mv.addObject("enabledCount", enabledCount);
             mv.addObject("disabledCount", disabledCount);
             mv.addObject("minyanCount", minyanCount);
             mv.addObject("nonMinyanCount", nonMinyanCount);
+            mv.addObject("showNonMinyan", showNonMinyan);
 
-            // Get locations for this organization for the dropdown
+            // Get locations for this organization
             LocationService locationService = applicationContext.getBean(LocationService.class);
             List<Location> locations = locationService.findMatching(orgId);
             mv.addObject("locations", locations);
 
-            // Add filter/sort parameters back to view for persistence
-            mv.addObject("sortBy", sortBy != null ? sortBy : "date");
-            mv.addObject("sortDir", sortDir != null ? sortDir : "desc");
-            mv.addObject("filterClassification", filterClassification);
-            mv.addObject("filterEnabled", filterEnabled);
-            mv.addObject("searchText", searchText);
-            mv.addObject("startDate", startDate);
-            mv.addObject("endDate", endDate);
-            mv.addObject("showNonMinyan", showNonMinyan);
+            // Convert entries to JSON
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+            mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            
+            String entriesJson = mapper.writeValueAsString(allEntries);
+            mv.addObject("entriesJson", entriesJson);
+            
+            // Convert locations to JSON for dropdown
+            List<Map<String, String>> locationsList = new ArrayList<>();
+            for (Location loc : locations) {
+                Map<String, String> locMap = new HashMap<>();
+                locMap.put("id", loc.getId());
+                locMap.put("name", loc.getName());
+                locationsList.add(locMap);
+            }
+            String locationsJson = mapper.writeValueAsString(locationsList);
+            mv.addObject("locationsJson", locationsJson);
 
             if (successMessage != null) {
                 mv.addObject("successMessage", successMessage);
