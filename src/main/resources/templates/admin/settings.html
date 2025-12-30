@@ -281,21 +281,30 @@
     }
 
     function showColorPicker(value) {
-        // Normalize and set the color value
+        // Normalize the existing value
         let normalized = normalizeHexColor(value);
-        if (!normalized) {
-            normalized = '#275ed8'; // fallback to default
+        
+        // If normalization failed, try to extract just the hex part
+        if (!normalized && value) {
+            const match = value.match(/#?[0-9a-fA-F]{6}/);
+            if (match) {
+                normalized = match[0].startsWith('#') ? match[0] : '#' + match[0];
+            }
         }
         
-        // Show color picker and hide text input pattern
+        // Use default if still no valid color
+        if (!normalized) {
+            normalized = '#275ed8';
+        }
+        
+        // Show color picker and hide text input
         colorPicker.style.display = 'block';
         settingValueInput.style.display = 'none';
         settingValueInput.removeAttribute('pattern');
         
-        // Set the actual value in the hidden input for form submission
-        settingValueInput.value = normalized;
-        // Set the color picker to display the correct color
-        colorPicker.value = normalized;
+        // Set both the hidden input and the color picker to the same value
+        settingValueInput.value = normalized.toLowerCase();
+        colorPicker.value = normalized.toLowerCase();
     }
 
     function hideColorPicker(value) {
