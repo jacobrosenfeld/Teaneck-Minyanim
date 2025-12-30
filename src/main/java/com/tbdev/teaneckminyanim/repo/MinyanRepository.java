@@ -10,9 +10,9 @@ import java.util.List;
 @Repository
 public interface MinyanRepository extends JpaRepository<Minyan, String> {
     List<Minyan> findByOrganizationId(String organizationId);
-    @Query("SELECT m FROM Minyan m WHERE m.enabled = 1")
+    @Query("SELECT m FROM Minyan m WHERE m.enabled = true")
     List<Minyan> findByEnabled();
 
-    @Query("SELECT m FROM Minyan m WHERE m.enabled = 1 AND m.organizationId=:organizationId")
+    @Query("SELECT m FROM Minyan m WHERE m.enabled = true AND m.organizationId=:organizationId")
     List<Minyan> findByOrganizationIdAndEnabled(String organizationId);
 }

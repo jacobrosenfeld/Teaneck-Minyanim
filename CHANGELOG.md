@@ -33,6 +33,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added explicit BCryptPasswordEncoder and DaoAuthenticationProvider beans
   - Added AuthenticationManager bean configuration
 
+### Fixed
+- **Hibernate 6.x Compatibility**: Fixed JPQL queries in MinyanRepository to use boolean literals instead of integer values
+  - Changed `WHERE m.enabled = 1` to `WHERE m.enabled = true` for Hibernate 6.x compatibility
+  - Fixes query validation errors when starting the application
+  - Affects `findByEnabled()` and `findByOrganizationIdAndEnabled()` methods
+
 ### Technical Details
 
 #### Breaking Changes
@@ -40,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Jakarta EE namespace is mandatory for all javax.* imports
 - Spring Security 6.x no longer supports WebSecurityConfigurerAdapter
 - Hibernate 6.x is now the underlying JPA provider
+- Hibernate 6.x requires boolean literals (true/false) instead of numeric values (0/1) in JPQL queries
 
 #### Compatibility
 - Fully backward compatible at the application level
@@ -50,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Build Status
 - Successful compilation with javac for Java 17
 - All 63 source files compiled successfully
+- All 66 tests passing (100% success rate)
 - Minor warnings about @Builder defaults (pre-existing, non-blocking)
 
 ### Migration Notes
@@ -59,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 2. Custom security configurations must use SecurityFilterChain pattern
 3. Update IDE auto-imports to prefer jakarta.* over javax.*
 4. Spring Security DSL now uses lambda expressions consistently
+5. JPQL queries must use boolean literals (true/false) instead of numeric values (0/1) for boolean fields
 
 #### For Deployment
 1. No data migration required - schema remains unchanged
