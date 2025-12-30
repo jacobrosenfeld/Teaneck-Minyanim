@@ -175,7 +175,7 @@ $(document).ready(function() {
     populateTimezones();
 });
 
-// Initialize Select2 for timezone field in application settings modal
+// Initialize timezone autocomplete for settings modal
 function initializeTimezoneSelect2() {
     const settingValueInput = document.getElementById('modalSettingValue');
     const $input = $(settingValueInput);
@@ -192,42 +192,54 @@ function initializeTimezoneSelect2() {
         search: buildSearchText(tz)
     }));
 
-    // Initialize Select2 with search
+    // Initialize Select2 as autocomplete
     $input.select2({
-        placeholder: 'Search for a timezone (type to find)',
+        placeholder: 'Search timezones...',
         width: '100%',
-        allowClear: false,
         data: timezoneData,
         matcher: function(params, data) {
-            if ($.trim(params.term) === '') {
+            // Show all results if no search term
+            if (!params.term) {
                 return data;
             }
             
-            if (typeof data.search === 'undefined') {
-                return null;
-            }
-
+            // Build regex for fuzzy matching
             const regex = buildRegex(params.term);
+            
+            // Check against timezone name and search field
             if (regex.test(data.text) || regex.test(data.search)) {
                 return data;
             }
 
             return null;
         },
+        templateResult: function(data) {
+            // Format the dropdown options
+            if (!data.id) return data.text;
+            return data.text;
+        },
+        templateSelection: function(data) {
+            // Format the selected value display
+            if (!data.id) return data.text;
+            return data.text;
+        },
         dropdownParent: $('#editAppSettingModal'),
         minimumInputLength: 0,
-        dropdownCssClass: 'select2-dropdown--below'
+        allowClear: true
     });
 
-    // Set current value if exists
+    // Set current value if it exists
     const currentValue = settingValueInput.value;
     if (currentValue) {
         $input.val(currentValue).trigger('change.select2');
     }
 
-    // Sync value back to input
-    $input.on('change', function() {
-        const selectedValue = $(this).val();
-        settingValueInput.value = selectedValue;
+    // Sync changes back to the input
+    $input.on('select2:select', function(e) {
+        settingValueInput.value = e.params.data.id;
+    });
+
+    $input.on('select2:unselect', function() {
+        settingValueInput.value = '';
     });
 }
