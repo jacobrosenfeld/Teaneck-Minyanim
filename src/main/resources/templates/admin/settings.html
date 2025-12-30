@@ -90,6 +90,75 @@
             font-family: 'Courier New', monospace;
         }
     </style>
+    
+    <style>
+        /* Improve datalist styling */
+        #modalSettingValue::placeholder {
+            color: #adb5bd;
+        }
+        
+        #modalSettingValue:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        /* Custom timezone autocomplete */
+        .timezone-search-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .timezone-search-input {
+            width: 100%;
+        }
+        
+        .timezone-dropdown-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 0.25rem 0.25rem;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .timezone-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #212529;
+            transition: background-color 0.15s;
+        }
+        
+        .timezone-option:last-child {
+            border-bottom: none;
+        }
+        
+        .timezone-option:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .timezone-option.selected {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .timezone-option-match {
+            font-weight: 600;
+            color: #007bff;
+        }
+        
+        .timezone-option.selected .timezone-option-match {
+            color: white;
+        }
+    </style>
+    </style>
 </head>
 <body>
 <div class="horizontal-container">
@@ -190,11 +259,14 @@
                     
                     <div class="form-group">
                         <label for="modalSettingValue">Value <span class="text-danger">*</span></label>
-                        <div class="color-picker-wrapper" id="settingValueWrapper">
+                        <div class="timezone-autocomplete-wrapper">
                             <input type="color" class="form-control" id="modalSettingColorPicker" style="display: none;" title="Pick a color">
-                            <input type="text" class="form-control" name="settingValue" id="modalSettingValue" list="timezoneList" required>
+                            <div class="timezone-search-container" style="display: none;">
+                                <input type="text" class="form-control timezone-search-input" id="modalSettingValue" placeholder="Search timezones..." required>
+                                <div class="timezone-dropdown-list" id="timezoneDropdown" style="display: none;"></div>
+                            </div>
+                            <input type="text" class="form-control" id="modalSettingValue" required style="display: block;">
                         </div>
-                        <datalist id="timezoneList"></datalist>
                         <small class="form-text text-muted" id="modalValueHint"></small>
                     </div>
                 </div>

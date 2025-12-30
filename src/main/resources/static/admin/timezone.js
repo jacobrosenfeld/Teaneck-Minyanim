@@ -175,23 +175,130 @@ $(document).ready(function() {
     populateTimezones();
 });
 
-// Initialize timezone autocomplete for settings modal using datalist
+// Initialize timezone autocomplete for settings modal using custom dropdown
 function initializeTimezoneSelect2() {
     const settingValueInput = document.getElementById('modalSettingValue');
-    const timezoneList = document.getElementById('timezoneList');
+    const timezoneDropdown = document.getElementById('timezoneDropdown');
     
-    if (!settingValueInput || !timezoneList) return;
+    if (!settingValueInput || !timezoneDropdown) return;
 
-    // Get all timezones from moment-timezone
     const timezones = moment.tz.names();
-    
-    // Clear existing options
-    timezoneList.innerHTML = '';
-    
-    // Add all timezones to datalist
-    timezones.forEach(tz => {
-        const option = document.createElement('option');
-        option.value = tz;
-        timezoneList.appendChild(option);
+    let filteredTimezones = [];
+    let selectedIndex = -1;
+
+    function renderDropdown(searchTerm = '') {
+        timezoneDropdown.innerHTML = '';
+        selectedIndex = -1;
+        
+        if (searchTerm.trim() === '') {
+            filteredTimezones = timezones.slice(0, 50); // Show first 50 if no search
+        } else {
+            const regex = buildRegex(searchTerm);
+            filteredTimezones = timezones.filter(tz => {
+                const search = buildSearchText(tz).toLowerCase();
+                return regex.test(tz) || regex.test(search);
+            }).slice(0, 100); // Limit to 100 results
+        }
+        
+        if (filteredTimezones.length === 0) {
+            const noResult = document.createElement('div');
+            noResult.className = 'timezone-option';
+            noResult.textContent = 'No timezones found';
+            noResult.style.color = '#999';
+            noResult.style.cursor = 'default';
+            timezoneDropdown.appendChild(noResult);
+            return;
+        }
+        
+        filteredTimezones.forEach((tz, index) => {
+            const option = document.createElement('div');
+            option.className = 'timezone-option';
+            option.textContent = tz;
+            option.dataset.index = index;
+            option.dataset.value = tz;
+            
+            option.addEventListener('click', function() {
+                settingValueInput.value = tz;
+                timezoneDropdown.style.display = 'none';
+            });
+            
+            option.addEventListener('mouseover', function() {
+                selectedIndex = index;
+                updateSelection();
+            });
+            
+            timezoneDropdown.appendChild(option);
+        });
+    }
+
+    function updateSelection() {
+        document.querySelectorAll('.timezone-option').forEach((opt, i) => {
+            opt.classList.toggle('selected', i === selectedIndex);
+        });
+        
+        if (selectedIndex >= 0 && selectedIndex < filteredTimezones.length) {
+            const selected = document.querySelector(`[data-index="${selectedIndex}"]`);
+            if (selected) {
+                selected.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }
+
+    // Handle input changes
+    settingValueInput.addEventListener('input', function() {
+        const searchTerm = this.value;
+        renderDropdown(searchTerm);
+        timezoneDropdown.style.display = filteredTimezones.length > 0 ? 'block' : 'none';
+    });
+
+    // Handle focus
+    settingValueInput.addEventListener('focus', function() {
+        if (this.value.trim() === '') {
+            renderDropdown();
+            timezoneDropdown.style.display = 'block';
+        }
+    });
+
+    // Handle keyboard navigation
+    settingValueInput.addEventListener('keydown', function(e) {
+        if (!timezoneDropdown.style.display || timezoneDropdown.style.display === 'none') {
+            if (e.key === 'ArrowDown') {
+                renderDropdown(this.value);
+                timezoneDropdown.style.display = 'block';
+                selectedIndex = 0;
+                updateSelection();
+            }
+            return;
+        }
+        
+        switch(e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, filteredTimezones.length - 1);
+                updateSelection();
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelection();
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (selectedIndex >= 0 && selectedIndex < filteredTimezones.length) {
+                    settingValueInput.value = filteredTimezones[selectedIndex];
+                    timezoneDropdown.style.display = 'none';
+                }
+                break;
+            case 'Escape':
+                timezoneDropdown.style.display = 'none';
+                break;
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target !== settingValueInput && !timezoneDropdown.contains(e.target)) {
+            timezoneDropdown.style.display = 'none';
+        }
     });
 }
