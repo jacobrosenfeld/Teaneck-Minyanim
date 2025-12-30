@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Create an Organization</title>
+    <title th:text="@{|Create an Organization - ${siteName} ?: 'Minyanim Platform'|}"></title>
     <link rel="icon" href="/assets/icons/favicon.png" type="image/png" sizes="16x16">
     <link th:rel="stylesheet" th:href="@{/styles.css}">
     <link th:rel="stylesheet" th:href="@{/admin/dashboard.css}">
