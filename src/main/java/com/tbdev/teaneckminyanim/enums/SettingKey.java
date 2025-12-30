@@ -8,6 +8,8 @@ public enum SettingKey {
     // Site Branding & Appearance
     SITE_NAME("site.name", SettingType.STRING, "Minyanim"),
     SITE_APP_COLOR("site.app.color", SettingType.STRING, "#275ed8"),
+    SITE_ROOT_URL("site.root.url", SettingType.STRING, "http://localhost:8080"),
+    SITE_SUPPORT_EMAIL("site.support.email", SettingType.STRING, "info@teaneckminyanim.com"),
     
     // Location & Geographic Settings
     LOCATION_NAME("location.name", SettingType.STRING, "Jerusalem, Israel"),
@@ -65,6 +67,10 @@ public enum SettingKey {
                 return "Site Name";
             case SITE_APP_COLOR:
                 return "App Theme Color";
+            case SITE_ROOT_URL:
+                return "Site Root URL";
+            case SITE_SUPPORT_EMAIL:
+                return "Support Email Address";
             case LOCATION_NAME:
                 return "Location Name";
             case LOCATION_LATITUDE:
@@ -95,6 +101,10 @@ public enum SettingKey {
                 return "Name of the website displayed in the header and browser title";
             case SITE_APP_COLOR:
                 return "Primary theme color for the application (hex color code, e.g., #275ed8)";
+            case SITE_ROOT_URL:
+                return "Root URL of the website (e.g., https://www.teaneckminyanim.com)";
+            case SITE_SUPPORT_EMAIL:
+                return "Support email address for contact and help inquiries";
             case LOCATION_NAME:
                 return "Display name for the location used in Zmanim calculations";
             case LOCATION_LATITUDE:

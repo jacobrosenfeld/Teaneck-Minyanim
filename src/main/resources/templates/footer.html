@@ -19,7 +19,7 @@
               <h6 th:text="@{|© TB Dev and ${displaySiteName}|}"></h6>
             </div>
             <div class="col-md-4 text-end">
-              <h6><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h6>
+              <h6><a th:href="@{'mailto:' + (supportEmail ?: 'info@teaneckminyanim.com')}" th:text="${supportEmail ?: 'info@teaneckminyanim.com'}"></a></h6>
             </div>
             <!-- <div class="col-md-4">
               <ul>

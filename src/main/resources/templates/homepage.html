@@ -48,7 +48,7 @@
                 </div>
                 <!-- <div class="jumbotron alert alert-secondary text-center">
                   <h5 class="mb-1" th:text="@{|Welcome to ${displaySiteName}. You can find minyanim for today on the home page and navigate to other days using the arrows below. Please note the times are formulaic and may not be precise. We are working on improving the system.|}"></h5>
-                  <h4>If you would like to volunteer please contact us at info@teaneckminyanim.com.</h4>
+                  <h4 th:text="@{|If you would like to volunteer please contact us at ${supportEmail}.|}">If you would like to volunteer please contact us at info@teaneckminyanim.com.</h4>
                 </div> -->
                 <!-- Date Nav Buttons -->
                 <div class="d-sm-flex justify-content-between">
@@ -358,7 +358,7 @@
         <div id="info" class="cta-sm">
           <div class="container-m text-center">
             <div class="cta-content">
-              <h1>Bug? Question? Comment?</h1><h5><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h5>
+              <h1>Bug? Question? Comment?</h1><h5><a th:href="@{|mailto:${supportEmail}|}" th:text="${supportEmail}">info@teaneckminyanim.com</a></h5>
               <hr>
               <h3 th:text="@{|Subscribe now to stay up to date on ${displaySiteName} updates and news!|}"></h3>
                <div class="form wow fadeIn" data-wow-delay="0.2s">
@@ -398,7 +398,7 @@
                 <h6 th:text="@{|© TB Dev and ${displaySiteName}|}"></h6>
               </div>
               <div class="col-md-4 text-end">
-                <h6><a href="mailto:info@teaneckminyanim.com">info@teaneckminyanim.com</a></h6>
+                <h6><a th:href="@{|mailto:${supportEmail}|}" th:text="${supportEmail}">info@teaneckminyanim.com</a></h6>
               </div>
               <!-- <div class="col-md-4">
                 <ul>

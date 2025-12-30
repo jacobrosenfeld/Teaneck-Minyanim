@@ -158,6 +158,20 @@ public class ApplicationSettingsService {
     }
     
     /**
+     * Get site root URL.
+     */
+    public String getSiteRootUrl() {
+        return getString(SettingKey.SITE_ROOT_URL);
+    }
+    
+    /**
+     * Get support email address.
+     */
+    public String getSupportEmail() {
+        return getString(SettingKey.SITE_SUPPORT_EMAIL);
+    }
+    
+    /**
      * Get Mapbox access token.
      */
     public String getMapboxAccessToken() {
@@ -244,6 +258,12 @@ public class ApplicationSettingsService {
             case SITE_APP_COLOR:
                 validateHexColor(value);
                 break;
+            case SITE_SUPPORT_EMAIL:
+                validateEmail(value);
+                break;
+            case SITE_ROOT_URL:
+                validateUrl(value);
+                break;
             case LOCATION_LATITUDE:
                 validateLatitude(value);
                 break;
@@ -269,6 +289,19 @@ public class ApplicationSettingsService {
     private void validateHexColor(String value) throws ValidationException {
         if (!value.matches("^#[0-9A-Fa-f]{6}$")) {
             throw new ValidationException("App color must be a valid hex color code (e.g., #275ed8)");
+        }
+    }
+    
+    private void validateEmail(String value) throws ValidationException {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        if (!value.matches(emailRegex)) {
+            throw new ValidationException("Support email must be a valid email address");
+        }
+    }
+    
+    private void validateUrl(String value) throws ValidationException {
+        if (!value.matches("^https?://[^\\s/$.?#].[^\\s]*$")) {
+            throw new ValidationException("Root URL must be a valid URL (e.g., https://www.example.com)");
         }
     }
     

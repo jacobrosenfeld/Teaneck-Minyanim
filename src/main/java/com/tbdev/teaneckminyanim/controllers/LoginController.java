@@ -1,8 +1,11 @@
 package com.tbdev.teaneckminyanim.controllers;
 
+import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -10,7 +13,21 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Controller
+@RequiredArgsConstructor
 public class LoginController {
+    
+    private final ApplicationSettingsService settingsService;
+    
+    @ModelAttribute("siteName")
+    public String siteName() {
+        return settingsService.getSiteName();
+    }
+    
+    @ModelAttribute("supportEmail")
+    public String supportEmail() {
+        return settingsService.getSupportEmail();
+    }
+    
     @GetMapping("/admin/login")
     public ModelAndView login(@RequestParam(value = "error",required = false) String error, @RequestParam(value = "logout",	required = false) boolean logout) {
         System.out.println("LoginController.login() called");

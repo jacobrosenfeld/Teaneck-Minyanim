@@ -70,6 +70,11 @@ public class ZmanimController {
     public String appColor() {
         return applicationSettingsService.getAppColor();
     }
+    
+    @ModelAttribute("supportEmail")
+    public String supportEmail() {
+        return applicationSettingsService.getSupportEmail();
+    }
 
     @ModelAttribute("appVersion")
     public String appVersion() {

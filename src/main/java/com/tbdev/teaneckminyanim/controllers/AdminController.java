@@ -58,6 +58,11 @@ public class AdminController {
     public String siteName() {
         return settingsService.getSiteName();
     }
+    
+    @ModelAttribute("supportEmail")
+    public String supportEmail() {
+        return settingsService.getSupportEmail();
+    }
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | hh:mm aa");
 
