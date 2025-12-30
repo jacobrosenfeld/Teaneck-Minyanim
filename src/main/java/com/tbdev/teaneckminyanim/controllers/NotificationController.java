@@ -1,12 +1,15 @@
 package com.tbdev.teaneckminyanim.controllers;
 
 import com.tbdev.teaneckminyanim.model.Notification;
+import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.service.NotificationService;
+import com.tbdev.teaneckminyanim.service.TNMUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -21,6 +24,15 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final TNMUserService tnmUserService;
+
+    /**
+     * Get current authenticated user
+     */
+    private TNMUser getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return tnmUserService.findByName(username);
+    }
 
     /**
      * Show notifications management page
@@ -28,6 +40,9 @@ public class NotificationController {
     @GetMapping
     public ModelAndView showNotifications() {
         ModelAndView mv = new ModelAndView("admin/notifications");
+        
+        // Add user to model for sidebar
+        mv.addObject("user", getCurrentUser());
         
         List<Notification> allNotifications = notificationService.getAll();
         mv.addObject("notifications", allNotifications);
