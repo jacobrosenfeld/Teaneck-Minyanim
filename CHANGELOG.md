@@ -11,6 +11,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Admin UI for Calendar Events Management
+- **CalendarEventsAdminController**: New admin controller for managing materialized calendar_events
+  - Route: `/admin/{orgId}/calendar-events`
+  - View all calendar events for an organization with filters
+  - Filter by date range (defaults to materialization window: 3 weeks past, 8 weeks future)
+  - Filter by minyan type (Shacharis, Mincha, Maariv, Mincha/Maariv, Selichos, etc.)
+  - Filter by event source (IMPORTED, RULES, MANUAL)
+  - Filter by enabled/disabled status
+  - Sort by date and time
+  
+- **Event Management Operations**:
+  - **Toggle Enable/Disable**: Any event can be enabled or disabled via toggle button
+  - **Inline Note Editing**: Edit notes field with auto-submit on change
+  - **Inline Location Editing**: Select location from dropdown with auto-submit
+  - **Delete Manual Events**: Only manual events can be deleted; imported/rules events can only be disabled
+  - **Manual Edit Tracking**: Events show orange dot indicator when manually edited
+  - **Rematerialization Trigger**: Button to manually trigger calendar rematerialization for organization
+
+- **Statistics Dashboard**:
+  - Total events count in current date range
+  - Enabled vs disabled events
+  - Rules-based events count
+  - Imported events count
+  - Manual events count (future feature)
+
+- **Modern UI Features**:
+  - Color-coded source badges: Blue (RULES), Green (IMPORTED), Orange (MANUAL)
+  - Color-coded type badges: Blue (Shacharis), Amber (Mincha), Purple (Maariv), Pink (Mincha/Maariv)
+  - Status badges: Green (Enabled), Gray (Disabled)
+  - Responsive table with sticky header
+  - Modern filter panel with date pickers and dropdowns
+  - Success/error flash messages
+  - Info box explaining event types and materialization window
+  - Manual edit indicator (orange dot with tooltip)
+
+- **Navigation**:
+  - Added "Calendar Events" link to admin sidebar
+  - Accessible to all admin users (organization-specific access)
+  - Link appears between "Minyan Schedule" and other admin options
+
+- **Security & Authorization**:
+  - Enhanced TNMUserService with authorization helpers:
+    - `getCurrentUser()`: Get currently authenticated user
+    - `isSuperAdmin()`: Check if user is super admin
+    - `canAccessOrganization(orgId)`: Check if user can access specific organization
+  - Super admins can access all organizations
+  - Regular admins can only access their own organization
+  - All endpoints protected with proper access control
+  - Graceful error handling for unauthorized access
+
 #### Materialized Calendar Architecture (Major Refactor)
 - **CalendarEvent Entity**: New unified database table (`calendar_events`) serving as single source of truth for all minyanim
   - Supports three event sources: IMPORTED (from calendars), RULES (from schedules), MANUAL (future overrides)
@@ -23,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **EventSource Enum**: Type-safe source tracking with three values
   - `IMPORTED`: Events from external calendar imports
   - `RULES`: Events generated from rule-based minyan schedules
-  - `MANUAL`: Manual overrides by admins (schema support added, UI not yet implemented)
+  - `MANUAL`: Manual overrides by admins (schema support added, UI now implemented)
   - Helper methods: `isImported()`, `isRules()`, `isManual()`, `displayName()`
 
 - **CalendarEventRepository**: Comprehensive data access layer with 20+ query methods
@@ -97,6 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Application Version**: Updated from 1.3.4 to 1.4.0 in pom.xml
 - **Database Schema**: New `calendar_events` table created via JPA auto-DDL
 - **Data Flow**: Backend now materializes events; frontend will read from materialized data (in progress)
+- **Admin Sidebar**: Added "Calendar Events" navigation link for organization admins
 
 ### Technical Details
 
