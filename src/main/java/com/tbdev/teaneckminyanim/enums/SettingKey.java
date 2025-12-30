@@ -6,17 +6,17 @@ package com.tbdev.teaneckminyanim.enums;
  */
 public enum SettingKey {
     // Site Branding & Appearance
-    SITE_NAME("site.name", SettingType.STRING, "Teaneck Minyanim"),
+    SITE_NAME("site.name", SettingType.STRING, "Minyanim"),
     SITE_APP_COLOR("site.app.color", SettingType.STRING, "#275ed8"),
     
     // Location & Geographic Settings
-    LOCATION_NAME("location.name", SettingType.STRING, "Teaneck, NJ"),
-    LOCATION_LATITUDE("location.latitude", SettingType.DOUBLE, "40.906871"),
-    LOCATION_LONGITUDE("location.longitude", SettingType.DOUBLE, "-74.020924"),
-    LOCATION_ELEVATION("location.elevation", SettingType.DOUBLE, "24"),
+    LOCATION_NAME("location.name", SettingType.STRING, "Jerusalem, Israel"),
+    LOCATION_LATITUDE("location.latitude", SettingType.DOUBLE, "31.7683"),
+    LOCATION_LONGITUDE("location.longitude", SettingType.DOUBLE, "35.2137"),
+    LOCATION_ELEVATION("location.elevation", SettingType.DOUBLE, "754"),
     
     // Timezone Settings
-    TIMEZONE("timezone", SettingType.STRING, "America/New_York"),
+    TIMEZONE("timezone", SettingType.STRING, "Asia/Jerusalem"),
     
     // External Services
     MAPBOX_ACCESS_TOKEN("mapbox.access.token", SettingType.STRING, ""),
