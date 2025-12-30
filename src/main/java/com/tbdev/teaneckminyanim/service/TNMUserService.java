@@ -2,7 +2,10 @@ package com.tbdev.teaneckminyanim.service;
 
 import com.tbdev.teaneckminyanim.repo.TNMUserRepository;
 import com.tbdev.teaneckminyanim.model.TNMUser;
+import com.tbdev.teaneckminyanim.enums.Role;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -53,6 +56,32 @@ public class TNMUserService {
         return true;
     }
 
+    /**
+     * Get the currently authenticated user
+     */
+    public TNMUser getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return findByName(username);
+    }
 
+    /**
+     * Check if current user is a super admin (no organization, ADMIN role)
+     */
+    public boolean isSuperAdmin() {
+        TNMUser user = getCurrentUser();
+        return user != null && user.getOrganizationId() == null && user.role().equals(Role.ADMIN);
+    }
+
+    /**
+     * Check if current user can access a specific organization
+     * Super admins can access all orgs, regular users only their own
+     */
+    public boolean canAccessOrganization(String organizationId) {
+        if (isSuperAdmin()) {
+            return true;
+        }
+        TNMUser user = getCurrentUser();
+        return user != null && organizationId.equals(user.getOrganizationId());
+    }
 }
 
