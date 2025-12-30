@@ -2,8 +2,10 @@ package com.tbdev.teaneckminyanim.controllers;
 
 import com.tbdev.teaneckminyanim.model.Notification;
 import com.tbdev.teaneckminyanim.model.TNMUser;
+import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.NotificationService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
+import com.tbdev.teaneckminyanim.service.VersionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,6 +27,8 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final TNMUserService tnmUserService;
+    private final ApplicationSettingsService applicationSettingsService;
+    private final VersionService versionService;
 
     /**
      * Get current authenticated user
@@ -32,6 +36,30 @@ public class NotificationController {
     private TNMUser getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return tnmUserService.findByName(username);
+    }
+
+    /**
+     * Provide site name for all views
+     */
+    @ModelAttribute("siteName")
+    public String siteName() {
+        return applicationSettingsService.getSiteName();
+    }
+
+    /**
+     * Provide app color for all views
+     */
+    @ModelAttribute("appColor")
+    public String appColor() {
+        return applicationSettingsService.getAppColor();
+    }
+
+    /**
+     * Provide app version for all views
+     */
+    @ModelAttribute("appVersion")
+    public String appVersion() {
+        return versionService.getVersion();
     }
 
     /**
