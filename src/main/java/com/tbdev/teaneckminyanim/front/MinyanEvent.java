@@ -3,7 +3,7 @@ package com.tbdev.teaneckminyanim.front;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.enums.Nusach;
 
-//import javax.persistence.Id;
+//import jakarta.persistence.Id;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;

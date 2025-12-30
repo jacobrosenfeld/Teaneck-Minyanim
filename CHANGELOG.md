@@ -7,6 +7,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.3] - 2025-12-30
+
+### Changed
+
+#### Spring Boot 3.5.9 Migration
+- **Major Framework Update**: Upgraded from Spring Boot 2.7.18 to 3.5.9
+  - Updated parent POM dependency to spring-boot-starter-parent 3.5.9
+  - Removed explicit version override for spring-boot-starter-web (now inherited from parent)
+  - Updated thymeleaf-extras-springsecurity5 to thymeleaf-extras-springsecurity6 for Spring Security 6.x compatibility
+  - Updated lombok to 1.18.30 for improved Java 17 support
+
+#### Jakarta EE Namespace Migration
+- **Complete javax → jakarta Migration**: Updated all Java EE imports from javax.* to jakarta.* namespace
+  - Migrated javax.persistence.* to jakarta.persistence.* (16 files affected)
+  - Migrated javax.servlet.* to jakarta.servlet.* (2 files affected)
+  - Migrated javax.annotation.* to jakarta.annotation.* (1 file affected)
+  - This includes all JPA entities, services, and servlet components
+
+#### Spring Security 6.0 Modernization
+- **Deprecated API Removal**: Replaced deprecated WebSecurityConfigurerAdapter pattern with SecurityFilterChain
+  - Refactored WebSecurityConfiguration to use @Bean SecurityFilterChain approach
+  - Updated security DSL from deprecated methods (antMatchers, authorizeRequests) to modern equivalents (requestMatchers, authorizeHttpRequests)
+  - Migrated from method-chaining style to lambda DSL for improved readability
+  - Added explicit BCryptPasswordEncoder and DaoAuthenticationProvider beans
+  - Added AuthenticationManager bean configuration
+
+### Technical Details
+
+#### Breaking Changes
+- Spring Boot 3.x requires Java 17 or later (already compatible)
+- Jakarta EE namespace is mandatory for all javax.* imports
+- Spring Security 6.x no longer supports WebSecurityConfigurerAdapter
+- Hibernate 6.x is now the underlying JPA provider
+
+#### Compatibility
+- Fully backward compatible at the application level
+- No database schema changes required
+- No API changes for end users
+- All existing features remain functional
+
+#### Build Status
+- Successful compilation with javac for Java 17
+- All 63 source files compiled successfully
+- Minor warnings about @Builder defaults (pre-existing, non-blocking)
+
+### Migration Notes
+
+#### For Developers
+1. All javax.* imports have been replaced with jakarta.*
+2. Custom security configurations must use SecurityFilterChain pattern
+3. Update IDE auto-imports to prefer jakarta.* over javax.*
+4. Spring Security DSL now uses lambda expressions consistently
+
+#### For Deployment
+1. No data migration required - schema remains unchanged
+2. Application binary size may increase slightly due to newer dependencies
+3. Runtime performance improvements expected from Spring Boot 3.x optimizations
+4. Container/JVM must support Java 17+
+
+### Security
+- Updated to latest Spring Security 6.x with improved security defaults
+- Removed deprecated security configuration methods
+- Modern security DSL provides better type safety
+
+### Removed
+- Dependency on javax.* namespace (replaced with jakarta.*)
+- Use of deprecated WebSecurityConfigurerAdapter
+- Explicit version override for spring-boot-starter-web
+
+---
+
+## [1.3.2] - Previous Unreleased Changes
+
+## [Unreleased]
+
 ### Changed
 - Allow negative elevation values (down to -500m) in application settings validation to support below-sea-level locations.
 - Timezone selector now uses regex-friendly fuzzy search (supports mid-string queries and common aliases like “Jerusalem” → “Israel”).

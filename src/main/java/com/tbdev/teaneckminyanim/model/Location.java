@@ -1,15 +1,15 @@
 package com.tbdev.teaneckminyanim.model;
 
-import javax.persistence.Column;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
 
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 import static com.tbdev.teaneckminyanim.tools.IDGenerator.generateID;
 
