@@ -144,6 +144,27 @@ public class ApplicationSettingsService {
     }
     
     /**
+     * Get site name.
+     */
+    public String getSiteName() {
+        return getString(SettingKey.SITE_NAME);
+    }
+    
+    /**
+     * Get app theme color.
+     */
+    public String getAppColor() {
+        return getString(SettingKey.SITE_APP_COLOR);
+    }
+    
+    /**
+     * Get Mapbox access token.
+     */
+    public String getMapboxAccessToken() {
+        return getString(SettingKey.MAPBOX_ACCESS_TOKEN);
+    }
+    
+    /**
      * Get GeoLocation object for Zmanim calculations.
      */
     public GeoLocation getGeoLocation() {
@@ -220,6 +241,9 @@ public class ApplicationSettingsService {
         }
         
         switch (key) {
+            case SITE_APP_COLOR:
+                validateHexColor(value);
+                break;
             case LOCATION_LATITUDE:
                 validateLatitude(value);
                 break;
@@ -238,6 +262,13 @@ public class ApplicationSettingsService {
             case CALENDAR_CLEANUP_DAYS:
                 validatePositiveInteger(value);
                 break;
+            // SITE_NAME and MAPBOX_ACCESS_TOKEN - no special validation needed
+        }
+    }
+    
+    private void validateHexColor(String value) throws ValidationException {
+        if (!value.matches("^#[0-9A-Fa-f]{6}$")) {
+            throw new ValidationException("App color must be a valid hex color code (e.g., #275ed8)");
         }
     }
     
