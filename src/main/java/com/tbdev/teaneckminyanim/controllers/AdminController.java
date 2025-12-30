@@ -197,9 +197,15 @@ public class AdminController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/settings");
 
-        List<TNMSettings> settings = this.tnmsettingsDAO.getAll();
-        Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
-        mv.addObject("settings", settings);
+        // Get notification settings (TNMSettings)
+        List<TNMSettings> notificationSettings = this.tnmsettingsDAO.getAll();
+        Collections.sort(notificationSettings, Comparator.comparing(TNMSettings::getId));
+        mv.addObject("notificationSettings", notificationSettings);
+        
+        // Get application settings grouped by category
+        Map<String, List<com.tbdev.teaneckminyanim.model.ApplicationSettings>> applicationSettingsByCategory = 
+                this.settingsService.getSettingsByCategory();
+        mv.addObject("applicationSettingsByCategory", applicationSettingsByCategory);
 
         addStandardPageData(mv);
 
@@ -1009,6 +1015,33 @@ public class AdminController {
             return new ModelAndView(redirectView);
         } else {
             return settings(null, "Sorry, an error occurred. The setting could not be updated.");
+        }
+    }
+    
+    @RequestMapping(value = "/admin/settings/update-application-setting", method = RequestMethod.POST)
+    public ModelAndView updateApplicationSetting(
+            @RequestParam("settingKey") String settingKey,
+            @RequestParam("settingValue") String settingValue) {
+        
+        if (!isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to perform this action");
+        }
+
+        try {
+            // Update the setting
+            settingsService.updateSettingByKey(settingKey, settingValue);
+            
+            log.info("Application setting updated: {} = {} by user {}", 
+                    settingKey, settingValue, getCurrentUser().getUsername());
+            
+            return settings("Application setting updated successfully!", null);
+            
+        } catch (com.tbdev.teaneckminyanim.service.ApplicationSettingsService.ValidationException e) {
+            log.warn("Validation error updating setting {}: {}", settingKey, e.getMessage());
+            return settings(null, "Validation error: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Error updating setting {}: {}", settingKey, e.getMessage(), e);
+            return settings(null, "Error updating setting: " + e.getMessage());
         }
     }
 

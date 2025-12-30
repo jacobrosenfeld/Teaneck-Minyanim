@@ -120,9 +120,8 @@ public class ApplicationSettingsController {
     }
 
     private boolean isSuperAdmin() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null && auth.getAuthorities().contains(
-                new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
+        TNMUser user = getCurrentUser();
+        return user != null && user.getOrganizationId() == null && user.role().equals(com.tbdev.teaneckminyanim.enums.Role.ADMIN);
     }
 
     private TNMUser getCurrentUser() {
