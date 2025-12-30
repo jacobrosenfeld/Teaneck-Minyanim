@@ -5,9 +5,11 @@ import java.util.*;
 
 import com.kosherjava.zmanim.util.GeoLocation;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
+import com.tbdev.teaneckminyanim.service.NotificationService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMSettingsService;
 import com.tbdev.teaneckminyanim.service.VersionService;
+import com.tbdev.teaneckminyanim.model.Notification;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.TNMSettings;
 import com.tbdev.teaneckminyanim.service.ZmanimHandler;
@@ -23,6 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
 public class ZmanimController {
     private final ZmanimService zmanimService;
     private final TNMSettingsService tnmSettingsDao;
+    private final NotificationService notificationService;
     private final ApplicationSettingsService applicationSettingsService;
     private final OrganizationService organizationService;
     private final VersionService versionService;
@@ -42,10 +45,20 @@ public class ZmanimController {
 
     @ModelAttribute("settings")
     public List<TNMSettings> settings() {
-        // Load and return the notification settings only (Home Page Announcement, Home Page Popup)
+        // Legacy support - Load and return the old notification settings
         List<TNMSettings> settings = tnmSettingsDao.getAll();
         Collections.sort(settings, Comparator.comparing(TNMSettings::getId)); // sort by id
         return settings;
+    }
+    
+    @ModelAttribute("bannerNotifications")
+    public List<Notification> bannerNotifications() {
+        return notificationService.getActiveBanners();
+    }
+    
+    @ModelAttribute("popupNotifications")
+    public List<Notification> popupNotifications() {
+        return notificationService.getActivePopups();
     }
     
     @ModelAttribute("siteName")

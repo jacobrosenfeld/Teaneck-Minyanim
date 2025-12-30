@@ -196,11 +196,6 @@ public class AdminController {
 
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/settings");
-
-        // Get notification settings (TNMSettings)
-        List<TNMSettings> notificationSettings = this.tnmsettingsDAO.getAll();
-        Collections.sort(notificationSettings, Comparator.comparing(TNMSettings::getId));
-        mv.addObject("notificationSettings", notificationSettings);
         
         // Get application settings grouped by category
         Map<String, List<com.tbdev.teaneckminyanim.model.ApplicationSettings>> applicationSettingsByCategory = 
