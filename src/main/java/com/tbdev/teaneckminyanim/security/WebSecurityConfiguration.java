@@ -42,12 +42,16 @@ public class WebSecurityConfiguration {
             .csrf(csrf -> { })
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/zmanim/**", "/orgs/**", "/admin/login", "/admin/logout", 
-                                "/webjars/**", "/**/*.css", "/**/*.js", "/static/**", "/db/**").permitAll()
+                .requestMatchers("/", "/zmanim/**", "/orgs/**", "/org/**", "/admin/login", "/admin/logout", 
+                                "/webjars/**", "**.css", "**.js", "/static/**", "/db/**", 
+                                "/assets/**", "/favicon.ico").permitAll()
                 .requestMatchers("/admin", "/admin/dashboard", "/admin/organization", "/admin/account", 
-                                "/admin/update-organization", "/admin/update-account", "/admin/**/locations", 
+                                "/admin/update-organization", "/admin/update-account", 
+                                "/admin/*/locations", "/admin/*/locations/**",
                                 "/admin/create-location", "/admin/update-location", "/admin/delete-location", 
-                                "/admin/**/minyanim/**", "/admin/settings", "admin/update-settings").hasAnyRole("USER", "ADMIN")
+                                "/admin/*/minyanim", "/admin/*/minyanim/**", 
+                                "/admin/*/calendar-entries", "/admin/*/calendar-entries/**",
+                                "/admin/settings", "/admin/update-settings").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN")
                 .anyRequest().authenticated()
             )
