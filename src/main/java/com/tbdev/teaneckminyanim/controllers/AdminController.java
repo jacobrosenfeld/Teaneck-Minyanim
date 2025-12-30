@@ -170,7 +170,7 @@ public class AdminController {
 
     @GetMapping("/admin/logout")
     public ModelAndView logout(@RequestParam(value = "error", required = false) String error) {
-        return new LoginController().login(error, true);
+        return new LoginController(settingsService).login(error, true);
     }
 
     @GetMapping("/admin/organizations")
