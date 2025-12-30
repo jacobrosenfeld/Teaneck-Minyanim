@@ -16,7 +16,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "NOTIFICATIONS")
+@Table(name = "NOTIFICATION")
 public class Notification {
 
     @Id
