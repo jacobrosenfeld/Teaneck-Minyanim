@@ -192,8 +192,9 @@
                         <label for="modalSettingValue">Value <span class="text-danger">*</span></label>
                         <div class="color-picker-wrapper" id="settingValueWrapper">
                             <input type="color" class="form-control" id="modalSettingColorPicker" style="display: none;" title="Pick a color">
-                            <input type="text" class="form-control" name="settingValue" id="modalSettingValue" required>
+                            <input type="text" class="form-control" name="settingValue" id="modalSettingValue" list="timezoneList" required>
                         </div>
+                        <datalist id="timezoneList"></datalist>
                         <small class="form-text text-muted" id="modalValueHint"></small>
                     </div>
                 </div>

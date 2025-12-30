@@ -175,59 +175,23 @@ $(document).ready(function() {
     populateTimezones();
 });
 
-// Initialize timezone autocomplete for settings modal
+// Initialize timezone autocomplete for settings modal using datalist
 function initializeTimezoneSelect2() {
     const settingValueInput = document.getElementById('modalSettingValue');
-    if (!settingValueInput) return;
+    const timezoneList = document.getElementById('timezoneList');
+    
+    if (!settingValueInput || !timezoneList) return;
 
-    const $input = $(settingValueInput);
-
-    // Destroy existing Select2 if present
-    if ($input.data('select2')) {
-        $input.select2('destroy');
-    }
-
+    // Get all timezones from moment-timezone
     const timezones = moment.tz.names();
     
-    // Build data array with search text
-    const timezoneData = timezones.map(tz => ({
-        id: tz,
-        text: tz,
-        search: buildSearchText(tz).toLowerCase()
-    }));
-
-    // Initialize Select2 as an autocomplete input
-    $input.select2({
-        placeholder: 'Search and select a timezone...',
-        width: '100%',
-        data: timezoneData,
-        allowClear: true,
-        matcher: function(params, data) {
-            // Empty search returns all
-            if (!params.term || params.term.trim() === '') {
-                return data;
-            }
-            
-            // Build search term regex
-            const searchTerm = params.term.toLowerCase().trim();
-            const regex = buildRegex(searchTerm);
-            
-            // Match against timezone name or search aliases
-            const textMatch = regex.test(data.text.toLowerCase());
-            const searchMatch = regex.test(data.search);
-            
-            if (textMatch || searchMatch) {
-                return data;
-            }
-
-            return null;
-        },
-        dropdownParent: $('#editAppSettingModal')
+    // Clear existing options
+    timezoneList.innerHTML = '';
+    
+    // Add all timezones to datalist
+    timezones.forEach(tz => {
+        const option = document.createElement('option');
+        option.value = tz;
+        timezoneList.appendChild(option);
     });
-
-    // Set current value
-    const currentValue = settingValueInput.value;
-    if (currentValue && timezones.includes(currentValue)) {
-        $input.val(currentValue).trigger('change.select2');
-    }
 }
