@@ -47,10 +47,6 @@ public class Notification {
     @Column(name = "UPDATED_AT", nullable = true)
     private LocalDateTime updatedAt;
 
-    @Column(name = "VERSION", nullable = true)
-    @Version
-    private Long version;
-
     @PrePersist
     protected void onCreate() {
         if (id == null || id.isEmpty()) {
