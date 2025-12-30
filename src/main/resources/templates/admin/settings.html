@@ -281,15 +281,26 @@
     }
 
     function showColorPicker(value) {
-        const normalized = normalizeHexColor(value) || '#275ed8';
+        // Normalize and set the color value
+        let normalized = normalizeHexColor(value);
+        if (!normalized) {
+            normalized = '#275ed8'; // fallback to default
+        }
+        
+        // Show color picker and hide text input pattern
         colorPicker.style.display = 'block';
-        settingValueInput.setAttribute('pattern', '#[0-9a-fA-F]{6}');
-        colorPicker.value = normalized;
+        settingValueInput.style.display = 'none';
+        settingValueInput.removeAttribute('pattern');
+        
+        // Set the actual value in the hidden input for form submission
         settingValueInput.value = normalized;
+        // Set the color picker to display the correct color
+        colorPicker.value = normalized;
     }
 
     function hideColorPicker(value) {
         colorPicker.style.display = 'none';
+        settingValueInput.style.display = 'block';
         settingValueInput.removeAttribute('pattern');
         settingValueInput.value = value;
     }
@@ -298,6 +309,7 @@
         if (colorPicker.style.display === 'none') {
             return;
         }
+        // Update the hidden input value when color picker changes
         settingValueInput.value = colorPicker.value;
     });
     

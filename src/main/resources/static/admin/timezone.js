@@ -186,52 +186,48 @@ function initializeTimezoneSelect2() {
     }
 
     const timezones = moment.tz.names();
-    const timezonesByRegion = {};
+    const timezoneData = timezones.map(tz => ({
+        id: tz,
+        text: tz,
+        search: buildSearchText(tz)
+    }));
 
-    timezones.forEach(timezone => {
-        const region = timezone.split('/')[0];
-        if (!timezonesByRegion[region]) {
-            timezonesByRegion[region] = [];
-        }
-        timezonesByRegion[region].push(timezone);
-    });
-
-    // Clear current content and convert input to select
-    const currentValue = $input.val();
-    const $select = $('<select id="modalTimezoneSelect" name="settingValue"></select>');
-    
-    // Build options
-    for (const region in timezonesByRegion) {
-        const $optgroup = $(`<optgroup label="${region}"></optgroup>`);
-        timezonesByRegion[region].forEach(timezone => {
-            $optgroup.append(
-                $(`<option></option>`)
-                    .attr('value', timezone)
-                    .attr('data-search', buildSearchText(timezone))
-                    .text(timezone)
-            );
-        });
-        $select.append($optgroup);
-    }
-
-    // Replace input with select and initialize Select2
-    $input.replaceWith($select);
-    const $newSelect = $('#modalTimezoneSelect');
-
-    $newSelect.select2({
-        placeholder: 'Search for a timezone',
+    // Initialize Select2 with search
+    $input.select2({
+        placeholder: 'Search for a timezone (type to find)',
         width: '100%',
-        matcher: customMatcher,
-        dropdownParent: $('#editSettingModal')
+        allowClear: false,
+        data: timezoneData,
+        matcher: function(params, data) {
+            if ($.trim(params.term) === '') {
+                return data;
+            }
+            
+            if (typeof data.search === 'undefined') {
+                return null;
+            }
+
+            const regex = buildRegex(params.term);
+            if (regex.test(data.text) || regex.test(data.search)) {
+                return data;
+            }
+
+            return null;
+        },
+        dropdownParent: $('#editAppSettingModal'),
+        minimumInputLength: 0,
+        dropdownCssClass: 'select2-dropdown--below'
     });
 
+    // Set current value if exists
+    const currentValue = settingValueInput.value;
     if (currentValue) {
-        $newSelect.val(currentValue).trigger('change.select2');
+        $input.val(currentValue).trigger('change.select2');
     }
 
-    // Sync back to hidden input on change
-    $newSelect.on('change', function() {
+    // Sync value back to input
+    $input.on('change', function() {
         const selectedValue = $(this).val();
-        $('input[name="settingValue"]').val(selectedValue);
+        settingValueInput.value = selectedValue;
     });
 }
