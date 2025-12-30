@@ -34,8 +34,6 @@ public class ZmanimService {
     private final MinyanService minyanService;
     private final com.tbdev.teaneckminyanim.service.provider.OrgScheduleResolver scheduleResolver;
     private final ZmanimHandler zmanimHandler;
-    private final EffectiveScheduleService effectiveScheduleService;
-    private final CalendarEventAdapter calendarEventAdapter;
 
     Calendar calendar = Calendar.getInstance();
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm aa");
@@ -124,39 +122,53 @@ public class ZmanimService {
         Date now = new Date();
         Date terminationDate = new Date(now.getTime() - (60000 * 8));
 
-        // Check if date is within materialization window
-        if (!effectiveScheduleService.isDateInWindow(localDateRef)) {
-            log.warn("Date {} is outside materialization window", localDateRef);
-            mv.getModel().put("outOfWindow", true);
-            mv.getModel().put("windowMessage", "Minyan schedule is only available from " + 
-                effectiveScheduleService.getWindowBounds().getStartDate() + " to " + 
-                effectiveScheduleService.getWindowBounds().getEndDate());
-        } else {
-            // Get all organizations
-            List<Organization> allOrganizations = organizationDAO.getAll();
-            log.info("Processing {} organizations for homepage", allOrganizations.size());
+        // Get all organizations
+        List<Organization> allOrganizations = organizationDAO.getAll();
+        log.info("Processing {} organizations for homepage", allOrganizations.size());
 
-            // Get effective events for all organizations on this date
-            for (Organization org : allOrganizations) {
-                String orgId = org.getId();
+        // For each organization, check if calendar import is enabled and get events accordingly
+        for (Organization org : allOrganizations) {
+            String orgId = org.getId();
+            boolean useCalendarImport = scheduleResolver.isCalendarImportEnabled(orgId);
+            
+            if (useCalendarImport) {
+                log.info("Using calendar import provider for organization: {} ({})", org.getName(), orgId);
+                // Get events from calendar import provider
+                List<MinyanEvent> calendarEvents = scheduleResolver.getEventsForDate(orgId, localDateRef);
                 
-                // Get effective events from materialized calendar
-                List<com.tbdev.teaneckminyanim.model.CalendarEvent> calendarEvents = 
-                        effectiveScheduleService.getEffectiveEventsForDate(orgId, localDateRef);
-                
-                // Convert to MinyanEvent objects
-                List<MinyanEvent> orgEvents = calendarEventAdapter.toMinyanEvents(calendarEvents);
-                
-                // Apply time-based filtering (same logic as before)
-                for (MinyanEvent event : orgEvents) {
-                    if (shouldDisplayEvent(event, date, now, terminationDate, zmanim)) {
+                // Filter calendar events based on time (same logic as rule-based)
+                for (MinyanEvent event : calendarEvents) {
+                    if (event.getStartTime() != null && 
+                        (event.getStartTime().after(terminationDate) || !sameDayOfMonth(now, date))) {
                         minyanEvents.add(event);
                     }
                 }
+                log.info("Added {} calendar-imported events from {}", calendarEvents.size(), org.getName());
+            } else {
+                log.info("Using rule-based provider for organization: {} ({})", org.getName(), orgId);
+                // Use existing rule-based logic for this organization
+                List<Minyan> orgMinyanim = minyanService.findEnabledMatching(orgId);
                 
-                log.info("Added {} events from {} (materialized calendar)", orgEvents.size(), org.getName());
-            }
-        }
+                LocalDate ref = localDateRef;
+                Calendar shekiyaMinusOneMinute = Calendar.getInstance();
+                shekiyaMinusOneMinute.setTime(zmanim.get(Zman.SHEKIYA));
+                shekiyaMinusOneMinute.add(Calendar.MINUTE, -1);
+                Calendar mgMinusOneMinute = Calendar.getInstance();
+                mgMinusOneMinute.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
+                mgMinusOneMinute.add(Calendar.MINUTE, -1);
+                boolean isSelichosRecited = zmanimHandler.isSelichosRecited(ref);
+
+        for (Minyan minyan : orgMinyanim) {
+            Date startDate = minyan.getStartDate(ref);
+            log.info("SD: " + startDate);
+            log.info("TD: " + terminationDate);
+            // if (startDate != null && (startDate.after(terminationDate) || now.getDate()
+            // != startDate.getDate())) {
+            // if (startDate != null && (startDate.after(terminationDate))) {
+            // start date must be valid AND (be after the termination date OR date must not
+            // be the same date as today, to disregard the termination time when the user is
+            // looking ahead)
+            if (startDate != null && (startDate.after(terminationDate) || !sameDayOfMonth(now, date))) {
                 // show the minyan
                 String organizationName;
                 Nusach organizationNusach;
