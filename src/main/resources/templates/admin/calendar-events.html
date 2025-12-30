@@ -4,47 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Calendar Events - [[${organization.name}]]</title>
+    
+    <!-- Tabulator CSS -->
+    <link href="https://unpkg.com/tabulator-tables@5.5.7/dist/css/tabulator_bootstrap4.min.css" rel="stylesheet">
+    
     <style>
-        /* Modern table styling */
-        .table-container {
-            overflow-x: auto;
-            margin-top: 1rem;
-        }
-        
-        .events-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+        /* Tabulator customizations */
+        #calendar-events-table {
             font-size: 0.9rem;
         }
         
-        .events-table thead {
-            position: sticky;
-            top: 0;
-            background: #fff;
-            z-index: 10;
-            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
-        }
-        
-        .events-table th {
-            padding: 0.75rem;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid #dee2e6;
-            white-space: nowrap;
-        }
-        
-        .events-table td {
-            padding: 0.75rem;
-            border-bottom: 1px solid #dee2e6;
-            vertical-align: middle;
-        }
-        
-        .events-table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .events-table tbody tr.disabled {
+        .tabulator-row.disabled-row {
             opacity: 0.6;
             background-color: #f8f9fa;
         }
@@ -103,42 +73,6 @@
             color: #880e4f;
         }
         
-        /* Filter panel */
-        .filter-panel {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 0.25rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .filter-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            align-items: flex-end;
-        }
-        
-        .filter-group {
-            flex: 1;
-            min-width: 150px;
-        }
-        
-        .filter-group label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.25rem;
-        }
-        
-        .filter-group input,
-        .filter-group select {
-            width: 100%;
-            padding: 0.375rem 0.75rem;
-            border: 1px solid #ced4da;
-            border-radius: 0.25rem;
-        }
-        
         /* Stats panel */
         .stats-panel {
             display: grid;
@@ -165,20 +99,6 @@
             font-size: 0.875rem;
             color: #666;
             text-transform: uppercase;
-        }
-        
-        /* Edit inline */
-        .inline-edit {
-            position: relative;
-        }
-        
-        .inline-edit input,
-        .inline-edit select {
-            width: 100%;
-            padding: 0.25rem 0.5rem;
-            border: 1px solid #ced4da;
-            border-radius: 0.25rem;
-            font-size: 0.875rem;
         }
         
         /* Action buttons */
@@ -219,23 +139,16 @@
             title: "Manually edited";
         }
         
-        .alert {
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-            border-radius: 0.25rem;
-            border: 1px solid transparent;
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
         }
         
-        .alert-success {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-        
-        .alert-danger {
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
+        /* Tabulator editors */
+        .tabulator-cell .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
         }
     </style>
 </head>
@@ -338,102 +251,29 @@
         </div>
 
         <!-- Events Table -->
-        <div class="table-container">
-            <table class="events-table table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Type</th>
-                        <th>Source</th>
-                        <th>Location</th>
-                        <th>Notes</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="event : ${events}" 
-                        th:classappend="${!event.enabled} ? 'disabled' : ''">
-                        <td th:text="${#temporals.format(event.date, 'EEE, MMM d, yyyy')}">Date</td>
-                        <td>
-                            <span th:text="${#temporals.format(event.startTime, 'h:mm a')}">Time</span>
-                            <span th:if="${event.dynamicTimeString}" 
-                                  th:text="'(' + ${event.dynamicTimeString} + ')'" 
-                                  style="color: #666; font-size: 0.75rem;"></span>
-                        </td>
-                        <td>
-                            <span class="badge" 
-                                  th:classappend="${event.minyanType.name() == 'SHACHARIS'} ? 'badge-shacharis' : 
-                                                  (${event.minyanType.name() == 'MINCHA'} ? 'badge-mincha' : 
-                                                  (${event.minyanType.name() == 'MAARIV'} ? 'badge-maariv' : 'badge-mincha-maariv'))"
-                                  th:text="${event.minyanType.displayName()}">Type</span>
-                        </td>
-                        <td>
-                            <span class="badge" 
-                                  th:classappend="${event.source.name() == 'RULES'} ? 'badge-rules' : 
-                                                  (${event.source.name() == 'IMPORTED'} ? 'badge-imported' : 'badge-manual')"
-                                  th:text="${event.source.displayName()}">Source</span>
-                            <span th:if="${event.manuallyEdited}" 
-                                  class="manually-edited-indicator" 
-                                  title="Manually edited"></span>
-                        </td>
-                        <td>
-                            <form method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/update(orgId=${organization.id},eventId=${event.id})}" 
-                                  style="display: inline;">
-                                <select name="locationId" class="form-control form-control-sm" 
-                                        onchange="this.form.submit()">
-                                    <option value="">No location</option>
-                                    <option th:each="loc : ${locations}" 
-                                            th:value="${loc.id}" 
-                                            th:text="${loc.name}"
-                                            th:selected="${loc.id == event.locationId}">Location</option>
-                                </select>
-                            </form>
-                            <small th:if="${event.locationName}" th:text="${event.locationName}" style="color: #666;"></small>
-                        </td>
-                        <td>
-                            <form method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/update(orgId=${organization.id},eventId=${event.id})}" 
-                                  style="display: inline;">
-                                <input type="text" name="notes" 
-                                       th:value="${event.notes}" 
-                                       placeholder="Add notes..."
-                                       class="form-control form-control-sm"
-                                       onchange="this.form.submit()">
-                            </form>
-                        </td>
-                        <td>
-                            <span class="badge" 
-                                  th:classappend="${event.enabled} ? 'badge-enabled' : 'badge-disabled'"
-                                  th:text="${event.enabled} ? 'Enabled' : 'Disabled'">Status</span>
-                        </td>
-                        <td style="white-space: nowrap;">
-                            <form method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/toggle(orgId=${organization.id},eventId=${event.id})}" 
-                                  style="display: inline;">
-                                <button type="submit" class="action-btn btn-toggle" 
-                                        th:text="${event.enabled} ? 'Disable' : 'Enable'">Toggle</button>
-                            </form>
-                            <button type="button" class="action-btn btn-edit" 
-                                    onclick="alert('Edit functionality coming soon')">Edit</button>
-                            <form th:if="${event.source.name() == 'MANUAL'}" 
-                                  method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/delete(orgId=${organization.id},eventId=${event.id})}" 
-                                  style="display: inline;"
-                                  onsubmit="return confirm('Delete this manual event?')">
-                                <button type="submit" class="action-btn btn-delete">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(events)}">
-                        <td colspan="8" style="text-align: center; padding: 2rem; color: #666;">
-                            No events found for the selected filters.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar"></i> Calendar Events
+                    <small class="text-muted" id="events-count">([[${totalEvents}]] events)</small>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <!-- Tabulator Table Container -->
+                <div id="calendar-events-table"></div>
+                
+                <!-- Hidden data for JavaScript -->
+                <script th:inline="javascript">
+                    /*<![CDATA[*/
+                    window.calendarEventsData = {
+                        orgId: /*[[${organization.id}]]*/ '',
+                        events: /*[[${events}]]*/ [],
+                        locations: /*[[${locations}]]*/ [],
+                        totalEvents: /*[[${totalEvents}]]*/ 0
+                    };
+                    /*]]>*/
+                </script>
+            </div>
         </div>
 
         <!-- Info box -->
@@ -450,5 +290,12 @@
         </div>
     </div>
 </div>
+
+<!-- Tabulator JS -->
+<script src="https://unpkg.com/tabulator-tables@5.5.7/dist/js/tabulator.min.js"></script>
+
+<!-- Tabulator Initialization Script -->
+<script th:src="@{/admin/calendar-events-tabulator.js}"></script>
+
 </body>
 </html>

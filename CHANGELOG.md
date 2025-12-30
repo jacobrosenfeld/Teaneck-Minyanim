@@ -10,19 +10,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.4.1] - 2025-12-30
 
 ### Changed
-- **Tabulator Integration**: Replaced basic HTML table with Tabulator 5.5 data grid for calendar entries management
-  - Advanced sorting with multi-column support
-  - Built-in header filters for date, title, type, location, and status columns
-  - Client-side pagination (30 entries per page, configurable)
-  - Inline location editing using dropdown editor
-  - Responsive layout with column collapsing on mobile devices
-  - Movable and resizable columns for customization
-  - Improved performance for large datasets
+- **Tabulator Integration**: Replaced basic HTML tables with Tabulator 5.5 data grid for both calendar entries and calendar events management
+  - **Calendar Entries (`/admin/{orgId}/calendar-entries`)**: 
+    - Advanced sorting with multi-column support
+    - Built-in header filters for date, title, type, location, and status columns
+    - Client-side pagination (30 entries per page, configurable)
+    - Inline location editing using dropdown editor
+    - Responsive layout with column collapsing on mobile devices
+    - Movable and resizable columns for customization
+    - Improved performance for large datasets
+  - **Calendar Events (`/admin/{orgId}/calendar-events`)**: 
+    - Same advanced Tabulator features as calendar entries
+    - Inline editing for both location and notes fields
+    - Toggle and delete actions integrated into table
+    - Source and minyan type filtering via header filters
+    - Maintained rules/imported/manual badge differentiation
 - **Enhanced UI/UX**: 
   - Streamlined interface with integrated filtering in table headers
-  - Real-time entry count updates
+  - Real-time entry/event count updates
   - Preserved existing badge styling and prayer type pills
-  - Maintained all CRUD functionality (view, edit location, toggle status)
+  - Maintained all CRUD functionality (view, edit location/notes, toggle status, delete manual events)
 
 ## [1.4.0] - 2025-12-30
 
