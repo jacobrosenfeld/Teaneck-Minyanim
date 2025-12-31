@@ -1431,7 +1431,6 @@ public class AdminController {
         Map<String, String> locationNames = new HashMap<>();
         for (Minyan minyan : minyanim) {
             Location location = this.locationDAO.findById(minyan.getLocationId());
-//            TODO: DONT JUST SHOW EMPTY STRING
             String locationDisplayName = location == null ? "" : location.getName();
             locationNames.put(minyan.getId(), locationDisplayName);
         }

@@ -5,7 +5,95 @@
       layout:decorate="~{admin/layout}">
 
 <head>
-    <title layout:fragment="title" th:text="@{|Application Settings - ${siteName} ?: 'Minyanim Platform'|}">Application Settings</title>
+    <meta charset="UTF-8">
+    <title th:text="@{|Settings - ${siteName} ?: 'Minyanim Platform'|}"></title>
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+    <link rel="manifest" href="/assets/icons/site.webmanifest">
+    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
+    
+    <meta name="msapplication-TileColor" content="#275ed8">
+    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1RbZVAqL1WCoVSnvgoYpP74ifdbrKvN5/NgJ5DZ2iI6N6D2qOAh" crossorigin="anonymous">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLoa6Zb7Meevd+You33Sk3vp5+Ndzo7Q7in1JVrw5MwQJR3p6db8rrMnnf" crossorigin="anonymous"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Moment.js -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <!-- Moment Timezone -->
+    <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.43/builds/moment-timezone-with-data.min.js"></script>
+    
+    <style>
+        .settings-section {
+            margin-bottom: 2rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            background-color: #fff;
+        }
+        .settings-section h4 {
+            color: #495057;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .setting-row {
+            padding: 1rem 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+        .setting-label {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.25rem;
+        }
+        .setting-description {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+        .setting-value {
+            font-family: 'Courier New', monospace;
+            background-color: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            display: inline-block;
+        }
+        .alert-custom {
+            margin-bottom: 1.5rem;
+        }
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #modalSettingColorPicker {
+            flex-shrink: 0;
+            cursor: pointer;
+            height: 38px;
+            border-radius: 0.25rem;
+            border: 1px solid #ced4da;
+            width: 60px;
+        }
+        #modalSettingColorPicker:hover {
+            border-color: #80bdff;
+        }
+        #modalSettingValue {
+            font-family: 'Courier New', monospace;
+        }
+    </style>
     
     <th:block layout:fragment="styles">
         <!-- Select2 CSS -->
