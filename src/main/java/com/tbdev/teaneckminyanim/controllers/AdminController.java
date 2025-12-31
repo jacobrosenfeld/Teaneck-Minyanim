@@ -94,6 +94,11 @@ public class AdminController {
 
     private void addStandardPageData(ModelAndView mv) {
         mv.addObject("user", getCurrentUser());
+        
+        // Add all organizations for super admin dropdown
+        if (isSuperAdmin()) {
+            mv.addObject("allOrganizations", organizationService.getAll());
+        }
 
         Date today = new Date();
         dateFormat.setTimeZone(settingsService.getTimeZone());
@@ -1052,6 +1057,39 @@ public class AdminController {
             log.error("Error updating setting {}: {}", settingKey, e.getMessage(), e);
             return settings(null, "Error updating setting: " + e.getMessage());
         }
+    }
+
+    @RequestMapping(value = "/admin/org/{organizationId}/dashboard", method = RequestMethod.GET)
+    public ModelAndView orgDashboard(@PathVariable String organizationId) {
+        // Redirect to minyanim page for now (we can create a proper dashboard later)
+        return minyanim(organizationId, null, null);
+    }
+
+    @RequestMapping(value = "/admin/org/{organizationId}/minyanim", method = RequestMethod.GET)
+    public ModelAndView orgMinyanim(@PathVariable String organizationId, String successMessage, String errorMessage) {
+        return minyanim(organizationId, successMessage, errorMessage);
+    }
+
+    @RequestMapping(value = "/admin/org/{oid}/locations", method = RequestMethod.GET)
+    public ModelAndView orgLocations(@PathVariable String oid, String successMessage, String errorMessage) {
+        return locations(oid, successMessage, errorMessage);
+    }
+
+    @RequestMapping(value = "/admin/org/{orgId}/calendar-entries", method = RequestMethod.GET)
+    public ModelAndView orgCalendarEntries(@PathVariable String orgId,
+                                           @RequestParam(required = false) String successMessage,
+                                           @RequestParam(required = false) String errorMessage,
+                                           @RequestParam(required = false) String sortBy,
+                                           @RequestParam(required = false) String sortDir,
+                                           @RequestParam(required = false) String filterClassification,
+                                           @RequestParam(required = false) String filterEnabled,
+                                           @RequestParam(required = false) String searchText,
+                                           @RequestParam(required = false) String startDate,
+                                           @RequestParam(required = false) String endDate,
+                                           @RequestParam(required = false, defaultValue = "false") Boolean showNonMinyan) {
+        // Call the existing calendar entries method
+        return viewCalendarEntries(orgId, successMessage, errorMessage, sortBy, sortDir, 
+                                  filterClassification, filterEnabled, searchText, startDate, endDate, showNonMinyan);
     }
 
     @RequestMapping(value = "/admin/{oid}/locations", method = RequestMethod.GET)
