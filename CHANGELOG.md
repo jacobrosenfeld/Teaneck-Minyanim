@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2025-12-31
+
+### Added
+
+#### Super Admin Top Navbar with Organization Dropdown
+- **Redesigned Navigation for Super Admins**:
+  - Moved super admin navigation from sidebar to top navbar for better accessibility
+  - Added "Organizations" dropdown menu with searchable list of all organizations
+  - Integrated "New Organization" action directly into dropdown menu (removed separate sidebar link)
+  - Added direct access to Settings, Accounts, and Notifications from top navbar
+  - Dropdown features real-time search filtering of organizations
+  - Smooth animations and visual feedback for dropdown interactions
+  - Mobile-responsive design with fixed positioning on small screens
+
+#### Organization Context Sidebar
+- **Context-Aware Sidebar Navigation**:
+  - New org-specific sidebar appears when Super Admin or Org Manager is in organization context
+  - Shows current organization name as sidebar section title
+  - Consolidated org-level tools: Dashboard, Minyan Schedule, Locations, Calendar Entries, Profile & Accounts
+  - Active link highlighting based on current page URL
+  - Organization Actions section (Disable/Delete) for Super Admins only
+  - Visual separation of org actions from regular navigation
+  - Confirmation dialog for destructive actions (delete organization)
+
+#### Standardized Organization Routes
+- **Consistent URL Pattern (`/admin/org/{orgId}/...`)**:
+  - `/admin/org/{orgId}/dashboard` - Organization dashboard (currently redirects to minyanim)
+  - `/admin/org/{orgId}/minyanim` - Minyan schedule management
+  - `/admin/org/{orgId}/locations` - Location management
+  - `/admin/org/{orgId}/calendar-entries` - Calendar entries management
+  - All routes properly verify user permissions (Super Admin or org ownership)
+  - Routes delegate to existing controller methods for consistency
+
+### Changed
+
+#### Navigation Architecture
+- **Role-Based Navigation Display**:
+  - Super Admins now see top navbar with global controls instead of sidebar-first navigation
+  - Org Managers/Admins see only org-specific sidebar (no access to global controls)
+  - Navigation automatically adapts based on user role and current context
+  - Sidebar visibility logic updated to show appropriate sections based on organization context
+  - Non-super-admin users with no org context see their organization's tools directly
+
+#### Controller Updates
+- **AdminController Enhancements**:
+  - `addStandardPageData()` now provides `allOrganizations` list for super admin dropdown
+  - Added wrapper methods for org-context routes that delegate to existing implementations
+  - Maintained backward compatibility with existing `/admin/{orgId}/...` routes
+
+### Improved
+
+#### User Experience
+- **Streamlined Organization Management**:
+  - Faster organization switching for Super Admins via top navbar dropdown
+  - Clearer visual hierarchy: global controls (navbar) vs org-specific tools (sidebar)
+  - Reduced navigation fragmentation with consolidated org-level menu
+  - More intuitive workflow: select org → see org tools → manage org resources
+  - Better mobile responsiveness with collapsible sidebar and fixed navbar
+
+#### Design Consistency
+- **Laravel Backpack-Inspired UX**:
+  - Professional admin panel design patterns
+  - Consistent spacing and visual design using existing design system tokens
+  - Smooth transitions and hover effects throughout navigation
+  - Clear visual distinction between global and org-specific contexts
+
 ## [1.5.0] - 2025-12-30
 
 ### Added
