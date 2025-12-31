@@ -95,9 +95,11 @@ public class AdminController {
     private void addStandardPageData(ModelAndView mv) {
         mv.addObject("user", getCurrentUser());
         
-        // Add all organizations for super admin dropdown
+        // Add all organizations for super admin dropdown (sorted alphabetically)
         if (isSuperAdmin()) {
-            mv.addObject("allOrganizations", organizationService.getAll());
+            List<Organization> organizations = organizationService.getAll();
+            organizations.sort(Comparator.comparing(Organization::getName, String.CASE_INSENSITIVE_ORDER));
+            mv.addObject("allOrganizations", organizations);
         }
 
         Date today = new Date();

@@ -1,9 +1,11 @@
 package com.tbdev.teaneckminyanim.controllers;
 
 import com.tbdev.teaneckminyanim.model.Notification;
+import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.NotificationService;
+import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Controller
@@ -29,6 +32,7 @@ public class NotificationController {
     private final TNMUserService tnmUserService;
     private final ApplicationSettingsService applicationSettingsService;
     private final VersionService versionService;
+    private final OrganizationService organizationService;
 
     /**
      * Get current authenticated user
@@ -36,6 +40,14 @@ public class NotificationController {
     private TNMUser getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return tnmUserService.findByName(username);
+    }
+    
+    /**
+     * Check if current user is super admin
+     */
+    private boolean isSuperAdmin() {
+        TNMUser user = getCurrentUser();
+        return user.getOrganizationId() == null && user.isAdmin();
     }
 
     /**
@@ -70,7 +82,15 @@ public class NotificationController {
         ModelAndView mv = new ModelAndView("admin/notifications");
         
         // Add user to model for sidebar
-        mv.addObject("user", getCurrentUser());
+        TNMUser currentUser = getCurrentUser();
+        mv.addObject("user", currentUser);
+        
+        // Add all organizations for super admin dropdown (sorted alphabetically)
+        if (isSuperAdmin()) {
+            List<Organization> organizations = organizationService.getAll();
+            organizations.sort(Comparator.comparing(Organization::getName, String.CASE_INSENSITIVE_ORDER));
+            mv.addObject("allOrganizations", organizations);
+        }
         
         List<Notification> allNotifications = notificationService.getAll();
         mv.addObject("notifications", allNotifications);
