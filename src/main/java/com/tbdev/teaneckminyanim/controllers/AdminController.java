@@ -1060,23 +1060,45 @@ public class AdminController {
     }
 
     @RequestMapping(value = "/admin/org/{organizationId}/dashboard", method = RequestMethod.GET)
-    public ModelAndView orgDashboard(@PathVariable String organizationId) {
+    public RedirectView orgDashboard(@PathVariable String organizationId) {
         // Redirect to minyanim page for now (we can create a proper dashboard later)
-        return minyanim(organizationId, null, null);
+        return new RedirectView("/admin/" + organizationId + "/minyanim");
     }
 
     @RequestMapping(value = "/admin/org/{organizationId}/minyanim", method = RequestMethod.GET)
-    public ModelAndView orgMinyanim(@PathVariable String organizationId, String successMessage, String errorMessage) {
-        return minyanim(organizationId, successMessage, errorMessage);
+    public RedirectView orgMinyanim(@PathVariable String organizationId, 
+                                    @RequestParam(required = false) String successMessage, 
+                                    @RequestParam(required = false) String errorMessage) {
+        String redirectUrl = "/admin/" + organizationId + "/minyanim";
+        if (successMessage != null || errorMessage != null) {
+            redirectUrl += "?";
+            if (successMessage != null) redirectUrl += "successMessage=" + successMessage;
+            if (errorMessage != null) {
+                if (successMessage != null) redirectUrl += "&";
+                redirectUrl += "errorMessage=" + errorMessage;
+            }
+        }
+        return new RedirectView(redirectUrl);
     }
 
     @RequestMapping(value = "/admin/org/{oid}/locations", method = RequestMethod.GET)
-    public ModelAndView orgLocations(@PathVariable String oid, String successMessage, String errorMessage) {
-        return locations(oid, successMessage, errorMessage);
+    public RedirectView orgLocations(@PathVariable String oid, 
+                                     @RequestParam(required = false) String successMessage, 
+                                     @RequestParam(required = false) String errorMessage) {
+        String redirectUrl = "/admin/" + oid + "/locations";
+        if (successMessage != null || errorMessage != null) {
+            redirectUrl += "?";
+            if (successMessage != null) redirectUrl += "successMessage=" + successMessage;
+            if (errorMessage != null) {
+                if (successMessage != null) redirectUrl += "&";
+                redirectUrl += "errorMessage=" + errorMessage;
+            }
+        }
+        return new RedirectView(redirectUrl);
     }
 
     @RequestMapping(value = "/admin/org/{orgId}/calendar-entries", method = RequestMethod.GET)
-    public ModelAndView orgCalendarEntries(@PathVariable String orgId,
+    public RedirectView orgCalendarEntries(@PathVariable String orgId,
                                            @RequestParam(required = false) String successMessage,
                                            @RequestParam(required = false) String errorMessage,
                                            @RequestParam(required = false) String sortBy,
@@ -1086,10 +1108,61 @@ public class AdminController {
                                            @RequestParam(required = false) String searchText,
                                            @RequestParam(required = false) String startDate,
                                            @RequestParam(required = false) String endDate,
-                                           @RequestParam(required = false, defaultValue = "false") Boolean showNonMinyan) {
-        // Call the existing calendar entries method
-        return viewCalendarEntries(orgId, successMessage, errorMessage, sortBy, sortDir, 
-                                  filterClassification, filterEnabled, searchText, startDate, endDate, showNonMinyan);
+                                           @RequestParam(required = false) Boolean showNonMinyan) {
+        // Build redirect URL with all parameters
+        StringBuilder redirectUrl = new StringBuilder("/admin/" + orgId + "/calendar-entries?");
+        boolean hasParam = false;
+        
+        if (successMessage != null) {
+            redirectUrl.append("successMessage=").append(successMessage);
+            hasParam = true;
+        }
+        if (errorMessage != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("errorMessage=").append(errorMessage);
+            hasParam = true;
+        }
+        if (sortBy != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("sortBy=").append(sortBy);
+            hasParam = true;
+        }
+        if (sortDir != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("sortDir=").append(sortDir);
+            hasParam = true;
+        }
+        if (filterClassification != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("filterClassification=").append(filterClassification);
+            hasParam = true;
+        }
+        if (filterEnabled != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("filterEnabled=").append(filterEnabled);
+            hasParam = true;
+        }
+        if (searchText != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("searchText=").append(searchText);
+            hasParam = true;
+        }
+        if (startDate != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("startDate=").append(startDate);
+            hasParam = true;
+        }
+        if (endDate != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("endDate=").append(endDate);
+            hasParam = true;
+        }
+        if (showNonMinyan != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("showNonMinyan=").append(showNonMinyan);
+        }
+        
+        return new RedirectView(redirectUrl.toString());
     }
 
     @RequestMapping(value = "/admin/{oid}/locations", method = RequestMethod.GET)
