@@ -36,6 +36,7 @@ public class ZmanimService {
     private final ZmanimHandler zmanimHandler;
     private final EffectiveScheduleService effectiveScheduleService;
     private final CalendarEventAdapter calendarEventAdapter;
+    private final VersionService versionService;
 
     Calendar calendar = Calendar.getInstance();
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm aa");
@@ -378,6 +379,8 @@ public class ZmanimService {
         mv.getModel().put("mapboxAccessToken", settingsService.getMapboxAccessToken());
         mv.getModel().put("siteName", settingsService.getSiteName());
         mv.getModel().put("appColor", settingsService.getAppColor());
+        mv.getModel().put("supportEmail", settingsService.getSupportEmail());
+        mv.getModel().put("appVersion", versionService.getVersion());
 
         // mv.getModel().put("usesLocations", minyanEvents.)
 
