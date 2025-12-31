@@ -1,455 +1,408 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="en" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+
 <head>
-    <meta charset="UTF-8">
-    <title th:text="@{|Application Settings - ${siteName} ?: 'Minyanim Platform'|}"></title>
-    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
-    <link rel="manifest" href="/assets/icons/site.webmanifest">
-    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
+    <title layout:fragment="title" th:text="@{|Application Settings - ${siteName} ?: 'Minyanim Platform'|}">Application Settings</title>
     
-    <meta name="msapplication-TileColor" content="#275ed8">
-    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1RbZVAqL1WCoVSnvgoYpP74ifdbrKvN5/NgJ5DZ2iI6N6D2qOAh" crossorigin="anonymous">
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLoa6Zb7Meevd+You33Sk3vp5+Ndzo7Q7in1JVrw5MwQJR3p6db8rrMnnf" crossorigin="anonymous"></script>
-    <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <!-- Moment.js -->
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-    <!-- Moment Timezone -->
-    <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.43/builds/moment-timezone-with-data.min.js"></script>
-    
-    <style>
-        .settings-section {
-            margin-bottom: 2rem;
-            border: 1px solid #dee2e6;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            background-color: #fff;
-        }
-        .settings-section h4 {
-            color: #495057;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e9ecef;
-        }
-        .setting-row {
-            padding: 1rem 0;
-            border-bottom: 1px solid #f8f9fa;
-        }
-        .setting-row:last-child {
-            border-bottom: none;
-        }
-        .setting-label {
-            font-weight: 600;
-            color: #212529;
-            margin-bottom: 0.25rem;
-        }
-        .setting-description {
-            font-size: 0.875rem;
-            color: #6c757d;
-            margin-bottom: 0.5rem;
-        }
-        .setting-value {
-            font-family: 'Courier New', monospace;
-            background-color: #f8f9fa;
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            display: inline-block;
-        }
-        .alert-custom {
-            margin-bottom: 1.5rem;
-        }
-        .color-picker-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        #modalSettingColorPicker {
-            flex-shrink: 0;
-            cursor: pointer;
-            height: 38px;
-            border-radius: 0.25rem;
-            border: 1px solid #ced4da;
-            width: 60px;
-        }
-        #modalSettingColorPicker:hover {
-            border-color: #80bdff;
-        }
-        #modalSettingValue {
-            font-family: 'Courier New', monospace;
-        }
-    </style>
-    
-    <style>
-        /* Improve datalist styling */
-        #modalSettingValue::placeholder {
-            color: #adb5bd;
-        }
+    <th:block layout:fragment="styles">
+        <!-- Select2 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         
-        #modalSettingValue:focus {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-        }
-        
-        /* Custom timezone autocomplete */
-        .timezone-search-container {
-            position: relative;
-            width: 100%;
-        }
-        
-        .timezone-search-input {
-            width: 100%;
-        }
-        
-        .timezone-dropdown-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #dee2e6;
-            border-top: none;
-            border-radius: 0 0 0.25rem 0.25rem;
-            max-height: 250px;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .timezone-option {
-            padding: 10px 12px;
-            cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-            color: #212529;
-            transition: background-color 0.15s;
-        }
-        
-        .timezone-option:last-child {
-            border-bottom: none;
-        }
-        
-        .timezone-option:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .timezone-option.selected {
-            background-color: #007bff;
-            color: white;
-        }
-        
-        .timezone-option-match {
-            font-weight: 600;
-            color: #007bff;
-        }
-        
-        .timezone-option.selected .timezone-option-match {
-            color: white;
-        }
-    </style>
-    </style>
+        <style>
+            .settings-section {
+                margin-bottom: 2rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                padding: 1.5rem;
+                background-color: #fff;
+            }
+            .settings-section h4 {
+                color: #495057;
+                margin-bottom: 1rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 2px solid #e9ecef;
+            }
+            .setting-row {
+                padding: 1rem 0;
+                border-bottom: 1px solid #f8f9fa;
+            }
+            .setting-row:last-child {
+                border-bottom: none;
+            }
+            .setting-label {
+                font-weight: 600;
+                color: #212529;
+                margin-bottom: 0.25rem;
+            }
+            .setting-description {
+                font-size: 0.875rem;
+                color: #6c757d;
+                margin-bottom: 0.5rem;
+            }
+            .setting-value {
+                font-family: 'Courier New', monospace;
+                background-color: #f8f9fa;
+                padding: 0.5rem;
+                border-radius: 0.25rem;
+                display: inline-block;
+            }
+            .color-picker-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            #modalSettingColorPicker {
+                flex-shrink: 0;
+                cursor: pointer;
+                height: 38px;
+                border-radius: 0.25rem;
+                border: 1px solid #ced4da;
+                width: 60px;
+            }
+            #modalSettingColorPicker:hover {
+                border-color: #80bdff;
+            }
+            #modalSettingValue {
+                font-family: 'Courier New', monospace;
+            }
+            #modalSettingValue::placeholder {
+                color: #adb5bd;
+            }
+            #modalSettingValue:focus {
+                border-color: #80bdff;
+                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            }
+            .timezone-search-container {
+                position: relative;
+                width: 100%;
+            }
+            .timezone-search-input {
+                width: 100%;
+            }
+            .timezone-dropdown-list {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border: 1px solid #dee2e6;
+                border-top: none;
+                border-radius: 0 0 0.25rem 0.25rem;
+                max-height: 250px;
+                overflow-y: auto;
+                z-index: 1000;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .timezone-option {
+                padding: 10px 12px;
+                cursor: pointer;
+                border-bottom: 1px solid #f0f0f0;
+                font-size: 14px;
+                color: #212529;
+                transition: background-color 0.15s;
+            }
+            .timezone-option:last-child {
+                border-bottom: none;
+            }
+            .timezone-option:hover {
+                background-color: #f8f9fa;
+            }
+            .timezone-option.selected {
+                background-color: #007bff;
+                color: white;
+            }
+            .timezone-option-match {
+                font-weight: 600;
+                color: #007bff;
+            }
+            .timezone-option.selected .timezone-option-match {
+                color: white;
+            }
+        </style>
+    </th:block>
 </head>
+
 <body>
-<div class="horizontal-container">
-    <th:block th:include="admin/navbar"></th:block>
-    <div class="container-fluid" id="main">
-        <div class="row row-offcanvas row-offcanvas-left vh-100">
-            <th:block th:include="admin/sidebar"></th:block>
-            
-            <div class="col-housing main h-100 overflow-auto">
-                <main class="col main pt-5 mt-3 overflow-auto">
-                    <h3 class="lead d-sm-block">Application Settings</h3>
-                    <p class="text-muted">Configure application-wide settings for location, timezone, calendar import, and external services. 
-                        <a href="/admin/notifications" class="btn btn-sm btn-outline-primary ms-2">
-                            <i class="bi bi-megaphone"></i> Manage Notifications
-                        </a>
-                    </p>
-                    
-                    <hr class="d-none d-sm-block">
-                    
-                    <!-- Success/Error Messages -->
-                    <div th:if="${success}" class="alert alert-success alert-dismissible fade show alert-custom" role="alert">
-                        <strong>Success!</strong> <span th:text="${success}"></span>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    
-                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show alert-custom" role="alert">
-                        <strong>Error!</strong> <span th:text="${error}"></span>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
+    <div layout:fragment="content">
+        <div class="page-header">
+            <h3 class="lead d-sm-block">Application Settings</h3>
+            <p class="text-muted">Configure application-wide settings for location, timezone, calendar import, and external services. 
+                <a href="/admin/notifications" class="btn btn-sm btn-outline-primary ms-2">
+                    <i class="bi bi-megaphone"></i> Manage Notifications
+                </a>
+            </p>
+        </div>
 
-                    <div class="row my-4" style="padding-bottom: 60px">
-                        <div class="col-lg-10">
+        <div class="row my-4" style="padding-bottom: 60px">
+            <div class="col-lg-10">
+                
+                <!-- Application Settings (Location, Timezone, Calendar) -->
+                <h3 class="mb-3">System Configuration</h3>
+                <div th:each="category : ${applicationSettingsByCategory.keySet()}" class="settings-section">
+                    <h4 th:text="${category}"></h4>
+                    
+                    <div th:each="setting : ${applicationSettingsByCategory.get(category)}" class="setting-row">
+                        <div class="setting-label" th:text="${setting.settingKey}"></div>
+                        <div class="setting-description" th:text="${setting.description}"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="setting-value" th:text="${setting.settingValue}"></div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        th:data-key="${setting.settingKey}"
+                                        th:data-value="${setting.settingValue}"
+                                        th:data-type="${setting.settingType}"
+                                        th:data-description="${setting.description}"
+                                        data-toggle="modal" 
+                                        data-target="#editAppSettingModal"
+                                        onclick="prepareEditModal(this)">
+                                    Edit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Edit Application Setting Modal -->
+        <div class="modal fade" id="editAppSettingModal" tabindex="-1" aria-labelledby="editAppSettingModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editAppSettingModalLabel">Edit Application Setting</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form method="post" th:action="@{/admin/settings/update-application-setting}" id="editAppSettingForm">
+                        <div class="modal-body">
+                            <input type="hidden" name="settingKey" id="modalSettingKey">
                             
-                            <!-- Application Settings (Location, Timezone, Calendar) -->
-                            <h3 class="mb-3">System Configuration</h3>
-                            <div th:each="category : ${applicationSettingsByCategory.keySet()}" class="settings-section">
-                                <h4 th:text="${category}"></h4>
-                                
-                                <div th:each="setting : ${applicationSettingsByCategory.get(category)}" class="setting-row">
-                                    <div class="setting-label" th:text="${setting.settingKey}"></div>
-                                    <div class="setting-description" th:text="${setting.description}"></div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="setting-value" th:text="${setting.settingValue}"></div>
-                                        </div>
-                                        <div class="col-md-6 text-right">
-                                            <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                    th:data-key="${setting.settingKey}"
-                                                    th:data-value="${setting.settingValue}"
-                                                    th:data-type="${setting.settingType}"
-                                                    th:data-description="${setting.description}"
-                                                    data-toggle="modal" 
-                                                    data-target="#editAppSettingModal"
-                                                    onclick="prepareEditModal(this)">
-                                                Edit
-                                            </button>
-                                        </div>
-                                    </div>
+                            <div class="form-group">
+                                <label>Setting Key</label>
+                                <input type="text" class="form-control" id="modalSettingKeyDisplay" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Description</label>
+                                <p class="form-text text-muted" id="modalSettingDescription"></p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="modalSettingValue">Value <span class="text-danger">*</span></label>
+                                <div class="timezone-autocomplete-wrapper">
+                                    <input type="color" class="form-control" id="modalSettingColorPicker" style="display: none;" title="Pick a color">
+                                    <input type="text" class="form-control" name="settingValue" id="modalSettingValue" placeholder="Enter value..." required>
                                 </div>
+                                <div class="timezone-dropdown-list" id="timezoneDropdown" style="display: none;"></div>
+                                <small class="form-text text-muted" id="modalValueHint"></small>
                             </div>
-                            
                         </div>
-                    </div>
-                </main>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Application Setting Modal -->
-<div class="modal fade" id="editAppSettingModal" tabindex="-1" aria-labelledby="editAppSettingModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editAppSettingModalLabel">Edit Application Setting</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form method="post" th:action="@{/admin/settings/update-application-setting}" id="editAppSettingForm">
-                <div class="modal-body">
-                    <input type="hidden" name="settingKey" id="modalSettingKey">
-                    
-                    <div class="form-group">
-                        <label>Setting Key</label>
-                        <input type="text" class="form-control" id="modalSettingKeyDisplay" readonly>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Description</label>
-                        <p class="form-text text-muted" id="modalSettingDescription"></p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="modalSettingValue">Value <span class="text-danger">*</span></label>
-                        <div class="timezone-autocomplete-wrapper">
-                            <input type="color" class="form-control" id="modalSettingColorPicker" style="display: none;" title="Pick a color">
-                            <input type="text" class="form-control" name="settingValue" id="modalSettingValue" placeholder="Enter value..." required>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
                         </div>
-                        <div class="timezone-dropdown-list" id="timezoneDropdown" style="display: none;"></div>
-                        <small class="form-text text-muted" id="modalValueHint"></small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Notification Settings Modals -->
-<div th:each="settings: ${notificationSettings}">
-    <div class="modal fade" th:id="${'update-notification-modal-' + settings.id}" tabindex="-1" th:aria-labelledby="${'update-notification-modal-label-' + settings.id}" style="display: none;" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title h4" th:id="${'update-notification-modal-label-' + settings.id}">Edit Notification</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" th:action="@{/admin/update-settings}">
-                        <div class="form-group">
-                            <input type="hidden" name="id" th:value="${settings.id}">
-                            <input type="hidden" name="setting" th:value="${settings.setting}">
-                            <input type="hidden" name="type" th:value="${settings.type}">
-                            <h4 th:text="${settings.setting}"></h4>
-                            <div class="form-group">
-                                <label for="enabled">Enabled</label>
-                                <select class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}">
-                                    <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'}">Enabled</option>
-                                    <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}">Disabled</option>
-                                </select>
-                                <input type="hidden" name="enabledHidden" th:value="${settings.enabled == 'n/a' ? 'n/a' : settings.enabled}">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="text">Message Text (Markdown Supported)</label>
-                                <textarea class="form-control" th:id="${'new-text-' + settings.id}" name="text" rows="5" th:text="${settings.text}"></textarea>
-                                <small class="form-text text-muted">
-                                    Supports markdown: **bold**, *italic*, [link](url), `code`, - list items, ## headers
-                                </small>
-                            </div>
-
-                            <div class="form-group mt-3">
-                                <label th:for="${'new-expiration-date-' + settings.id}">Expiration Date (Optional)</label>
-                                <input type="date" class="form-control" th:id="${'new-expiration-date-' + settings.id}" name="expirationDate" th:value="${settings.expirationDate}">
-                                <small class="form-text text-muted">Leave empty for no expiration. Format: YYYY-MM-DD</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label th:for="${'new-max-displays-' + settings.id}">Max Displays Per User (Optional)</label>
-                                <input type="number" class="form-control" th:id="${'new-max-displays-' + settings.id}" name="maxDisplays" th:value="${settings.maxDisplays}" min="1" max="100">
-                                <small class="form-text text-muted">Leave empty for unlimited displays. Max: 100</small>
-                            </div>
-
-                        </div>
-                        <hr>
-                        <button type="submit" class="btn btn-primary">Save</button>
                     </form>
                 </div>
             </div>
         </div>
+
+        <!-- Edit Notification Settings Modals -->
+        <div th:each="settings: ${notificationSettings}">
+            <div class="modal fade" th:id="${'update-notification-modal-' + settings.id}" tabindex="-1" th:aria-labelledby="${'update-notification-modal-label-' + settings.id}" style="display: none;" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title h4" th:id="${'update-notification-modal-label-' + settings.id}">Edit Notification</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" th:action="@{/admin/update-settings}">
+                                <div class="form-group">
+                                    <input type="hidden" name="id" th:value="${settings.id}">
+                                    <input type="hidden" name="setting" th:value="${settings.setting}">
+                                    <input type="hidden" name="type" th:value="${settings.type}">
+                                    <h4 th:text="${settings.setting}"></h4>
+                                    <div class="form-group">
+                                        <label for="enabled">Enabled</label>
+                                        <select class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}">
+                                            <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'}">Enabled</option>
+                                            <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}">Disabled</option>
+                                        </select>
+                                        <input type="hidden" name="enabledHidden" th:value="${settings.enabled == 'n/a' ? 'n/a' : settings.enabled}">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="text">Message Text (Markdown Supported)</label>
+                                        <textarea class="form-control" th:id="${'new-text-' + settings.id}" name="text" rows="5" th:text="${settings.text}"></textarea>
+                                        <small class="form-text text-muted">
+                                            Supports markdown: **bold**, *italic*, [link](url), `code`, - list items, ## headers
+                                        </small>
+                                    </div>
+
+                                    <div class="form-group mt-3">
+                                        <label th:for="${'new-expiration-date-' + settings.id}">Expiration Date (Optional)</label>
+                                        <input type="date" class="form-control" th:id="${'new-expiration-date-' + settings.id}" name="expirationDate" th:value="${settings.expirationDate}">
+                                        <small class="form-text text-muted">Leave empty for no expiration. Format: YYYY-MM-DD</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label th:for="${'new-max-displays-' + settings.id}">Max Displays Per User (Optional)</label>
+                                        <input type="number" class="form-control" th:id="${'new-max-displays-' + settings.id}" name="maxDisplays" th:value="${settings.maxDisplays}" min="1" max="100">
+                                        <small class="form-text text-muted">Leave empty for unlimited displays. Max: 100</small>
+                                    </div>
+
+                                </div>
+                                <hr>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    const colorPicker = document.getElementById('modalSettingColorPicker');
-    const settingValueInput = document.getElementById('modalSettingValue');
-    const valueHint = document.getElementById('modalValueHint');
-
-    function normalizeHexColor(rawValue) {
-        if (!rawValue) {
-            return '';
-        }
-        const trimmed = rawValue.trim();
-        const match = trimmed.match(/^#?[0-9a-fA-F]{6}$/);
-        if (!match) {
-            return '';
-        }
-        return trimmed.startsWith('#') ? trimmed.toLowerCase() : `#${trimmed.toLowerCase()}`;
-    }
-
-    function extractHexColor(value) {
-        if (!value) return '';
-        // Try direct normalization first
-        let normalized = normalizeHexColor(value);
-        if (normalized) return normalized;
+    <th:block layout:fragment="scripts">
+        <!-- Select2 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <!-- Moment.js -->
+        <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+        <!-- Moment Timezone -->
+        <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.43/builds/moment-timezone-with-data.min.js"></script>
         
-        // Try to find hex pattern
-        const match = value.match(/#?[0-9a-fA-F]{6}/);
-        if (match) {
-            const hex = match[0];
-            return hex.startsWith('#') ? hex.toLowerCase() : '#' + hex.toLowerCase();
-        }
-        return '';
-    }
-
-    function showColorPicker(value) {
-        const hexColor = extractHexColor(value) || '#275ed8';
+        <script th:src="@{/account.js}"></script>
+        <script th:src="@{/admin/timezone.js}"></script>
         
-        // Show only color picker
-        colorPicker.style.display = 'block';
-        settingValueInput.style.display = 'none';
-        
-        // Set value in both (input for submission, picker for display)
-        settingValueInput.value = hexColor;
-        colorPicker.value = hexColor;
-    }
+        <script>
+            // Show toast notifications for success/error messages
+            const successMsg = /*[[${success}]]*/ null;
+            const errorMsg = /*[[${error}]]*/ null;
+            
+            if (successMsg) {
+                showToast('success', successMsg);
+            }
+            if (errorMsg) {
+                showToast('error', errorMsg);
+            }
+            
+            const colorPicker = document.getElementById('modalSettingColorPicker');
+            const settingValueInput = document.getElementById('modalSettingValue');
+            const valueHint = document.getElementById('modalValueHint');
 
-    function hideColorPicker(value) {
-        colorPicker.style.display = 'none';
-        settingValueInput.style.display = 'block';
-        settingValueInput.value = value;
-    }
+            function normalizeHexColor(rawValue) {
+                if (!rawValue) {
+                    return '';
+                }
+                const trimmed = rawValue.trim();
+                const match = trimmed.match(/^#?[0-9a-fA-F]{6}$/);
+                if (!match) {
+                    return '';
+                }
+                return trimmed.startsWith('#') ? trimmed.toLowerCase() : `#${trimmed.toLowerCase()}`;
+            }
 
-    // Sync color picker to hidden input
-    colorPicker.addEventListener('input', function() {
-        if (colorPicker.style.display === 'none') return;
-        settingValueInput.value = colorPicker.value;
-    });
+            function extractHexColor(value) {
+                if (!value) return '';
+                // Try direct normalization first
+                let normalized = normalizeHexColor(value);
+                if (normalized) return normalized;
+                
+                // Try to find hex pattern
+                const match = value.match(/#?[0-9a-fA-F]{6}/);
+                if (match) {
+                    const hex = match[0];
+                    return hex.startsWith('#') ? hex.toLowerCase() : '#' + hex.toLowerCase();
+                }
+                return '';
+            }
 
-    function prepareEditModal(button) {
-        const key = button.getAttribute('data-key');
-        const value = button.getAttribute('data-value');
-        const type = button.getAttribute('data-type');
-        const description = button.getAttribute('data-description');
-        
-        document.getElementById('modalSettingKey').value = key;
-        document.getElementById('modalSettingKeyDisplay').value = key;
-        document.getElementById('modalSettingDescription').textContent = description;
-        
-        // Set input hints based on type
-        let hint = '';
-        if (type === 'DOUBLE') {
-            hint = 'Enter a decimal number (e.g., 40.906871)';
-        } else if (type === 'INTEGER') {
-            hint = 'Enter a whole number (e.g., 30)';
-        } else if (type === 'STRING') {
-            if (key.includes('timezone')) {
-                hint = 'Search for a timezone (e.g., America/New_York)';
-            } else if (key.includes('cron')) {
-                hint = 'Enter a valid cron expression (e.g., 0 0 2 * * SUN)';
-            } else {
-                hint = 'Enter a text value';
-            } 
-        }
+            function showColorPicker(value) {
+                const hexColor = extractHexColor(value) || '#275ed8';
+                
+                // Show only color picker
+                colorPicker.style.display = 'block';
+                settingValueInput.style.display = 'none';
+                
+                // Set value in both (input for submission, picker for display)
+                settingValueInput.value = hexColor;
+                colorPicker.value = hexColor;
+            }
 
-        if (key === 'site.app.color') {
-            // Show color picker, hide text input
-            colorPicker.style.display = 'block';
-            settingValueInput.style.display = 'none';
-            showColorPicker(value);
-            hint = 'Pick a hex color (#RRGGBB).';
-        } else if (key === 'timezone') {
-            // Show text input with timezone autocomplete
-            colorPicker.style.display = 'none';
-            settingValueInput.style.display = 'block';
-            settingValueInput.value = value || '';
-            settingValueInput.placeholder = 'Search timezones...';
-            // Initialize timezone autocomplete after a short delay to ensure DOM is ready
-            setTimeout(function() {
-                initializeTimezoneSelect2();
-            }, 100);
-        } else {
-            // Show text input for other values
-            colorPicker.style.display = 'none';
-            settingValueInput.style.display = 'block';
-            settingValueInput.value = value || '';
-            settingValueInput.placeholder = 'Enter value...';
-        }
-        
-        valueHint.textContent = hint;
-    }
-    
-    // Auto-dismiss alerts after 5 seconds
-    setTimeout(function() {
-        $('.alert').fadeOut('slow');
-    }, 5000);
-</script>
+            function hideColorPicker(value) {
+                colorPicker.style.display = 'none';
+                settingValueInput.style.display = 'block';
+                settingValueInput.value = value;
+            }
 
+            // Sync color picker to hidden input
+            colorPicker.addEventListener('input', function() {
+                if (colorPicker.style.display === 'none') return;
+                settingValueInput.value = colorPicker.value;
+            });
+
+            function prepareEditModal(button) {
+                const key = button.getAttribute('data-key');
+                const value = button.getAttribute('data-value');
+                const type = button.getAttribute('data-type');
+                const description = button.getAttribute('data-description');
+                
+                document.getElementById('modalSettingKey').value = key;
+                document.getElementById('modalSettingKeyDisplay').value = key;
+                document.getElementById('modalSettingDescription').textContent = description;
+                
+                // Set input hints based on type
+                let hint = '';
+                if (type === 'DOUBLE') {
+                    hint = 'Enter a decimal number (e.g., 40.906871)';
+                } else if (type === 'INTEGER') {
+                    hint = 'Enter a whole number (e.g., 30)';
+                } else if (type === 'STRING') {
+                    if (key.includes('timezone')) {
+                        hint = 'Search for a timezone (e.g., America/New_York)';
+                    } else if (key.includes('cron')) {
+                        hint = 'Enter a valid cron expression (e.g., 0 0 2 * * SUN)';
+                    } else {
+                        hint = 'Enter a text value';
+                    } 
+                }
+
+                if (key === 'site.app.color') {
+                    // Show color picker, hide text input
+                    colorPicker.style.display = 'block';
+                    settingValueInput.style.display = 'none';
+                    showColorPicker(value);
+                    hint = 'Pick a hex color (#RRGGBB).';
+                } else if (key === 'timezone') {
+                    // Show text input with timezone autocomplete
+                    colorPicker.style.display = 'none';
+                    settingValueInput.style.display = 'block';
+                    settingValueInput.value = value || '';
+                    settingValueInput.placeholder = 'Search timezones...';
+                    // Initialize timezone autocomplete after a short delay to ensure DOM is ready
+                    setTimeout(function() {
+                        initializeTimezoneSelect2();
+                    }, 100);
+                } else {
+                    // Show text input for other values
+                    colorPicker.style.display = 'none';
+                    settingValueInput.style.display = 'block';
+                    settingValueInput.value = value || '';
+                    settingValueInput.placeholder = 'Enter value...';
+                }
+                
+                valueHint.textContent = hint;
+            }
+        </script>
+    </th:block>
 </body>
-
-<script th:src="@{/account.js}"></script>
-<script th:src="@{/admin/timezone.js}"></script>
 </html>
