@@ -152,6 +152,11 @@ public class AdminController {
         return mv;
     }
 
+    @GetMapping("/admin/")
+    public RedirectView adminTrailingSlash() {
+        return new RedirectView("/admin", true);
+    }
+
     @GetMapping("/admin")
     public ModelAndView admin(@RequestParam(value = "error", required = false) String error,
                               @RequestParam(value = "logout", required = false) boolean logout) {
