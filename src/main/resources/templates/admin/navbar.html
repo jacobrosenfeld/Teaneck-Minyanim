@@ -89,6 +89,121 @@
             background-color: rgba(255, 255, 255, 0.15);
         }
         
+        /* Dropdown Styles */
+        .admin-navbar-dropdown {
+            position: relative;
+        }
+        
+        .admin-navbar-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2, 0.5rem);
+            padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: var(--font-size-sm, 0.875rem);
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-md, 0.375rem);
+            cursor: pointer;
+            transition: all var(--transition-fast, 150ms ease);
+        }
+        
+        .admin-navbar-dropdown-toggle:hover {
+            color: var(--text-inverse, #ffffff);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-navbar-dropdown-toggle.active {
+            color: var(--text-inverse, #ffffff);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .admin-navbar-dropdown-icon {
+            width: 16px;
+            height: 16px;
+            transition: transform var(--transition-fast, 150ms ease);
+        }
+        
+        .admin-navbar-dropdown.show .admin-navbar-dropdown-icon {
+            transform: rotate(180deg);
+        }
+        
+        .admin-navbar-dropdown-menu {
+            position: absolute;
+            top: calc(100% + var(--space-2, 0.5rem));
+            left: 0;
+            min-width: 280px;
+            max-width: 400px;
+            background-color: var(--bg-surface, #ffffff);
+            border-radius: var(--radius-lg, 0.5rem);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all var(--transition-fast, 150ms ease);
+            z-index: 1040;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .admin-navbar-dropdown.show .admin-navbar-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .admin-navbar-dropdown-header {
+            padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+            border-bottom: 1px solid var(--border-color-light, #e9ecef);
+        }
+        
+        .admin-navbar-dropdown-search {
+            width: 100%;
+            padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+            border: 1px solid var(--border-color, #dee2e6);
+            border-radius: var(--radius-md, 0.375rem);
+            font-size: var(--font-size-sm, 0.875rem);
+        }
+        
+        .admin-navbar-dropdown-search:focus {
+            outline: none;
+            border-color: var(--color-primary, #275ed8);
+            box-shadow: 0 0 0 3px rgba(39, 94, 216, 0.1);
+        }
+        
+        .admin-navbar-dropdown-item {
+            display: block;
+            padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+            color: var(--text-primary, #212529);
+            text-decoration: none;
+            font-size: var(--font-size-sm, 0.875rem);
+            transition: background-color var(--transition-fast, 150ms ease);
+            border-left: 3px solid transparent;
+        }
+        
+        .admin-navbar-dropdown-item:hover {
+            background-color: var(--bg-hover, #f5f5f5);
+            color: var(--color-primary, #275ed8);
+            text-decoration: none;
+            border-left-color: var(--color-primary, #275ed8);
+        }
+        
+        .admin-navbar-dropdown-item.new-org {
+            color: var(--color-primary, #275ed8);
+            font-weight: var(--font-weight-medium, 500);
+            border-top: 1px solid var(--border-color-light, #e9ecef);
+            margin-top: var(--space-2, 0.5rem);
+        }
+        
+        .admin-navbar-dropdown-item.new-org:hover {
+            background-color: var(--color-primary-lighter, #e3ecfa);
+        }
+        
+        .admin-navbar-dropdown-divider {
+            background-color: var(--border-color-light, #e9ecef);
+            margin: var(--space-2, 0.5rem) 0;
+        }
+        
         .admin-navbar-right {
             display: flex;
             align-items: center;
@@ -128,6 +243,13 @@
             .admin-navbar {
                 padding: 0 var(--space-4, 1rem);
             }
+            
+            .admin-navbar-dropdown-menu {
+                position: fixed;
+                left: var(--space-4, 1rem);
+                right: var(--space-4, 1rem);
+                max-width: none;
+            }
         }
         
         @media (max-width: 480px) {
@@ -151,21 +273,96 @@
             </svg>
         </button>
         
-        <a class="admin-navbar-brand" href="/admin/dashboard">
+        <a class="admin-navbar-brand" th:href="@{${user.isSuperAdmin()} ? '/admin/organizations' : '/admin'}">
             <img src="/assets/icons/favicon.svg" class="admin-navbar-logo" alt="Logo">
             <span th:text="${siteName} ?: 'Minyan Manager'">Minyan Manager</span>
         </a>
         
-        <div class="admin-navbar-menu">
-            <a class="admin-navbar-link active" href="/admin/dashboard">Admin Panel</a>
+        <!-- Super Admin Navigation -->
+        <div class="admin-navbar-menu" th:if="${user.isSuperAdmin()}">
+            <!-- Organizations Dropdown -->
+            <div class="admin-navbar-dropdown" id="orgs-dropdown">
+                <button class="admin-navbar-dropdown-toggle" id="orgs-dropdown-toggle" type="button">
+                    <span>Organizations</span>
+                    <svg class="admin-navbar-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div class="admin-navbar-dropdown-menu">
+                    <div class="admin-navbar-dropdown-header">
+                        <input type="text" class="admin-navbar-dropdown-search" id="org-search" placeholder="Search organizations...">
+                    </div>
+                    <div id="org-list">
+                        <a th:each="org : ${allOrganizations}" 
+                           th:href="@{|/admin/org/${org.id}/dashboard|}" 
+                           th:text="${org.name}"
+                           th:data-org-name="${org.name.toLowerCase()}"
+                           class="admin-navbar-dropdown-item org-item">
+                            Organization Name
+                        </a>
+                    </div>
+                    <div class="admin-navbar-dropdown-divider"></div>
+                    <a href="/admin/new-organization" class="admin-navbar-dropdown-item new-org">
+                        <i class="fas fa-plus" style="margin-right: 0.5rem;"></i>
+                        New Organization
+                    </a>
+                </div>
+            </div>
+            
+            <a class="admin-navbar-link" href="/admin/accounts">Accounts</a>
+            <a class="admin-navbar-link" href="/admin/notifications">Notifications</a>
+            <a class="admin-navbar-link" href="/admin/settings">Settings</a>
         </div>
         
         <div class="admin-navbar-right">
             <span class="admin-navbar-time" th:text="${date}">Loading...</span>
-            <div class="admin-navbar-org" th:if="${not #strings.isEmpty(organization)}" th:text="${organization.name}">
+            <div class="admin-navbar-org" th:if="${organization != null}" th:text="${organization.name}">
                 Organization
             </div>
         </div>
     </nav>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Organizations dropdown functionality
+            const dropdown = document.getElementById('orgs-dropdown');
+            const dropdownToggle = document.getElementById('orgs-dropdown-toggle');
+            const orgSearch = document.getElementById('org-search');
+            
+            if (dropdownToggle) {
+                dropdownToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('show');
+                    if (dropdown.classList.contains('show') && orgSearch) {
+                        setTimeout(() => orgSearch.focus(), 100);
+                    }
+                });
+            }
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (dropdown && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+            
+            // Search functionality
+            if (orgSearch) {
+                orgSearch.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const orgItems = document.querySelectorAll('.org-item');
+                    
+                    orgItems.forEach(item => {
+                        const orgName = item.getAttribute('data-org-name');
+                        if (orgName.includes(searchTerm)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>
