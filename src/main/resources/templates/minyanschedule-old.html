@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Teaneck Minyan Schedule</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+    <link rel="manifest" href="/assets/icons/site.webmanifest">
+    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
+    <meta name="msapplication-TileColor" content="#275ed8">
+    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css} "/>
+    <link th:rel="stylesheet" th:href="@{/styles.css}">
+    <link th:rel="stylesheet" th:href="@{/admin/styles.css}">
+    <link th:rel="stylesheet" th:href="@{/admin/minyanschedule.css}"/>
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    <script th:src="@{/webjars/popper.js/1.16.0/umd/popper.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/4.6.1/js/bootstrap.min.js}"></script>
+</head>
+<body>
+<div class="horizontal-container d-flex" id="wrapper">
+    <th:block th:include="admin/navbar"></th:block>
+    <div class="container-fluid" id="main">
+        <div class="row row-offcanvas row-offcanvas-left vh-100">
+            <th:block th:include="admin/sidebar"></th:block>
+            <!--/col-->
+            <div class="col-housing main h-100 overflow-auto">
+                <main class="col main pt-5 mt-3 overflow-auto" >
+                    <div th:if="${successmessage}">
+                        <div class="alert alert-success" role="alert" th:text="${successmessage}"> </div>
+                    </div>
+                    <div th:if="${errormessage}">
+                        <div class="alert alert-danger" role="alert" th:text="${errormessage}"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center d-none d-sm-flex">
+                        <h1 class="display-4 mb-0">
+                            Minyan Schedule
+                        </h1>
+                        <a th:href="@{'/admin/' + ${organization.id} + '/minyanim/printable'}" class="btn btn-outline-primary">
+                            <i class="fa fa-print"></i> Printable Format
+                        </a>
+                    </div>
+                    <p class="lead d-none d-sm-block" th:text="@{|Manage and add new minyanim for ${organization.name} on the ${siteName} ?: 'Minyan Manager' platform.|}">Manage and add new minyanim for [(${organization.name})] on the Minyan Manager platform.</p>
+
+                    <hr>
+
+                    <div class="row my-4 footer-pusher">
+                        <div class="col-lg-9 col-md-8">
+                            <div>
+                                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link active" id="pills-shacharis-tab" data-toggle="pill" href="#pills-shacharis" role="tab" aria-controls="pills-shacharis" aria-selected="true">Shacharis</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" id="pills-mincha-tab" data-toggle="pill" href="#pills-mincha" role="tab" aria-controls="pills-mincha" aria-selected="false">Mincha</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" id="pills-maariv-tab" data-toggle="pill" href="#pills-maariv" role="tab" aria-controls="pills-maariv" aria-selected="false">Maariv</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" id="pills-selichos-tab" data-toggle="pill" href="#pills-selichos" role="tab" aria-controls="pills-selichos" aria-selected="false">Selichos</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" id="pills-megila-tab" data-toggle="pill" href="#pills-megila" role="tab" aria-controls="pills-megila" aria-selected="false">Megila Reading</a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content" id="pills-tabContent">
+                                    <div class="tab-pane fade active show" id="pills-shacharis" role="tabpanel" aria-labelledby="pills-shacharis-tab">
+                                        <div th:if="${!shacharisminyanim.isEmpty()}" class="table-responsive">
+                                            <table class="table">
+                                                <thead class="thead-inverse">
+                                                <tr>
+                                                    <th class="mini-column">Manage</th>
+                                                    <th>Active</th>
+                                                    <th>Location</th>
+                                                    <th>Sunday</th>
+                                                    <th>Monday</th>
+                                                    <th>Tuesday</th>
+                                                    <th>Wednesday</th>
+                                                    <th>Thursday</th>
+                                                    <th>Friday</th>
+                                                    <th>Shabbos</th>
+                                                    <th>Rosh Chodesh</th>
+                                                    <th>Yom Tov</th>
+                                                    <th>Chanuka</th>
+                                                    <th>Rosh Chodesh Chanuka</th>
+                                                    <th>Nusach</th>
+                                                    <th>Notes</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr th:each="minyan: ${shacharisminyanim}" th:with="minyantimes=${shacharistimes.get(minyan.getId())}">
+                                                    <td>
+                                                        <div>
+                                                            <a role="button" class="btn btn-dark btn-sm" th:href="@{|/admin/minyanim/${minyan.getId()}/view|}">
+                                                                Update
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div th:if="${minyan.isEnabled()}">
+                                                            <a role="button" class="btn btn-danger btn-sm" th:href="@{|/admin/minyanim/${minyan.id}/disable|(rd=@{|/admin/${organization.id}/minyanim?st=sh|})}">
+                                                                Disable
+                                                            </a>
+                                                        </div>
+                                                        <div th:if="${!minyan.isEnabled()}">
+                                                            <a role="button" class="btn btn-success btn-sm" th:href="@{|/admin/minyanim/${minyan.id}/enable|(rd=@{|/admin/${organization.id}/minyanim?st=sh|})}">
+                                                                Enable
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td th:text="${locationnames.get(minyan.getId())}" />
+                                                    <td th:with="sundaytime=${minyantimes.get(Day.SUNDAY)}">
+                                                        <div th:text="${sundaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="mondaytime=${minyantimes.get(Day.MONDAY)}">
+                                                        <div th:text="${mondaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="tuesdaytime=${minyantimes.get(Day.TUESDAY)}">
+                                                        <div th:text="${tuesdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="wednesdaytime=${minyantimes.get(Day.WEDNESDAY)}">
+                                                        <div th:text="${wednesdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="thursdaytime=${minyantimes.get(Day.THURSDAY)}">
+                                                        <div th:text="${thursdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="fridaytime=${minyantimes.get(Day.FRIDAY)}">
+                                                        <div th:text="${fridaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="shabbostime=${minyantimes.get(Day.SHABBOS)}">
+                                                        <div th:text="${shabbostime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="roshchodeshtime=${minyantimes.get(Day.ROSH_CHODESH)}">
+                                                        <div th:text="${roshchodeshtime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
+                                                        <div th:text="${yomtovtime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="chanukatime=${minyantimes.get(Day.CHANUKA)}">
+                                                        <div th:text="${chanukatime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="roshchodeshchanukatime=${minyantimes.get(Day.ROSH_CHODESH_CHANUKA)}">
+                                                        <div th:text="${roshchodeshchanukatime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:text="${minyan.getNusach().displayName()}" />
+                                                    <td th:text="${minyan.getNotes()}" />
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div th:if="${shacharisminyanim.isEmpty()}" class="jumbotron jumbotron-fluid">
+                                            <div class="container">
+                                                <h3>You don't have any shacharis minyanim saved.</h3>
+                                                <hr>
+                                                <a th:href="@{|/admin/${organization.id}/minyanim/new?st=sh|}" role="button" class="btn btn-primary">Add a Minyan</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="pills-mincha" role="tabpanel" aria-labelledby="pills-mincha-tab">
+                                        <div th:if="${!minchaminyanim.isEmpty()}" class="table-responsive">
+                                            <table class="table">
+                                                <thead class="thead-inverse">
+                                                <tr>
+                                                    <th class="mini-column">Manage</th>
+                                                    <th>Active</th>
+                                                    <th>Location</th>
+                                                    <th>Sunday</th>
+                                                    <th>Monday</th>
+                                                    <th>Tuesday</th>
+                                                    <th>Wednesday</th>
+                                                    <th>Thursday</th>
+                                                    <th>Friday</th>
+                                                    <th>Shabbos</th>
+                                                    <th>Rosh Chodesh</th>
+                                                    <th>Yom Tov</th>
+                                                    <th>Chanuka</th>
+                                                    <th>Rosh Chodesh Chanuka</th>
+                                                    <th>Nusach</th>
+                                                    <th>Notes</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr th:each="minyan: ${minchaminyanim}" th:with="minyantimes=${minchatimes.get(minyan.getId())}">
+                                                    <td>
+                                                        <div>
+                                                            <a role="button" class="btn btn-dark btn-sm" th:href="@{|/admin/minyanim/${minyan.getId()}/view|}">
+                                                                Update
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div th:if="${minyan.isEnabled()}">
+                                                            <a role="button" class="btn btn-danger btn-sm" th:href="@{|/admin/minyanim/${minyan.id}/disable|(rd=@{|/admin/${organization.id}/minyanim?st=mi|})}">
+                                                                Disable
+                                                            </a>
+                                                        </div>
+                                                        <div th:if="${!minyan.isEnabled()}">
+                                                            <a role="button" class="btn btn-success btn-sm" th:href="@{|/admin/minyanim/${minyan.id}/enable|(rd=@{|/admin/${organization.id}/minyanim?st=mi|})}">
+                                                                Enable
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td th:text="${locationnames.get(minyan.getId())}"></td>
+                                                    <td th:with="sundaytime=${minyantimes.get(Day.SUNDAY)}">
+                                                        <div th:text="${sundaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="mondaytime=${minyantimes.get(Day.MONDAY)}">
+                                                        <div th:text="${mondaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="tuesdaytime=${minyantimes.get(Day.TUESDAY)}">
+                                                        <div th:text="${tuesdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="wednesdaytime=${minyantimes.get(Day.WEDNESDAY)}">
+                                                        <div th:text="${wednesdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="thursdaytime=${minyantimes.get(Day.THURSDAY)}">
+                                                        <div th:text="${thursdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="fridaytime=${minyantimes.get(Day.FRIDAY)}">
+                                                        <div th:text="${fridaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="shabbostime=${minyantimes.get(Day.SHABBOS)}">
+                                                        <div th:text="${shabbostime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="roshchodeshtime=${minyantimes.get(Day.ROSH_CHODESH)}">
+                                                        <div th:text="${roshchodeshtime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
+                                                        <div th:text="${yomtovtime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="chanukatime=${minyantimes.get(Day.CHANUKA)}">
+                                                        <div th:text="${chanukatime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="roshchodeshchanukatime=${minyantimes.get(Day.ROSH_CHODESH_CHANUKA)}">
+                                                        <div th:text="${roshchodeshchanukatime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:text="${minyan.getNusach().displayName()}" />
+                                                    <td th:text="${minyan.getNotes()}" />
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div th:if="${minchaminyanim.isEmpty()}" class="jumbotron jumbotron-fluid">
+                                            <div class="container">
+                                                <h3>You don't have any mincha minyanim saved.</h3>
+                                                <hr>
+                                                <a th:href="@{|/admin/${organization.id}/minyanim/new?st=mi|}" role="button" class="btn btn-primary">Add a Minyan</a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="pills-maariv" role="tabpanel" aria-labelledby="pills-maariv-tab">
+                                        <div th:if="${!maarivminyanim.isEmpty()}" class="table-responsive">
+                                            <table class="table">
+                                                <thead class="thead-inverse">
+                                                <tr>
+                                                    <th class="mini-column">Manage</th>
+                                                    <th>Active</th>
+                                                    <th>Location</th>
+                                                    <th>Sunday</th>
+                                                    <th>Monday</th>
+                                                    <th>Tuesday</th>
+                                                    <th>Wednesday</th>
+                                                    <th>Thursday</th>
+                                                    <th>Friday</th>
+                                                    <th>Shabbos</th>
+                                                    <th>Rosh Chodesh</th>
+                                                    <th>Yom Tov</th>
+                                                    <th>Chanuka</th>
+                                                    <th>Rosh Chodesh Chanuka</th>
+                                                    <th>Nusach</th>
+                                                    <th>Notes</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr th:each="minyan: ${maarivminyanim}" th:with="minyantimes=${maarivtimes.get(minyan.getId())}">
+                                                    <td>
+                                                        <div>
+                                                            <a role="button" class="btn btn-dark btn-sm" th:href="@{|/admin/minyanim/${minyan.getId()}/view|}">
+                                                                Update
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div th:if="${minyan.isEnabled()}">
+                                                            <a role="button" class="btn btn-danger btn-sm" th:href="@{|/admin/minyanim/${minyan.id}/disable|(rd=@{|/admin/${organization.id}/minyanim|(st=ar)})}">
+                                                                Disable
+                                                            </a>
+                                                        </div>
+                                                        <div th:if="${!minyan.isEnabled()}">
+                                                            <a role="button" class="btn btn-success btn-sm" th:href="@{|/admin/minyanim/${minyan.id}/enable|(rd=@{|/admin/${organization.id}/minyanim|(st=ar)})}">
+                                                                Enable
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td th:text="${locationnames.get(minyan.getId())}" />
+                                                    <td th:with="sundaytime=${minyantimes.get(Day.SUNDAY)}">
+                                                        <div th:text="${sundaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="mondaytime=${minyantimes.get(Day.MONDAY)}">
+                                                        <div th:text="${mondaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="tuesdaytime=${minyantimes.get(Day.TUESDAY)}">
+                                                        <div th:text="${tuesdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="wednesdaytime=${minyantimes.get(Day.WEDNESDAY)}">
+                                                        <div th:text="${wednesdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="thursdaytime=${minyantimes.get(Day.THURSDAY)}">
+                                                        <div th:text="${thursdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="fridaytime=${minyantimes.get(Day.FRIDAY)}">
+                                                        <div th:text="${fridaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="shabbostime=${minyantimes.get(Day.SHABBOS)}">
+                                                        <div th:text="${shabbostime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="roshchodeshtime=${minyantimes.get(Day.ROSH_CHODESH)}">
+                                                        <div th:text="${roshchodeshtime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
+                                                        <div th:text="${yomtovtime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="chanukatime=${minyantimes.get(Day.CHANUKA)}">
+                                                        <div th:text="${chanukatime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="roshchodeshchanukatime=${minyantimes.get(Day.ROSH_CHODESH_CHANUKA)}">
+                                                        <div th:text="${roshchodeshchanukatime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:text="${minyan.getNusach().displayName()}" />
+                                                    <td th:text="${minyan.getNotes()}" />
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div th:if="${maarivminyanim.isEmpty()}" class="jumbotron jumbotron-fluid">
+                                            <div class="container">
+                                                <h3>You don't have any maariv minyanim saved.</h3>
+                                                <hr>
+                                                <a th:href="@{|/admin/${organization.id}/minyanim/new?st=ar|}" role="button" class="btn btn-primary">Add a Minyan</a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="pills-selichos" role="tabpanel" aria-labelledby="pills-selichos-tab">
+                                        <div th:if="${!selichosminyanim.isEmpty()}" class="table-responsive">
+                                            <table class="table">
+                                                <thead class="thead-inverse">
+                                                <tr>
+                                                    <th class="mini-column">Manage</th>
+                                                    <th>Active</th>
+                                                    <th>Location</th>
+                                                    <th>Sunday</th>
+                                                    <th>Monday</th>
+                                                    <th>Tuesday</th>
+                                                    <th>Wednesday</th>
+                                                    <th>Thursday</th>
+                                                    <th>Friday</th>
+                                                    <th>Shabbos</th>
+                                                    <th>Rosh Chodesh</th>
+                                                    <th>Yom Tov</th>
+                                                    <th>Chanuka</th>
+                                                    <th>Rosh Chodesh Chanuka</th>
+                                                    <th>Nusach</th>
+                                                    <th>Notes</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr th:each="minyan: ${selichosminyanim}" th:with="minyantimes=${selichostimes.get(minyan.getId())}">
+                                                    <td>
+                                                        <div>
+                                                            <a role="button" class="btn btn-dark btn-sm" th:href="@{|/admin/minyanim/${minyan.getId()}/view|}">
+                                                                Update
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div th:if="${minyan.isEnabled()}">
+                                                            <a role="button" class="btn btn-danger btn-sm" th:href="@{|/admin/minyanim/${minyan.id}/disable|(rd=@{|/admin/${organization.id}/minyanim|(st=se)})}">
+                                                                Disable
+                                                            </a>
+                                                        </div>
+                                                        <div th:if="${!minyan.isEnabled()}">
+                                                            <a role="button" class="btn btn-success btn-sm" th:href="@{|/admin/minyanim/${minyan.id}/enable|(rd=@{|/admin/${organization.id}/minyanim|(st=se)})}">
+                                                                Enable
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td th:text="${locationnames.get(minyan.getId())}" />
+                                                    <td th:with="sundaytime=${minyantimes.get(Day.SUNDAY)}">
+                                                        <div th:text="${sundaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="mondaytime=${minyantimes.get(Day.MONDAY)}">
+                                                        <div th:text="${mondaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="tuesdaytime=${minyantimes.get(Day.TUESDAY)}">
+                                                        <div th:text="${tuesdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="wednesdaytime=${minyantimes.get(Day.WEDNESDAY)}">
+                                                        <div th:text="${wednesdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="thursdaytime=${minyantimes.get(Day.THURSDAY)}">
+                                                        <div th:text="${thursdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="fridaytime=${minyantimes.get(Day.FRIDAY)}">
+                                                        <div th:text="${fridaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="shabbostime=${minyantimes.get(Day.SHABBOS)}">
+                                                        <div th:text="${shabbostime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="roshchodeshtime=${minyantimes.get(Day.ROSH_CHODESH)}">
+                                                        <div th:text="${roshchodeshtime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
+                                                        <div th:text="${yomtovtime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="chanukatime=${minyantimes.get(Day.CHANUKA)}">
+                                                        <div th:text="${chanukatime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="roshchodeshchanukatime=${minyantimes.get(Day.ROSH_CHODESH_CHANUKA)}">
+                                                        <div th:text="${roshchodeshchanukatime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:text="${minyan.getNusach().displayName()}" />
+                                                    <td th:text="${minyan.getNotes()}" />
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div th:if="${selichosminyanim.isEmpty()}" class="jumbotron jumbotron-fluid">
+                                            <div class="container">
+                                                <h3>You don't have any selichos minyanim saved.</h3>
+                                                <hr>
+                                                <a th:href="@{|/admin/${organization.id}/minyanim/new?st=se|}" role="button" class="btn btn-primary">Add a Minyan</a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="pills-megila" role="tabpanel" aria-labelledby="pills-megila-tab">
+                                        <div th:if="${!megilaminyanim.isEmpty()}" class="table-responsive">
+                                            <table class="table">
+                                                <thead class="thead-inverse">
+                                                <tr>
+                                                    <th class="mini-column">Manage</th>
+                                                    <th>Active</th>
+                                                    <th>Location</th>
+                                                    <th>Sunday</th>
+                                                    <th>Monday</th>
+                                                    <th>Tuesday</th>
+                                                    <th>Wednesday</th>
+                                                    <th>Thursday</th>
+                                                    <th>Friday</th>
+                                                    <th>Shabbos</th>
+                                                    <th>Rosh Chodesh</th>
+                                                    <th>Yom Tov</th>
+                                                    <th>Chanuka</th>
+                                                    <th>Rosh Chodesh Chanuka</th>
+                                                    <th>Nusach</th>
+                                                    <th>Notes</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr th:each="minyan: ${megilaminyanim}" th:with="minyantimes=${megilatimes.get(minyan.getId())}">
+                                                    <td>
+                                                        <div>
+                                                            <a role="button" class="btn btn-dark btn-sm" th:href="@{|/admin/minyanim/${minyan.getId()}/view|}">
+                                                                Update
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div th:if="${minyan.isEnabled()}">
+                                                            <a role="button" class="btn btn-danger btn-sm" th:href="@{|/admin/minyanim/${minyan.id}/disable|(rd=@{|/admin/${organization.id}/minyanim|(st=mr)})}">
+                                                                Disable
+                                                            </a>
+                                                        </div>
+                                                        <div th:if="${!minyan.isEnabled()}">
+                                                            <a role="button" class="btn btn-success btn-sm" th:href="@{|/admin/minyanim/${minyan.id}/enable|(rd=@{|/admin/${organization.id}/minyanim|(st=mr)})}">
+                                                                Enable
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td th:text="${locationnames.get(minyan.getId())}" />
+                                                    <td th:with="sundaytime=${minyantimes.get(Day.SUNDAY)}">
+                                                        <div th:text="${sundaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="mondaytime=${minyantimes.get(Day.MONDAY)}">
+                                                        <div th:text="${mondaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="tuesdaytime=${minyantimes.get(Day.TUESDAY)}">
+                                                        <div th:text="${tuesdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="wednesdaytime=${minyantimes.get(Day.WEDNESDAY)}">
+                                                        <div th:text="${wednesdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="thursdaytime=${minyantimes.get(Day.THURSDAY)}">
+                                                        <div th:text="${thursdaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="fridaytime=${minyantimes.get(Day.FRIDAY)}">
+                                                        <div th:text="${fridaytime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="shabbostime=${minyantimes.get(Day.SHABBOS)}">
+                                                        <div th:text="${shabbostime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="roshchodeshtime=${minyantimes.get(Day.ROSH_CHODESH)}">
+                                                        <div th:text="${roshchodeshtime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="yomtovtime=${minyantimes.get(Day.YOM_TOV)}">
+                                                        <div th:text="${yomtovtime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="chanukatime=${minyantimes.get(Day.CHANUKA)}">
+                                                        <div th:text="${chanukatime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:with="roshchodeshchanukatime=${minyantimes.get(Day.ROSH_CHODESH_CHANUKA)}">
+                                                        <div th:text="${roshchodeshchanukatime.displayTime()}"></div>
+                                                    </td>
+                                                    <td th:text="${minyan.getNusach().displayName()}" />
+                                                    <td th:text="${minyan.getNotes()}" />
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div th:if="${megilaminyanim.isEmpty()}" class="jumbotron jumbotron-fluid">
+                                            <div class="container">
+                                                <h3>You don't have any megila readings saved.</h3>
+                                                <hr>
+                                                <a th:href="@{|/admin/${organization.id}/minyanim/new?st=mr|}" role="button" class="btn btn-primary">Add a Minyan</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Add a Minyan</h4>
+                                    <p class="card-text">Create a scheduled minyan with all associated data.</p>
+                                    <a th:href="${'/admin/' + organization.id + '/minyanim/new'}" class="btn btn-primary">New Minyan</a>
+                                </div>
+                            </div>
+                            <div class="card card-inverse bg-inverse mt-3">
+                                <div class="card-body">
+                                    <h4 class="card-title">Locations</h4>
+                                    <p class="card-text" th:text="${'Manage the locations of minyanim for ' + organization.name + '.'}"></p>
+                                    <a th:href="@{|/admin/${organization.id}/locations|}" class="btn btn-primary">Go</a>
+                                </div>
+                            </div>
+                            <!--                            <div class="card card-inverse bg-inverse mt-3">-->
+                            <!--                                <div class="card-body">-->
+                            <!--                                    <h4 class="card-title">Add a One-Time Minyan</h4>-->
+                            <!--                                    <p class="card-text">Temporary change in the schedule? Click here to temporarily disable or alter minyanim to accommodate for chagim and other circumstances.</p>-->
+                            <!--                                    <a href="/admin/new-organization" class="btn btn-primary">New Exception</a>-->
+                            <!--                                </div>-->
+                            <!--                            </div>-->
+                        </div>
+                    </div>
+                    <!--/row-->
+
+                    <!--                <th:block th:include="admin/footer"></th:block>-->
+                </main>
+                <th:block th:include="admin/footer"></th:block>
+            </div>
+
+            <!--/main col-->
+        </div>
+
+    </div>
+    <!--/.container-->
+</div>
+</body>
+<script th:src="@{/admin/minyanschedule.js}"></script>
+</html>
