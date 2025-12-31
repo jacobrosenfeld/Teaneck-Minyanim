@@ -144,10 +144,7 @@
             </div>
             <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and organization.enabled}" href="#"
                data-toggle="modal" data-target="#disable-organization-modal">
-                <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0m12.728 0L5.636 18.364"/>
-                </svg>
-                <span>Disable Organization</span>
+                <span><i class="fas fa-ban"></i> Disable Organization</span>
             </a>
 
             <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and !organization.enabled}" th:href="@{|/admin/enable-organization?id=${organization.id}|}">
@@ -157,16 +154,21 @@
                 <span>Enable Organization</span>
             </a>
 
-            <a class="admin-sidebar-link" th:if="${user.isSuperAdmin()}"
-               th:classappend="${organization.enabled} ? ' disabled text-muted' : ''"
-               th:attr="aria-disabled=${organization.enabled}"
-               th:href="${organization.enabled} ? '#' : @{|/admin/delete-organization?id=${organization.id}|}"
-               th:onclick="${organization.enabled} ? 'return false;' : 'return confirm(\'Are you sure you want to delete this organization? This action cannot be undone.\')'}"
+            <a class="admin-sidebar-link disabled text-muted" th:if="${user.isSuperAdmin() and organization.enabled}"
+               aria-disabled="true" href="#" style="color: var(--color-danger, #dc3545);">
+                <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                <span>Delete (disable first)</span>
+            </a>
+
+            <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and !organization.enabled}"
+               href="#" data-toggle="modal" data-target="#delete-organization-modal"
                style="color: var(--color-danger, #dc3545);">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
-                <span th:text="${organization.enabled} ? 'Delete (disable first)' : 'Delete Organization'"></span>
+                <span>Delete Organization</span>
             </a>
             
             <div class="admin-sidebar-divider"></div>
@@ -240,6 +242,26 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
                 <a th:href="@{/admin/disable-organization} + '?id=' + ${organization.id}" class="btn btn-warning">Disable</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:if="${organization != null}" class="modal fade" id="delete-organization-modal" tabindex="-1" aria-labelledby="delete-organization-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="delete-organization-modal-label" th:text="${'Delete ' + organization.name + '?'}"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                This will permanently remove all data for this organization and its accounts. This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+                <a th:href="@{/admin/delete-organization} + '?id=' + ${organization.id}" class="btn btn-danger">Delete</a>
             </div>
         </div>
     </div>
