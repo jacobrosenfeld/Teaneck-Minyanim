@@ -235,10 +235,10 @@
                 </button>
             </div>
             <div class="modal-body">
-                Do you want to disable this organization's data from being shown on the site? Its login access will be disabled.
+                Do you want to disable this organization's data from being shown on the site? Its login access will also be disabled.
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                 <a th:href="@{/admin/disable-organization} + '?id=' + ${organization.id}" class="btn btn-warning">Disable</a>
             </div>
         </div>
