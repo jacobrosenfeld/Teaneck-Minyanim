@@ -10,8 +10,7 @@
             .minyan-card {
                 border-left: 4px solid var(--primary-color);
                 transition: all 0.2s ease;
-                margin-bottom: var(--spacing-4);
-                padding: var(--spacing-4);
+                margin-bottom: var(--spacing-3);
             }
             
             .minyan-card:hover {
@@ -63,13 +62,13 @@
             .schedule-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-                gap: var(--spacing-3);
-                margin-bottom: var(--spacing-4);
+                gap: var(--spacing-2);
+                margin-bottom: var(--spacing-3);
             }
             
             .schedule-day {
                 background: var(--bg-secondary);
-                padding: var(--spacing-3);
+                padding: var(--spacing-2);
                 border-radius: var(--border-radius);
                 text-align: center;
             }
@@ -128,29 +127,7 @@
                 padding: var(--spacing-4);
                 border-radius: var(--border-radius);
                 box-shadow: var(--shadow-sm);
-                margin-bottom: var(--spacing-5);
-            }
-            
-            .sort-dropdown {
-                display: flex;
-                align-items: center;
-                gap: var(--spacing-2);
-                margin-bottom: var(--spacing-3);
-            }
-            
-            .sort-dropdown label {
-                font-weight: var(--font-weight-medium);
-                color: var(--text-secondary);
-                font-size: var(--font-size-sm);
-            }
-            
-            .sort-dropdown select {
-                padding: var(--spacing-2) var(--spacing-3);
-                border: 1px solid var(--border-color);
-                border-radius: var(--border-radius);
-                font-size: var(--font-size-base);
-                background: white;
-                cursor: pointer;
+                margin-bottom: var(--spacing-4);
             }
             
             .filter-tabs {
@@ -225,10 +202,10 @@
             .stats-bar {
                 display: flex;
                 gap: var(--spacing-4);
-                padding: var(--spacing-4);
+                padding: var(--spacing-3);
                 background: var(--bg-secondary);
                 border-radius: var(--border-radius);
-                margin-bottom: var(--spacing-5);
+                margin-bottom: var(--spacing-4);
                 flex-wrap: wrap;
             }
             
@@ -324,17 +301,6 @@
 
         <!-- Filter Section -->
         <div class="filter-section">
-            <div class="sort-dropdown">
-                <label for="sortSelect">
-                    <i class="fas fa-sort"></i> Sort by:
-                </label>
-                <select id="sortSelect" onchange="sortMinyanim()">
-                    <option value="type">Prayer Type</option>
-                    <option value="location">Location Name</option>
-                    <option value="time">First Time (Sunday)</option>
-                </select>
-            </div>
-            
             <div class="search-box">
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Search by location, notes, or nusach..." />
@@ -370,8 +336,7 @@
                  class="minyan-card card-modern"
                  th:classappend="${!minyan.isEnabled()} ? 'disabled' : ''"
                  data-type="shacharis"
-                 data-sort-type="1"
-                 th:attr="data-location=${locationnames.get(minyan.getId())}, data-nusach=${minyan.getNusach().displayName()}, data-notes=${minyan.getNotes()}, data-sort-time=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SUNDAY).displayTime()}">
+                 th:attr="data-location=${locationnames.get(minyan.getId())}, data-nusach=${minyan.getNusach().displayName()}, data-notes=${minyan.getNotes()}">
                 
                 <div class="minyan-header">
                     <div>
@@ -474,8 +439,7 @@
                  class="minyan-card card-modern"
                  th:classappend="${!minyan.isEnabled()} ? 'disabled' : ''"
                  data-type="mincha"
-                 data-sort-type="2"
-                 th:attr="data-location=${locationnames.get(minyan.getId())}, data-nusach=${minyan.getNusach().displayName()}, data-notes=${minyan.getNotes()}, data-sort-time=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SUNDAY).displayTime()}">
+                 th:attr="data-location=${locationnames.get(minyan.getId())}, data-nusach=${minyan.getNusach().displayName()}, data-notes=${minyan.getNotes()}">
                 
                 <div class="minyan-header">
                     <div>
@@ -578,8 +542,7 @@
                  class="minyan-card card-modern"
                  th:classappend="${!minyan.isEnabled()} ? 'disabled' : ''"
                  data-type="maariv"
-                 data-sort-type="3"
-                 th:attr="data-location=${locationnames.get(minyan.getId())}, data-nusach=${minyan.getNusach().displayName()}, data-notes=${minyan.getNotes()}, data-sort-time=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SUNDAY).displayTime()}">
+                 th:attr="data-location=${locationnames.get(minyan.getId())}, data-nusach=${minyan.getNusach().displayName()}, data-notes=${minyan.getNotes()}">
                 
                 <div class="minyan-header">
                     <div>
@@ -682,8 +645,7 @@
                  class="minyan-card card-modern"
                  th:classappend="${!minyan.isEnabled()} ? 'disabled' : ''"
                  data-type="selichos"
-                 data-sort-type="4"
-                 th:attr="data-location=${locationnames.get(minyan.getId())}, data-nusach=${minyan.getNusach().displayName()}, data-notes=${minyan.getNotes()}, data-sort-time=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SUNDAY).displayTime()}">
+                 th:attr="data-location=${locationnames.get(minyan.getId())}, data-nusach=${minyan.getNusach().displayName()}, data-notes=${minyan.getNotes()}">
                 
                 <div class="minyan-header">
                     <div>
@@ -786,8 +748,7 @@
                  class="minyan-card card-modern"
                  th:classappend="${!minyan.isEnabled()} ? 'disabled' : ''"
                  data-type="megila"
-                 data-sort-type="5"
-                 th:attr="data-location=${locationnames.get(minyan.getId())}, data-nusach=${minyan.getNusach().displayName()}, data-notes=${minyan.getNotes()}, data-sort-time=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SUNDAY).displayTime()}">
+                 th:attr="data-location=${locationnames.get(minyan.getId())}, data-nusach=${minyan.getNusach().displayName()}, data-notes=${minyan.getNotes()}">
                 
                 <div class="minyan-header">
                     <div>
@@ -895,83 +856,20 @@
 
     <th:block layout:fragment="scripts">
         <script>
-            let currentFilter = 'all';
-            let currentSearch = '';
-            
-            // Sort functionality
-            function sortMinyanim() {
-                const sortBy = document.getElementById('sortSelect').value;
-                const container = document.getElementById('minyanim-container');
-                const cards = Array.from(document.querySelectorAll('.minyan-card'));
-                
-                // Remove empty state temporarily
-                const emptyState = document.getElementById('emptyState');
-                if (emptyState.parentNode === container) {
-                    container.removeChild(emptyState);
-                }
-                
-                // Sort cards
-                cards.sort((a, b) => {
-                    if (sortBy === 'type') {
-                        return parseInt(a.dataset.sortType) - parseInt(b.dataset.sortType);
-                    } else if (sortBy === 'location') {
-                        const locA = (a.dataset.location || '').toLowerCase();
-                        const locB = (b.dataset.location || '').toLowerCase();
-                        return locA.localeCompare(locB);
-                    } else if (sortBy === 'time') {
-                        const timeA = a.dataset.sortTime || '';
-                        const timeB = b.dataset.sortTime || '';
-                        // Handle "No Minyan" case
-                        if (timeA === 'No Minyan') return 1;
-                        if (timeB === 'No Minyan') return -1;
-                        return timeA.localeCompare(timeB);
-                    }
-                    return 0;
-                });
-                
-                // Re-append sorted cards
-                cards.forEach(card => container.appendChild(card));
-                
-                // Re-append empty state
-                container.appendChild(emptyState);
-                
-                // Re-apply current filter and search
-                applyFiltersAndSearch();
-            }
-            
             // Filter functionality
             function filterMinyanim(type) {
-                currentFilter = type;
-                
                 // Update active tab
                 document.querySelectorAll('.filter-tab').forEach(tab => {
                     tab.classList.remove('active');
                 });
                 event.target.closest('.filter-tab').classList.add('active');
                 
-                applyFiltersAndSearch();
-            }
-            
-            // Apply both filters and search
-            function applyFiltersAndSearch() {
+                // Filter cards
                 const cards = document.querySelectorAll('.minyan-card');
                 let visibleCount = 0;
                 
                 cards.forEach(card => {
-                    // Check filter
-                    const matchesFilter = currentFilter === 'all' || card.dataset.type === currentFilter;
-                    
-                    // Check search
-                    const location = (card.dataset.location || '').toLowerCase();
-                    const nusach = (card.dataset.nusach || '').toLowerCase();
-                    const notes = (card.dataset.notes || '').toLowerCase();
-                    const matchesSearch = currentSearch === '' || 
-                                        location.includes(currentSearch) || 
-                                        nusach.includes(currentSearch) || 
-                                        notes.includes(currentSearch);
-                    
-                    // Show/hide based on both criteria
-                    if (matchesFilter && matchesSearch) {
+                    if (type === 'all' || card.dataset.type === type) {
                         card.style.display = 'block';
                         visibleCount++;
                     } else {
@@ -985,8 +883,29 @@
             
             // Search functionality
             document.getElementById('searchInput').addEventListener('input', function(e) {
-                currentSearch = e.target.value.toLowerCase();
-                applyFiltersAndSearch();
+                const searchTerm = e.target.value.toLowerCase();
+                const cards = document.querySelectorAll('.minyan-card');
+                let visibleCount = 0;
+                
+                cards.forEach(card => {
+                    const location = (card.dataset.location || '').toLowerCase();
+                    const nusach = (card.dataset.nusach || '').toLowerCase();
+                    const notes = (card.dataset.notes || '').toLowerCase();
+                    
+                    const matches = location.includes(searchTerm) || 
+                                  nusach.includes(searchTerm) || 
+                                  notes.includes(searchTerm);
+                    
+                    if (matches && card.style.display !== 'none') {
+                        card.style.display = 'block';
+                        visibleCount++;
+                    } else if (!matches) {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // Show empty state if no results
+                document.getElementById('emptyState').style.display = visibleCount === 0 ? 'block' : 'none';
             });
             
             // Show toast for success/error messages
