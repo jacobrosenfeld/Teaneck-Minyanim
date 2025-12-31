@@ -164,8 +164,7 @@
 
             <div class="col-lg-4 col-md-5">
                 <!-- Associated Organization Card -->
-                 <!-- @TODO: if associated org is not null -->
-                <div class="sidebar-card" th:if="${associatedorganization}"> 
+                <div class="sidebar-card" th:if="${associatedorganization != null}"> 
                     <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-3);">Associated Organization</h5>
                     <p class="text-muted mb-3" th:text="|View and manage the organization details for ${associatedorganization.name}.|">
                         View and manage organization details.
