@@ -134,7 +134,7 @@
             <div class="admin-sidebar-section" th:if="${user.isSuperAdmin()}">
                 <div class="admin-sidebar-section-title">Organization Actions</div>
             </div>
-            <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and organization.enabled}" href="#"
+            <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and organization.isEnabled()}" href="#"
                data-toggle="modal" data-target="#disable-organization-modal">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0z"/>

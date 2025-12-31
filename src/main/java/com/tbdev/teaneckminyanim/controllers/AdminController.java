@@ -337,6 +337,7 @@ public class AdminController {
                 .nusach(nusach)
                 .orgColor(orgColor)
                 .urlSlug(urlSlug)
+                .enabled(true)
                 .build();
 
         // Ensure organization has a slug (generate from name if not provided)
