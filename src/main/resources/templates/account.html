@@ -129,14 +129,14 @@
                                 <p class="text-muted mb-3" th:text="|Disable login access to ${siteName ?: 'Minyan Manager'} from this account. This will not erase any of its data.|">
                                     Disable login access. This will not erase any data.
                                 </p>
-                                <button type="button" class="btn-modern btn-warning" data-toggle="modal" data-target="#disable-account-modal">
+                                <button id="open-disable-account-modal" type="button" class="btn-modern btn-warning" data-toggle="modal" data-target="#disable-account-modal">
                                     <i class="fas fa-ban"></i>
                                     Disable Account
                                 </button>
                             </div>
                             <div th:if="${queriedaccount.isDisabled()}">
                                 <p class="text-muted mb-3">This account is disabled. Enable it to restore access.</p>
-                                <button type="button" class="btn-modern btn-success" data-toggle="modal" data-target="#enable-account-modal">
+                                <button id="open-enable-account-modal" type="button" class="btn-modern btn-success" data-toggle="modal" data-target="#enable-account-modal">
                                     <i class="fas fa-check"></i>
                                     Enable Account
                                 </button>
@@ -148,7 +148,7 @@
                             <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2);">Delete this account</h5>
                             <p class="text-muted mb-3">Permanently delete all data for this account.</p>
                             <span th:attr="data-toggle=${queriedaccount.isEnabled()} ? 'tooltip' : null, title=${queriedaccount.isEnabled()} ? 'Disable the account before deleting' : null">
-                                <button type="button" class="btn-modern btn-danger"
+                                <button id="open-delete-account-modal" type="button" class="btn-modern btn-danger"
                                         th:classappend="${queriedaccount.isEnabled()} ? ' disabled' : ''"
                                         th:attr="data-toggle=${queriedaccount.isEnabled()} ? '' : 'modal', data-target=${queriedaccount.isEnabled()} ? '' : '#delete-account-modal'"
                                         th:disabled="${queriedaccount.isEnabled()}">
