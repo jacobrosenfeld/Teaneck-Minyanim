@@ -1,101 +1,113 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
 <head>
     <meta charset="UTF-8">
-    <title th:text="@{|Organizations - ${siteName} ?: 'Minyanim Platform'|}"></title>
-    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
-    <link rel="manifest" href="/assets/icons/site.webmanifest">
-    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
-    
-    <meta name="msapplication-TileColor" content="#275ed8">
-    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
+    <title>Organizations</title>
 </head>
-
 <body>
-    <div class="horizontal-container d-flex" id="wrapper">
-        <th:block th:include="admin/navbar"></th:block>
-        <div class="container-fluid" id="main">
-            <div class="row row-offcanvas row-offcanvas-left vh-100">
-                <th:block th:include="admin/sidebar"></th:block>
-                <!--/col-->
-                <div class="col-housing main h-100 overflow-auto">
-                    <main class="col main pt-5 mt-3 overflow-auto">
-                        <div th:if="${successmessage}">
-                            <div class="alert alert-success" role="alert" th:text="${successmessage}"> </div>
-                        </div>
-                        <div th:if="${errormessage}">
-                            <div class="alert alert-danger" role="alert" th:text="${errormessage}"></div>
-                        </div>
-                        <h1 class="display-4 d-none d-sm-block">
-                            Organizations
-                        </h1>
-                        <p class="lead" th:text="@{|Manage the data and accounts for all organizations on the ${siteName} ?: 'Minyanim Platform' platform.|}"></p>
-
-                        <!--                <hr>-->
-
-                        <div class="row my-4 footer-pusher">
-                            <div class="col-lg-9 col-md-8">
-                                <div class="table-responsive">
-                                    <table class="table">
-                                        <thead class="thead-inverse">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Name</th>
-                                                <th>Website</th>
-                                                <th>Minyan Schedule</th>
-                                                <th>Profile & Accounts</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr th:each="organization: ${organizations}">
-                                                <td th:text="${organization.id}" />
-                                                <td th:text="${organization.name}" />
-                                                <td>
-                                                    <a th:if="${organization.websiteURI}"
-                                                        th:href="@{'https://' + ${organization.websiteURI}}"
-                                                        th:text="${organization.websiteURI}"></a>
-                                                </td>
-                                                <td>
-                                                    <a role="button" class="btn btn-primary btn-sm"
-                                                        th:href="@{|/admin/${organization.id}/minyanim|}">Manage</a>
-                                                </td>
-                                                <td>
-                                                    <a role="button" class="btn btn-dark btn-sm"
-                                                        th:href="@{/admin/organization(id=${organization.id})}">Manage</a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-3 col-md-4">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h4 class="card-title">Add an Organization</h4>
-                                        <p class="card-text">Create an organization along with an account used for
-                                            posting location details, minyan information, and more. </p>
-                                        <a href="/admin/new-organization" class="btn btn-primary">New Organization</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--/row-->
-                    </main>
-                </div>
-
-                <!--/main col-->
-            </div>
-
+<div layout:fragment="content">
+    <!-- Page Header -->
+    <div class="page-header flex justify-between items-center">
+        <div>
+            <h1 class="page-title">Organizations</h1>
+            <p class="page-description" th:text="@{|Manage the data and accounts for all organizations on the ${siteName} ?: 'Minyanim Platform' platform.|}"></p>
         </div>
-        <!--/.container-->
+        <div class="page-actions">
+            <a href="/admin/new-organization" class="btn-modern btn-primary">
+                <i class="fas fa-plus"></i>
+                <span>New Organization</span>
+            </a>
+        </div>
     </div>
-</body>
 
+    <!-- Success/Error Messages -->
+    <div th:if="${successmessage}" class="alert-modern alert-success mb-4">
+        <i class="fas fa-check-circle alert-modern-icon"></i>
+        <div class="alert-modern-content">
+            <span th:text="${successmessage}">Success</span>
+        </div>
+    </div>
+    <div th:if="${errormessage}" class="alert-modern alert-danger mb-4">
+        <i class="fas fa-exclamation-circle alert-modern-icon"></i>
+        <div class="alert-modern-content">
+            <span th:text="${errormessage}">Error</span>
+        </div>
+    </div>
+
+    <!-- Organizations Table -->
+    <div class="card-modern">
+        <div class="card-modern-body">
+            <div class="table-modern-wrapper">
+                <table class="table-modern w-full">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Website</th>
+                            <th>Minyan Schedule</th>
+                            <th>Profile & Accounts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="organization: ${organizations}">
+                            <td th:text="${organization.id}">1</td>
+                            <td th:text="${organization.name}">Organization Name</td>
+                            <td>
+                                <a th:if="${organization.websiteURI}"
+                                    th:href="@{'https://' + ${organization.websiteURI}}"
+                                    th:text="${organization.websiteURI}"
+                                    class="text-primary">website.com</a>
+                            </td>
+                            <td>
+                                <a class="btn-modern btn-sm btn-primary"
+                                    th:href="@{|/admin/org/${organization.id}/minyanim|}">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>Manage</span>
+                                </a>
+                            </td>
+                            <td>
+                                <a class="btn-modern btn-sm btn-secondary"
+                                    th:href="@{/admin/organization(id=${organization.id})}">
+                                    <i class="fas fa-building"></i>
+                                    <span>Manage</span>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(organizations)}">
+                            <td colspan="5" style="text-align: center; padding: var(--space-12); color: var(--text-secondary);">
+                                <i class="fas fa-building" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3;"></i>
+                                <p style="margin: 0; font-weight: var(--font-weight-medium);">No organizations found.</p>
+                                <p style="margin-top: var(--space-2); font-size: var(--font-size-sm);">Create a new organization to get started.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script>
+        // Show success/error messages as toast notifications
+        document.addEventListener('DOMContentLoaded', function() {
+            const successAlert = document.querySelector('.alert-modern.alert-success');
+            const errorAlert = document.querySelector('.alert-modern.alert-danger');
+            
+            if (successAlert) {
+                const message = successAlert.textContent.trim();
+                window.showToast(message, 'success');
+                successAlert.remove();
+            }
+            
+            if (errorAlert) {
+                const message = errorAlert.textContent.trim();
+                window.showToast(message, 'error');
+                errorAlert.remove();
+            }
+        });
+    </script>
+</th:block>
+</body>
 </html>

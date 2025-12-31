@@ -7,6 +7,358 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2025-12-31
+
+### Added
+
+#### Super Admin Top Navbar with Organization Dropdown
+- **Redesigned Navigation for Super Admins**:
+  - Moved super admin navigation from sidebar to top navbar for better accessibility
+  - Added "Organizations" dropdown menu with searchable list of all organizations
+  - Integrated "New Organization" action directly into dropdown menu (removed separate sidebar link)
+  - Added direct access to Settings, Accounts, and Notifications from top navbar
+  - Dropdown features real-time search filtering of organizations
+  - Smooth animations and visual feedback for dropdown interactions
+  - Mobile-responsive design with fixed positioning on small screens
+
+#### Organization Context Sidebar
+- **Context-Aware Sidebar Navigation**:
+  - New org-specific sidebar appears when Super Admin or Org Manager is in organization context
+  - Shows current organization name as sidebar section title
+  - Consolidated org-level tools: Dashboard, Minyan Schedule, Locations, Calendar Entries, Profile & Accounts
+  - Active link highlighting based on current page URL
+  - Organization Actions section (Disable/Delete) for Super Admins only
+  - Visual separation of org actions from regular navigation
+  - Confirmation dialog for destructive actions (delete organization)
+
+#### Standardized Organization Routes
+- **Consistent URL Pattern (`/admin/org/{orgId}/...`)**:
+  - `/admin/org/{orgId}/dashboard` - Organization dashboard (currently redirects to minyanim)
+  - `/admin/org/{orgId}/minyanim` - Minyan schedule management
+  - `/admin/org/{orgId}/locations` - Location management
+  - `/admin/org/{orgId}/calendar-entries` - Calendar entries management
+  - All routes properly verify user permissions (Super Admin or org ownership)
+  - Routes delegate to existing controller methods for consistency
+
+### Changed
+
+#### Navigation Architecture
+- **Role-Based Navigation Display**:
+  - Super Admins now see top navbar with global controls instead of sidebar-first navigation
+  - Org Managers/Admins see only org-specific sidebar (no access to global controls)
+  - Navigation automatically adapts based on user role and current context
+  - Sidebar visibility logic updated to show appropriate sections based on organization context
+  - Non-super-admin users with no org context see their organization's tools directly
+
+#### Controller Updates
+- **AdminController Enhancements**:
+  - `addStandardPageData()` now provides `allOrganizations` list for super admin dropdown
+  - Added wrapper methods for org-context routes that delegate to existing implementations
+  - Maintained backward compatibility with existing `/admin/{orgId}/...` routes
+
+### Improved
+
+#### User Experience
+- **Streamlined Organization Management**:
+  - Faster organization switching for Super Admins via top navbar dropdown
+  - Clearer visual hierarchy: global controls (navbar) vs org-specific tools (sidebar)
+  - Reduced navigation fragmentation with consolidated org-level menu
+  - More intuitive workflow: select org → see org tools → manage org resources
+  - Better mobile responsiveness with collapsible sidebar and fixed navbar
+
+#### Design Consistency
+- **Laravel Backpack-Inspired UX**:
+  - Professional admin panel design patterns
+  - Consistent spacing and visual design using existing design system tokens
+  - Smooth transitions and hover effects throughout navigation
+  - Clear visual distinction between global and org-specific contexts
+
+## [1.5.0] - 2025-12-30
+
+### Added
+
+#### Modern Admin Panel Design System
+- **Comprehensive CSS Design System** (`design-system.css`):
+  - Complete design token system with CSS custom properties for colors, typography, spacing
+  - 60+ design tokens for consistent theming across the admin panel
+  - Modern component library: buttons (4 variants × 3 sizes), cards, forms, badges, alerts, tables
+  - Utility classes for flexbox, spacing, typography, and display patterns
+  - Professional blue-based color palette with primary, secondary, accent, and neutral colors
+  - Responsive design with mobile-first approach and breakpoints at 768px and 480px
+
+#### Modern Navigation Components
+- **Redesigned Admin Navbar**:
+  - Clean, fixed header with primary brand color and modern styling
+  - Logo and site name branding with improved typography
+  - Responsive hamburger menu for mobile devices
+  - Current time display in monospace font
+  - Organization badge with pill-style design
+  - Smooth animations and hover effects
+
+- **Redesigned Admin Sidebar**:
+  - Fixed sidebar with organized sections (Organization, Administration, Account)
+  - Icon-based navigation using SVG icons for all menu items
+  - Active link highlighting with left border accent
+  - Smooth hover transitions and visual feedback
+  - Collapsible on mobile devices with toggle animation
+  - Semantic organization of menu structure
+
+#### Shared Layout System
+- **Reusable Thymeleaf Layout Template** (`layout.html`):
+  - Consistent header/sidebar/content structure across all admin pages
+  - Page title and description blocks for consistent page headers
+  - Global toast notification system for success/error messages
+  - Responsive sidebar toggle functionality with smooth animations
+  - Proper spacing and margins using design system tokens
+  - Mobile-responsive design with automatic sidebar collapse
+
+#### Enhanced Calendar Events Page
+- **Modern Redesign with Design System Integration**:
+  - Statistics grid with hover-animated stat cards
+  - Collapsible filter panel with toggle functionality
+  - Modern table design with cleaner borders, better spacing, sticky header
+  - Enhanced badges using design system colors with proper contrast
+  - Beautiful empty state with icon and helpful messaging
+  - Info box redesigned with modern card styling
+
+- **User Experience Improvements**:
+  - Collapsible filters: Click header to toggle filter visibility with smooth animation
+  - Toast notifications for success/error messages instead of page alerts
+  - Modern form controls using design system styles with focus states
+  - Improved button styling with hover effects and transitions
+  - Better inline editing controls with focus indicators
+  - Responsive grid layouts with proper breakpoints
+
+### Changed
+
+#### Navigation Structure
+- Reorganized sidebar menu into logical sections with separators
+- Updated menu item ordering for better workflow
+- Added icons to all navigation items for better visual recognition
+- Improved mobile navigation experience with collapsible sidebar
+
+#### Visual Design
+- Updated color scheme to use design system tokens throughout
+- Improved typography with consistent font sizes, weights, and line heights
+- Enhanced spacing using systematic 8px-based spacing scale
+- Modernized button designs with multiple variants and sizes
+- Updated form controls with better focus states and validation feedback
+
+### Technical Improvements
+
+#### CSS Architecture
+- **Design Token System**: All colors, spacing, typography defined as CSS custom properties
+- **Component-Based Styling**: Clear, BEM-inspired class names for components
+- **Utility-First Approach**: Common patterns available as utility classes
+- **Responsive Design**: Mobile-first with breakpoints at 768px and 480px
+- **Performance**: No !important declarations, clean CSS cascade
+
+#### JavaScript Features
+- Sidebar toggle with smooth animations
+- Filter panel collapse/expand functionality
+- Toast notification system for better user feedback
+- Form submission handling with loading states
+- Event delegation for dynamic content
+
+#### Browser Support
+- Modern evergreen browsers (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)
+- CSS custom properties (no IE11 support required)
+- Flexbox and Grid layouts for modern layout capabilities
+- ES6 JavaScript features for cleaner code
+
+### Documentation
+- Added comprehensive inline documentation in design-system.css
+- Documented all design tokens with usage examples
+- Created detailed PR descriptions with implementation notes
+- Maintained backward compatibility with existing functionality
+
+## [1.4.0] - 2025-12-30
+
+### Added
+
+#### Admin UI for Calendar Events Management
+- **CalendarEventsAdminController**: New admin controller for managing materialized calendar_events
+  - Route: `/admin/{orgId}/calendar-events`
+  - View all calendar events for an organization with filters
+  - Filter by date range (defaults to materialization window: 3 weeks past, 8 weeks future)
+  - Filter by minyan type (Shacharis, Mincha, Maariv, Mincha/Maariv, Selichos, etc.)
+  - Filter by event source (IMPORTED, RULES, MANUAL)
+  - Filter by enabled/disabled status
+  - Sort by date and time
+  
+- **Event Management Operations**:
+  - **Toggle Enable/Disable**: Any event can be enabled or disabled via toggle button
+  - **Inline Note Editing**: Edit notes field with auto-submit on change
+  - **Inline Location Editing**: Select location from dropdown with auto-submit
+  - **Delete Manual Events**: Only manual events can be deleted; imported/rules events can only be disabled
+  - **Manual Edit Tracking**: Events show orange dot indicator when manually edited
+  - **Rematerialization Trigger**: Button to manually trigger calendar rematerialization for organization
+
+- **Statistics Dashboard**:
+  - Total events count in current date range
+  - Enabled vs disabled events
+  - Rules-based events count
+  - Imported events count
+  - Manual events count (future feature)
+
+- **Modern UI Features**:
+  - Color-coded source badges: Blue (RULES), Green (IMPORTED), Orange (MANUAL)
+  - Color-coded type badges: Blue (Shacharis), Amber (Mincha), Purple (Maariv), Pink (Mincha/Maariv)
+  - Status badges: Green (Enabled), Gray (Disabled)
+  - Responsive table with sticky header
+  - Modern filter panel with date pickers and dropdowns
+  - Success/error flash messages
+  - Info box explaining event types and materialization window
+  - Manual edit indicator (orange dot with tooltip)
+
+- **Navigation**:
+  - Added "Calendar Events" link to admin sidebar
+  - Accessible to all admin users (organization-specific access)
+  - Link appears between "Minyan Schedule" and other admin options
+
+- **Security & Authorization**:
+  - Enhanced TNMUserService with authorization helpers:
+    - `getCurrentUser()`: Get currently authenticated user
+    - `isSuperAdmin()`: Check if user is super admin
+    - `canAccessOrganization(orgId)`: Check if user can access specific organization
+  - Super admins can access all organizations
+  - Regular admins can only access their own organization
+  - All endpoints protected with proper access control
+  - Graceful error handling for unauthorized access
+
+#### Materialized Calendar Architecture (Major Refactor)
+- **CalendarEvent Entity**: New unified database table (`calendar_events`) serving as single source of truth for all minyanim
+  - Supports three event sources: IMPORTED (from calendars), RULES (from schedules), MANUAL (future overrides)
+  - Includes comprehensive fields: organization_id, date, minyan_type, start_time, notes, location_id, location_name, enabled, source, source_ref
+  - Automatic timestamps (created_at, updated_at) via JPA lifecycle hooks
+  - Support for nusach, whatsapp links, dynamic_time_string for rule-based events
+  - Manual edit tracking: manually_edited flag, edited_by, edited_at fields
+  - Database indexes for performance: (organization_id, date), (organization_id, date, minyan_type, start_time), (source, date), (enabled)
+
+- **EventSource Enum**: Type-safe source tracking with three values
+  - `IMPORTED`: Events from external calendar imports
+  - `RULES`: Events generated from rule-based minyan schedules
+  - `MANUAL`: Manual overrides by admins (schema support added, UI now implemented)
+  - Helper methods: `isImported()`, `isRules()`, `isManual()`, `displayName()`
+
+- **CalendarEventRepository**: Comprehensive data access layer with 20+ query methods
+  - Basic CRUD operations with Spring Data JPA
+  - Date-based queries: `findByOrganizationIdAndDate()`, `findEventsInRange()`
+  - Effective schedule queries with built-in precedence logic
+  - Existence checks for precedence: `existsByOrganizationIdAndDateAndSourceAndEnabledTrue()`
+  - Bulk operations: `deleteRulesEventsInRange()`, `deleteEventsBeforeDate()`
+  - Filtering: by source, minyan_type, enabled status
+  - Sorting support via Spring Data Sort parameter
+
+#### Materialization Services
+- **CalendarMaterializationService**: Core service for generating calendar_events
+  - **Rule-Based Event Generation**:
+    - Iterates through all enabled Minyan entities
+    - For each day in rolling window, checks minyan's schedule
+    - Handles Jewish calendar dates (Rosh Chodesh, Yom Tov, Chanuka, regular weekdays)
+    - Converts MinyanTime to LocalTime, preserves dynamic time strings
+    - Links to Location entities, captures nusach and WhatsApp info
+  - **Imported Event Materialization**:
+    - Reads OrganizationCalendarEntry records
+    - Only materializes entries with classification != NON_MINYAN
+    - Deduplicates using source_ref tracking
+    - Respects enabled status from import
+    - Defaults to organization nusach when not specified
+  - **Delete + Rebuild Strategy**:
+    - Deletes only RULES events in rolling window (preserves IMPORTED/MANUAL)
+    - Transaction-safe operations
+    - Prevents data loss for user-managed content
+  - **Rolling Window Configuration**:
+    - Past 3 weeks (configurable via PAST_WEEKS constant)
+    - Next 8 weeks (configurable via FUTURE_WEEKS constant)
+    - Total 11-week window centered on current date
+  - **Cleanup Operations**: Automatic removal of events older than window start
+  - **Manual Triggers**: Public methods for admin-initiated materialization
+  - **Window Validation**: `isDateInWindow()` and `getWindowBounds()` helpers
+
+- **CalendarMaterializationScheduler**: Scheduled job orchestration
+  - **Application Startup**: Runs full materialization on ApplicationReadyEvent
+  - **Weekly Schedule**: Cron job every Sunday at 2:00 AM (`0 0 2 * * SUN`)
+  - **Manual Triggers**: Methods for admin controller integration
+  - **Error Handling**: Comprehensive logging, exceptions don't crash scheduler
+  - Uses `@EnableScheduling` already present in application
+
+- **EffectiveScheduleService**: Query service with day-level precedence logic
+  - **Day-Level Override**: If ANY imported events exist for org+date, returns ONLY imported events; else returns ONLY rules events
+  - **Effective Events**: `getEffectiveEventsForDate()` applies precedence, returns enabled events only
+  - **Range Queries**: `getEffectiveEventsInRange()` with per-day precedence application
+  - **Admin Views**: `getAllEventsForDate()` and `getAllEventsInRange()` bypass precedence, show everything
+  - **Window Validation**: Delegates to CalendarMaterializationService for date checks
+  - **Stream-Based Processing**: Efficient grouping and filtering using Java Streams
+
+- **CalendarEventAdapter**: Conversion layer for frontend compatibility
+  - Converts `CalendarEvent` entities to `MinyanEvent` display objects
+  - Preserves all display properties: organization details, location, time formatting
+  - Handles time zone conversion using ApplicationSettingsService
+  - Supports dynamic time strings for rule-based events
+  - Graceful handling of missing organizations or data
+  - Batch conversion: `toMinyanEvents()` for list processing
+
+#### Developer Experience
+- **Comprehensive Documentation**: Added `docs/ZMANIM_SERVICE_REFACTORING.md` guide
+  - Current state analysis of dual code paths
+  - Target architecture with unified materialized calendar
+  - Step-by-step refactoring instructions
+  - Code snippets for all major changes
+  - Testing checklist for validation
+  - Rollback plan for safety
+
+### Changed
+- **Application Version**: Updated from 1.3.4 to 1.4.0 in pom.xml
+- **Database Schema**: New `calendar_events` table created via JPA auto-DDL
+- **Data Flow**: Backend now materializes events; frontend will read from materialized data (in progress)
+- **Admin Sidebar**: Added "Calendar Events" navigation link for organization admins
+
+### Technical Details
+
+#### Precedence Implementation
+The day-level precedence is implemented as follows:
+1. Check if ANY enabled IMPORTED events exist for org+date
+2. If yes, filter all events for that day to source=IMPORTED only
+3. If no, filter all events for that day to source=RULES only
+4. MANUAL source (future) will override both IMPORTED and RULES
+
+This ensures a clean separation between different event sources and prevents confusion from mixed displays.
+
+#### Performance Considerations
+- Materialization runs weekly, not on-demand (reduces database load)
+- Comprehensive indexes on calendar_events table
+- Rolling window limits data volume
+- Batch processing for rule generation
+- Stream-based filtering in EffectiveScheduleService
+
+#### Future Extensibility
+Schema designed to support:
+- Manual day overrides (MANUAL source)
+- Per-event manual edits (manually_edited flag)
+- Audit trails (edited_by, edited_at, updated_at)
+- Easy addition of new event sources
+- Time-based querying without full table scans
+
+### Migration Notes
+- **Database**: New `calendar_events` table created automatically on application startup
+- **Initial Data**: Full materialization runs on first startup, populates 11-week window
+- **Existing Features**: Rule-based and imported minyanim continue to work during transition
+- **No Data Loss**: Import entries and minyan rules preserved, only materialized differently
+- **Backward Compatibility**: MinyanEvent display objects unchanged, frontend impact minimized
+
+### Known Limitations
+- ZmanimService refactoring incomplete (documented in `docs/ZMANIM_SERVICE_REFACTORING.md`)
+- Frontend still uses dual code paths (will be unified in follow-up)
+- Admin UI for calendar management not yet built
+- Manual override feature (MANUAL source) not implemented
+- No UI for viewing materialization status/logs
+
+### Dependencies
+- No new external dependencies added
+- Uses existing: Spring Data JPA, Lombok, Kosherjava Zmanim
+- Compatible with Spring Boot 3.5.9 and Jakarta EE
+
 ## [1.3.3] - 2025-12-30
 
 ### Changed

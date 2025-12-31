@@ -10,34 +10,359 @@
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-T2P4J8V');</script>
     <!-- End Google Tag Manager -->
+    <style>
+        .admin-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--navbar-height, 3.5rem);
+            background-color: var(--bg-navbar, #275ed8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--space-6, 1.5rem);
+            z-index: var(--z-fixed, 1030);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3, 0.75rem);
+            color: var(--text-inverse, #ffffff);
+            font-size: var(--font-size-lg, 1.125rem);
+            font-weight: var(--font-weight-semibold, 600);
+            text-decoration: none;
+            margin-right: var(--space-6, 1.5rem);
+        }
+        
+        .admin-navbar-brand:hover {
+            color: var(--text-inverse, #ffffff);
+            text-decoration: none;
+        }
+        
+        .admin-navbar-logo {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .admin-navbar-toggle {
+            display: none;
+            padding: var(--space-2, 0.5rem);
+            background: transparent;
+            border: none;
+            color: var(--text-inverse, #ffffff);
+            cursor: pointer;
+            margin-right: var(--space-3, 0.75rem);
+        }
+        
+        .admin-navbar-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md, 0.375rem);
+        }
+        
+        .admin-navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2, 0.5rem);
+            flex: 1;
+        }
+        
+        .admin-navbar-link {
+            padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: var(--font-size-sm, 0.875rem);
+            text-decoration: none;
+            border-radius: var(--radius-md, 0.375rem);
+            transition: all var(--transition-fast, 150ms ease);
+        }
+        
+        .admin-navbar-link:hover {
+            color: var(--text-inverse, #ffffff);
+            background-color: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+        }
+        
+        .admin-navbar-link.active {
+            color: var(--text-inverse, #ffffff);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Dropdown Styles */
+        .admin-navbar-dropdown {
+            position: relative;
+        }
+        
+        .admin-navbar-dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2, 0.5rem);
+            padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: var(--font-size-sm, 0.875rem);
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-md, 0.375rem);
+            cursor: pointer;
+            transition: all var(--transition-fast, 150ms ease);
+        }
+        
+        .admin-navbar-dropdown-toggle:hover {
+            color: var(--text-inverse, #ffffff);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-navbar-dropdown-toggle.active {
+            color: var(--text-inverse, #ffffff);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .admin-navbar-dropdown-icon {
+            width: 16px;
+            height: 16px;
+            transition: transform var(--transition-fast, 150ms ease);
+        }
+        
+        .admin-navbar-dropdown.show .admin-navbar-dropdown-icon {
+            transform: rotate(180deg);
+        }
+        
+        .admin-navbar-dropdown-menu {
+            position: absolute;
+            top: calc(100% + var(--space-2, 0.5rem));
+            left: 0;
+            min-width: 280px;
+            max-width: 400px;
+            background-color: var(--bg-surface, #ffffff);
+            border-radius: var(--radius-lg, 0.5rem);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all var(--transition-fast, 150ms ease);
+            z-index: 1040;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .admin-navbar-dropdown.show .admin-navbar-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .admin-navbar-dropdown-header {
+            padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+            border-bottom: 1px solid var(--border-color-light, #e9ecef);
+        }
+        
+        .admin-navbar-dropdown-search {
+            width: 100%;
+            padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+            border: 1px solid var(--border-color, #dee2e6);
+            border-radius: var(--radius-md, 0.375rem);
+            font-size: var(--font-size-sm, 0.875rem);
+        }
+        
+        .admin-navbar-dropdown-search:focus {
+            outline: none;
+            border-color: var(--color-primary, #275ed8);
+            box-shadow: 0 0 0 3px rgba(39, 94, 216, 0.1);
+        }
+        
+        .admin-navbar-dropdown-item {
+            display: block;
+            padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+            color: var(--text-primary, #212529);
+            text-decoration: none;
+            font-size: var(--font-size-sm, 0.875rem);
+            transition: background-color var(--transition-fast, 150ms ease);
+            border-left: 3px solid transparent;
+        }
+        
+        .admin-navbar-dropdown-item:hover {
+            background-color: var(--bg-hover, #f5f5f5);
+            color: var(--color-primary, #275ed8);
+            text-decoration: none;
+            border-left-color: var(--color-primary, #275ed8);
+        }
+        
+        .admin-navbar-dropdown-item.new-org {
+            color: var(--color-primary, #275ed8);
+            font-weight: var(--font-weight-medium, 500);
+            border-top: 1px solid var(--border-color-light, #e9ecef);
+            margin-top: var(--space-2, 0.5rem);
+        }
+        
+        .admin-navbar-dropdown-item.new-org:hover {
+            background-color: var(--color-primary-lighter, #e3ecfa);
+        }
+        
+        .admin-navbar-dropdown-divider {
+            background-color: var(--border-color-light, #e9ecef);
+            margin: var(--space-2, 0.5rem) 0;
+        }
+        
+        .admin-navbar-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4, 1rem);
+            margin-left: auto;
+        }
+        
+        .admin-navbar-time {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: var(--font-size-xs, 0.75rem);
+            font-weight: var(--font-weight-medium, 500);
+            font-family: var(--font-mono, monospace);
+        }
+        
+        .admin-navbar-org {
+            padding: var(--space-2, 0.5rem) var(--space-4, 1rem);
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-full, 9999px);
+            color: var(--text-inverse, #ffffff);
+            font-size: var(--font-size-sm, 0.875rem);
+            font-weight: var(--font-weight-medium, 500);
+        }
+        
+        @media (max-width: 768px) {
+            .admin-navbar-toggle {
+                display: block;
+            }
+            
+            .admin-navbar-menu {
+                display: none;
+            }
+            
+            .admin-navbar-time {
+                display: none;
+            }
+            
+            .admin-navbar {
+                padding: 0 var(--space-4, 1rem);
+            }
+            
+            .admin-navbar-dropdown-menu {
+                position: fixed;
+                left: var(--space-4, 1rem);
+                right: var(--space-4, 1rem);
+                max-width: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .admin-navbar-org {
+                font-size: var(--font-size-xs, 0.75rem);
+                padding: var(--space-1, 0.25rem) var(--space-3, 0.75rem);
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T2P4J8V"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-<nav class="navbar fixed-top navbar-expand-md navbar-dark bg-primary mb-3">
-    <div class="flex-row d-flex">
-        <button type="button" class="navbar-toggler mr-2" title="Toggle sidebar" id="sidebar-toggler">
-            <span class="navbar-toggler-icon"></span>
+    
+    <nav class="admin-navbar">
+        <button type="button" class="admin-navbar-toggle" id="sidebar-toggler" aria-label="Toggle sidebar">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 4h14M3 10h14M3 16h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
         </button>
-        <img href="/admin/dashboard" src="/assets/icons/favicon.svg" height="40" alt="TM Logo">
-        <a class="navbar-brand" href="/admin/dashboard" th:text="${siteName} ?: 'Minyan Manager'">Minyan Manager</a>
-
-    </div>
-    <div class="navbar-collapse collapse" id="collapsingNavbar">
-        <ul class="navbar-nav">
-            <li class="nav-item active">
-                <a class="nav-link" href="/admin/dashboard">Admin Panel <span class="sr-only">Admin Panel</span></a>
-            </li>
-            <li class="nav-item ">
-                <a class="nav-link" th:if="${not #strings.isEmpty(organization)}" th:text="${organization.name}"><span class="sr-only" th:if="${not #strings.isEmpty(organization)}"th:text="${organization.name}"></span></a>
-            </li>
-        </ul>
-        <ul class="navbar-nav ml-auto">
-            <span class="navbar-text time-shower" th:text="${date}"></span>
-        </ul>
-    </div>
-</nav>
+        
+        <a class="admin-navbar-brand" th:href="@{${user.isSuperAdmin()} ? '/admin/organizations' : '/admin'}">
+            <img src="/assets/icons/favicon.svg" class="admin-navbar-logo" alt="Logo">
+            <span th:text="${siteName} ?: 'Minyan Manager'">Minyan Manager</span>
+        </a>
+        
+        <!-- Super Admin Navigation -->
+        <div class="admin-navbar-menu" th:if="${user.isSuperAdmin()}">
+            <!-- Organizations Dropdown -->
+            <div class="admin-navbar-dropdown" id="orgs-dropdown">
+                <button class="admin-navbar-dropdown-toggle" id="orgs-dropdown-toggle" type="button">
+                    <span>Organizations</span>
+                    <svg class="admin-navbar-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div class="admin-navbar-dropdown-menu">
+                    <div class="admin-navbar-dropdown-header">
+                        <input type="text" class="admin-navbar-dropdown-search" id="org-search" placeholder="Search organizations...">
+                    </div>
+                    <div id="org-list">
+                        <a th:each="org : ${allOrganizations}" 
+                           th:href="@{|/admin/org/${org.id}/dashboard|}" 
+                           th:text="${org.name}"
+                           th:data-org-name="${org.name.toLowerCase()}"
+                           class="admin-navbar-dropdown-item org-item">
+                            Organization Name
+                        </a>
+                    </div>
+                    <div class="admin-navbar-dropdown-divider"></div>
+                    <a href="/admin/new-organization" class="admin-navbar-dropdown-item new-org">
+                        <i class="fas fa-plus" style="margin-right: 0.5rem;"></i>
+                        New Organization
+                    </a>
+                </div>
+            </div>
+            
+            <a class="admin-navbar-link" href="/admin/accounts">Accounts</a>
+            <a class="admin-navbar-link" href="/admin/notifications">Notifications</a>
+            <a class="admin-navbar-link" href="/admin/settings">Settings</a>
+        </div>
+        
+        <div class="admin-navbar-right">
+            <span class="admin-navbar-time" th:text="${date}">Loading...</span>
+            <div class="admin-navbar-org" th:if="${organization != null}" th:text="${organization.name}">
+                Organization
+            </div>
+        </div>
+    </nav>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Organizations dropdown functionality
+            const dropdown = document.getElementById('orgs-dropdown');
+            const dropdownToggle = document.getElementById('orgs-dropdown-toggle');
+            const orgSearch = document.getElementById('org-search');
+            
+            if (dropdownToggle) {
+                dropdownToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('show');
+                    if (dropdown.classList.contains('show') && orgSearch) {
+                        setTimeout(() => orgSearch.focus(), 100);
+                    }
+                });
+            }
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (dropdown && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+            
+            // Search functionality
+            if (orgSearch) {
+                orgSearch.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const orgItems = document.querySelectorAll('.org-item');
+                    
+                    orgItems.forEach(item => {
+                        const orgName = item.getAttribute('data-org-name');
+                        if (orgName.includes(searchTerm)) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>

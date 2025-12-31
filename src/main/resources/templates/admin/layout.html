@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE" th:text="${siteName} ?: 'Minyan Manager Admin'">Minyan Manager Admin</title>
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+    <link rel="manifest" href="/assets/icons/site.webmanifest">
+    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
+    <meta name="msapplication-TileColor" content="#275ed8">
+    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    
+    <!-- Core Stylesheets -->
+    <link th:rel="stylesheet" th:href="@{/admin/design-system.css}">
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css}"/>
+    <link th:rel="stylesheet" th:href="@{/styles.css}">
+    <link th:rel="stylesheet" th:href="@{/admin/styles.css}">
+    <link th:rel="stylesheet" th:href="@{/admin/sidebar.css}">
+    <link th:rel="stylesheet" th:href="@{/admin/dashboard.css}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Page-specific styles -->
+    <th:block layout:fragment="styles"></th:block>
+    
+    <style>
+        /* Layout Structure */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        body.admin-layout {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--bg-body, #f8f9fa);
+        }
+        
+        .admin-main {
+            flex: 1 1 auto;
+            margin-left: var(--sidebar-width, 16rem);
+            margin-top: var(--navbar-height, 3.5rem);
+            transition: margin-left var(--transition-base, 200ms ease);
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: calc(100vh - var(--navbar-height, 3.5rem));
+        }
+        
+        .admin-main.sidebar-collapsed {
+            margin-left: 0;
+        }
+        
+        .admin-content {
+            padding: var(--space-6, 1.5rem);
+            max-width: var(--container-max-width, 1400px);
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            margin-bottom: var(--space-6, 1.5rem);
+        }
+        
+        .page-title {
+            font-size: var(--font-size-3xl, 1.875rem);
+            font-weight: var(--font-weight-semibold, 600);
+            color: var(--text-primary, #212529);
+            margin-bottom: var(--space-2, 0.5rem);
+        }
+        
+        .page-description {
+            font-size: var(--font-size-base, 1rem);
+            color: var(--text-secondary, #6c757d);
+            margin-bottom: 0;
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: var(--space-3, 0.75rem);
+            margin-top: var(--space-4, 1rem);
+        }
+        
+        @media (max-width: 768px) {
+            .admin-main {
+                margin-left: 0;
+            }
+            
+            .admin-content {
+                padding: var(--space-4, 1rem);
+            }
+            
+            .page-title {
+                font-size: var(--font-size-2xl, 1.5rem);
+            }
+        }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: calc(var(--navbar-height, 3.5rem) + var(--space-4, 1rem));
+            right: var(--space-4, 1rem);
+            z-index: var(--z-modal, 1050);
+        }
+        
+        .toast-notification {
+            min-width: 300px;
+            max-width: 400px;
+            background-color: var(--bg-surface, #ffffff);
+            border-radius: var(--radius-lg, 0.5rem);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--space-3, 0.75rem);
+            overflow: hidden;
+            animation: slideInRight 0.3s ease;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .toast-notification.success {
+            border-left: 4px solid var(--color-accent, #4caf50);
+        }
+        
+        .toast-notification.error {
+            border-left: 4px solid var(--color-danger, #f44336);
+        }
+        
+        .toast-notification.warning {
+            border-left: 4px solid var(--color-warning, #ff9800);
+        }
+        
+        .toast-notification.info {
+            border-left: 4px solid var(--color-info, #2196f3);
+        }
+    </style>
+</head>
+<body class="admin-layout">
+    <!-- Include Navbar -->
+    <th:block th:include="admin/navbar"></th:block>
+    
+    <!-- Include Sidebar -->
+    <th:block th:include="admin/sidebar"></th:block>
+    
+    <!-- Main Content Area -->
+    <main class="admin-main" id="admin-main">
+        <div class="admin-content">
+            <!-- Page Content -->
+            <div layout:fragment="content">
+                <p>Default content - override with layout:fragment="content"</p>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Toast Container for notifications -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <!-- Core JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    <script th:src="@{/webjars/popper.js/1.16.0/umd/popper.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/4.6.1/js/bootstrap.min.js}"></script>
+    <script th:src="@{/admin/sidebar.js}"></script>
+    
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggler = document.getElementById('sidebar-toggler');
+            const sidebar = document.getElementById('sidebar-wrapper');
+            const mainContent = document.getElementById('admin-main');
+            
+            if (sidebarToggler && sidebar) {
+                sidebarToggler.addEventListener('click', function() {
+                    sidebar.classList.toggle('open');
+                    sidebar.classList.toggle('collapsed');
+                    if (mainContent) {
+                        mainContent.classList.toggle('sidebar-collapsed');
+                    }
+                });
+            }
+            
+            // Toast notification function
+            window.showToast = function(message, type = 'info', duration = 5000) {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
+                
+                const toast = document.createElement('div');
+                toast.className = `toast-notification ${type}`;
+                toast.innerHTML = `
+                    <div style="padding: var(--space-4, 1rem);">
+                        <div style="display: flex; align-items: flex-start; gap: var(--space-3, 0.75rem);">
+                            <div style="flex-shrink: 0;">
+                                ${type === 'success' ? '<i class="fas fa-check-circle" style="color: var(--color-accent);"></i>' : ''}
+                                ${type === 'error' ? '<i class="fas fa-exclamation-circle" style="color: var(--color-danger);"></i>' : ''}
+                                ${type === 'warning' ? '<i class="fas fa-exclamation-triangle" style="color: var(--color-warning);"></i>' : ''}
+                                ${type === 'info' ? '<i class="fas fa-info-circle" style="color: var(--color-info);"></i>' : ''}
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: var(--font-weight-medium, 500);">${message}</div>
+                            </div>
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--text-secondary);">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(toast);
+                
+                if (duration > 0) {
+                    setTimeout(() => {
+                        toast.style.animation = 'slideInRight 0.3s ease reverse';
+                        setTimeout(() => toast.remove(), 300);
+                    }, duration);
+                }
+            };
+        });
+    </script>
+    
+    <!-- Page-specific scripts -->
+    <th:block layout:fragment="scripts"></th:block>
+</body>
+</html>

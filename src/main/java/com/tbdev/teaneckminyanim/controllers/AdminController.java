@@ -94,6 +94,13 @@ public class AdminController {
 
     private void addStandardPageData(ModelAndView mv) {
         mv.addObject("user", getCurrentUser());
+        
+        // Add all organizations for super admin dropdown (sorted alphabetically)
+        if (isSuperAdmin()) {
+            List<Organization> organizations = organizationService.getAll();
+            organizations.sort(Comparator.comparing(Organization::getName, String.CASE_INSENSITIVE_ORDER));
+            mv.addObject("allOrganizations", organizations);
+        }
 
         Date today = new Date();
         dateFormat.setTimeZone(settingsService.getTimeZone());
@@ -150,6 +157,11 @@ public class AdminController {
         addStandardPageData(mv);
 
         return mv;
+    }
+
+    @GetMapping("/admin/")
+    public RedirectView adminTrailingSlash() {
+        return new RedirectView("/admin", true);
     }
 
     @GetMapping("/admin")
@@ -325,6 +337,7 @@ public class AdminController {
                 .nusach(nusach)
                 .orgColor(orgColor)
                 .urlSlug(urlSlug)
+                .enabled(true)
                 .build();
 
         // Ensure organization has a slug (generate from name if not provided)
@@ -341,6 +354,7 @@ public class AdminController {
                     .encryptedPassword(Encrypter.encrytedPassword(password))
                     .organizationId(organization.getId())
                     .roleId(ADMIN.getId())
+                    .enabled(true)
                     .build();
             if (this.TNMUserDAO.save(user)) {
                 return addOrganization(true, null, null);
@@ -644,6 +658,44 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/admin/disable-organization")
+    public ModelAndView disableOrganization(@RequestParam(value = "id") String id,
+                                            @RequestParam(value = "rd", required = false) String redirect) throws Exception {
+        Optional<Organization> organization = this.organizationService.findById(id);
+        if (organization.isEmpty()) {
+            return organizations(null, "Sorry, the organization could not be found.");
+        }
+
+        if (!isSuperAdmin() && !organization.get().getId().equals(getCurrentUser().getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to disable this organization.");
+        }
+
+        organization.get().setEnabled(false);
+        this.organizationService.update(organization.get());
+
+        RedirectView redirectView = new RedirectView(redirect != null ? redirect : "/admin/organization?id=" + id, true);
+        return new ModelAndView(redirectView);
+    }
+
+    @GetMapping("/admin/enable-organization")
+    public ModelAndView enableOrganization(@RequestParam(value = "id") String id,
+                                           @RequestParam(value = "rd", required = false) String redirect) throws Exception {
+        Optional<Organization> organization = this.organizationService.findById(id);
+        if (organization.isEmpty()) {
+            return organizations(null, "Sorry, the organization could not be found.");
+        }
+
+        if (!isSuperAdmin() && !organization.get().getId().equals(getCurrentUser().getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to enable this organization.");
+        }
+
+        organization.get().setEnabled(true);
+        this.organizationService.update(organization.get());
+
+        RedirectView redirectView = new RedirectView(redirect != null ? redirect : "/admin/organization?id=" + id, true);
+        return new ModelAndView(redirectView);
+    }
+
     @RequestMapping(value = "/admin/delete-organization")
     public ModelAndView deleteOrganization(@RequestParam(value = "id", required = true) String id) throws Exception {
         if (isSuperAdmin()) {
@@ -653,6 +705,9 @@ public class AdminController {
                 System.out.println("Organization does not exist. Failed to delete.");
                 return organizations(null, "Sorry, the organization could not be deleted.");
             } else {
+                if (organization.get().isEnabled()) {
+                    return organization(id, null, "Disable the organization before deleting.", null, null);
+                }
                 if (this.organizationService.delete(organization.get())) {
                     System.out.println("Organization deleted successfully.");
                     return organizations("Successfully deleted the organization.", null);
@@ -691,38 +746,97 @@ public class AdminController {
 
     @RequestMapping(value = "/admin/delete-account")
     public ModelAndView deleteAccount(@RequestParam(value = "id", required = true) String id) throws Exception {
-        if (isSuperAdmin()) {
-//            get organization and check if it exists
-            TNMUser account = this.TNMUserDAO.findById(id);
-            if (account != null) {
-                if (this.TNMUserDAO.delete(account)) {
-                    System.out.println("Account deleted successfully.");
-                    return accounts("Successfully deleted the account.", null);
-                } else {
-                    System.out.println("Account delete failed.");
-                    return accounts(null, "Sorry, the account could not be deleted.");
-                }
-            } else {
-                System.out.println("Account does not exist. Failed to delete.");
-                return accounts(null, "Sorry, the account could not be deleted.");
-            }
-        } else if (isAdmin()) {
-            TNMUser account = this.TNMUserDAO.findById(id);
-            if (!getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
-                System.out.println("You do not have permission to view this organization.");
-                throw new AccessDeniedException("You do not have permission to view this organization.");
-            } else {
-                if (this.TNMUserDAO.delete(account)) {
-                    System.out.println("Account deleted successfully.");
-                    return accounts("Successfully deleted the account.", null);
-                } else {
-                    System.out.println("Account delete failed.");
-                    return accounts(null, "Sorry, the account could not be deleted.");
-                }
-            }
-        } else {
+        if (!isSuperAdmin() && !isAdmin()) {
             throw new AccessDeniedException("You do not have permission to delete this account.");
         }
+
+        TNMUser account = this.TNMUserDAO.findById(id);
+        if (account == null) {
+            System.out.println("Account does not exist. Failed to delete.");
+            return accounts(null, "Sorry, the account could not be deleted.");
+        }
+
+        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to delete this account.");
+        }
+
+        if (account.isSuperAdmin() && !getCurrentUser().getId().equals(account.getId())) {
+            throw new AccessDeniedException("You do not have permission to delete this account.");
+        }
+
+        if (account.isEnabled()) {
+            return account(id, null, "Disable the account before deleting.", null);
+        }
+
+        if (this.TNMUserDAO.delete(account)) {
+            System.out.println("Account deleted successfully.");
+            return accounts("Successfully deleted the account.", null);
+        }
+
+        System.out.println("Account delete failed.");
+        return accounts(null, "Sorry, the account could not be deleted.");
+    }
+
+    @PostMapping("/admin/account/disable")
+    public ModelAndView disableAccount(@RequestParam("id") String id,
+                                       @RequestParam(value = "rd", required = false) String redirect) {
+        if (!isSuperAdmin() && !isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to disable this account.");
+        }
+
+        TNMUser account = this.TNMUserDAO.findById(id);
+        if (account == null) {
+            return accounts(null, "Account not found.");
+        }
+
+        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to disable this account.");
+        }
+
+        if (account.isSuperAdmin() && !getCurrentUser().getId().equals(account.getId())) {
+            throw new AccessDeniedException("You do not have permission to disable this account.");
+        }
+
+        account.setEnabled(false);
+        this.TNMUserDAO.update(account);
+
+        if (redirect != null) {
+            RedirectView redirectView = new RedirectView(redirect, true);
+            return new ModelAndView(redirectView);
+        }
+
+        return account(id, "Account disabled successfully.", null, null);
+    }
+
+    @PostMapping("/admin/account/enable")
+    public ModelAndView enableAccount(@RequestParam("id") String id,
+                                      @RequestParam(value = "rd", required = false) String redirect) {
+        if (!isSuperAdmin() && !isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to enable this account.");
+        }
+
+        TNMUser account = this.TNMUserDAO.findById(id);
+        if (account == null) {
+            return accounts(null, "Account not found.");
+        }
+
+        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to enable this account.");
+        }
+
+        if (account.isSuperAdmin() && !getCurrentUser().getId().equals(account.getId())) {
+            throw new AccessDeniedException("You do not have permission to enable this account.");
+        }
+
+        account.setEnabled(true);
+        this.TNMUserDAO.update(account);
+
+        if (redirect != null) {
+            RedirectView redirectView = new RedirectView(redirect, true);
+            return new ModelAndView(redirectView);
+        }
+
+        return account(id, "Account enabled successfully.", null, null);
     }
 
     @RequestMapping(value = "/admin/create-account")
@@ -808,6 +922,7 @@ public class AdminController {
                         .encryptedPassword(Encrypter.encrytedPassword(password))
                         .organizationId(organizationId)
                         .roleId(role.getId())
+                        .enabled(true)
                         .build();
 
                 if (this.TNMUserDAO.save(user)) {
@@ -830,6 +945,7 @@ public class AdminController {
                         .encryptedPassword(Encrypter.encrytedPassword(password))
                         .organizationId(organizationId)
                         .roleId(role.getId())
+                        .enabled(true)
                         .build();
                 if (this.TNMUserDAO.save(user)) {
                     return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
@@ -850,6 +966,7 @@ public class AdminController {
                                 .encryptedPassword(Encrypter.encrytedPassword(password))
                                 .organizationId(organizationId)
                                 .roleId(role.getId())
+                                .enabled(true)
                                 .build();
                         if (this.TNMUserDAO.save(user)) {
                             return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
@@ -921,6 +1038,7 @@ public class AdminController {
                     .encryptedPassword(userToUpdate.getEncryptedPassword())
                     .organizationId(userToUpdate.getOrganizationId())
                     .roleId(newRole.getId())
+                    .enabled(userToUpdate.isEnabled())
                     .build();
             if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
@@ -935,6 +1053,7 @@ public class AdminController {
                     .encryptedPassword(userToUpdate.getEncryptedPassword())
                     .organizationId(userToUpdate.getOrganizationId())
                     .roleId(newRole.getId())
+                    .enabled(userToUpdate.isEnabled())
                     .build();
             if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
@@ -948,6 +1067,7 @@ public class AdminController {
                     .encryptedPassword(userToUpdate.getEncryptedPassword())
                     .organizationId(userToUpdate.getOrganizationId())
                     .roleId(userToUpdate.getRoleId())
+                    .enabled(userToUpdate.isEnabled())
                     .build();
             if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
@@ -1047,6 +1167,112 @@ public class AdminController {
             log.error("Error updating setting {}: {}", settingKey, e.getMessage(), e);
             return settings(null, "Error updating setting: " + e.getMessage());
         }
+    }
+
+    @RequestMapping(value = "/admin/org/{organizationId}/dashboard", method = RequestMethod.GET)
+    public RedirectView orgDashboard(@PathVariable String organizationId) {
+        // Redirect to minyanim page for now (we can create a proper dashboard later)
+        return new RedirectView("/admin/" + organizationId + "/minyanim");
+    }
+
+    @RequestMapping(value = "/admin/org/{organizationId}/minyanim", method = RequestMethod.GET)
+    public RedirectView orgMinyanim(@PathVariable String organizationId, 
+                                    @RequestParam(required = false) String successMessage, 
+                                    @RequestParam(required = false) String errorMessage) {
+        String redirectUrl = "/admin/" + organizationId + "/minyanim";
+        if (successMessage != null || errorMessage != null) {
+            redirectUrl += "?";
+            if (successMessage != null) redirectUrl += "successMessage=" + successMessage;
+            if (errorMessage != null) {
+                if (successMessage != null) redirectUrl += "&";
+                redirectUrl += "errorMessage=" + errorMessage;
+            }
+        }
+        return new RedirectView(redirectUrl);
+    }
+
+    @RequestMapping(value = "/admin/org/{oid}/locations", method = RequestMethod.GET)
+    public RedirectView orgLocations(@PathVariable String oid, 
+                                     @RequestParam(required = false) String successMessage, 
+                                     @RequestParam(required = false) String errorMessage) {
+        String redirectUrl = "/admin/" + oid + "/locations";
+        if (successMessage != null || errorMessage != null) {
+            redirectUrl += "?";
+            if (successMessage != null) redirectUrl += "successMessage=" + successMessage;
+            if (errorMessage != null) {
+                if (successMessage != null) redirectUrl += "&";
+                redirectUrl += "errorMessage=" + errorMessage;
+            }
+        }
+        return new RedirectView(redirectUrl);
+    }
+
+    @RequestMapping(value = "/admin/org/{orgId}/calendar-entries", method = RequestMethod.GET)
+    public RedirectView orgCalendarEntries(@PathVariable String orgId,
+                                           @RequestParam(required = false) String successMessage,
+                                           @RequestParam(required = false) String errorMessage,
+                                           @RequestParam(required = false) String sortBy,
+                                           @RequestParam(required = false) String sortDir,
+                                           @RequestParam(required = false) String filterClassification,
+                                           @RequestParam(required = false) String filterEnabled,
+                                           @RequestParam(required = false) String searchText,
+                                           @RequestParam(required = false) String startDate,
+                                           @RequestParam(required = false) String endDate,
+                                           @RequestParam(required = false) Boolean showNonMinyan) {
+        // Build redirect URL with all parameters
+        StringBuilder redirectUrl = new StringBuilder("/admin/" + orgId + "/calendar-entries?");
+        boolean hasParam = false;
+        
+        if (successMessage != null) {
+            redirectUrl.append("successMessage=").append(successMessage);
+            hasParam = true;
+        }
+        if (errorMessage != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("errorMessage=").append(errorMessage);
+            hasParam = true;
+        }
+        if (sortBy != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("sortBy=").append(sortBy);
+            hasParam = true;
+        }
+        if (sortDir != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("sortDir=").append(sortDir);
+            hasParam = true;
+        }
+        if (filterClassification != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("filterClassification=").append(filterClassification);
+            hasParam = true;
+        }
+        if (filterEnabled != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("filterEnabled=").append(filterEnabled);
+            hasParam = true;
+        }
+        if (searchText != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("searchText=").append(searchText);
+            hasParam = true;
+        }
+        if (startDate != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("startDate=").append(startDate);
+            hasParam = true;
+        }
+        if (endDate != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("endDate=").append(endDate);
+            hasParam = true;
+        }
+        if (showNonMinyan != null) {
+            if (hasParam) redirectUrl.append("&");
+            redirectUrl.append("showNonMinyan=").append(showNonMinyan);
+        }
+        
+        return new RedirectView(redirectUrl.toString());
     }
 
     @RequestMapping(value = "/admin/{oid}/locations", method = RequestMethod.GET)
