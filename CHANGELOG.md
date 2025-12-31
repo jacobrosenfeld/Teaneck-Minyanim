@@ -7,6 +7,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2025-12-31
+
+### Added
+
+#### AG Grid Community Integration for Calendar Events
+- **Replaced HTML table with AG Grid Community** for Calendar Events page (`/admin/{orgId}/calendar-events`)
+  - Integrated AG Grid Community v31.3.2 (open source, MIT license)
+  - Applied Alpine theme for clean, modern appearance
+  - Optimized for handling 10,000+ rows with virtual scrolling and efficient rendering
+  - Server-side pagination with configurable page sizes (25, 50, 100, 200 rows)
+  - Advanced column filtering with date, text, and set filters
+  - Sortable columns with multi-column sort support
+  - Inline editing for notes and location fields with auto-submit
+  - Custom cell renderers for badges, dates, times, and action buttons
+  - Responsive column resizing and auto-sizing
+  - Row animation for smooth user experience
+  - Disabled row styling preserved from previous implementation
+
+#### Modernized Template Structure
+- **Migrated calendar-events.html to Thymeleaf layout decorator pattern**
+  - Now uses `layout:decorate="~{admin/layout}"` for consistent admin UI
+  - Inherited navbar, sidebar, and design system from shared admin layout
+  - Preserved all existing features: statistics cards, collapsible filter panel, info box
+  - Maintained color-coded badges for event types, sources, and status
+  - Consistent with other admin pages (organizations.html, etc.)
+
+#### Performance Improvements
+- **Optimized for large datasets**
+  - Virtual scrolling eliminates DOM bloat for 10,000+ row datasets
+  - Client-side filtering and sorting with efficient indexing
+  - Reduced initial page load time by lazy rendering visible rows only
+  - Improved memory usage compared to full table rendering
+
+### Changed
+
+#### Admin UI Consistency
+- **Calendar Events page now follows admin design system**
+  - Uses CSS variables from design-system.css for theming
+  - Modern card-based layout with proper spacing and shadows
+  - Alert components replaced with alert-modern classes
+  - Button styling updated to btn-modern classes
+  - Page header structure matches other admin pages
+
+#### JavaScript Architecture
+- **Replaced Tabulator with AG Grid**
+  - New file: `calendar-events-aggrid.js` (replacing `calendar-events-tabulator.js`)
+  - Simplified data binding using Thymeleaf inline JavaScript
+  - Form-based CRUD operations maintained for compatibility
+  - Toggle, delete, and update actions preserved with same backend endpoints
+
+### Removed
+
+#### Tabulator Dependencies
+- **Removed Tabulator library references**
+  - Backed up `calendar-events-tabulator.js` to `.bak` file (excluded from git)
+  - Backed up old template to `calendar-events-old.html` (excluded from git)
+  - Removed Tabulator CSS/JS CDN references from templates
+  - Updated .gitignore to exclude backup files (*.bak, *-old.html)
+
+### Technical Details
+
+#### AG Grid Configuration
+- Column definitions for: Date, Time, Type, Source, Location, Notes, Status, Actions
+- Default column settings: resizable, sortable, filterable
+- Pagination: 50 rows per page default
+- Grid height: 700px fixed height with internal scrolling
+- Cell editing: Inline editing for notes (text input) and location (dropdown select)
+- Custom renderers: HTML badges, formatted dates/times, action buttons
+- Row styling: Disabled events shown with reduced opacity and gray background
+
+#### Security & Authorization
+- All CRUD operations maintain existing authorization checks
+- Form submissions to existing controller endpoints
+- No changes to backend security model
+- Org admin and super admin permissions preserved
+
+#### Browser Compatibility
+- AG Grid Community supports modern browsers (Chrome, Firefox, Safari, Edge)
+- CDN delivery with version pinning for stability
+- Fallback graceful degradation not implemented (requires modern browser)
+
 ## [1.6.0] - 2025-12-31
 
 ### Added
