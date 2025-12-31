@@ -1,10 +1,24 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{admin/layout}">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Calendar Events - [[${organization.name}]]</title>
-    <th:block layout:fragment="styles">
+    <title th:text="@{|Calendar Events - ${organization.name} - ${siteName} ?: 'Minyanim Platform'|}"></title>
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+    <link rel="manifest" href="/assets/icons/site.webmanifest">
+    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
+    
+    <meta name="msapplication-TileColor" content="#275ed8">
+    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css}"/>
+    <link th:rel="stylesheet" th:href="@{/styles.css}">
+    <link th:rel="stylesheet" th:href="@{/admin/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
     <style>
         /* Stats Panel - Enhanced with Design System */
         .stats-grid {
@@ -297,41 +311,45 @@
     </th:block>
 </head>
 <body>
-<div layout:fragment="content">
-    <!-- Page Header -->
-    <div class="page-header flex justify-between items-center">
-        <div>
-            <h1 class="page-title">Calendar Events</h1>
-            <p class="page-description">Manage materialized calendar events for <strong th:text="${organization.name}">Organization</strong></p>
-        </div>
-        <div class="page-actions">
-            <form method="post" th:action="@{/admin/{orgId}/calendar-events/rematerialize(orgId=${organization.id})}" 
-                  style="display: inline;" onsubmit="return confirm('Rematerialize calendar events for this organization?')">
-                <button type="submit" class="btn-modern btn-primary">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Rematerialize</span>
-                </button>
-            </form>
-            <a th:href="@{/admin/{orgId}/minyanim(orgId=${organization.id})}" class="btn-modern btn-secondary">
-                <i class="fas fa-arrow-left"></i>
-                <span>Back to Minyanim</span>
-            </a>
-        </div>
-    </div>
+    <div class="horizontal-container d-flex" id="wrapper">
+        <th:block th:include="admin/navbar"></th:block>
+        <div class="container-fluid" id="main">
+            <div class="row row-offcanvas row-offcanvas-left vh-100">
+                <th:block th:include="admin/sidebar"></th:block>
+                <div class="col-housing main h-100 overflow-auto">
+                    <main class="col main pt-5 mt-3 overflow-auto">
+                        
+                        <!-- Success/Error Messages -->
+                        <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                            <i class="fas fa-check-circle"></i> <span th:text="${successMessage}">Success</span>
+                        </div>
+                        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}">Error</span>
+                        </div>
 
-    <!-- Success/Error Messages -->
-    <div th:if="${successMessage}" class="alert-modern alert-success mb-4">
-        <i class="fas fa-check-circle alert-modern-icon"></i>
-        <div class="alert-modern-content">
-            <span th:text="${successMessage}">Success</span>
-        </div>
-    </div>
-    <div th:if="${errorMessage}" class="alert-modern alert-danger mb-4">
-        <i class="fas fa-exclamation-circle alert-modern-icon"></i>
-        <div class="alert-modern-content">
-            <span th:text="${errorMessage}">Error</span>
-        </div>
-    </div>
+                        <!-- Page Header -->
+                        <h1 class="display-4 d-none d-sm-block">
+                            Calendar Events
+                        </h1>
+                        <p class="lead">
+                            Manage materialized calendar events for <strong th:text="${organization.name}">Organization</strong>. 
+                            View and control events from rules-based schedules and imported calendars.
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2 th:text="${organization.name}">Organization</h2>
+                            <div>
+                                <form method="post" th:action="@{/admin/{orgId}/calendar-events/rematerialize(orgId=${organization.id})}" 
+                                      style="display: inline;" onsubmit="return confirm('Rematerialize calendar events for this organization?')">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-sync-alt"></i> Rematerialize
+                                    </button>
+                                </form>
+                                <a th:href="@{/admin/{orgId}/minyanim(orgId=${organization.id})}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Minyanim
+                                </a>
+                            </div>
+                        </div>
 
     <!-- Statistics Panel -->
     <div class="stats-grid">
@@ -538,46 +556,10 @@
                 <span class="text-muted">(3 weeks past, 8 weeks future)</span>
             </p>
         </div>
+                    </main>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-
-<th:block layout:fragment="scripts">
-    <script>
-        // Filter panel toggle
-        function toggleFilters() {
-            const filterBody = document.getElementById('filter-body');
-            const icon = document.getElementById('filter-toggle-icon');
-            
-            if (filterBody.style.display === 'none') {
-                filterBody.style.display = 'block';
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-            } else {
-                filterBody.style.display = 'none';
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-            }
-        }
-        
-        // Show success/error messages as toast notifications
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check for success/error messages in the DOM
-            const successAlert = document.querySelector('.alert-modern.alert-success');
-            const errorAlert = document.querySelector('.alert-modern.alert-danger');
-            
-            if (successAlert) {
-                const message = successAlert.querySelector('.alert-modern-content').textContent.trim();
-                window.showToast(message, 'success');
-                successAlert.remove();
-            }
-            
-            if (errorAlert) {
-                const message = errorAlert.querySelector('.alert-modern-content').textContent.trim();
-                window.showToast(message, 'error');
-                errorAlert.remove();
-            }
-        });
-    </script>
-</th:block>
 </body>
 </html>
