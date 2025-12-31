@@ -5,66 +5,24 @@
     <title>Calendar Entries - [[${organization.name}]]</title>
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    
+    <!-- Tabulator CSS -->
+    <!-- Note: For production, consider hosting Tabulator locally or using SRI hashes for CDN resources -->
+    <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.css" rel="stylesheet">
+    
     <style>
-        /* Modern table styling */
-        .table-container {
-            overflow-x: auto;
-            margin-top: 1rem;
-        }
-        
-        .entries-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+        /* Tabulator customizations */
+        #calendar-entries-table {
             font-size: 0.9rem;
         }
         
-        .entries-table thead {
-            position: sticky;
-            top: 0;
-            background: #fff;
-            z-index: 10;
-            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
-        }
-        
-        .entries-table th {
-            padding: 0.75rem;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid #dee2e6;
-            white-space: nowrap;
-        }
-        
-        .entries-table th.sortable {
-            cursor: pointer;
-            user-select: none;
-        }
-        
-        .entries-table th.sortable:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .entries-table th .sort-indicator {
-            margin-left: 0.25rem;
-            opacity: 0.3;
-        }
-        
-        .entries-table th.sorted .sort-indicator {
-            opacity: 1;
-        }
-        
-        .entries-table td {
-            padding: 0.75rem;
-            border-bottom: 1px solid #dee2e6;
-            vertical-align: middle;
-        }
-        
-        .entries-table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .entries-table tbody tr.disabled {
+        .tabulator-row.disabled-row {
             opacity: 0.6;
+            background-color: #f8f9fa;
+        }
+        
+        .tabulator-cell {
+            vertical-align: middle;
         }
         
         /* Filter panel */
@@ -101,19 +59,30 @@
         }
         
         /* Badge styles */
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        
         .badge-shacharis,
         .badge-mincha,
         .badge-maariv,
         .badge-selichos {
             background-color: #28a745;
+            color: #fff;
         }
         
         .badge-mincha-maariv {
             background-color: #17a2b8;
+            color: #fff;
         }
         
         .badge-non-minyan {
             background-color: #6c757d;
+            color: #fff;
         }
         
         .badge-other {
@@ -179,57 +148,11 @@
             color: #6c757d;
         }
         
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: #6c757d;
-        }
-        
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
-        }
-        
         /* Notes column */
         .notes-cell {
             font-size: 0.85rem;
             color: #6c757d;
             font-style: italic;
-        }
-        
-        /* Inline editing */
-        .editable-cell {
-            position: relative;
-        }
-        
-        .edit-trigger {
-            cursor: pointer;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            transition: background-color 0.2s;
-        }
-        
-        .edit-trigger:hover {
-            background-color: #e9ecef;
-        }
-        
-        .edit-form {
-            display: inline-flex;
-            gap: 0.25rem;
-            align-items: center;
-            flex-wrap: nowrap;
-        }
-        
-        .edit-form select {
-            min-width: 150px;
-            max-width: 200px;
-        }
-        
-        .edit-form .btn {
-            padding: 0.25rem 0.5rem;
-            line-height: 1.2;
         }
         
         .manually-edited-indicator {
@@ -241,6 +164,23 @@
             margin-left: 0.25rem;
             vertical-align: middle;
             title: "Manually edited";
+        }
+        
+        /* Action buttons in Tabulator */
+        .tabulator-cell .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Location editor */
+        .location-editor {
+            display: flex;
+            gap: 0.25rem;
+            align-items: center;
+        }
+        
+        .location-editor select {
+            min-width: 150px;
         }
     </style>
 </head>
@@ -345,8 +285,8 @@
                         </div>
                     </div>
 
-                    <!-- Filters -->
-                    <div class="card mb-4">
+                    <!-- Filters (Hidden - Tabulator provides built-in filtering) -->
+                    <div class="card mb-4" style="display: none;">
                         <div class="card-header">
                             <h5 class="mb-0">
                                 <i class="fas fa-filter"></i> Filters & Search
@@ -440,153 +380,25 @@
                         <div class="card-header">
                             <h5 class="mb-0">
                                 <i class="fas fa-calendar"></i> Entries
-                                <small class="text-muted">([[${filteredCount}]] entries)</small>
+                                <small class="text-muted" id="entry-count">([[${filteredCount}]] entries)</small>
                             </h5>
                         </div>
                         <div class="card-body p-0">
-                            <!-- Empty State -->
-                            <div th:if="${entries.isEmpty()}" class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <h4>No entries found</h4>
-                                <p th:if="${searchText != null or filterClassification != null or filterEnabled != null}">
-                                    Try adjusting your filters or <a th:href="@{/admin/{orgId}/calendar-entries(orgId=${organization.id})}">clear all filters</a>.
-                                </p>
-                                <p th:unless="${searchText != null or filterClassification != null or filterEnabled != null}">
-                                    Click "Refresh Import" above to import entries from your calendar.
-                                </p>
-                            </div>
+                            <!-- Tabulator Table Container -->
+                            <div id="calendar-entries-table"></div>
                             
-                            <!-- Table -->
-                            <div th:unless="${entries.isEmpty()}" class="table-container">
-                                <table class="entries-table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th class="sortable" th:classappend="${sortBy == 'date'} ? 'sorted'"
-                                                onclick="sortTable('date')">
-                                                Date
-                                                <span class="sort-indicator">
-                                                    <i th:class="${sortBy == 'date' and sortDir == 'asc'} ? 'fas fa-sort-up' : 'fas fa-sort-down'"></i>
-                                                </span>
-                                            </th>
-                                            <th class="sortable" th:classappend="${sortBy == 'time'} ? 'sorted'"
-                                                onclick="sortTable('time')">
-                                                Time
-                                                <span class="sort-indicator">
-                                                    <i th:class="${sortBy == 'time' and sortDir == 'asc'} ? 'fas fa-sort-up' : 'fas fa-sort-down'"></i>
-                                                </span>
-                                            </th>
-                                            <th class="sortable" th:classappend="${sortBy == 'title'} ? 'sorted'"
-                                                onclick="sortTable('title')">
-                                                Title
-                                                <span class="sort-indicator">
-                                                    <i th:class="${sortBy == 'title' and sortDir == 'asc'} ? 'fas fa-sort-up' : 'fas fa-sort-down'"></i>
-                                                </span>
-                                            </th>
-                                            <th class="sortable" th:classappend="${sortBy == 'type'} ? 'sorted'"
-                                                onclick="sortTable('type')">
-                                                Type
-                                                <span class="sort-indicator">
-                                                    <i th:class="${sortBy == 'type' and sortDir == 'asc'} ? 'fas fa-sort-up' : 'fas fa-sort-down'"></i>
-                                                </span>
-                                            </th>
-                                            <th>Location</th>
-                                            <th>Notes</th>
-                                            <th class="sortable" th:classappend="${sortBy == 'enabled'} ? 'sorted'"
-                                                onclick="sortTable('enabled')">
-                                                Status
-                                                <span class="sort-indicator">
-                                                    <i th:class="${sortBy == 'enabled' and sortDir == 'asc'} ? 'fas fa-sort-up' : 'fas fa-sort-down'"></i>
-                                                </span>
-                                            </th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:each="entry : ${entries}" 
-                                            th:classappend="${!entry.enabled} ? 'disabled' : ''">
-                                            <td th:text="${#temporals.format(entry.date, 'MMM dd, yyyy')}"></td>
-                                            <td th:text="${entry.startTime != null ? #temporals.format(entry.startTime, 'h:mm a') : 'N/A'}"></td>
-                                            <td>
-                                                <span th:attr="data-title=${entry.title}" class="prayer-type-pill"></span>
-                                                <strong th:text="${entry.title}"></strong>
-                                                <br th:if="${entry.classificationReason}">
-                                                <small class="text-muted" th:if="${entry.classificationReason}" 
-                                                       th:text="${entry.classificationReason}"></small>
-                                            </td>
-                                            <td>
-                                                <span th:if="${entry.classification}" 
-                                                      th:class="${'badge badge-' + (entry.classification.name() == 'SHACHARIS' ? 'shacharis' : 
-                                                                                    entry.classification.name() == 'MINCHA' ? 'mincha' :
-                                                                                    entry.classification.name() == 'MAARIV' ? 'maariv' :
-                                                                                    entry.classification.name() == 'SELICHOS' ? 'selichos' :
-                                                                                    entry.classification.name() == 'MINCHA_MAARIV' ? 'mincha-maariv' :
-                                                                                    entry.classification.name() == 'NON_MINYAN' ? 'non-minyan' : 'other')}"
-                                                      th:text="${entry.classification.displayName}">
-                                                </span>
-                                                <span th:unless="${entry.classification}" class="text-muted">—</span>
-                                            </td>
-                                            <td class="editable-cell">
-                                                <!-- Display mode -->
-                                                <span th:id="'location-display-' + ${entry.id}" 
-                                                      th:attr="data-entry-id=${entry.id}"
-                                                      class="edit-trigger"
-                                                      onclick="editLocation(this)">
-                                                    <span th:text="${entry.location ?: 'Add location'}"></span>
-                                                    <span th:if="${entry.locationManuallyEdited}" 
-                                                          class="manually-edited-indicator" 
-                                                          title="Manually edited"></span>
-                                                    <i class="fas fa-pencil-alt" style="font-size: 0.75rem; opacity: 0.5; margin-left: 0.25rem;"></i>
-                                                </span>
-                                                
-                                                <!-- Edit mode (hidden by default) -->
-                                                <form th:id="'location-form-' + ${entry.id}"
-                                                      th:action="@{/admin/{orgId}/calendar-entries/{entryId}/update-location(orgId=${organization.id},entryId=${entry.id})}" 
-                                                      method="post" 
-                                                      class="edit-form" 
-                                                      style="display: none;">
-                                                    <select name="locationId" class="form-control form-control-sm">
-                                                        <option value="">-- No location --</option>
-                                                        <option th:each="loc : ${locations}" 
-                                                                th:value="${loc.id}" 
-                                                                th:text="${loc.name}"
-                                                                th:selected="${entry.location != null and entry.location == loc.name}">
-                                                        </option>
-                                                    </select>
-                                                    <button type="submit" class="btn btn-sm btn-success">
-                                                        <i class="fas fa-check"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm btn-secondary" 
-                                                            onclick="cancelEdit(this)">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                            <td>
-                                                <span class="notes-cell" th:if="${entry.notes}" th:text="${entry.notes}"></span>
-                                                <span th:unless="${entry.notes}" class="text-muted">—</span>
-                                            </td>
-                                            <td>
-                                                <span th:if="${entry.enabled}" class="badge badge-success">Enabled</span>
-                                                <span th:unless="${entry.enabled}" class="badge badge-secondary">Disabled</span>
-                                                <small th:if="${entry.duplicateReason}" 
-                                                       class="text-muted d-block mt-1" 
-                                                       th:text="${entry.duplicateReason}"></small>
-                                            </td>
-                                            <td>
-                                                <form th:action="@{/admin/{orgId}/calendar-entries/{entryId}/toggle(orgId=${organization.id},entryId=${entry.id})}" 
-                                                      method="post" style="display: inline;">
-                                                    <button type="submit" class="btn btn-sm" 
-                                                            th:classappend="${entry.enabled} ? 'btn-outline-secondary' : 'btn-outline-success'">
-                                                        <i th:class="${entry.enabled} ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                                                        <span th:if="${entry.enabled}">Disable</span>
-                                                        <span th:unless="${entry.enabled}">Enable</span>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <!-- Hidden data for JavaScript -->
+                            <script th:inline="javascript">
+                                /*<![CDATA[*/
+                                window.calendarEntriesData = {
+                                    orgId: /*[[${organization.id}]]*/ '',
+                                    entries: /*[[${entries}]]*/ [],
+                                    locations: /*[[${locations}]]*/ [],
+                                    totalEntries: /*[[${totalEntries}]]*/ 0,
+                                    filteredCount: /*[[${filteredCount}]]*/ 0
+                                };
+                                /*]]>*/
+                            </script>
                         </div>
                     </div>
 
@@ -596,82 +408,15 @@
     </div>
 </div>
 
-<script>
-    function sortTable(column) {
-        const form = document.getElementById('filterForm');
-        const sortByInput = form.querySelector('input[name="sortBy"]');
-        const sortDirInput = form.querySelector('input[name="sortDir"]');
-        
-        // Toggle sort direction if clicking same column
-        if (sortByInput.value === column) {
-            sortDirInput.value = sortDirInput.value === 'asc' ? 'desc' : 'asc';
-        } else {
-            sortByInput.value = column;
-            sortDirInput.value = 'asc';
-        }
-        
-        form.submit();
-    }
-    
-    function editLocation(trigger) {
-        const entryId = trigger.getAttribute('data-entry-id');
-        const displaySpan = document.getElementById('location-display-' + entryId);
-        const editForm = document.getElementById('location-form-' + entryId);
-        
-        if (displaySpan && editForm) {
-            displaySpan.style.display = 'none';
-            editForm.style.display = 'inline-flex';
-            editForm.querySelector('select').focus();
-        }
-    }
-    
-    function cancelEdit(button) {
-        const form = button.closest('.edit-form');
-        const entryId = form.id.replace('location-form-', '');
-        const displaySpan = document.getElementById('location-display-' + entryId);
-        
-        if (displaySpan && form) {
-            form.style.display = 'none';
-            displaySpan.style.display = 'inline';
-        }
-    }
-    
-    // Add prayer type pills based on title text
-    document.addEventListener('DOMContentLoaded', function() {
-        const pillElements = document.querySelectorAll('.prayer-type-pill');
-        
-        pillElements.forEach(pill => {
-            const title = (pill.getAttribute('data-title') || '').toLowerCase();
-            let pillClass = '';
-            let pillText = '';
-            
-            // Check for combined Mincha/Maariv first (most specific)
-            if ((title.includes('mincha') || title.includes('minchah')) && 
-                (title.includes('maariv') || title.includes("ma'ariv") || title.includes('arvit'))) {
-                pillClass = 'prayer-pill prayer-pill-mincha-maariv';
-                pillText = 'Mincha/Maariv';
-            }
-            // Check for individual prayer types
-            else if (title.includes('shacharis') || title.includes('shacharit') || title.includes('shaharit')) {
-                pillClass = 'prayer-pill prayer-pill-shacharis';
-                pillText = 'Shacharis';
-            }
-            else if (title.includes('mincha') || title.includes('minchah') || title.includes('minha')) {
-                pillClass = 'prayer-pill prayer-pill-mincha';
-                pillText = 'Mincha';
-            }
-            else if (title.includes('maariv') || title.includes("ma'ariv") || title.includes('arvit')) {
-                pillClass = 'prayer-pill prayer-pill-maariv';
-                pillText = 'Maariv';
-            }
-            
-            // Only add pill if we detected a prayer type
-            if (pillClass) {
-                pill.className = pillClass;
-                pill.textContent = pillText;
-            }
-        });
-    });
-</script>
+<!-- jQuery (needed by some admin components) -->
+<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+
+<!-- Tabulator JS -->
+<!-- Note: For production, consider hosting Tabulator locally or using SRI hashes for CDN resources -->
+<script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+
+<!-- Tabulator Initialization Script -->
+<script th:src="@{/admin/calendar-entries-tabulator.js}"></script>
+
 </body>
 </html>
