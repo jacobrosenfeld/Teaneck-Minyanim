@@ -46,7 +46,22 @@ public class Organization {
     @Column(name = "URL_SLUG", unique = true)
     private String urlSlug;
 
+    @Column(name = "ENABLED", columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private Boolean enabled = true;
+
     @Transient
     private URI websiteURI;
+
+    public boolean isEnabled() {
+        return enabled == null || enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isDisabled() {
+        return !isEnabled();
+    }
 
 }

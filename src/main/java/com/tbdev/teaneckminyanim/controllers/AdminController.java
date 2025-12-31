@@ -654,6 +654,44 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/admin/disable-organization")
+    public ModelAndView disableOrganization(@RequestParam(value = "id") String id,
+                                            @RequestParam(value = "rd", required = false) String redirect) throws Exception {
+        Optional<Organization> organization = this.organizationService.findById(id);
+        if (organization.isEmpty()) {
+            return organizations(null, "Sorry, the organization could not be found.");
+        }
+
+        if (!isSuperAdmin() && !organization.get().getId().equals(getCurrentUser().getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to disable this organization.");
+        }
+
+        organization.get().setEnabled(false);
+        this.organizationService.update(organization.get());
+
+        RedirectView redirectView = new RedirectView(redirect != null ? redirect : "/admin/organization?id=" + id, true);
+        return new ModelAndView(redirectView);
+    }
+
+    @GetMapping("/admin/enable-organization")
+    public ModelAndView enableOrganization(@RequestParam(value = "id") String id,
+                                           @RequestParam(value = "rd", required = false) String redirect) throws Exception {
+        Optional<Organization> organization = this.organizationService.findById(id);
+        if (organization.isEmpty()) {
+            return organizations(null, "Sorry, the organization could not be found.");
+        }
+
+        if (!isSuperAdmin() && !organization.get().getId().equals(getCurrentUser().getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to enable this organization.");
+        }
+
+        organization.get().setEnabled(true);
+        this.organizationService.update(organization.get());
+
+        RedirectView redirectView = new RedirectView(redirect != null ? redirect : "/admin/organization?id=" + id, true);
+        return new ModelAndView(redirectView);
+    }
+
     @RequestMapping(value = "/admin/delete-organization")
     public ModelAndView deleteOrganization(@RequestParam(value = "id", required = true) String id) throws Exception {
         if (isSuperAdmin()) {
@@ -663,6 +701,9 @@ public class AdminController {
                 System.out.println("Organization does not exist. Failed to delete.");
                 return organizations(null, "Sorry, the organization could not be deleted.");
             } else {
+                if (organization.get().isEnabled()) {
+                    return organization(id, null, "Disable the organization before deleting.", null, null);
+                }
                 if (this.organizationService.delete(organization.get())) {
                     System.out.println("Organization deleted successfully.");
                     return organizations("Successfully deleted the organization.", null);

@@ -142,13 +142,31 @@
             <div class="admin-sidebar-section" th:if="${user.isSuperAdmin()}">
                 <div class="admin-sidebar-section-title">Organization Actions</div>
             </div>
-            <a class="admin-sidebar-link" th:if="${user.isSuperAdmin()}" th:href="@{|/admin/delete-organization?id=${organization.id}|}" 
-               onclick="return confirm('Are you sure you want to delete this organization? This action cannot be undone.');"
+            <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and organization.enabled}" href="#"
+               data-toggle="modal" data-target="#disable-organization-modal">
+                <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0m12.728 0L5.636 18.364"/>
+                </svg>
+                <span>Disable Organization</span>
+            </a>
+
+            <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and !organization.enabled}" th:href="@{|/admin/enable-organization?id=${organization.id}|}">
+                <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Enable Organization</span>
+            </a>
+
+            <a class="admin-sidebar-link" th:if="${user.isSuperAdmin()}"
+               th:classappend="${organization.enabled} ? ' disabled text-muted' : ''"
+               th:attr="aria-disabled=${organization.enabled}"
+               th:href="${organization.enabled} ? '#' : @{|/admin/delete-organization?id=${organization.id}|}"
+               th:onclick="${organization.enabled} ? 'return false;' : 'return confirm(\'Are you sure you want to delete this organization? This action cannot be undone.\')'}"
                style="color: var(--color-danger, #dc3545);">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
-                <span>Delete Organization</span>
+                <span th:text="${organization.enabled} ? 'Delete (disable first)' : 'Delete Organization'"></span>
             </a>
             
             <div class="admin-sidebar-divider"></div>
@@ -165,7 +183,7 @@
                 </svg>
                 <span>Minyan Schedule</span>
             </a>
-            <a class="admin-sidebar-link" th:href="@{|/admin/${user.getOrganizationId()}/calendar-events|}">
+            <a class="admin-sidebar-link" th:if="${organization.calendar != null and organization.calendar != ''}" th:href="@{|/admin/${user.getOrganizationId()}/calendar-events|}">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
@@ -206,5 +224,26 @@
         </a>
     </nav>
 </div>
+
+<div th:if="${organization != null}" class="modal fade" id="disable-organization-modal" tabindex="-1" aria-labelledby="disable-organization-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="disable-organization-modal-label" th:text="${'Disable ' + organization.name + '?'}"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Do you want to disable this organization's data from being shown on the site? Its login access will be disabled.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                <a th:href="@{/admin/disable-organization} + '?id=' + ${organization.id}" class="btn btn-warning">Disable</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
