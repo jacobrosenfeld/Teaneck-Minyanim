@@ -353,6 +353,7 @@ public class AdminController {
                     .encryptedPassword(Encrypter.encrytedPassword(password))
                     .organizationId(organization.getId())
                     .roleId(ADMIN.getId())
+                    .enabled(true)
                     .build();
             if (this.TNMUserDAO.save(user)) {
                 return addOrganization(true, null, null);
@@ -744,38 +745,97 @@ public class AdminController {
 
     @RequestMapping(value = "/admin/delete-account")
     public ModelAndView deleteAccount(@RequestParam(value = "id", required = true) String id) throws Exception {
-        if (isSuperAdmin()) {
-//            get organization and check if it exists
-            TNMUser account = this.TNMUserDAO.findById(id);
-            if (account != null) {
-                if (this.TNMUserDAO.delete(account)) {
-                    System.out.println("Account deleted successfully.");
-                    return accounts("Successfully deleted the account.", null);
-                } else {
-                    System.out.println("Account delete failed.");
-                    return accounts(null, "Sorry, the account could not be deleted.");
-                }
-            } else {
-                System.out.println("Account does not exist. Failed to delete.");
-                return accounts(null, "Sorry, the account could not be deleted.");
-            }
-        } else if (isAdmin()) {
-            TNMUser account = this.TNMUserDAO.findById(id);
-            if (!getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
-                System.out.println("You do not have permission to view this organization.");
-                throw new AccessDeniedException("You do not have permission to view this organization.");
-            } else {
-                if (this.TNMUserDAO.delete(account)) {
-                    System.out.println("Account deleted successfully.");
-                    return accounts("Successfully deleted the account.", null);
-                } else {
-                    System.out.println("Account delete failed.");
-                    return accounts(null, "Sorry, the account could not be deleted.");
-                }
-            }
-        } else {
+        if (!isSuperAdmin() && !isAdmin()) {
             throw new AccessDeniedException("You do not have permission to delete this account.");
         }
+
+        TNMUser account = this.TNMUserDAO.findById(id);
+        if (account == null) {
+            System.out.println("Account does not exist. Failed to delete.");
+            return accounts(null, "Sorry, the account could not be deleted.");
+        }
+
+        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to delete this account.");
+        }
+
+        if (account.isSuperAdmin() && !getCurrentUser().getId().equals(account.getId())) {
+            throw new AccessDeniedException("You do not have permission to delete this account.");
+        }
+
+        if (account.isEnabled()) {
+            return account(id, null, "Disable the account before deleting.", null);
+        }
+
+        if (this.TNMUserDAO.delete(account)) {
+            System.out.println("Account deleted successfully.");
+            return accounts("Successfully deleted the account.", null);
+        }
+
+        System.out.println("Account delete failed.");
+        return accounts(null, "Sorry, the account could not be deleted.");
+    }
+
+    @PostMapping("/admin/account/disable")
+    public ModelAndView disableAccount(@RequestParam("id") String id,
+                                       @RequestParam(value = "rd", required = false) String redirect) {
+        if (!isSuperAdmin() && !isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to disable this account.");
+        }
+
+        TNMUser account = this.TNMUserDAO.findById(id);
+        if (account == null) {
+            return accounts(null, "Account not found.");
+        }
+
+        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to disable this account.");
+        }
+
+        if (account.isSuperAdmin() && !getCurrentUser().getId().equals(account.getId())) {
+            throw new AccessDeniedException("You do not have permission to disable this account.");
+        }
+
+        account.setEnabled(false);
+        this.TNMUserDAO.update(account);
+
+        if (redirect != null) {
+            RedirectView redirectView = new RedirectView(redirect, true);
+            return new ModelAndView(redirectView);
+        }
+
+        return account(id, "Account disabled successfully.", null, null);
+    }
+
+    @PostMapping("/admin/account/enable")
+    public ModelAndView enableAccount(@RequestParam("id") String id,
+                                      @RequestParam(value = "rd", required = false) String redirect) {
+        if (!isSuperAdmin() && !isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to enable this account.");
+        }
+
+        TNMUser account = this.TNMUserDAO.findById(id);
+        if (account == null) {
+            return accounts(null, "Account not found.");
+        }
+
+        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to enable this account.");
+        }
+
+        if (account.isSuperAdmin() && !getCurrentUser().getId().equals(account.getId())) {
+            throw new AccessDeniedException("You do not have permission to enable this account.");
+        }
+
+        account.setEnabled(true);
+        this.TNMUserDAO.update(account);
+
+        if (redirect != null) {
+            RedirectView redirectView = new RedirectView(redirect, true);
+            return new ModelAndView(redirectView);
+        }
+
+        return account(id, "Account enabled successfully.", null, null);
     }
 
     @RequestMapping(value = "/admin/create-account")
@@ -861,6 +921,7 @@ public class AdminController {
                         .encryptedPassword(Encrypter.encrytedPassword(password))
                         .organizationId(organizationId)
                         .roleId(role.getId())
+                        .enabled(true)
                         .build();
 
                 if (this.TNMUserDAO.save(user)) {
@@ -883,6 +944,7 @@ public class AdminController {
                         .encryptedPassword(Encrypter.encrytedPassword(password))
                         .organizationId(organizationId)
                         .roleId(role.getId())
+                        .enabled(true)
                         .build();
                 if (this.TNMUserDAO.save(user)) {
                     return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
@@ -903,6 +965,7 @@ public class AdminController {
                                 .encryptedPassword(Encrypter.encrytedPassword(password))
                                 .organizationId(organizationId)
                                 .roleId(role.getId())
+                                .enabled(true)
                                 .build();
                         if (this.TNMUserDAO.save(user)) {
                             return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
@@ -974,6 +1037,7 @@ public class AdminController {
                     .encryptedPassword(userToUpdate.getEncryptedPassword())
                     .organizationId(userToUpdate.getOrganizationId())
                     .roleId(newRole.getId())
+                    .enabled(userToUpdate.isEnabled())
                     .build();
             if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
@@ -988,6 +1052,7 @@ public class AdminController {
                     .encryptedPassword(userToUpdate.getEncryptedPassword())
                     .organizationId(userToUpdate.getOrganizationId())
                     .roleId(newRole.getId())
+                    .enabled(userToUpdate.isEnabled())
                     .build();
             if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
@@ -1001,6 +1066,7 @@ public class AdminController {
                     .encryptedPassword(userToUpdate.getEncryptedPassword())
                     .organizationId(userToUpdate.getOrganizationId())
                     .roleId(userToUpdate.getRoleId())
+                    .enabled(userToUpdate.isEnabled())
                     .build();
             if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);

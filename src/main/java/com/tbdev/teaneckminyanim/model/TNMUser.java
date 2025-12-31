@@ -33,8 +33,20 @@ public class TNMUser {
     @Column(name = "ROLE_ID")
     private Integer roleId;
 
+    @Builder.Default
+    @Column(name = "ENABLED", columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private Boolean enabled = true;
+
     public Role role() {
         return Role.getRole(roleId);
+    }
+
+    public boolean isEnabled() {
+        return enabled == null || enabled;
+    }
+
+    public boolean isDisabled() {
+        return !isEnabled();
     }
 
     public boolean isSuperAdmin() {
