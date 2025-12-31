@@ -3,26 +3,47 @@
 ## Architecture Overview
 This is a Spring Boot application that displays Jewish prayer services (minyanim) and religious times (zmanim) for Teaneck, NJ. The system automatically calculates service times based on the Jewish calendar and location coordinates, and supports importing events from external calendars with intelligent classification.
 
-**Key Data Flow:**
-1. `ZmanimService` calculates times using the Kosherjava library (hardcoded Teaneck coords: 40.906871, -74.020924)
-2. **Rule-Based Minyanim**: `Minyan` entities store per-service schedules with 11 time columns (Sunday-Shabbat, RoshChodesh, YomTov, Chanuka variants)
-3. **Calendar-Imported Events**: `OrganizationCalendarEntry` entities store imported events with intelligent classification
-4. `Schedule` class wraps rule-based schedules into a `MinyanTime` object per day-type
-5. `MinyanEvent` objects represent concrete events for display (from both rule-based and imported sources)
-6. `Organization` owns multiple `Minyan` instances and calendar entries; each `Minyan` links to a `Location`
+**Key Data Flow (v1.4.0 - Materialized Calendar Architecture):**
+1. `CalendarMaterializationService` generates calendar_events table from rule-based Minyan entities and imported OrganizationCalendarEntry records
+2. **Materialized Calendar Events**: `CalendarEvent` entities are the single source of truth, pre-computed for rolling 11-week window (3 past, 8 future)
+3. **Day-Level Precedence**: Imported events suppress all rules for that org+date (applied by `EffectiveScheduleService`)
+4. **Frontend Queries**: `ZmanimService` queries materialized calendar_events via `EffectiveScheduleService`, converts to `MinyanEvent` via `CalendarEventAdapter`
+5. **Weekly Materialization**: Scheduled job runs Sunday 2 AM, deletes+rebuilds RULES events (preserves IMPORTED/MANUAL)
+6. **Admin UI**: Complete calendar management interface for org admins and super admins with Backpack for Laravel-inspired design
+
+**Legacy Data Flow (pre-v1.4.0 - DEPRECATED):**
+1. `ZmanimService` calculated times using Kosherjava library
+2. Dual code paths: rule-based Minyan computation OR calendar import provider
+3. `Schedule` class wrapped rule-based schedules into `MinyanTime` objects
+4. `Organization` owns multiple `Minyan` instances and calendar entries; each `Minyan` links to a `Location`
 
 ## Critical Components & Patterns
 
+### Materialized Calendar System (v1.4.0)
+- **CalendarEvent** entity: Single source of truth for all minyanim, stored in `calendar_events` table with fields: id, organization_id, date, minyan_type, start_time, source (IMPORTED/RULES/MANUAL), source_ref, enabled, notes, location_id, nusach, manually_edited, edited_by, edited_at
+- **EventSource** enum: IMPORTED (from calendar import), RULES (generated from Minyan entities), MANUAL (future feature for admin overrides)
+- **CalendarEventRepository**: JPA repository with 20+ query methods including precedence logic, date range filtering, organization filtering
+- **CalendarMaterializationService**: Generates calendar_events from Minyan entities and OrganizationCalendarEntry records
+  - Delete + rebuild strategy for RULES events (preserves IMPORTED/MANUAL)
+  - Rolling 11-week window (3 past, 8 future weeks)
+  - Day-level precedence: if any imported events exist for org+date, suppress all rules for that day
+- **CalendarMaterializationScheduler**: `@Scheduled` task runs weekly (Sunday 2 AM) and on application startup
+- **EffectiveScheduleService**: Query layer that applies day-level precedence when fetching events
+  - `getEffectiveEventsForDate(orgId, date)`: Returns only effective events (precedence applied)
+  - `getAllEventsForDate(orgId, date)`: Returns all events for admin views
+- **CalendarEventAdapter**: Converts `CalendarEvent` entities to `MinyanEvent` display objects for frontend compatibility
+- **CalendarEventsAdminController**: Admin UI for managing calendar events with filters, statistics, enable/disable, inline editing
+
 ### Time Calculation Layer (`service/`)
-- **ZmanimService** (788 lines): Primary view orchestrator. Calls `ZmanimHandler` to get Jewish calendar times, filters enabled minyanim from both rule-based and calendar-imported sources, builds `MinyanEvent` display objects
-  - `getZmanim(Date)`: Renders homepage with all services, organized by type (Shacharis/Mincha/Maariv)
-  - `org(orgId, Date)`: Renders org-specific page with Hebrew dates and zmanim display
-  - Uses `CalendarImportProvider` to fetch calendar-imported events alongside rule-based minyanim
+- **ZmanimService** (~700 lines, refactored in v1.4.0): Primary view orchestrator. Queries materialized calendar_events via `EffectiveScheduleService`, converts to `MinyanEvent` via `CalendarEventAdapter`
+  - `getZmanim(Date)`: Renders homepage with all services from materialized calendar, organized by type (Shacharis/Mincha/Maariv)
+  - `org(orgId, Date)`: Renders org-specific page from materialized calendar with Hebrew dates and zmanim display
+  - `shouldDisplayEvent()`: Helper method for time-based filtering (Shacharis/Mincha/Maariv windows, termination dates)
+  - **Removed in v1.4.0**: Dual code paths, scheduleResolver branching, on-demand rule computation
 - **ZmanimHandler**: Wraps Kosherjava library; returns `Dictionary<Zman, Date>` of 14+ prayer times; registered as `@Service` bean
-- **MinyanService**: Simple CRUD layer. `setupMinyanObj()` populates `Schedule` from database strings
-- **CalendarImportService**: Handles import, classification, and persistence of calendar entries
+- **MinyanService**: Simple CRUD layer. `setupMinyanObj()` populates `Schedule` from database strings (used for materialization, not frontend display)
+- **CalendarImportService**: Handles import, classification, and persistence of calendar entries (now materializes to calendar_events)
 - **MinyanClassifier**: Pattern-based classification with title qualifier extraction
-- **CalendarImportProvider**: Fetches and formats calendar-imported events for display
 - **Timezone**: Hardcoded to "America/New_York"; set at app startup in `TeaneckMinyanimApplication.main()`
 
 ### Minyan Scheduling Model
@@ -34,6 +55,7 @@ This is a Spring Boot application that displays Jewish prayer services (minyanim
 ### Enums & Type Safety
 - **MinyanType**: SHACHARIS, MINCHA, MAARIV, MINCHA_MAARIV, SELICHOS, MEGILA_READING (see `displayName()` for UI strings)
 - **MinyanClassification**: MINYAN, MINCHA_MAARIV, NON_MINYAN, OTHER (for imported calendar entries)
+- **EventSource** (v1.4.0): IMPORTED, RULES, MANUAL (for calendar_events source tracking)
 - **Nusach**: ASHKENAZ, SEFARD, EDOT_HAMIZRACH, ARIZAL, UNSPECIFIED (each has `is*()` helper methods)
 - **Zman**: 14+ Jewish times (ALOS_HASHACHAR, NETZ, MISHEYAKIR, etc.)
 - All enums have `fromString()` and `displayName()` methods
@@ -43,6 +65,23 @@ This is a Spring Boot application that displays Jewish prayer services (minyanim
 - **AdminController**: 1499-line monolith handling org/minyan CRUD, security checks, and schedule editing
   - Uses `isSuperAdmin()` and `getCurrentUser()` for access control
   - Creates/updates minyanim via form params (`sunday-time-type`, `sunday-fixed-time`, etc.)
+- **CalendarEventsAdminController** (v1.4.0): Manages materialized calendar events with full CRUD
+  - Routes: `/admin/{orgId}/calendar-events` (org-specific), `/admin/calendar-events/all` (super admin master calendar)
+  - Filters: date range, minyan type, source (IMPORTED/RULES/MANUAL), enabled status
+  - Actions: enable/disable toggle, inline edit notes/location, delete (manual only), trigger rematerialization
+  - Uses `@ModelAttribute` for siteName and supportEmail from ApplicationSettingsService
+  - Authorization via `TNMUserService.canAccessOrganization()`
+
+### Admin UI Patterns (v1.4.0 - Backpack for Laravel-Inspired)
+- **Design System**: CSS variables in `/static/admin/design-system.css` (colors, spacing, typography, shadows, transitions)
+- **Page Structure**: navbar (top), sidebar (left), main content area with header (H1 + lead paragraph) and content
+- **Statistics Cards**: Grid of stat cards at top showing key metrics (total, enabled, by source)
+- **Filter Panels**: Collapsible filter panel above tables for advanced querying
+- **Data Tables**: Clean tables with sticky headers, hover effects, sortable columns, responsive wrapping
+- **Color-Coded Badges**: Blue (rules), Green (imported), Orange (manual), semantic colors for status/type
+- **Consistent Templates**: All admin pages follow same structure (see `templates/admin/calendar-events.html`)
+- **Settings Integration**: Always inject siteName/supportEmail via `@ModelAttribute` for branding
+- **Responsive Design**: Mobile-first, collapsible sidebar, horizontal-scrolling tables
 
 ### Security
 - **WebSecurityConfiguration**: Spring Security setup
@@ -53,7 +92,26 @@ This is a Spring Boot application that displays Jewish prayer services (minyanim
 - **URL**: `jdbc:mariadb://localhost:3306/minyanim` (hardcoded in application.properties)
 - **Credentials**: root / passw0rd (hardcoded - see security section below)
 - **Schema**: Hibernate auto-updates via `spring.jpa.hibernate.ddl-auto=update`
-- **Tables**: Minyan, Organization, Location, Account, TNMUser, TNMSettings, OrganizationCalendarEntry
+- **Tables**: Minyan, Organization, Location, Account, TNMUser, TNMSettings, OrganizationCalendarEntry, **CalendarEvent** (v1.4.0)
+
+### Calendar Events Table (v1.4.0)
+**Primary materialized calendar table - single source of truth:**
+```
+ID, ORGANIZATION_ID, DATE, MINYAN_TYPE (enum), START_TIME,
+SOURCE (enum: IMPORTED/RULES/MANUAL), SOURCE_REF,
+ENABLED (boolean, default true), MANUALLY_EDITED (boolean),
+EDITED_BY, EDITED_AT, NOTES, LOCATION_ID, NUSACH,
+CREATED_AT, UPDATED_AT, VERSION
+
+Indexes:
+- idx_org_date (organization_id, date)
+- idx_org_date_type_time (organization_id, date, minyan_type, start_time)
+```
+
+**Materialization Strategy:**
+- Weekly delete + rebuild for RULES events (preserves IMPORTED/MANUAL)
+- Rolling 11-week window (3 past, 8 future)
+- Day-level precedence: imported events suppress all rules for that org+date
 
 ## Frontend Patterns
 - **Templating**: Thymeleaf (Spring Security integration via `thymeleaf-extras-springsecurity5`)
