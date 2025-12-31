@@ -210,38 +210,6 @@
                 </div>
             </div>
 
-            <!-- Sidebar Column -->
-            <div class="col-lg-3 col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Minyan Schedule</h5>
-                        <p class="card-text" th:text="${'Change the schedule of routine and occasional minyanim for ' + organization.name + '.'}"></p>
-                        <a th:href="@{|/admin/${organization.id}/minyanim|}" class="btn-modern btn-primary w-100">
-                            <i class="fas fa-calendar"></i> Go to Schedule
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="card mt-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Locations</h5>
-                        <p class="card-text" th:text="${'Manage the locations of minyanim for ' + organization.name + '.'}"></p>
-                        <a th:href="@{|/admin/${organization.id}/locations|}" class="btn-modern btn-primary w-100">
-                            <i class="fas fa-map-marker-alt"></i> Manage Locations
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="card mt-3" th:if="${organization.calendar != null and organization.calendar != ''}">
-                    <div class="card-body">
-                        <h5 class="card-title">Calendar Events</h5>
-                        <p class="card-text">View and manage imported calendar entries.</p>
-                        <a th:href="@{|/admin/${organization.id}/calendar-events|}" class="btn-modern btn-primary w-100">
-                            <i class="fas fa-calendar-alt"></i> View Events
-                        </a>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Modals -->
