@@ -124,7 +124,7 @@
                 </svg>
                 <span>Locations</span>
             </a>
-            <a class="admin-sidebar-link" th:href="@{|/admin/${organization.id}/calendar-entries|}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/calendar-entries')} ? 'active' : ''">
+            <a class="admin-sidebar-link" th:if="${organization.calendar != null and organization.calendar != ''}" th:href="@{|/admin/${organization.id}/calendar-entries|}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/calendar-entries')} ? 'active' : ''">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
@@ -185,7 +185,7 @@
                 </svg>
                 <span>Minyan Schedule</span>
             </a>
-            <a class="admin-sidebar-link" th:if="${organization.calendar != null and organization.calendar != ''}" th:href="@{|/admin/${user.getOrganizationId()}/calendar-events|}">
+            <a class="admin-sidebar-link" th:href="@{|/admin/${user.getOrganizationId()}/calendar-events|}">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
