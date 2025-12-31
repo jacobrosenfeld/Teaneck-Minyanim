@@ -1,41 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.w3.org/1999/xhtml"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
 <head>
-    <meta charset="UTF-8">
-    <title th:text="@{|Update Minyan - ${siteName} ?: 'Minyan Manager'|}">Update Minyan - Minyan Manager</title>
-    <link rel="icon" href="/assets/icons/favicon.png" type="image/png" sizes="16x16">
-    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css} "/>
-    <link th:rel="stylesheet" th:href="@{/styles.css}">
-    <link th:rel="stylesheet" th:href="@{/admin/dashboard.css}">
-    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
-    <link rel="manifest" href="/assets/icons/site.webmanifest">
-    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
-    <meta name="msapplication-TileColor" content="#275ed8">
-    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
+    <title layout:fragment="title" th:text="@{|Update Minyan - ${siteName} ?: 'Minyan Manager'|}">Update Minyan - Minyan Manager</title>
 </head>
 <body>
-<div class="horizontal-container d-flex" id="wrapper">
-    <th:block th:include="admin/navbar"></th:block>
-    <div class="container-fluid" id="main">
-        <div class="row row-offcanvas row-offcanvas-left vh-100">
-            <th:block th:include="admin/sidebar"></th:block>
-            <!--/col-->
-            <div class="col-housing main h-100 overflow-auto">
-                <main class="col main pt-5 mt-3 overflow-auto">
-                    <div th:if="${successmessage}">
-                        <div class="alert alert-success" role="alert" th:utext="${successmessage}"> </div>
-                    </div>
-                    <div th:if="${errormessage}">
-                        <div class="alert alert-danger" role="alert" th:text="${errormessage}"></div>
-                    </div>
-                    <h1 class="display-4 d-sm-block">
-                        Update Minyan
-                    </h1>
+<div layout:fragment="content">
+    <script th:if="${successmessage}" th:inline="javascript">
+        showToast('success', /*[[${successmessage}]]*/ 'Success');
+    </script>
+    <script th:if="${errormessage}" th:inline="javascript">
+        showToast('error', /*[[${errormessage}]]*/ 'Error');
+    </script>
+    <h1 class="display-4 d-sm-block">
+        Update Minyan
+    </h1>
 
                     <p th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')" class="lead d-none d-sm-block">Update minyan data for [(${organization.name})]. To create a new minyan, click <a th:href="@{|/admin/${organization.id}/minyanim/new|}">here</a>.</p>
                     <p th:if="${!user.isSuperAdmin()}" class="lead d-none d-sm-block">Update this minyan with all its related information. To create a new minyan, click <a th:href="@{|/admin/${organization.id}/minyanim/new|}">here</a>.</p>
@@ -778,17 +759,10 @@
                             </div>
                         </div>
                     </div>
-                    <!--/row-->
-                </main>
-                <th:block th:include="admin/footer"></th:block>
-            </div>
-        </div>
+                <!--/row-->
 
-    </div>
-</div>
-
-<div>
-    <div class="modal fade" id="dynamic-time-help-modal" tabindex="-1" aria-labelledby="dynamic-time-help-modal-label" aria-hidden="true">
+<!-- Modals -->
+<div class="modal fade" id="dynamic-time-help-modal" tabindex="-1" aria-labelledby="dynamic-time-help-modal-label" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -841,14 +815,11 @@
         </div>
     </div>
 </div>
-</body>
+</div>
 
-<script th:src="@{/webjars/jquery/3.5.1/jquery.min.js}"></script>
-<script th:src="@{/webjars/bootstrap/4.6.1/js/bootstrap.min.js}"></script>
-<script th:src="@{/webjars/popper.js/1.16.0/umd/popper.min.js}"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
-
+<div layout:fragment="scripts">
 <script th:src="@{/admin/minyanim/update.js}"></script>
+</div>
 
+</body>
 </html>
