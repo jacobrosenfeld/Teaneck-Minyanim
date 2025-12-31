@@ -1,189 +1,204 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{admin/layout}">
 <head>
-    <meta charset="UTF-8">
-    <title th:text="@{|${queriedaccount.username} - ${siteName} ?: 'Minyan Manager'|}"></title>
-    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
-    <link rel="manifest" href="/assets/icons/site.webmanifest">
-    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
+    <title layout:fragment="title" th:text="|${queriedaccount.username} - Account|">Account</title>
     
-    <meta name="msapplication-TileColor" content="#275ed8">
-    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
+    <th:block layout:fragment="styles">
+        <style>
+            .account-form-section {
+                background: var(--bg-surface, #ffffff);
+                border-radius: var(--radius-lg, 0.5rem);
+                padding: var(--space-6, 1.5rem);
+                margin-bottom: var(--space-4, 1rem);
+                box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+            }
+            
+            .account-action-card {
+                background: var(--bg-surface, #ffffff);
+                border-radius: var(--radius-lg, 0.5rem);
+                padding: var(--space-4, 1rem);
+                margin-bottom: var(--space-4, 1rem);
+                box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+            }
+            
+            .account-action-card.warning {
+                border-left: 4px solid var(--color-warning, #ffc107);
+            }
+            
+            .account-action-card.danger {
+                border-left: 4px solid var(--color-danger, #dc3545);
+            }
+            
+            .sidebar-card {
+                background: var(--bg-surface, #ffffff);
+                border-radius: var(--radius-lg, 0.5rem);
+                padding: var(--space-4, 1rem);
+                margin-bottom: var(--space-4, 1rem);
+                box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+            }
+        </style>
+    </th:block>
 </head>
 <body>
-<div class="horizontal-container">
-    <th:block th:include="admin/navbar"></th:block>
-    <div class="container-fluid" id="main">
-        <div class="row row-offcanvas row-offcanvas-left vh-100">
-            <th:block th:include="admin/sidebar"></th:block>
-            <!--/col-->
-            <div class="col-housing main h-100 overflow-auto">
-                <main class="col main pt-5 mt-3 overflow-auto">
-                    <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}"></div>
-                    <h1 class="display-4 d-none d-sm-block" th:text="${queriedaccount.username}"></h1>
-                    <p class="lead= d-sm-block">Edit account profile and settings.</p>
+    <div layout:fragment="content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" th:text="${queriedaccount.username}">Account Username</h1>
+                <p class="page-description">Edit account profile and settings.</p>
+            </div>
+        </div>
 
-                    <hr class="d-none d-sm-block">
+        <!-- Success Message -->
+        <div th:if="${successMessage}" class="alert-modern alert-success mb-4" th:text="${successMessage}"></div>
 
-                    <div class="row my-4" style="padding-bottom: 60px">
-                        <div class="col-lg-9 col-md-8">
-                            <div class="table-responsive">
-                                <form th:action="@{/admin/update-account}" method="post">
-                                    <input type="hidden" name="id" th:value="${queriedaccount.id}">
-                                    <div class="form-group">
-                                        <label for="username">Username</label>
-                                        <input type="text" class="form-control" name="username" id="username" aria-describedby="username-help" th:value="${queriedaccount.username}" required>
-                                        <small id="username-help" class="form-text text-muted">This is used for account sign-in.</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="email">Email</label>
-                                        <input type="text" class="form-control" name="email" id="email" aria-describedby="email-help" th:value="${queriedaccount.email}" required>
-                                        <small id="email-help" class="form-text text-muted">This email will be used for password recovery.</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="change-password-btn">Password</label>
-                                        <div>
-                                            <button type="button" class="btn btn-secondary form-control" id="change-password-btn" name="change-password-btn" data-toggle="modal" data-target="#change-password-modal" style="max-width: 175px;">Change Password</button>
-                                        </div>
-                                    </div>
-                                    <div class="form-group" th:if="${user.isAdmin() && !queriedaccount.isSuperAdmin()}">
-                                        <label for="privileges">Privileges</label>
-                                        <div>
-                                        <div class="btn-group btn-group-toggle" id="privileges" data-toggle="buttons" aria-describedby="privileges-help">
-                                            <label th:class="${'btn btn-secondary' + ((queriedaccount.isAdmin()) ? ' active' : '')}">
-                                                <input type="radio" name="privileges" id="admin" value="1" th:checked="${(queriedaccount.isAdmin())}"> Manager
-                                            </label>
-                                            <label th:class="${'btn btn-secondary' + ((queriedaccount.isUser() && !queriedaccount.isAdmin()) ? ' active' : '')}">
-                                                <input type="radio" name="privileges" id="user" value="2" th:checked="${(queriedaccount.isUser() && !queriedaccount.isAdmin())}"> User
-                                            </label>
-                                        </div>
-                                        </div>
-                                        <small id="privileges-help" class="form-text text-muted">Manager permissions allow the user to add and edit other accounts. To change this user's privileges, toggle the switch and click the update button.</small>
-<!--                                        <label for="privileges">Privileges</label>-->
-<!--                                        <input type="text" class="form-control" name="email" id="email" aria-describedby="email-help" th:value="${queriedaccount.email}">-->
-<!--                                        <small id="email-help" class="form-text text-muted">This email will be used for password recovery.</small>-->
-                                    </div>
-                                    <div class="form-group" hidden th:if="${!(user.isAdmin() && !queriedaccount.isSuperAdmin())}">
-                                        <label for="privileges">Privileges</label>
-                                        <div>
-                                            <div class="btn-group btn-group-toggle" id="privileges" data-toggle="buttons" aria-describedby="privileges-help">
-                                                <label th:class="${'btn btn-secondary' + ((queriedaccount.isAdmin()) ? ' active' : '')}">
-                                                    <input type="radio" name="privileges" id="admin" value="1" th:checked="${(queriedaccount.isAdmin())}"> Manager
-                                                </label>
-                                                <label th:class="${'btn btn-secondary' + ((queriedaccount.isUser() && !queriedaccount.isAdmin()) ? ' active' : '')}">
-                                                    <input type="radio" name="privileges" id="user" value="2" th:checked="${(queriedaccount.isUser() && !queriedaccount.isAdmin())}"> User
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <small id="privileges-help" class="form-text text-muted">Manager permissions allow the user to add and edit other accounts. To change this user's privileges, toggle the switch and click the update button.</small>
-                                        <!--                                        <label for="privileges">Privileges</label>-->
-                                        <!--                                        <input type="text" class="form-control" name="email" id="email" aria-describedby="email-help" th:value="${queriedaccount.email}">-->
-                                        <!--                                        <small id="email-help" class="form-text text-muted">This email will be used for password recovery.</small>-->
-                                    </div>
-                                    <hr>
-                                    <!--                                    <div class="form-group">-->
-                                    <!--                                        <label for="site-url">Website</label>-->
-                                    <!--                                        <input type="text" class="form-control" name="site-url" id="site-url" aria-describedby="site-url" th:value="${organization.websiteURI}">-->
-                                    <!--                                        <small id="site-url-help" class="form-text text-muted">This website link will be displayed publically.</small>-->
-                                    <!--                                    </div>-->
-                                    <div class="login-msg-box" th:if="${updateError}" style="padding-bottom: 8px">
-                                        <div class="form-msg-fatal" th:text="${updateError}"></div>
-                                    </div>
-                                    <!--                                    <div class="login-msg-box" th:if="${mainSuccess}" style="padding-bottom: 8px">-->
-                                    <!--                                        <div class="form-msg-success" th:text="${mainSuccess}"></div>-->
-                                    <!--                                    </div>-->
-                                    <button type="submit" class="btn btn-primary">Update</button>
-                                </form>
-                            </div>
-
-                            <hr>
-
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Disable this account</h5>
-                                            <p class="card-text" th:text="@{|Disable login access to ${siteName} ?: 'Minyan Manager' from this account. This will not erase any of its data.|}">Disable login access to Minyan Manager from this account. This will not erase any of its data.</p>
-                                            <button class="btn btn-warning" data-toggle="modal" data-target="#disable-account-modal">Disable</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Delete this account</h5>
-                                            <p class="card-text">Permanently delete all data for this account.</p>
-                                            <button class="btn btn-danger" data-toggle="modal" data-target="#delete-account-modal">Delete</button>
-                                        </div>
-                                    </div>
-                                </div>
+        <div class="row">
+            <div class="col-lg-8 col-md-7">
+                <!-- Account Information Form -->
+                <div class="account-form-section">
+                    <h3 class="mb-4" style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold);">Account Information</h3>
+                    <form th:action="@{/admin/update-account}" method="post">
+                        <input type="hidden" name="id" th:value="${queriedaccount.id}">
+                        
+                        <div class="form-group mb-4">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" id="username" 
+                                   th:value="${queriedaccount.username}" required>
+                            <small class="form-text text-muted">This is used for account sign-in.</small>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" id="email" 
+                                   th:value="${queriedaccount.email}" required>
+                            <small class="form-text text-muted">This email will be used for password recovery.</small>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label class="form-label">Password</label>
+                            <div>
+                                <button type="button" class="btn-modern btn-secondary" 
+                                        data-toggle="modal" data-target="#change-password-modal">
+                                    Change Password
+                                </button>
                             </div>
                         </div>
+                        
+                        <div class="form-group mb-4" th:if="${user.isAdmin() && !queriedaccount.isSuperAdmin()}">
+                            <label class="form-label">Privileges</label>
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label th:class="${'btn btn-outline-primary' + (queriedaccount.isAdmin() ? ' active' : '')}">
+                                    <input type="radio" name="privileges" value="1" th:checked="${queriedaccount.isAdmin()}"> Manager
+                                </label>
+                                <label th:class="${'btn btn-outline-primary' + ((queriedaccount.isUser() && !queriedaccount.isAdmin()) ? ' active' : '')}">
+                                    <input type="radio" name="privileges" value="2" th:checked="${queriedaccount.isUser() && !queriedaccount.isAdmin()}"> User
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">Manager permissions allow the user to add and edit other accounts.</small>
+                        </div>
+                        
+                        <!-- Hidden privileges field for non-admin users -->
+                        <div class="form-group" hidden th:if="${!(user.isAdmin() && !queriedaccount.isSuperAdmin())}">
+                            <input type="radio" name="privileges" value="1" th:checked="${queriedaccount.isAdmin()}">
+                            <input type="radio" name="privileges" value="2" th:checked="${queriedaccount.isUser() && !queriedaccount.isAdmin()}">
+                        </div>
+                        
+                        <div th:if="${updateError}" class="alert-modern alert-danger mb-3" th:text="${updateError}"></div>
+                        
+                        <button type="submit" class="btn-modern btn-primary">
+                            <i class="fas fa-save"></i>
+                            Update Account
+                        </button>
+                    </form>
+                </div>
 
-                        <div class="col-lg-3 col-md-4">
-                            <div class="card card-inverse bg-inverse mt-3" th:if="${associatedorganization}">
-                                <div class="card-body">
-                                    <h4 class="card-title">Associated Organization</h4>
-                                    <p class="card-text" th:text="${'View and manage the organization details for ' + associatedorganization.name + '.'}"></p>
-                                    <a th:href="@{/admin/organization(id=${associatedorganization.id})}" class="btn btn-primary">Go</a>
-                                </div>
-                            </div>
-                            <div class="card card-inverse bg-inverse mt-3" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
-                                <div class="card-body">
-                                    <h4 class="card-title">Organizations</h4>
-                                    <p class="card-text">See a list of all organizations and manage their data and details.</p>
-                                    <a href="/admin/organizations" class="btn btn-primary">Go</a>
-                                </div>
-                            </div>
-                            <!--                            <div class="card">-->
-                            <!--                                <div class="card-body">-->
-                            <!--                                    <h4 class="card-title">Minyan Schedule</h4>-->
-                            <!--                                    <p class="card-text" th:text="${'Change the schedule of routine and occasional minyanim for ' + organization.name + '.'}"></p>-->
-                            <!--                                    <a href="/admin/organizations" class="btn btn-primary">Go</a>-->
-                            <!--                                </div>-->
-                            <!--                            </div>-->
+                <!-- Account Actions -->
+                <div class="row mt-4">
+                    <div class="col-sm-6">
+                        <div class="account-action-card warning">
+                            <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2);">Disable this account</h5>
+                            <p class="text-muted mb-3" th:text="|Disable login access to ${siteName ?: 'Minyan Manager'} from this account. This will not erase any of its data.|">
+                                Disable login access. This will not erase any data.
+                            </p>
+                            <button class="btn-modern btn-warning" data-toggle="modal" data-target="#disable-account-modal">
+                                <i class="fas fa-ban"></i>
+                                Disable Account
+                            </button>
                         </div>
                     </div>
-                </main>
+                    <div class="col-sm-6" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+                        <div class="account-action-card danger">
+                            <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2);">Delete this account</h5>
+                            <p class="text-muted mb-3">Permanently delete all data for this account.</p>
+                            <button class="btn-modern btn-danger" data-toggle="modal" data-target="#delete-account-modal">
+                                <i class="fas fa-trash"></i>
+                                Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-5">
+                <!-- Associated Organization Card -->
+                <div class="sidebar-card" th:if="${associatedorganization}">
+                    <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-3);">Associated Organization</h5>
+                    <p class="text-muted mb-3" th:text="|View and manage the organization details for ${associatedorganization.name}.|">
+                        View and manage organization details.
+                    </p>
+                    <a th:href="@{/admin/organization(id=${associatedorganization.id})}" class="btn-modern btn-primary">
+                        <i class="fas fa-building"></i>
+                        Go to Organization
+                    </a>
+                </div>
+                
+                <!-- Organizations Link (Super Admin Only) -->
+                <div class="sidebar-card" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+                    <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-3);">Organizations</h5>
+                    <p class="text-muted mb-3">See a list of all organizations and manage their data and details.</p>
+                    <a href="/admin/organizations" class="btn-modern btn-primary">
+                        <i class="fas fa-building"></i>
+                        View All Organizations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <th:block layout:fragment="modals">
+        <!-- Delete Account Modal -->
+        <div th:if="${user.isAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+            <div class="modal fade" id="delete-account-modal" tabindex="-1" aria-labelledby="delete-account-modal-label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="delete-account-modal-label" th:text="|Permanently delete '${queriedaccount.username}'?|">Delete Account?</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Do you want to permanently delete this account? This action cannot be undone.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+                            <a th:href="@{/admin/delete-account(id=${queriedaccount.id})}" class="btn btn-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-    </div>
-</div>
-
-<div th:if="${user.isAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
-    <div class="modal fade" id="delete-account-modal" tabindex="-1" aria-labelledby="delete-account-modal-label" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="delete-account-modal-label" th:text="${'Permanently delete ''' + queriedaccount.username + '''?'}"></h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    Do you want to permanently delete this account? This action cannot be undone.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
-                    <a th:href="@{/admin/delete-account} + '?id=' + ${queriedaccount.id}" class="btn btn-danger">Delete</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-    <div>
+        <!-- Disable Account Modal -->
         <div class="modal fade" id="disable-account-modal" tabindex="-1" aria-labelledby="disable-account-modal-label" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="disable-account-modal-label" th:text="${'Disable ''' + queriedaccount.username + '''?'}"></h5>
+                        <h5 class="modal-title" id="disable-account-modal-label" th:text="|Disable '${queriedaccount.username}'?|">Disable Account?</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -192,51 +207,56 @@
                         Do you want to disable this account from login access? This action cannot be easily undone.
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
-                        <a th:href="@{/admin/disable-account} + '?id=' + ${queriedaccount.id}" class="btn btn-warning">Disable</a>
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+                        <a th:href="@{/admin/disable-account(id=${queriedaccount.id})}" class="btn btn-warning">Disable</a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-<div class="modal fade" id="change-password-modal" tabindex="-1" aria-labelledby="change-password-modal-label" style="" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title h4" id="change-password-modal-label">Change Password</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form method="post" th:action="${'/admin/accounts/' + queriedaccount.id + '/changepassword'}">
-                    <div class="form-group">
-                        <label for="new-password">Password</label>
-                        <input type="password" class="form-control" name="password" id="new-password" required="">
+        <!-- Change Password Modal -->
+        <div class="modal fade" id="change-password-modal" tabindex="-1" aria-labelledby="change-password-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="change-password-modal-label">Change Password</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label for="new-cpassword">Confirm Password</label>
-                        <input type="password" class="form-control" name="cpassword" id="new-cpassword" required="">
-                    </div>
+                    <div class="modal-body">
+                        <form method="post" th:action="|/admin/accounts/${queriedaccount.id}/changepassword|">
+                            <div class="form-group mb-4">
+                                <label for="new-password" class="form-label">Password</label>
+                                <input type="password" class="form-control" name="password" id="new-password" required>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label for="new-cpassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" name="cpassword" id="new-cpassword" required>
+                            </div>
 
-                    <div class="login-msg-box" th:if="${changePasswordError}" style="padding-bottom: 8px">
-                        <div class="form-msg-fatal" th:text="${changePasswordError}"></div>
-                    </div>
+                            <div th:if="${changePasswordError}" class="alert-modern alert-danger mb-3" th:text="${changePasswordError}"></div>
 
-                    <hr>
-                    <button type="submit" class="btn btn-primary">Update</button>
-                </form>
+                            <hr>
+                            <button type="submit" class="btn-modern btn-primary">
+                                <i class="fas fa-key"></i>
+                                Update Password
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+    </th:block>
 
+    <!-- Page-specific scripts -->
+    <th:block layout:fragment="scripts">
+        <script th:src="@{/account.js}"></script>
+        <script th:if="${changePasswordError}" th:inline="javascript">
+            $(document).ready(function() {
+                $('#change-password-modal').modal('show');
+            });
+        </script>
+    </th:block>
 </body>
-
-<script th:src="@{/account.js}"></script>
-<script th:if="${changePasswordError}" th:inline="javascript">
-    showChangePasswordModal();
-</script>
-
 </html>
