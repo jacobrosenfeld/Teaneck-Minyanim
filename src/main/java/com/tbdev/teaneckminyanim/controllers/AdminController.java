@@ -1134,7 +1134,7 @@ public class AdminController {
 
     @RequestMapping(value = "/admin/{organizationId}/minyanim")
     public ModelAndView minyanim(@PathVariable String organizationId, String successMessage, String errorMessage) {
-        ModelAndView mv = new ModelAndView("minyanschedule");
+        ModelAndView mv = new ModelAndView("admin/minyanschedule");
 
         String oidToUse;
         if (isSuperAdmin()) {
