@@ -160,7 +160,7 @@ mvn test
 - **EXCEPTIONS — do NOT bump the version or add a CHANGELOG entry for:**
   - Changes to AI agent instruction files (`.github/copilot-instructions.md`, `CLAUDE.md`, or any other agent/AI context files)
   - Developer tooling configuration that does not affect runtime behavior
-- Apply these instructions specifically to Teaneck-Minyanim: 
+- Apply these instructions specifically to Teaneck-Minyanim:
   - Document all user-facing changes (UI updates, new features, behavior changes)
   - Document infrastructure updates (dependency upgrades, database schema changes, configuration changes)
   - Document fixes that impact functionality or dependencies
