@@ -43,7 +43,7 @@ public class WebSecurityConfiguration {
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/zmanim/**", "/orgs/**", "/org/**", "/admin/login", "/admin/logout", 
-                                "/webjars/**", "**.css", "**.js", "/static/**", "/db/**", 
+                                "/webjars/**", "/**/*.css", "/**/*.js", "/static/**", "/db/**", 
                                 "/assets/**", "/favicon.ico").permitAll()
                 .requestMatchers("/admin", "/admin/dashboard", "/admin/organization", "/admin/account", 
                                 "/admin/update-organization", "/admin/update-account", 
