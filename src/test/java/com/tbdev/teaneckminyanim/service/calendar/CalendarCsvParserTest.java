@@ -34,7 +34,7 @@ class CalendarCsvParserTest {
         assertNotNull(entries);
         assertEquals(2, entries.size());
 
-        CalendarCsvParser.ParsedEntry first = entries.get(0);
+        CalendarCsvParser.ParsedEntry first = entries.getFirst();
         assertEquals("Shacharis", first.getTitle());
         assertEquals("Main Sanctuary", first.getLocation());
         assertNotNull(first.getDate());
@@ -81,8 +81,8 @@ class CalendarCsvParserTest {
 
         assertNotNull(entries);
         assertEquals(1, entries.size());
-        assertEquals("Shacharis", entries.get(0).getTitle());
-        assertEquals("Main Sanctuary", entries.get(0).getLocation());
+        assertEquals("Shacharis", entries.getFirst().getTitle());
+        assertEquals("Main Sanctuary", entries.getFirst().getLocation());
     }
 
     @Test
@@ -96,8 +96,8 @@ class CalendarCsvParserTest {
 
         assertNotNull(entries);
         assertEquals(1, entries.size());
-        assertEquals("Morning Service", entries.get(0).getTitle());
-        assertEquals("Daily service, all welcome", entries.get(0).getDescription());
+        assertEquals("Morning Service", entries.getFirst().getTitle());
+        assertEquals("Daily service, all welcome", entries.getFirst().getDescription());
     }
 
     @Test
@@ -157,6 +157,6 @@ class CalendarCsvParserTest {
         assertNotNull(entries);
         assertEquals(1, entries.size());
         // Should use Type as title when Name is missing
-        assertEquals("Prayer", entries.get(0).getTitle());
+        assertEquals("Prayer", entries.getFirst().getTitle());
     }
 }

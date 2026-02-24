@@ -165,11 +165,11 @@ public class MinyanTime {
         if (time != null && rule != null) {
             return "INVALID";
         } else if (t == TimeType.FIXED) {
-            return String.format("T%d:%d:%d:%d", time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
+            return "T%d:%d:%d:%d".formatted(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
         } else if (t == TimeType.DYNAMIC) {
-            return String.format("R%s:%d", rule.getZman(), rule.getOffsetMinutes());
+            return "R%s:%d".formatted(rule.getZman(), rule.getOffsetMinutes());
         } else if (t == TimeType.ROUNDED) {
-            return String.format("Q%s:%d", rule.getZman(), rule.getOffsetMinutes());
+            return "Q%s:%d".formatted(rule.getZman(), rule.getOffsetMinutes());
         } else if (t == TimeType.NONE) {
             return "NM";
         } else {
@@ -221,22 +221,22 @@ public class MinyanTime {
         } else if (t == TimeType.DYNAMIC) {
 //            return "Dynamic";
             if (rule.getOffsetMinutes() < 0) {
-                return String.format("%s minus %d minutes", rule.getZman().displayName(), Math.abs(rule.getOffsetMinutes()));
+                return "%s minus %d minutes".formatted(rule.getZman().displayName(), Math.abs(rule.getOffsetMinutes()));
             } else if (rule.getOffsetMinutes() == 0) {
                 return rule.getZman().displayName();
             }  else if (rule.getOffsetMinutes() > 0) {
-                return String.format("%s plus %d minutes", rule.getZman().displayName(), rule.getOffsetMinutes());
+                return "%s plus %d minutes".formatted(rule.getZman().displayName(), rule.getOffsetMinutes());
             } else {
                 return "INVALID";
             }
         } else if (t == TimeType.ROUNDED) {
             //            return "Rounded";
                         if (rule.getOffsetMinutes() < 0) {
-                            return String.format("Approx. %s minus %d minutes", rule.getZman().displayName(), Math.abs(rule.getOffsetMinutes()));
+                            return "Approx. %s minus %d minutes".formatted(rule.getZman().displayName(), Math.abs(rule.getOffsetMinutes()));
                         } else if (rule.getOffsetMinutes() == 0) {
-                            return String.format("Approx. %s", rule.getZman().displayName());
+                            return "Approx. %s".formatted(rule.getZman().displayName());
                         }  else if (rule.getOffsetMinutes() > 0) {
-                            return String.format("Approx. %s plus %d minutes", rule.getZman().displayName(), rule.getOffsetMinutes());
+                            return "Approx. %s plus %d minutes".formatted(rule.getZman().displayName(), rule.getOffsetMinutes());
                         } else {
                             return "INVALID";
                         }
@@ -266,11 +266,11 @@ public class MinyanTime {
     public String dynamicDisplayName() {
         if (isDynamic()) {
             if (rule.getOffsetMinutes() < 0) {
-                return String.format("%d minutes before %s", Math.abs(rule.getOffsetMinutes()), rule.getZman().displayName().toLowerCase());
+                return "%d minutes before %s".formatted(Math.abs(rule.getOffsetMinutes()), rule.getZman().displayName().toLowerCase());
             } else if (rule.getOffsetMinutes() == 0) {
                 return rule.getZman().displayName();
             }  else if (rule.getOffsetMinutes() > 0) {
-                return String.format("%d minutes after %s", rule.getOffsetMinutes(), rule.getZman().displayName().toLowerCase());
+                return "%d minutes after %s".formatted(rule.getOffsetMinutes(), rule.getZman().displayName().toLowerCase());
             } else {
                 return "INVALID";
             }
@@ -281,11 +281,11 @@ public class MinyanTime {
     public String roundedDisplayName() {
         if (isRounded()) {
             if (rule.getOffsetMinutes() < 0) {
-                return String.format("Approx. %d minutes before %s", Math.abs(rule.getOffsetMinutes()), rule.getZman().displayName().toLowerCase());
+                return "Approx. %d minutes before %s".formatted(Math.abs(rule.getOffsetMinutes()), rule.getZman().displayName().toLowerCase());
             } else if (rule.getOffsetMinutes() == 0) {
-                return String.format("%s rounded", rule.getZman().displayName());
+                return "%s rounded".formatted(rule.getZman().displayName());
             }  else if (rule.getOffsetMinutes() > 0) {
-                return String.format("Approx. %d minutes after %s", rule.getOffsetMinutes(), rule.getZman().displayName().toLowerCase());
+                return "Approx. %d minutes after %s".formatted(rule.getOffsetMinutes(), rule.getZman().displayName().toLowerCase());
             } else {
                 return "INVALID";
             }

@@ -7,7 +7,7 @@ public class IDGenerator {
 
     public static String generateID(Character prefix) {
         Long timeSinceEpoch = (new Date()).getTime();
-        return String.format("%s%s%s", prefix, timeSinceEpoch.toString().substring(5), random());
+        return "%s%s%s".formatted(prefix, timeSinceEpoch.toString().substring(5), random());
     }
 
     private static String random() {
