@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-02-24
+
+### Changed
+
+#### Java Runtime Upgrade to LTS Version 21
+- **Runtime Environment**:
+  - Upgraded project target Java version from 17 to 21 LTS
+  - Updated `pom.xml` to specify `java.version=21`
+  - Applied OpenRewrite recipe `org.openrewrite.java.migrate.UpgradeToJava21` for code compatibility
+  - All source code refactored for Java 21 compatibility
+  - Spring Boot version remains at 3.5.9 (compatible with Java 21)
+
+### Fixed
+- Java 21 compatibility: all deprecated Java 17 patterns modernized
+
+### Security
+- Java 21 provides latest security patches and CVE fixes
+- No known vulnerabilities detected in updated dependencies
+
 ## [1.6.0] - 2025-12-31
 
 ### Added
