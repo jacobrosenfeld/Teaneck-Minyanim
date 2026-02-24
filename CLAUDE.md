@@ -157,6 +157,9 @@ mvn test
     - **Patch versions (`x.x.1`)**: Short, 2-line summary of changes under appropriate subsections (Added/Changed/Fixed/Removed)
     - **Minor versions (`x.1.0`)**: Longer entries with detailed feature descriptions, organized by subsections (Added/Changed/Fixed/Deprecated/Removed/Security)
     - **Major versions (`1.x.0`)**: Comprehensive entries documenting breaking changes and migration paths, with detailed explanations of impacts
+- **EXCEPTIONS — do NOT bump the version or add a CHANGELOG entry for:**
+  - Changes to AI agent instruction files (`.github/copilot-instructions.md`, `CLAUDE.md`, or any other agent/AI context files)
+  - Developer tooling configuration that does not affect runtime behavior
 - Apply these instructions specifically to Teaneck-Minyanim:
   - Document all user-facing changes (UI updates, new features, behavior changes)
   - Document infrastructure updates (dependency upgrades, database schema changes, configuration changes)
