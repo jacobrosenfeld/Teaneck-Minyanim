@@ -40,7 +40,7 @@ public class ApplicationSettingsService {
         log.info("Initializing application settings with defaults");
         
         for (SettingKey key : SettingKey.values()) {
-            if (!repository.findBySettingKey(key.getKey()).isPresent()) {
+            if (repository.findBySettingKey(key.getKey()).isEmpty()) {
                 ApplicationSettings setting = new ApplicationSettings(
                     key.getKey(),
                     key.getDefaultValue(),

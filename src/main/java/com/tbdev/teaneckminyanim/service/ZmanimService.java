@@ -366,7 +366,7 @@ public class ZmanimService {
         mv.getModel().put("nextMinyan", nextMinyan);
 
         if(!nextMinyan.isEmpty()) {
-            MinyanEvent firstEvent = nextMinyan.get(0);
+            MinyanEvent firstEvent = nextMinyan.getFirst();
             mv.getModel().put("upcoming", firstEvent);
         }
         // end upcoming

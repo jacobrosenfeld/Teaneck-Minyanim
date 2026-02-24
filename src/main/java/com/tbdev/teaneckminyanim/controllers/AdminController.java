@@ -1954,8 +1954,8 @@ public class AdminController {
             ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
             
             if (result.success) {
-                mv.addObject("successMessage", 
-                        String.format("Import successful: %d new, %d updated, %d duplicates skipped",
+                mv.addObject("successMessage",
+                        "Import successful: %d new, %d updated, %d duplicates skipped".formatted(
                                 result.newEntries, result.updatedEntries, result.duplicatesSkipped));
             } else {
                 mv.addObject("errorMessage", "Import failed: " + result.errorMessage);
