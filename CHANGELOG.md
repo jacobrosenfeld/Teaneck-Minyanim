@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.2] - 2026-02-24
+
+### Fixed
+- Login redirect: updated Spring Security permit patterns from `**.js`/`**.css` to `/**/*.js`/`/**/*.css` so static assets are properly permitted under Spring Security 6.x (PathPatternParser), preventing `/admin/login.js` from being saved as the post-login redirect target.
+
 ## [1.7.1] - 2026-02-24
 
 ### Changed
