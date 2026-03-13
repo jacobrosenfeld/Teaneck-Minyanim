@@ -529,6 +529,9 @@ public class ZmanimService {
         for (MinyanEvent event : events) {
             if (event.getStartTime() == null) continue;
             if (!event.getType().isMaariv() && !event.getType().isMinchaMariv()) continue;
+            // Skip dynamic-time events (e.g. shekiya-based) — they already convey their timing
+            String dynamic = event.dynamicTimeString();
+            if (dynamic != null && !dynamic.toLowerCase().contains("plag")) continue;
 
             long diff = Math.abs(event.getStartTime().getTime() - plagTime.getTime());
             if (diff <= thirtyMinutes) {
