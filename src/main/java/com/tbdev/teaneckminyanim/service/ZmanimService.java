@@ -535,12 +535,14 @@ public class ZmanimService {
 
             long diff = Math.abs(event.getStartTime().getTime() - plagTime.getTime());
             if (diff <= thirtyMinutes) {
+                // Strip any existing Shkiya/Plag notes and replace with just the plag label
                 String existing = event.getNotes();
-                if (existing == null || existing.isEmpty()) {
-                    event.setNotes(plagLabel);
-                } else if (!existing.contains("Plag:")) {
-                    event.setNotes(existing + " | " + plagLabel);
-                }
+                String stripped = existing == null ? "" : Arrays.stream(existing.split(" \\| "))
+                        .map(String::trim)
+                        .filter(p -> !p.startsWith("Shkiya:") && !p.startsWith("Plag:"))
+                        .reduce((a, b) -> a + " | " + b)
+                        .orElse("");
+                event.setNotes(stripped.isEmpty() ? plagLabel : stripped + " | " + plagLabel);
             }
         }
     }
