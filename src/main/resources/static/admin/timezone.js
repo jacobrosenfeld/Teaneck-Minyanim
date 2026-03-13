@@ -244,15 +244,17 @@ function initializeTimezoneSelect2() {
         }
     }
 
-    // Handle input changes
+    // Handle input changes — only active when this field is the timezone setting
     settingValueInput.addEventListener('input', function() {
+        if (this.dataset.isTimezone !== 'true') return;
         const searchTerm = this.value;
         renderDropdown(searchTerm);
         timezoneDropdown.style.display = filteredTimezones.length > 0 ? 'block' : 'none';
     });
 
-    // Handle focus
+    // Handle focus — only active when this field is the timezone setting
     settingValueInput.addEventListener('focus', function() {
+        if (this.dataset.isTimezone !== 'true') return;
         if (this.value.trim() === '') {
             renderDropdown();
             timezoneDropdown.style.display = 'block';

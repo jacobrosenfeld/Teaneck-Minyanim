@@ -473,16 +473,19 @@
                     settingValueInput.style.display = 'block';
                     settingValueInput.value = value || '';
                     settingValueInput.placeholder = 'Search timezones...';
+                    settingValueInput.dataset.isTimezone = 'true';
                     // Initialize timezone autocomplete after a short delay to ensure DOM is ready
                     setTimeout(function() {
                         initializeTimezoneSelect2();
                     }, 100);
                 } else {
-                    // Show text input for other values
+                    // Show text input for other values — hide timezone autocomplete
                     colorPicker.style.display = 'none';
                     settingValueInput.style.display = 'block';
                     settingValueInput.value = value || '';
                     settingValueInput.placeholder = 'Enter value...';
+                    settingValueInput.dataset.isTimezone = 'false';
+                    document.getElementById('timezoneDropdown').style.display = 'none';
                 }
                 
                 valueHint.textContent = hint;

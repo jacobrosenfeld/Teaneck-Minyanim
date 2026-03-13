@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.4] - 2026-03-13
+
+### Fixed
+- **Account modals (#117)**: Added `layout:fragment="modals"` slot to admin layout so the disable/enable/delete account modals on `/account` are rendered in the page instead of being silently dropped by Thymeleaf Layout Dialect
+- **Mobile sidebar (#120)**: Removed conflicting `sb-sidenav-toggled` toggle logic from `sidebar.js`; toggle is handled by the inline script in `layout.html` using the current `.open`/`.collapsed` CSS approach
+- **Timezone autocomplete (#118)**: Timezone autocomplete in the settings modal no longer activates for non-timezone fields; event listeners now check a `data-is-timezone` attribute set by `prepareEditModal` before showing the dropdown
+- **Notification browser popups (#96)**: Replaced `confirm()` browser dialogs for toggle and delete actions on the Notifications page with in-page Bootstrap modals
+- **Toast styling (#114)**: Notifications page now uses the global `window.showToast` from the admin layout instead of a local function with mismatched CSS class names
+
 ## [1.7.3] - 2026-03-13
 
 ### Security
