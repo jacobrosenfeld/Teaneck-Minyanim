@@ -172,6 +172,40 @@
             </div>
         </div>
 
+        <!-- Confirm Toggle Modal (#96) -->
+        <div class="modal fade" id="confirmToggleModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Toggle Notification</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">Are you sure you want to toggle this notification?</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-modern btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn-modern btn-warning" id="confirmToggleBtn">Toggle</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirm Delete Modal (#96) -->
+        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Notification</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">Are you sure you want to delete this notification? This action cannot be undone.</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-modern btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn-modern btn-danger" id="confirmDeleteBtn">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Edit Modal -->
         <div class="modal fade" id="editNotificationModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
@@ -229,32 +263,23 @@
         </div>
     </div>
 
-    <div layout:fragment="scripts">
+    <th:block layout:fragment="scripts">
         <script>
             $(document).ready(function() {
-                // Toast notification function
-                function showToast(message, type = 'success') {
-                    const toast = $('<div class="toast-notification toast-' + type + '">' + message + '</div>');
-                    $('#toast-container').append(toast);
-                    setTimeout(() => toast.addClass('show'), 10);
-                    setTimeout(() => {
-                        toast.removeClass('show');
-                        setTimeout(() => toast.remove(), 300);
-                    }, 3000);
-                }
+                // Use global window.showToast from layout.html (#114)
+                var _pendingToggleId = null;
+                var _pendingDeleteId = null;
 
                 // Create notification
                 $('#createNotificationForm').submit(function(e) {
                     e.preventDefault();
-                    const formData = $(this).serialize();
-                    
-                    $.post('/admin/notifications/create', formData)
+                    $.post('/admin/notifications/create', $(this).serialize())
                         .done(function() {
-                            showToast('Notification created successfully!', 'success');
+                            window.showToast('Notification created successfully!', 'success');
                             setTimeout(() => location.reload(), 1000);
                         })
                         .fail(function(xhr) {
-                            showToast('Error: ' + (xhr.responseText || 'Failed to create notification'), 'error');
+                            window.showToast('Error: ' + (xhr.responseText || 'Failed to create notification'), 'error');
                         });
                 });
 
@@ -267,16 +292,8 @@
                     $('#edit-type').val(btn.data('type'));
                     $('#edit-enabled').val(btn.data('enabled').toString());
                     $('#edit-max-displays').val(btn.data('max-displays') || '');
-                    
                     const expiration = btn.data('expiration');
-                    if (expiration) {
-                        const date = new Date(expiration);
-                        const formatted = date.toISOString().slice(0, 16);
-                        $('#edit-expiration').val(formatted);
-                    } else {
-                        $('#edit-expiration').val('');
-                    }
-                    
+                    $('#edit-expiration').val(expiration ? new Date(expiration).toISOString().slice(0, 16) : '');
                     $('#editNotificationModal').modal('show');
                 });
 
@@ -284,51 +301,53 @@
                 $('#editNotificationForm').submit(function(e) {
                     e.preventDefault();
                     const id = $('#edit-id').val();
-                    const formData = $(this).serialize();
-                    
-                    $.post('/admin/notifications/update/' + id, formData)
+                    $.post('/admin/notifications/update/' + id, $(this).serialize())
                         .done(function() {
-                            showToast('Notification updated successfully!', 'success');
+                            window.showToast('Notification updated successfully!', 'success');
                             setTimeout(() => location.reload(), 1000);
                         })
                         .fail(function(xhr) {
-                            showToast('Error: ' + (xhr.responseText || 'Failed to update notification'), 'error');
+                            window.showToast('Error: ' + (xhr.responseText || 'Failed to update notification'), 'error');
                         });
                 });
 
-                // Toggle notification
+                // Toggle notification — show in-page confirmation modal (#96)
                 $('.toggle-btn').click(function() {
-                    const id = $(this).data('id');
-                    
-                    if (confirm('Toggle this notification?')) {
-                        $.post('/admin/notifications/toggle/' + id)
-                            .done(function() {
-                                showToast('Notification toggled successfully!', 'success');
-                                setTimeout(() => location.reload(), 1000);
-                            })
-                            .fail(function(xhr) {
-                                showToast('Error: ' + (xhr.responseText || 'Failed to toggle notification'), 'error');
-                            });
-                    }
+                    _pendingToggleId = $(this).data('id');
+                    $('#confirmToggleModal').modal('show');
                 });
 
-                // Delete notification
+                $('#confirmToggleBtn').click(function() {
+                    $('#confirmToggleModal').modal('hide');
+                    $.post('/admin/notifications/toggle/' + _pendingToggleId)
+                        .done(function() {
+                            window.showToast('Notification toggled successfully!', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        })
+                        .fail(function(xhr) {
+                            window.showToast('Error: ' + (xhr.responseText || 'Failed to toggle notification'), 'error');
+                        });
+                });
+
+                // Delete notification — show in-page confirmation modal (#96)
                 $('.delete-btn').click(function() {
-                    const id = $(this).data('id');
-                    
-                    if (confirm('Are you sure you want to delete this notification? This action cannot be undone.')) {
-                        $.post('/admin/notifications/delete/' + id)
-                            .done(function() {
-                                showToast('Notification deleted successfully!', 'success');
-                                setTimeout(() => location.reload(), 1000);
-                            })
-                            .fail(function(xhr) {
-                                showToast('Error: ' + (xhr.responseText || 'Failed to delete notification'), 'error');
-                            });
-                    }
+                    _pendingDeleteId = $(this).data('id');
+                    $('#confirmDeleteModal').modal('show');
+                });
+
+                $('#confirmDeleteBtn').click(function() {
+                    $('#confirmDeleteModal').modal('hide');
+                    $.post('/admin/notifications/delete/' + _pendingDeleteId)
+                        .done(function() {
+                            window.showToast('Notification deleted successfully!', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        })
+                        .fail(function(xhr) {
+                            window.showToast('Error: ' + (xhr.responseText || 'Failed to delete notification'), 'error');
+                        });
                 });
             });
         </script>
-    </div>
+    </th:block>
 </body>
 </html>

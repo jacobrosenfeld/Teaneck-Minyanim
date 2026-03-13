@@ -1,129 +1,88 @@
-body, html {
-    height:100%;
-    overflow: hidden;
-}
+/* Admin Sidebar — new fixed/transform approach */
 
-/*
- * Off Canvas sidebar at medium breakpoint
- * --------------------------------------------------
- */
-@media screen and (max-width: 992px) {
-
-  .row-offcanvas {
-    position: relative;
-    -webkit-transition: all 0.25s ease-out;
-    -moz-transition: all 0.25s ease-out;
-    transition: all 0.25s ease-out;
-  }
-
-  .row-offcanvas-left
-  .sidebar-offcanvas {
-    left: -33%;
-  }
-
-  .row-offcanvas-left.active {
-    left: 33%;
-    margin-left: -6px;
-  }
-
-  .sidebar-offcanvas {
-    position: absolute;
-    top: 0;
-    width: 33%;
-    height: 100%;
-    overflow: auto;
-  }
-}
-
-/*
- * Off Canvas wider at sm breakpoint
- * --------------------------------------------------
- */
-@media screen and (max-width: 34em) {
-  .row-offcanvas-left
-  .sidebar-offcanvas {
-    left: -45%;
-  }
-
-  .row-offcanvas-left.active {
-    left: 45%;
-    margin-left: -6px;
-  }
-
-  .sidebar-offcanvas {
-    width: 45%;
-  }
-}
-
-.card {
-    overflow:hidden;
-}
-
-.card-body .rotate {
-    z-index: 8;
-    float: right;
-    height: 100%;
-}
-
-.card-body .rotate i {
-    color: rgba(20, 20, 20, 0.15);
-    position: absolute;
+.admin-sidebar {
+    position: fixed;
+    top: var(--navbar-height, 3.5rem);
     left: 0;
-    left: auto;
-    right: -10px;
     bottom: 0;
-    display: block;
-    -webkit-transform: rotate(-44deg);
-    -moz-transform: rotate(-44deg);
-    -o-transform: rotate(-44deg);
-    -ms-transform: rotate(-44deg);
-    transform: rotate(-44deg);
-}
-
-// Import Bootstrap
-@import "bootstrap/scss/bootstrap.scss";
-
-#wrapper {
+    width: var(--sidebar-width, 16rem);
+    background-color: var(--bg-sidebar, #f6f5f5);
+    border-right: 1px solid var(--border-color-light, #e9ecef);
+    overflow-y: auto;
     overflow-x: hidden;
+    transition: transform var(--transition-base, 200ms ease);
+    z-index: var(--z-sticky, 1020);
 }
 
-#sidebar-wrapper {
-    min-height: 100vh;
-    margin-left: -15rem;
-    -webkit-transition: margin .25s ease-out;
-    -moz-transition: margin .25s ease-out;
-    -o-transition: margin .25s ease-out;
-    transition: margin .25s ease-out;
+.admin-sidebar.collapsed {
+    transform: translateX(-100%);
 }
 
-#sidebar-wrapper .sidebar-heading {
-    padding: 0.875rem 1.25rem;
-    font-size: 1.2rem;
+.admin-sidebar-nav {
+    padding: var(--space-4, 1rem) 0;
 }
 
-#sidebar-wrapper .list-group {
-    width: 15rem;
+.admin-sidebar-section {
+    padding: var(--space-4, 1rem) var(--space-4, 1rem) var(--space-2, 0.5rem);
 }
 
-#page-content-wrapper {
-    min-width: 100vw;
+.admin-sidebar-section-title {
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--text-secondary, #6c757d);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-2, 0.5rem);
 }
 
-body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
-    margin-left: 0;
+.admin-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3, 0.75rem);
+    padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+    color: var(--text-primary, #212529);
+    text-decoration: none;
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: var(--font-weight-medium, 500);
+    border-radius: 0;
+    transition: all var(--transition-fast, 150ms ease);
+    border-left: 3px solid transparent;
 }
 
-@media (min-width: 768px) {
-    #sidebar-wrapper {
-        margin-left: 0;
+.admin-sidebar-link:hover {
+    background-color: var(--bg-hover, #f5f5f5);
+    color: var(--color-primary, #275ed8);
+    text-decoration: none;
+    border-left-color: var(--color-primary, #275ed8);
+}
+
+.admin-sidebar-link.active {
+    background-color: var(--color-primary-lighter, #e3ecfa);
+    color: var(--color-primary-dark, #1e4db3);
+    font-weight: var(--font-weight-semibold, 600);
+    border-left-color: var(--color-primary, #275ed8);
+}
+
+.admin-sidebar-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.admin-sidebar-divider {
+    height: 1px;
+    background-color: var(--border-color-light, #e9ecef);
+    margin: var(--space-4, 1rem) var(--space-4, 1rem);
+}
+
+/* Mobile: sidebar hidden by default, shown when .open is added */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        transform: translateX(-100%);
     }
 
-    #page-content-wrapper {
-        min-width: 0;
-        width: 100%;
-    }
-
-    body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
-        margin-left: -15rem;
+    .admin-sidebar.open {
+        transform: translateX(0);
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
     }
 }

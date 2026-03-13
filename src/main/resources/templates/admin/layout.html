@@ -187,10 +187,15 @@
             
             if (sidebarToggler && sidebar) {
                 sidebarToggler.addEventListener('click', function() {
-                    sidebar.classList.toggle('open');
-                    sidebar.classList.toggle('collapsed');
-                    if (mainContent) {
-                        mainContent.classList.toggle('sidebar-collapsed');
+                    if (window.innerWidth <= 768) {
+                        // Mobile: slide in/out via .open
+                        sidebar.classList.toggle('open');
+                    } else {
+                        // Desktop: collapse/expand via .collapsed + shift main content
+                        sidebar.classList.toggle('collapsed');
+                        if (mainContent) {
+                            mainContent.classList.toggle('sidebar-collapsed');
+                        }
                     }
                 });
             }
@@ -233,6 +238,9 @@
         });
     </script>
     
+    <!-- Page-specific modals -->
+    <th:block layout:fragment="modals"></th:block>
+
     <!-- Page-specific scripts -->
     <th:block layout:fragment="scripts"></th:block>
 </body>
