@@ -3,7 +3,7 @@
       layout:decorate="~{admin/layout}">
 <head>
     <meta charset="UTF-8">
-    <title th:text="|Accounts - ${siteName ?: 'Minyanim Platform'}|"></title>
+    <title th:text="|Accounts - ${siteName ?: 'Minyanim Platform'}|">Accounts</title>
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
@@ -22,7 +22,7 @@
     <div class="page-header flex justify-between items-center">
         <div>
             <h1 class="page-title">Accounts</h1>
-            <p class="page-description" th:text="@{|Add new accounts and manage the data for all existing ones on the ${siteName} ?: 'Minyan Manager'|}"></p>
+            <p class="page-description" th:text="|Add new accounts and manage the data for all existing ones on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
         </div>
         <div class="page-actions">
             <a href="/admin/new-organization" class="btn-modern btn-primary">

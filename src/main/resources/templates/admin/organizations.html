@@ -3,7 +3,7 @@
       layout:decorate="~{admin/layout}">
 <head>
     <meta charset="UTF-8">
-    <title>Organizations</title>
+    <title th:text="|Organizations - ${siteName ?: 'Minyanim Platform'}|">Organizations</title>
 </head>
 <body>
 <div layout:fragment="content">

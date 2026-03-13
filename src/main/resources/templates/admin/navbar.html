@@ -275,7 +275,7 @@
         
         <a class="admin-navbar-brand" th:href="@{${user.isSuperAdmin()} ? '/admin/organizations' : '/admin'}">
             <img src="/assets/icons/favicon.svg" class="admin-navbar-logo" alt="Logo">
-            <span th:text="${siteName} ?: 'Minyan Manager'">Minyan Manager</span>
+            <span th:text="${siteName ?: 'Minyanim Platform'}">Minyanim Platform</span>
         </a>
         
         <!-- Super Admin Navigation -->

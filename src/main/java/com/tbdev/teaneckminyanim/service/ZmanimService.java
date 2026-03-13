@@ -210,9 +210,12 @@ public class ZmanimService {
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
         
+        // Annotate Maariv/Mincha-Maariv events near Plag with the Plag time in their notes
+        annotatePlagTimeIfNearPlag(minyanEvents, zmanim);
+
         // Populate organization slugs for all minyan events
         populateOrganizationSlugs(minyanEvents);
-        
+
         for (MinyanEvent me : minyanEvents) {
             if (me.getType().isShacharis()) {
                 shacharisMinyanim.add(me);
@@ -304,6 +307,10 @@ public class ZmanimService {
         log.debug("Loaded {} events from materialized calendar", minyanEvents.size());
         
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
+
+        // Annotate Maariv/Mincha-Maariv events near Plag with the Plag time in their notes
+        annotatePlagTimeIfNearPlag(minyanEvents, zmanim);
+
         mv.getModel().put("allminyanim", minyanEvents);
 
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
@@ -503,5 +510,35 @@ public class ZmanimService {
         
         // For other minyan types (Mincha/Maariv combined, Megila, etc.), show them
         return true;
+    }
+
+    /**
+     * For MAARIV and MINCHA_MAARIV events whose start time is within 30 minutes of
+     * Plag Hamincha, appends the Plag time to the event's notes so it's visible in
+     * the UI (e.g. "Plag: 6:14 PM").
+     */
+    private void annotatePlagTimeIfNearPlag(List<MinyanEvent> events, Dictionary<Zman, Date> zmanim) {
+        Date plagTime = zmanim.get(Zman.PLAG_HAMINCHA);
+        if (plagTime == null) return;
+
+        SimpleDateFormat fmt = new SimpleDateFormat("h:mm aa");
+        fmt.setTimeZone(settingsService.getTimeZone());
+        String plagLabel = "Plag: " + fmt.format(plagTime);
+        long thirtyMinutes = 30L * 60 * 1000;
+
+        for (MinyanEvent event : events) {
+            if (event.getStartTime() == null) continue;
+            if (!event.getType().isMaariv() && !event.getType().isMinchaMariv()) continue;
+
+            long diff = Math.abs(event.getStartTime().getTime() - plagTime.getTime());
+            if (diff <= thirtyMinutes) {
+                String existing = event.getNotes();
+                if (existing == null || existing.isEmpty()) {
+                    event.setNotes(plagLabel);
+                } else if (!existing.contains("Plag:")) {
+                    event.setNotes(existing + " | " + plagLabel);
+                }
+            }
+        }
     }
 }

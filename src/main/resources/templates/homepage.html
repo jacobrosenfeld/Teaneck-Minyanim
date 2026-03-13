@@ -456,7 +456,7 @@
       <script>
         // Render markdown in banner notifications
         document.querySelectorAll('.banner-message[data-raw]').forEach(function(el) {
-          el.innerHTML = NotificationPopup.parseMarkdown(el.getAttribute('data-raw'));
+          el.innerHTML = NotificationManager.parseMarkdown(el.getAttribute('data-raw'));
         });
       </script>
 
