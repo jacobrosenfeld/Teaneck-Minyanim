@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.3] - 2026-03-13
+
+### Security
+- Upgraded `jackson-core` to 2.21.1 (was 2.19.4) — resolves high-severity DoS vulnerability (Dependabot alert)
+- Upgraded `logback-core` to 1.5.25 (was 1.5.22) — resolves low-severity class instantiation vulnerability (Dependabot alert)
+
 ## [1.7.2] - 2026-03-13
 
 ### Fixed
