@@ -13,10 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgraded `jackson-core` to 2.21.1 (was 2.19.4) — resolves high-severity DoS vulnerability (Dependabot alert)
 - Upgraded `logback-core` to 1.5.25 (was 1.5.22) — resolves low-severity class instantiation vulnerability (Dependabot alert)
 
-## [1.7.2] - 2026-02-24
+## [1.7.2] - 2026-03-13
 
 ### Fixed
-- Login redirect: updated Spring Security permit patterns from `**.js`/`**.css` to `/**/*.js`/`/**/*.css` so static assets are properly permitted under Spring Security 6.x (PathPatternParser), preventing `/admin/login.js` from being saved as the post-login redirect target.
+- **Branding (#107)**: Fixed Thymeleaf admin page titles and descriptions displaying literal `?: 'Minyanim Platform'` text by switching from `@{|...|` (URL expression) to `|...|` (literal template) syntax so the Elvis operator evaluates correctly
+- **Log cleanup (#89)**: Replaced all `System.out.println` debug statements in `AdminController` with `log.debug`, and downgraded verbose per-request `log.info` calls in `ZmanimService` to `log.debug` to reduce log noise
+- **Banner markdown (#87)**: Homepage announcement banners now render markdown formatting (bold, italic, links, headers, lists) using the existing `NotificationPopup.parseMarkdown` parser
+- **PRG pattern (#97)**: `updateMinyan` POST handler now redirects to the minyan view page after a successful save, preventing form resubmission on browser refresh
+- **Plag maariv display (#41)**: Maariv minyanim with a start time at or after Plag Hamincha now display correctly on both the homepage and org pages; previously, calendar-imported early-Maariv events were filtered out because they lack a `dynamicTimeString` containing "plag". Shekiya-based events are now excluded from plag annotation to prevent showing both shekiya and plag times simultaneously
+- **Login redirect (#111)**: After login, users are no longer redirected to `/admin/login.js?continue`; Spring Security's request cache is now configured to ignore static asset requests (`.js`, `.css`, `.ico`, `.png`, `.svg`, `.woff`), and permit patterns updated to use PathPatternParser-compatible `/**/*.js` / `/**/*.css` globs
+
+### Changed
+- **Sort organizations (#37)**: The super admin Organizations page now lists organizations in alphabetical order (case-insensitive)
 
 ## [1.7.1] - 2026-02-24
 

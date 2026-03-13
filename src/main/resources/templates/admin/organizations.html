@@ -3,7 +3,7 @@
       layout:decorate="~{admin/layout}">
 <head>
     <meta charset="UTF-8">
-    <title>Organizations</title>
+    <title th:text="|Organizations - ${siteName ?: 'Minyanim Platform'}|">Organizations</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -11,7 +11,7 @@
     <div class="page-header flex justify-between items-center">
         <div>
             <h1 class="page-title">Organizations</h1>
-            <p class="page-description" th:text="@{|Manage the data and accounts for all organizations on the ${siteName} ?: 'Minyanim Platform' platform.|}"></p>
+            <p class="page-description" th:text="|Manage the data and accounts for all organizations on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
         </div>
         <div class="page-actions">
             <a href="/admin/new-organization" class="btn-modern btn-primary">
