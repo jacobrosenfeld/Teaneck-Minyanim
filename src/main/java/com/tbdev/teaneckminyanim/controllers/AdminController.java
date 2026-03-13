@@ -1810,7 +1810,7 @@ public class AdminController {
 
         try {
             minyanService.update(updatedMinyan);
-            return new ModelAndView("redirect:/admin/minyanim/" + minyanId + "/view?success=updated");
+            return new ModelAndView("redirect:/admin/minyanim/" + oldMinyan.getId() + "/view?success=updated");
         } catch (Exception e) {
             log.error("Failed to update minyan {}", minyanId, e);
             ModelAndView mv = viewMinyan(minyanId, null);
