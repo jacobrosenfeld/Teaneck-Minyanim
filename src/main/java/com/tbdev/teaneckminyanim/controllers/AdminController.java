@@ -179,7 +179,6 @@ public class AdminController {
         }
     }
 
-
     @GetMapping("/admin/logout")
     public ModelAndView logout(@RequestParam(value = "error", required = false) String error) {
         return new LoginController(settingsService).login(error, true);
@@ -193,7 +192,9 @@ public class AdminController {
 
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/organizations");
-        mv.addObject("organizations", organizationService.getAll());
+        List<Organization> organizations = organizationService.getAll();
+        organizations.sort(Comparator.comparing(Organization::getName, String.CASE_INSENSITIVE_ORDER));
+        mv.addObject("organizations", organizations);
 
         addStandardPageData(mv);
 
@@ -231,7 +232,6 @@ public class AdminController {
         return mv;
     }
 
-
     @RequestMapping(value = "/admin/new-organization", method = RequestMethod.GET)
     public ModelAndView addOrganization(boolean success, String error, String inputErrorMessage) {
         if (!isSuperAdmin()) {
@@ -264,15 +264,11 @@ public class AdminController {
             throw new AccessDeniedException("You are not authorized to access this page.");
         }
 
-        System.out.println("Validating input data...");
-
         if (name.isEmpty() || address.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty() || cpassword.isEmpty() || orgColor.isEmpty()) {
-            System.out.println("Sorry, fields cannot be left blank.");
             return addOrganization(false, "The organization could not be created. Required fields cannot be left blank.", "Sorry, required fields cannot be left blank.");
         }
 
         if (!password.equals(cpassword)) {
-            System.out.println("Sorry, these passwords do not match.");
             return addOrganization(false, "The organization could not be created. The passwords do not match.", "Sorry, passwords do not match.");
         }
 
@@ -281,13 +277,11 @@ public class AdminController {
         Pattern usernamePattern = Pattern.compile(usernameRegex);
         Matcher m = usernamePattern.matcher(username);
         if (!m.matches()) {
-            System.out.println("Sorry, this password is not valid.");
             return addOrganization(false, "The organization could not be created. The username must be 6-30 characters, only contain letters and numbers, and start with a letter.", "Sorry, the username must be 6-30 characters, only contain letters and numbers, and start with a letter.");
         }
 
 //        check if username already exists
         if (TNMUserDAO.findByName(username) != null) {
-            System.out.println("Sorry, this username already exists.");
             return addOrganization(false, "The organization could not be created. This username already in use.","Sorry, this username is already in use.");
         }
 
@@ -296,7 +290,6 @@ public class AdminController {
         Pattern emailPattern = Pattern.compile(emailRegex);
         Matcher m2 = emailPattern.matcher(email);
         if (!m2.matches()) {
-            System.out.println("Sorry, this email address is not valid.");
             return addOrganization(false, "The organization could not be created. This email address is invalid.","Sorry, this email address is invalid.");
         }
 
@@ -307,7 +300,6 @@ public class AdminController {
                 siteURI = new URI(siteURIString);
             } catch (URISyntaxException e) {
                 e.printStackTrace();
-                System.out.println("Sorry, this site URI is not valid.");
                 return addOrganization(false, "The organization could not be created. This site URI is invalid.", "Sorry, this site URI is invalid.");
             }
         }
@@ -317,15 +309,11 @@ public class AdminController {
         Pattern passwordPattern = Pattern.compile(passwordRegex);
         Matcher m3 = passwordPattern.matcher(password);
         if (!m3.matches()) {
-            System.out.println("Sorry, this password is not valid.");
             return addOrganization(false, "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.", "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
         }
 
-        System.out.println("Creating organization...");
-
         Nusach nusach = Nusach.fromString(nusachString);
         if (nusach == null) {
-            System.out.println("Sorry, this nusach couldn't be validated.");
             return addOrganization(false, "The organization could not be created.", "Sorry, the organization could not be created.");
         }
 
@@ -344,8 +332,6 @@ public class AdminController {
         organizationService.ensureSlug(organization);
 
         if  (this.organizationService.save(organization)) {
-            System.out.println("Organization created successfully.");
-            System.out.println("Creating account for organization...");
 
             TNMUser user = TNMUser.builder()
                     .id(IDGenerator.generateID('A'))
@@ -359,17 +345,13 @@ public class AdminController {
             if (this.TNMUserDAO.save(user)) {
                 return addOrganization(true, null, null);
             } else {
-                System.out.println("Account creation failed. Deleting organization from database...");
                 if (this.organizationService.delete(organization)) {
-                    System.out.println("Organization deleted successfully.");
                 } else {
-                    System.out.println("Organization deletion failed.");
                 }
 
                 return addOrganization(false, "Sorry, there was an error creating the account.", null);
             }
         } else {
-            System.out.println("Organization creation failed.");
             return addOrganization(false,"Sorry, there was an error creating the organization.", null);
         }
     }
@@ -412,7 +394,6 @@ public class AdminController {
         mv.setViewName("account");
         if (isSuperAdmin()) {
             TNMUser queriedUser = this.TNMUserDAO.findById(id);
-            System.out.println("Queried user: " + queriedUser);
             mv.addObject("queriedaccount", queriedUser);
 
             if (queriedUser.isSuperAdmin() && !queriedUser.getId().equals(getCurrentUser().getId())) {
@@ -444,7 +425,6 @@ public class AdminController {
             }
 
             TNMUser queriedUser = this.TNMUserDAO.findById(id);
-            System.out.println("Queried user: " + queriedUser);
 
             if (user.getId().equals(queriedUser.getId())) {
                 mv.setViewName("account");
@@ -497,7 +477,6 @@ public class AdminController {
         Pattern passwordPattern = Pattern.compile(passwordRegex);
         Matcher m3 = passwordPattern.matcher(password);
         if (!m3.matches()) {
-            System.out.println("Sorry, this password is not valid.");
             return account(accountId, null, null, "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
         }
 
@@ -547,7 +526,6 @@ public class AdminController {
 //                find organization for id
             Optional<Organization> organization = this.organizationService.findById(id);
             if (organization.isEmpty()) {
-                System.out.println("Organization not found.");
 //                    TODO: HANDLE ERROR CORRECTLY
                 throw new Exception("Organization not found.");
             } else {
@@ -562,19 +540,16 @@ public class AdminController {
             TNMUser user = this.TNMUserDAO.findByName(username);
             String associatedOrganizationId = user.getOrganizationId();
             if (!associatedOrganizationId.equals(id)) {
-                System.out.println("You do not have permission to view this organization.");
                 throw new AccessDeniedException("You do not have permission to view this organization.");
             } else {
 //                find organization for id
                 Optional<Organization> organization = this.organizationService.findById(id);
                 if (organization.isEmpty()) {
-                    System.out.println("Organization not found.");
 //                    TODO: HANDLE ERROR CORRECTLY
                     throw new Exception("Organization not found.");
                 } else {
                     mv.getModel().put("organization", organization);
                 }
-
 
                 List<TNMUser> associatedUsers = this.organizationService.getUsersForOrganization(organization.get());
                 mv.addObject("associatedusers", associatedUsers);
@@ -702,17 +677,14 @@ public class AdminController {
 //            get organization and check if it exists
             Optional<Organization> organization = this.organizationService.findById(id);
             if (organization.isEmpty()) {
-                System.out.println("Organization does not exist. Failed to delete.");
                 return organizations(null, "Sorry, the organization could not be deleted.");
             } else {
                 if (organization.get().isEnabled()) {
                     return organization(id, null, "Disable the organization before deleting.", null, null);
                 }
                 if (this.organizationService.delete(organization.get())) {
-                    System.out.println("Organization deleted successfully.");
                     return organizations("Successfully deleted the organization.", null);
                 } else {
-                    System.out.println("Organization delete failed.");
                     return organizations(null, "Sorry, the organization could not be deleted.");
                 }
             }
@@ -721,21 +693,17 @@ public class AdminController {
             TNMUser user = this.TNMUserDAO.findByName(username);
             String associatedOrganizationId = user.getOrganizationId();
             if (!associatedOrganizationId.equals(id)) {
-                System.out.println("You do not have permission to view this organization.");
                 throw new AccessDeniedException("You do not have permission to view this organization.");
             } else {
 //                get organization and check if it exists
                 Organization organization = this.organizationDAO.findById(id);
                 if (organization != null) {
                     if (this.organizationDAO.delete(organization)) {
-                        System.out.println("Organization deleted successfully.");
                         return organizations("Successfully deleted the organization.", null);
                     } else {
-                        System.out.println("Organization delete failed.");
                         return organizations(null, "Sorry, the delete failed.");
                     }
                 } else {
-                    System.out.println("Organization does not exist. Failed to delete.");
                     return organizations(null, "Sorry, the organization could not be deleted.");
                 }
             }
@@ -752,7 +720,6 @@ public class AdminController {
 
         TNMUser account = this.TNMUserDAO.findById(id);
         if (account == null) {
-            System.out.println("Account does not exist. Failed to delete.");
             return accounts(null, "Sorry, the account could not be deleted.");
         }
 
@@ -769,11 +736,9 @@ public class AdminController {
         }
 
         if (this.TNMUserDAO.delete(account)) {
-            System.out.println("Account deleted successfully.");
             return accounts("Successfully deleted the account.", null);
         }
 
-        System.out.println("Account delete failed.");
         return accounts(null, "Sorry, the account could not be deleted.");
     }
 
@@ -853,15 +818,12 @@ public class AdminController {
         }
 
 //            validate input
-        System.out.println("Validating input data...");
 
         if (username.isEmpty() || email.isEmpty() || password.isEmpty() || cpassword.isEmpty()) {
-            System.out.println("Sorry, fields cannot be left blank.");
             return organization(organizationId, null, null, null, "Sorry, fields cannot be left blank.");
         }
 
         if (!password.equals(cpassword)) {
-            System.out.println("Sorry, passwords do not match.");
             return organization(organizationId, null, null, null, "Sorry, passwords do not match.");
         }
 
@@ -869,33 +831,27 @@ public class AdminController {
         Pattern usernamePatter = Pattern.compile(usernameRegex);
         Matcher m = usernamePatter.matcher(username);
         if (!m.matches()) {
-            System.out.println("Sorry, this username is not valid.");
             return organization(organizationId, null, null, null,"Sorry, the username must be 6-30 characters, only contain letters and numbers, and start with a letter.");
         }
 
 //        check if username already exists
         if (TNMUserDAO.findByName(username) != null) {
-            System.out.println("Sorry, this username already exists.");
             return organization(organizationId, null, null, null,"Sorry, this username already exists.");
         }
-
 
 //        check if email is valid
         String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
         Pattern emailPattern = Pattern.compile(emailRegex);
         Matcher m2 = emailPattern.matcher(email);
         if (!m2.matches()) {
-            System.out.println("Sorry, this email address is not valid.");
             return organization(organizationId, null, null, null,"Sorry, this email address is invalid.");
         }
-
 
 //        check if password is valid
         String passwordRegex = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$";
         Pattern passwordPattern = Pattern.compile(passwordRegex);
         Matcher m3 = passwordPattern.matcher(password);
         if (!m3.matches()) {
-            System.out.println("Sorry, this password is not valid.");
             return organization(organizationId, null, null, null,"The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
         }
 
@@ -907,13 +863,11 @@ public class AdminController {
         } else if (organizationId != null) {
             role = Role.USER;
         } else {
-            System.out.println("No organization selected.");
             return organization(organizationId, null, null, null,"Sorry, an error occurred.");
         }
 
         if (role == ADMIN) {
             if (isAdmin()) {
-                System.out.println("Creating account...");
 
                 TNMUser user = TNMUser.builder()
                         .id(IDGenerator.generateID('A'))
@@ -928,7 +882,6 @@ public class AdminController {
                 if (this.TNMUserDAO.save(user)) {
                     return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
                 } else {
-                    System.out.println("Account creation failed.");
                     return organization(organizationId, null, null, null,"Sorry, an error occurred.");
                 }
             } else {
@@ -936,7 +889,6 @@ public class AdminController {
             }
         } else if (Objects.equals(role.getName(), Role.USER.getName())) {
             if (isAdmin()) {
-                System.out.println("Creating account...");
 
                 TNMUser user = TNMUser.builder()
                         .id(IDGenerator.generateID('A')) // Generate the ID here
@@ -950,14 +902,12 @@ public class AdminController {
                 if (this.TNMUserDAO.save(user)) {
                     return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
                 } else {
-                    System.out.println("Account creation failed.");
                     return organization(organizationId, null, null, null,"Sorry, an error occurred.");
                 }
             } else if (isUser()) {
 //                    check if user is in the same organization
                 if (organizationId != null) {
                     if (TNMUserDAO.findByName(username).getId().equals(organizationId)) {
-                        System.out.println("Creating account...");
 
                         TNMUser user = TNMUser.builder()
                                 .id(IDGenerator.generateID('A')) // Generate the ID here
@@ -971,21 +921,18 @@ public class AdminController {
                         if (this.TNMUserDAO.save(user)) {
                             return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
                         } else {
-                            System.out.println("Account creation failed.");
                             return organization(organizationId, null, null, null,"Sorry, an error occurred.");
                         }
                     } else {
                         throw new AccessDeniedException("You do not have permission to create an account for this organization.");
                     }
                 } else {
-                    System.out.println("No organization selected.");
                     return organization(organizationId, null, null, null,"Sorry, an error occurred.");
                 }
             } else {
                 throw new AccessDeniedException("You do not have permission to create an account.");
             }
         } else {
-            System.out.println("Error: The role is null.");
             return organization(organizationId, null, null, null,"Sorry, an error occurred.");
         }
     }
@@ -997,13 +944,11 @@ public class AdminController {
             @RequestParam(value = "email", required = true) String newEmail,
             @RequestParam(value = "privileges", required = false) int roleId
     ) {
-        System.out.println("IM IN THE FUNCTION");
         TNMUser userToUpdate = TNMUserDAO.findById(id);
         TNMUser currentUser = getCurrentUser();
 
         if (!currentUser.isSuperAdmin()) {
             if (!currentUser.getOrganizationId().equals(userToUpdate.getOrganizationId())) {
-                System.out.println("Exiting at break 1");
                 throw new AccessDeniedException("You do not have permission to update this account.");
             }
         }
@@ -1022,7 +967,6 @@ public class AdminController {
         }
 
         if (!isAdmin() && !newRole.equals(userToUpdate.role())) {
-            System.out.println("Exiting at break 2");
             throw new AccessDeniedException("You do not have permission to update this information.");
         }
 
@@ -1341,7 +1285,6 @@ public class AdminController {
             return locations(organizationId, null, "Sorry, an error occurred. The location could not be updated.");
         }
     }
-
 
     @RequestMapping(value = "/admin/delete-location")
     public ModelAndView deleteLocation(@RequestParam(value = "id", required = true) String id) {
@@ -1669,8 +1612,6 @@ public class AdminController {
             return mv;
         }
 
-//        System.out.println("Minyan type: " + type);
-
 //        get and verify location
         Location location = getLocation(locationId);
 
@@ -1708,7 +1649,6 @@ public class AdminController {
         } else {
             enabled = false;
         }
-//        System.out.println("Enabled: " + enabled);
 
         Minyan minyan = new Minyan(organization, minyanType, location, schedule, notes, nusach, enabled, orgnazationColor, whatsapp);
 
@@ -1729,7 +1669,8 @@ public class AdminController {
     }
 
     @RequestMapping(value = "/admin/minyanim/{id}/view", method = RequestMethod.GET)
-    public ModelAndView viewMinyan(@PathVariable("id") String id) throws Exception {
+    public ModelAndView viewMinyan(@PathVariable("id") String id,
+                                   @RequestParam(required = false) String success) throws Exception {
         ModelAndView mv = new ModelAndView("admin/minyanim/update");
         Minyan minyan = minyanService.findById(id);
 //        authenticate user has permission to edit minyan
@@ -1741,6 +1682,9 @@ public class AdminController {
             mv.addObject("minyan", minyan);
             mv.addObject("organization", minyanOrganization.get());
             mv.addObject("locations", locationDAO.findMatching(minyanOrganization.get().getId()));
+        }
+        if ("updated".equals(success)) {
+            mv.addObject("successmessage", "The minyan was successfully updated.");
         }
         addStandardPageData(mv);
         return mv;
@@ -1801,7 +1745,6 @@ public class AdminController {
                                      @RequestParam(value = "enabled", required = false) String enabledString) throws Exception {
 
 //        print starting message
-        System.out.println("Updating minyan with id " + minyanId);
 
 //        confirm user has access to organization
         Optional<Organization> organization = organizationService.findById(organizationId);
@@ -1824,12 +1767,10 @@ public class AdminController {
 //        verify minyan type
         MinyanType minyanType = MinyanType.fromString(type);
         if (minyanType == null) {
-            ModelAndView vm = viewMinyan(minyanId);
+            ModelAndView vm = viewMinyan(minyanId, null);
             vm.addObject("errormessage", "Sorry, there was an error creating the minyan. Please try again. (M01)");
             return vm;
         }
-
-        System.out.println("Minyan type: " + minyanType);
 
 //        get and verify location
         Location location = locationDAO.findById(locationId);
@@ -1852,30 +1793,16 @@ public class AdminController {
         MinyanTime chanukaTime = MinyanTime.fromFormData(chanukaTimeType, chanukaTimeString, chanukaZman, chanukaZmanOffset);
         MinyanTime rccTime = MinyanTime.fromFormData(rccTimeType, rccTimeString, rccZman, rccZmanOffset);
 
-        System.out.println("Sunday minyan time: " + sundayTime);
-        System.out.println("Monday minyan time: " + mondayTime);
-        System.out.println("Tuesday minyan time: " + tuesdayTime);
-        System.out.println("Wednesday minyan time: " + wednesdayTime);
-        System.out.println("Thursday minyan time: " + thursdayTime);
-        System.out.println("Friday minyan time: " + fridayTime);
-        System.out.println("Shabbos minyan time: " + shabbosTime);
-        System.out.println("Rosh Chodesh minyan time: " + rcTime);
-        System.out.println("Yom Tov minyan time: " + ytTime);
-        System.out.println("Chanuka minyan time: " + chanukaTime);
-        System.out.println("RCC minyan time: " + rccTime);
+        log.debug("Parsed minyan times: sun={}, mon={}, tue={}, wed={}, thu={}, fri={}, shab={}, rc={}, yt={}, chan={}, rcc={}",
+                sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, rcTime, ytTime, chanukaTime, rccTime);
 
 //        validate nusach
         Nusach nusach = Nusach.fromString(nusachString);
         if (nusach == null) {
-            ModelAndView mv = viewMinyan(minyanId);
+            ModelAndView mv = viewMinyan(minyanId, null);
             mv.addObject("errormessage", "Sorry, there was an error updating the minyan. Please try again. (M02)");
             return mv;
         }
-        System.out.println("Nusach: " + nusach);
-
-        System.out.println("Notes: " + notes);
-
-        System.out.println("WhatsApp: " + whatsapp);
 
         Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, rcTime, ytTime, chanukaTime, rccTime);
 
@@ -1883,14 +1810,10 @@ public class AdminController {
 
         try {
             minyanService.update(updatedMinyan);
-
-            ModelAndView mv = viewMinyan(minyanId);
-            mv.addObject("successmessage", "The minyan was successfully updated. Click <a href='/admin/" + organizationId + "/minyanim/'>here</a> to return to the minyan schedule.");
-            return mv;
+            return new ModelAndView("redirect:/admin/minyanim/" + oldMinyan.getId() + "/view?success=updated");
         } catch (Exception e) {
-            e.printStackTrace();
-
-            ModelAndView mv = viewMinyan(minyanId);
+            log.error("Failed to update minyan {}", minyanId, e);
+            ModelAndView mv = viewMinyan(minyanId, null);
             mv.addObject("errormessage", "Sorry, there was an error saving the minyan. (M03)");
             return mv;
         }
@@ -1898,7 +1821,6 @@ public class AdminController {
 
     @RequestMapping(value = "/admin/{organizationId}/minyanim/{minyanId}/delete", method = RequestMethod.GET)
     public ModelAndView deleteMinyan(@PathVariable("organizationId") String organizationId, @PathVariable("minyanId") String minyanId) throws Exception {
-        System.out.println("Deleting minyan with id " + minyanId);
 
         Minyan minyan = minyanService.findById(minyanId);
         if (minyan == null) {

@@ -3,7 +3,7 @@
       layout:decorate="~{admin/layout}">
 <head>
     <meta charset="UTF-8">
-    <title th:text="@{|Create an Organization - ${siteName} ?: 'Minyanim Platform'|}"></title>
+    <title th:text="|Create an Organization - ${siteName ?: 'Minyanim Platform'}|">Create an Organization</title>
     <link rel="icon" href="/assets/icons/favicon.png" type="image/png" sizes="16x16">
     <link th:rel="stylesheet" th:href="@{/styles.css}">
     <link th:rel="stylesheet" th:href="@{/admin/dashboard.css}">
@@ -55,7 +55,7 @@
         <div class="alert-modern-content">
             <p class="mb-0">
                 The organization created below will be created with a default account using the username and password you enter below.
-                <span th:text="@{|The account will be a member of the organization, not an admin on the ${siteName} ?: 'Minyanim Platform' site.|}"></span>
+                <span th:text="|The account will be a member of the organization, not an admin on the ${siteName ?: 'Minyanim Platform'} site.|"></span>
             </p>
         </div>
     </div>

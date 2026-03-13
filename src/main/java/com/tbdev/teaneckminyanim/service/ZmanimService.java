@@ -51,7 +51,7 @@ public class ZmanimService {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("homepage");
 
-        log.info("DEBUG: Adding dates to model");
+        log.debug("Adding dates to model");
 
         // Get timezone from settings
         TimeZone timeZone = settingsService.getTimeZone();
@@ -99,9 +99,6 @@ public class ZmanimService {
         Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(localDate);
         Dictionary<Zman, Date> zmanimtoday = zmanimHandler.getZmanimForNow();
 
-        log.info(": Putting zmanim in model");
-
-        log.info("ALOS HASH: " + zmanim.get(Zman.ALOS_HASHACHAR));
         mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOS_HASHACHAR)));
         mv.getModel().put("ett", timeFormatWithRoundingToSecond(zmanim.get(Zman.ETT)));
         mv.getModel().put("misheyakir", timeFormatWithRoundingToSecond(zmanim.get(Zman.MISHEYAKIR)));
@@ -118,8 +115,6 @@ public class ZmanimService {
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
 
-        log.info(": Fetching minyanim");
-
         List<MinyanEvent> minyanEvents = new ArrayList<>();
         LocalDate localDateRef = dateToLocalDate(date);
         Date now = new Date();
@@ -127,38 +122,34 @@ public class ZmanimService {
 
         // Get all organizations
         List<Organization> allOrganizations = organizationDAO.getAll();
-        log.info("Processing {} organizations for homepage", allOrganizations.size());
+        log.debug("Processing {} organizations for homepage", allOrganizations.size());
 
         // Get events from materialized calendar for all organizations
         for (Organization org : allOrganizations) {
             String orgId = org.getId();
-            log.info("Querying materialized calendar for organization: {} ({})", org.getName(), orgId);
-            
             // Query materialized calendar events (precedence already applied by EffectiveScheduleService)
-            List<com.tbdev.teaneckminyanim.model.CalendarEvent> calendarEvents = 
+            List<com.tbdev.teaneckminyanim.model.CalendarEvent> calendarEvents =
                 effectiveScheduleService.getEffectiveEventsForDate(orgId, localDateRef);
-            
+
             // Convert to MinyanEvent objects
             List<MinyanEvent> orgEvents = calendarEventAdapter.toMinyanEvents(calendarEvents);
-            
+
             // Apply time-based filtering and termination date logic
             boolean isSelichosRecited = zmanimHandler.isSelichosRecited(localDateRef);
             for (MinyanEvent event : orgEvents) {
                 if (event.getStartTime() != null) {
                     // Check termination date (hide recent past events on today's view)
-                    boolean passesTerminationCheck = event.getStartTime().after(terminationDate) || 
+                    boolean passesTerminationCheck = event.getStartTime().after(terminationDate) ||
                                                     !sameDayOfMonth(now, date);
-                    
+
                     // Check time-based display rules (Shacharis/Mincha/Maariv windows)
                     boolean passesTimeWindowCheck = shouldDisplayEvent(event, zmanim, isSelichosRecited);
-                    
+
                     if (passesTerminationCheck && passesTimeWindowCheck) {
                         minyanEvents.add(event);
                     }
                 }
             }
-            
-            log.info("Added {} events from {} after filtering", orgEvents.size(), org.getName());
         }
 
         log.info("Total events collected for homepage: {}", minyanEvents.size());
@@ -219,9 +210,12 @@ public class ZmanimService {
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
         
+        // Annotate Maariv/Mincha-Maariv events near Plag with the Plag time in their notes
+        annotatePlagTimeIfNearPlag(minyanEvents, zmanim);
+
         // Populate organization slugs for all minyan events
         populateOrganizationSlugs(minyanEvents);
-        
+
         for (MinyanEvent me : minyanEvents) {
             if (me.getType().isShacharis()) {
                 shacharisMinyanim.add(me);
@@ -254,9 +248,7 @@ public class ZmanimService {
         Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(localDate);
         Dictionary<Zman, Date> zmanimtoday = zmanimHandler.getZmanimForNow();
 
-        log.info(": Putting zmanim in model");
-
-        log.info("ALOS HASH: " + zmanim.get(Zman.ALOS_HASHACHAR));
+        log.debug("Populating zmanim model for org page");
         mv.getModel().put("alotHashachar", timeFormatWithRoundingToSecond(zmanim.get(Zman.ALOS_HASHACHAR)));
         mv.getModel().put("ETT", timeFormatWithRoundingToSecond(zmanim.get(Zman.ETT)));
         mv.getModel().put("netz", timeFormatWithRoundingToSecond(zmanim.get(Zman.NETZ)));
@@ -312,9 +304,13 @@ public class ZmanimService {
         
         // Convert to MinyanEvent objects
         minyanEvents = calendarEventAdapter.toMinyanEvents(calendarEvents);
-        log.info("Loaded {} events from materialized calendar", minyanEvents.size());
+        log.debug("Loaded {} events from materialized calendar", minyanEvents.size());
         
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
+
+        // Annotate Maariv/Mincha-Maariv events near Plag with the Plag time in their notes
+        annotatePlagTimeIfNearPlag(minyanEvents, zmanim);
+
         mv.getModel().put("allminyanim", minyanEvents);
 
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
@@ -337,9 +333,6 @@ public class ZmanimService {
         // This ensures the "Next minyan" button shows upcoming minyanim for today
         // even when the user is viewing a different date (e.g., tomorrow's schedule)
         LocalDate todayLocalDate = dateToLocalDate(today);
-        
-        // Query materialized calendar for TODAY's events
-        log.info("Computing next minyan from materialized calendar for TODAY: {}", todayLocalDate);
         List<com.tbdev.teaneckminyanim.model.CalendarEvent> todayCalendarEvents = 
             effectiveScheduleService.getEffectiveEventsForDate(orgId, todayLocalDate);
         
@@ -354,7 +347,7 @@ public class ZmanimService {
                 nextMinyan.add(event);
             }
         }
-        log.info("Found {} upcoming events for today", nextMinyan.size());
+        log.debug("Found {} upcoming events for today", nextMinyan.size());
         
         nextMinyan.sort(Comparator.comparing(MinyanEvent::getStartTime));
         
@@ -498,12 +491,16 @@ public class ZmanimService {
                    (startTime.after(mgMinusOne.getTime()) || startTime.equals(mgMinusOne.getTime()));
         }
         
-        // Maariv: After Shekiya (or if it's early Maariv at Plag)
+        // Maariv: After Shekiya, or early Maariv at/after Plag Hamincha
         if (type.equals(MinyanType.MAARIV)) {
-            boolean afterShekiya = startTime.after(shekiyaMinusOne.getTime()) || 
+            boolean afterShekiya = startTime.after(shekiyaMinusOne.getTime()) ||
                                   startTime.equals(shekiyaMinusOne.getTime());
             boolean isPlagMinyan = dynamicTime != null && dynamicTime.toLowerCase().contains("plag");
-            return afterShekiya || isPlagMinyan;
+            // Also allow Maariv events whose start time falls at or after Plag Hamincha
+            // (handles calendar-imported events without a dynamic time string)
+            boolean isAfterPlag = startTime.after(zmanim.get(Zman.PLAG_HAMINCHA)) ||
+                                  startTime.equals(zmanim.get(Zman.PLAG_HAMINCHA));
+            return afterShekiya || isPlagMinyan || isAfterPlag;
         }
         
         // Selichos: Only during Selichos season
@@ -513,5 +510,40 @@ public class ZmanimService {
         
         // For other minyan types (Mincha/Maariv combined, Megila, etc.), show them
         return true;
+    }
+
+    /**
+     * For MAARIV and MINCHA_MAARIV events whose start time is within 30 minutes of
+     * Plag Hamincha, appends the Plag time to the event's notes so it's visible in
+     * the UI (e.g. "Plag: 6:14 PM").
+     */
+    private void annotatePlagTimeIfNearPlag(List<MinyanEvent> events, Dictionary<Zman, Date> zmanim) {
+        Date plagTime = zmanim.get(Zman.PLAG_HAMINCHA);
+        if (plagTime == null) return;
+
+        SimpleDateFormat fmt = new SimpleDateFormat("h:mm aa");
+        fmt.setTimeZone(settingsService.getTimeZone());
+        String plagLabel = "Plag: " + fmt.format(plagTime);
+        long thirtyMinutes = 30L * 60 * 1000;
+
+        for (MinyanEvent event : events) {
+            if (event.getStartTime() == null) continue;
+            if (!event.getType().isMaariv() && !event.getType().isMinchaMariv()) continue;
+            // Only annotate fixed-time events — dynamic-time events (plag-based, shekiya-based)
+            // already convey their timing via the formatted time string
+            if (event.dynamicTimeString() != null) continue;
+
+            long diff = Math.abs(event.getStartTime().getTime() - plagTime.getTime());
+            if (diff <= thirtyMinutes) {
+                // Strip any existing Shkiya/Plag notes and replace with just the plag label
+                String existing = event.getNotes();
+                String stripped = existing == null ? "" : Arrays.stream(existing.split(" \\| "))
+                        .map(String::trim)
+                        .filter(p -> !p.startsWith("Shkiya:") && !p.startsWith("Plag:"))
+                        .reduce((a, b) -> a + " | " + b)
+                        .orElse("");
+                event.setNotes(stripped.isEmpty() ? plagLabel : stripped + " | " + plagLabel);
+            }
+        }
     }
 }

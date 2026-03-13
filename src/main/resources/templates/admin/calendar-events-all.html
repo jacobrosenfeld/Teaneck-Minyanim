@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title th:text="@{|Master Calendar - ${siteName} ?: 'Minyanim Platform'|}"></title>
+    <title th:text="|Master Calendar - ${siteName ?: 'Minyanim Platform'}|">Master Calendar</title>
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
@@ -275,7 +275,7 @@
                         <h1 class="display-4 d-none d-sm-block">
                             Master Calendar
                         </h1>
-                        <p class="lead" th:text="@{|Manage materialized calendar events across all organizations on the ${siteName} ?: 'Minyanim Platform' platform.|}"></p>
+                        <p class="lead" th:text="|Manage materialized calendar events across all organizations on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h2>All Organizations</h2>
