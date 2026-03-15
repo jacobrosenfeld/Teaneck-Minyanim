@@ -3,6 +3,14 @@ import com.kosherjava.zmanim.util.Time;
 import com.tbdev.teaneckminyanim.enums.Zman;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.WeekFields;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.Locale;
+import java.util.function.Function;
 
 public class MinyanTime {
     private Time time;
@@ -311,6 +319,69 @@ public class MinyanTime {
             return rule.getTime(date);
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Resolve this MinyanTime to a {@link LocalTime} using a correctly-configured
+     * zmanim supplier (avoids the bug in {@link TimeRule#getTime} which instantiates
+     * a bare {@code ZmanimHandler} that falls back to Jerusalem coordinates).
+     *
+     * <p>For FIXED times the supplier is never called; the stored hours/minutes are
+     * used directly.  For DYNAMIC/ROUNDED the supplier is invoked to get the
+     * correctly-computed {@link Date} for the required {@link Zman}, which is then
+     * converted to a {@link LocalTime} in the given timezone.</p>
+     *
+     * @param zmanimSupplier maps a date to the pre-computed zmanim dictionary
+     * @param date           the calendar date being materialized
+     * @param zoneId         the application timezone (America/New_York)
+     * @return the resolved start time, or {@code null} if this is NONE or data is missing
+     */
+    public LocalTime resolveLocalTime(
+            Function<LocalDate, Dictionary<Zman, Date>> zmanimSupplier,
+            LocalDate date,
+            ZoneId zoneId) {
+
+        switch (type()) {
+            case FIXED: {
+                if (time == null) return null;
+                int h = time.getHours();
+                int m = time.getMinutes();
+                // Mirror the rounding logic used in displayTime()
+                if (time.getSeconds() > 30) m++;
+                if (m >= 60) { h++; m -= 60; }
+                return LocalTime.of(h, m, 0);
+            }
+            case DYNAMIC: {
+                if (rule == null) return null;
+                Date zmanDate = zmanimSupplier.apply(date).get(rule.getZman());
+                if (zmanDate == null) return null;
+                return zmanDate.toInstant()
+                        .atZone(zoneId)
+                        .toLocalTime()
+                        .plusMinutes(rule.getOffsetMinutes())
+                        .truncatedTo(ChronoUnit.MINUTES);
+            }
+            case ROUNDED: {
+                if (rule == null) return null;
+                // Find the earliest occurrence of this zman across Sun–Fri of the week
+                LocalTime minTime = null;
+                for (int dow = 1; dow <= 6; dow++) {
+                    LocalDate day = date.with(WeekFields.of(Locale.US).dayOfWeek(), dow);
+                    Date dayZmanDate = zmanimSupplier.apply(day).get(rule.getZman());
+                    if (dayZmanDate != null) {
+                        LocalTime t = dayZmanDate.toInstant().atZone(zoneId).toLocalTime();
+                        if (minTime == null || t.isBefore(minTime)) minTime = t;
+                    }
+                }
+                if (minTime == null) return null;
+                LocalTime withOffset = minTime.plusMinutes(rule.getOffsetMinutes());
+                // Round down to nearest 5 minutes
+                int minute = (withOffset.getMinute() / 5) * 5;
+                return withOffset.withMinute(minute).withSecond(0).withNano(0);
+            }
+            default:
+                return null;
         }
     }
 }

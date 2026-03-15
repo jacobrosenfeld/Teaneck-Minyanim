@@ -1,6 +1,5 @@
 package com.tbdev.teaneckminyanim.service;
 
-import com.kosherjava.zmanim.util.Time;
 import com.tbdev.teaneckminyanim.enums.EventSource;
 import com.tbdev.teaneckminyanim.minyan.MinyanTime;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
@@ -13,11 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -128,18 +125,16 @@ public class CalendarMaterializationService {
             // For each minyan, check if it has a service on this date
             for (Minyan minyan : minyanim) {
                 try {
-                    // Get the start time for this date based on the minyan's schedule
-                    Date startDateTime = minyan.getStartDate(date);
                     MinyanTime minyanTime = minyan.getMinyanTime(date);
-                    
-                    if (startDateTime != null && minyanTime != null) {
-                        Time time = minyanTime.getTime(date);
-                        
-                        if (time != null) {
-                            // Convert Date to LocalTime
-                            LocalTime startTime = startDateTime.toInstant()
-                                    .atZone(zoneId)
-                                    .toLocalTime();
+
+                    if (minyanTime != null) {
+                        // Use resolveLocalTime with the properly-configured zmanimHandler.
+                        // This avoids the bug in TimeRule.getTime() which creates its own
+                        // ZmanimHandler() that falls back to Jerusalem coordinates.
+                        LocalTime startTime = minyanTime.resolveLocalTime(
+                                zmanimHandler::getZmanim, date, zoneId);
+
+                        if (startTime != null) {
                             
                             // Get location details
                             String locationId = minyan.getLocationId();
