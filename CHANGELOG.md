@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-03-15
+
+### Added
+- **Public REST API v1 (#130)**: New versioned REST API at `/api/v1/` for the mobile app and third-party consumers. All endpoints are public (no auth required), return JSON with a consistent `{ data, meta }` wrapper, and support CORS from any origin.
+
+  **Endpoints:**
+  - `GET /api/v1/organizations` — list all enabled organizations (id, name, slug, color, nusach, address, website, whatsapp)
+  - `GET /api/v1/organizations/{id}` — single organization by ID or slug
+  - `GET /api/v1/organizations/{id}/schedule?date=YYYY-MM-DD` — org's effective schedule for a date (max 30-day range via `start`/`end` params)
+  - `GET /api/v1/schedule?date=YYYY-MM-DD` — combined schedule across all orgs for a date (max 14-day range via `start`/`end` params); powers the app's "Today" view
+  - `GET /api/v1/zmanim?date=YYYY-MM-DD` — all 14 Jewish prayer times for a date (defaults to today)
+
+  **Design decisions:**
+  - No `/next` or `/last` endpoints — callers use explicit ISO-8601 date params for predictable, cacheable responses
+  - Flat event list sorted by date then `startTime`; org info is embedded in each event to avoid waterfall requests from mobile
+  - `meta` on schedule responses includes `windowStart`/`windowEnd` so the app knows the queryable range
+  - All times in `HH:mm` format in the application timezone
+  - Day-level precedence (IMPORTED overrides RULES) is applied server-side via `EffectiveScheduleService` — same logic as the web frontend
+  - MANUAL override (issue #8) is supported in the data model; API will surface it automatically once implemented
+
+- **Notifications API**: `GET /api/v1/notifications` returns all currently active announcements. Supports optional `type=BANNER` or `type=POPUP` filter. Includes `maxDisplays` so the mobile app can mirror the website's "stop showing after N views" behavior.
+- **Swagger UI / OpenAPI docs**: Interactive API documentation at `/api/docs` (Swagger UI) and `/api/docs.json` (OpenAPI JSON), powered by springdoc-openapi. All endpoints annotated with `@Operation`, `@Tag`, and `@Parameter`. Human-readable reference at `docs/api/README.md`.
+- **API rate limiting**: Per-IP token-bucket rate limiter applies to all `/api/v1/**` requests. Default: 60 req/min/IP. Returns `429 Too Many Requests` with `Retry-After: 60`. Configurable via `api.ratelimit.requests-per-minute`.
+- **CORS configuration**: `/api/v1/**` accepts GET and OPTIONS from any origin with a 1-hour preflight cache.
+
+### Fixed
+- **Organization slug in CalendarEventAdapter**: `MinyanEvent.organizationSlug` is now correctly populated by the adapter (previously always null, affecting org-page deep links and API responses).
+
 ## [1.7.6] - 2026-03-14
 
 ### Added

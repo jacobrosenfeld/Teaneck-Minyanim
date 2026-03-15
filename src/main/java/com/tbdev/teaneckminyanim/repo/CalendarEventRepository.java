@@ -159,4 +159,14 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
      * Count events by organization and source
      */
     long countByOrganizationIdAndSource(String organizationId, EventSource source);
+
+    /**
+     * Find all enabled events across ALL organizations in a date range.
+     * Used by the combined /api/v1/schedule endpoint.
+     */
+    @Query("SELECT e FROM CalendarEvent e WHERE e.date BETWEEN :startDate AND :endDate " +
+            "AND e.enabled = true ORDER BY e.date, e.startTime")
+    List<CalendarEvent> findAllEnabledEventsInRange(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }

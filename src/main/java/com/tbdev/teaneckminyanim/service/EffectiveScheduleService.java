@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,6 +101,33 @@ public class EffectiveScheduleService {
                                 .filter(e -> e.getSource() == EventSource.RULES);
                     }
                 })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get effective events across ALL organizations for a date range.
+     * Used by the combined /api/v1/schedule endpoint.
+     * Applies day-level per-org precedence: if any IMPORTED events exist for org+date, only those are returned.
+     *
+     * @param startDate Start of range (inclusive)
+     * @param endDate   End of range (inclusive)
+     * @return Effective events sorted by date then startTime
+     */
+    public List<CalendarEvent> getAllOrgsEffectiveEventsInRange(LocalDate startDate, LocalDate endDate) {
+        List<CalendarEvent> allEvents = calendarEventRepository.findAllEnabledEventsInRange(startDate, endDate);
+
+        // Group by orgId+date key, apply precedence per org per day
+        return allEvents.stream()
+                .collect(Collectors.groupingBy(e -> e.getOrganizationId() + "|" + e.getDate()))
+                .values().stream()
+                .flatMap(dayOrgEvents -> {
+                    boolean hasImported = dayOrgEvents.stream()
+                            .anyMatch(e -> e.getSource() == EventSource.IMPORTED);
+                    return hasImported
+                            ? dayOrgEvents.stream().filter(e -> e.getSource() == EventSource.IMPORTED)
+                            : dayOrgEvents.stream().filter(e -> e.getSource() == EventSource.RULES);
+                })
+                .sorted(Comparator.comparing(CalendarEvent::getDate).thenComparing(CalendarEvent::getStartTime))
                 .collect(Collectors.toList());
     }
 

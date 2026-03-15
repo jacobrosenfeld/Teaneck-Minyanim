@@ -58,8 +58,9 @@ public class CalendarEventAdapter {
         String notes = event.getNotes();
         
         // Create MinyanEvent with dynamic time string if available
+        MinyanEvent minyanEvent;
         if (event.getDynamicTimeString() != null) {
-            return new MinyanEvent(
+            minyanEvent = new MinyanEvent(
                     parentMinyanId,
                     event.getMinyanType(),
                     org.getName(),
@@ -74,7 +75,7 @@ public class CalendarEventAdapter {
                     event.getWhatsapp() != null ? event.getWhatsapp() : ""
             );
         } else {
-            return new MinyanEvent(
+            minyanEvent = new MinyanEvent(
                     parentMinyanId,
                     event.getMinyanType(),
                     org.getName(),
@@ -88,6 +89,8 @@ public class CalendarEventAdapter {
                     event.getWhatsapp() != null ? event.getWhatsapp() : ""
             );
         }
+        minyanEvent.setOrganizationSlug(org.getUrlSlug());
+        return minyanEvent;
     }
 
     /**
