@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 /**
- * OpenAPI metadata shown in the Swagger UI at /api/docs.
+ * OpenAPI metadata — spec is served at /api/docs.json and rendered by Scalar at /api/docs.
  */
 @Configuration
 public class OpenApiConfig {
@@ -36,8 +36,8 @@ public class OpenApiConfig {
                                 .name("Teaneck Minyanim")
                                 .url("https://github.com/jacobrosenfeld/Teaneck-Minyanim")))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Local development"),
-                        new Server().url("https://minyanim.teaneck.org").description("Production")
+                        new Server().url("https://teaneckminyanim.com").description("Production"),
+                        new Server().url("http://localhost:8080").description("Local development")
                 ));
     }
 }

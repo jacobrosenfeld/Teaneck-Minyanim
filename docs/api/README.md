@@ -1,7 +1,7 @@
 # Teaneck Minyanim — Public REST API v1
 
 **Base path:** `/api/v1/`
-**Interactive docs (Swagger UI):** `/api/docs`
+**Interactive docs (Scalar):** `/api/docs`
 **OpenAPI JSON:** `/api/docs.json`
 **Auth:** None required (all endpoints are public read-only)
 **Rate limit:** 60 requests / minute / IP → `429 Too Many Requests`
@@ -257,6 +257,7 @@ GET /api/v1/organizations/bmob/schedule?start=2026-03-15&end=2026-03-21
 3. Add a DTO in `com.tbdev.teaneckminyanim.api.dto/` — never expose JPA entities directly
 4. Permit the path in `WebSecurityConfiguration` under the `/api/v1/**` block (already covered by the wildcard)
 5. Update this file
+6. Verify the change renders correctly in Scalar at `/api/docs`
 
 ### Breaking changes
 - Bump the API version (`/v1/` → `/v2/`) for any change that removes fields, renames fields, or changes semantics

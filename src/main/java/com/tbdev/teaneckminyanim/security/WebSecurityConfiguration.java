@@ -66,9 +66,8 @@ public class WebSecurityConfiguration {
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/**").permitAll()
-                .requestMatchers("/api/docs", "/api/docs/**", "/api/docs.json",
-                                 "/v3/api-docs", "/v3/api-docs/**",
-                                 "/swagger-ui.html", "/swagger-ui/**").permitAll()
+                .requestMatchers("/api/docs", "/api/docs.json",
+                                 "/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/", "/zmanim/**", "/orgs/**", "/org/**", "/admin/login", "/admin/logout",
                                 "/webjars/**", "/**/*.css", "/**/*.js", "/static/**", "/db/**",
                                 "/assets/**", "/favicon.ico").permitAll()
