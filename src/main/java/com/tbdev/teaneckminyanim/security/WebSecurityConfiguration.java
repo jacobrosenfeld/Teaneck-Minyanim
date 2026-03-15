@@ -15,6 +15,11 @@ import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -57,8 +62,10 @@ public class WebSecurityConfiguration {
         http
             .requestCache(cache -> cache.requestCache(requestCache))
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/**").permitAll()
                 .requestMatchers("/", "/zmanim/**", "/orgs/**", "/org/**", "/admin/login", "/admin/logout",
                                 "/webjars/**", "/**/*.css", "/**/*.js", "/static/**", "/db/**",
                                 "/assets/**", "/favicon.ico").permitAll()
@@ -92,5 +99,23 @@ public class WebSecurityConfiguration {
             );
 
         return http.build();
+    }
+
+    /**
+     * CORS config for the public REST API (/api/v1/**).
+     * Allows GET and OPTIONS from any origin so the mobile app and third-party
+     * consumers can query without a proxy.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/v1/**", config);
+        return source;
     }
 }
