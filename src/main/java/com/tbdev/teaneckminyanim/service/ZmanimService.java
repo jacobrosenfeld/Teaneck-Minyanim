@@ -200,8 +200,9 @@ public class ZmanimService {
         mv.getModel().put("kolminyanim", kolhaMinyanims);
         Stream<KolhaMinyanim> stream = kolhaMinyanims.stream();
 
-        // Get the unique values based on the 'organizationId' property
+        // Get unique shuls (deduplicated by org), sorted alphabetically by name
         List<KolhaMinyanim> uniqueKolhaMinyanims = stream.filter(distinctByKey(KolhaMinyanim::getOrganizationId))
+                .sorted(Comparator.comparing(k -> k.getOrganizationName().toLowerCase()))
                 .collect(Collectors.toList());
 
         mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
