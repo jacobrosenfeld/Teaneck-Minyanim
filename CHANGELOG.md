@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.5] - 2026-03-13
+
+### Added
+- **WhatsApp on org page (#45)**: Added an org-level `whatsapp` field to the `Organization` model; a WhatsApp button now appears in the org header card (alongside "Get Directions" / "Visit the website") when the organization has a WhatsApp group link set. Admins can set the link on the organization settings page.
+- **Clean slug URLs (#90)**: Organizations can now be accessed via short `/{slug}` URLs (e.g., `/keter-torah`) in addition to `/org/{slug}`. Added `/{slug}`, `/{slug}/next`, and `/{slug}/last` routes to `ZmanimController`; updated Spring Security to permit these public routes. The `/org/{slug}` routes remain for backward compatibility.
+
+### Changed
+- **Thymeleaf fragment notation (#115)**: Updated all active templates to use the current `~{...}` fragment expression syntax instead of the deprecated bare-string form (e.g., `th:include="~{frontnavbar}"` instead of `th:include="frontnavbar"`). Affects `error.html`, `subscription.html`, `homepage.html`, `org.html`, `admin/login.html`, `admin/layout.html`, `dashboard.html`, `admin/calendar-events-all.html`, `admin/calendar-events.html`, and `admin/calendar-entries.html`.
+
 ## [1.7.4] - 2026-03-13
 
 ### Fixed

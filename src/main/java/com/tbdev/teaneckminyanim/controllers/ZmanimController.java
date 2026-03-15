@@ -138,7 +138,33 @@ public class ZmanimController {
         return zmanimService.org(orgId, new Date());
     }
 
-    // New slug-based routes
+    // Clean slug-based routes (short URLs: /{slug})
+    // Regex [a-z0-9-]+ ensures only org slugs match — excludes files like mapbox.js
+    @GetMapping("/{slug:[a-z0-9-]+}")
+    public ModelAndView orgTodayBySlugShort(@PathVariable String slug) throws Exception {
+        String orgId = resolveOrgId(slug);
+        return zmanimService.org(orgId, new Date());
+    }
+
+    @GetMapping("/{slug:[a-z0-9-]+}/next")
+    public ModelAndView nextOrgAfterBySlugShort(@PathVariable String slug,
+            @RequestParam(value = "after", required = true) String dateString) throws Exception {
+        String orgId = resolveOrgId(slug);
+        Date date = new Date(dateString);
+        return zmanimService.org(orgId, new Date(date.getYear(), date.getMonth(), date.getDate() + 1, date.getHours(),
+                date.getMinutes(), date.getSeconds()));
+    }
+
+    @GetMapping("/{slug:[a-z0-9-]+}/last")
+    public ModelAndView lastOrgBeforeBySlugShort(@PathVariable String slug,
+            @RequestParam(value = "before", required = true) String dateString) throws Exception {
+        String orgId = resolveOrgId(slug);
+        Date date = new Date(dateString);
+        return zmanimService.org(orgId, new Date(date.getYear(), date.getMonth(), date.getDate() - 1, date.getHours(),
+                date.getMinutes(), date.getSeconds()));
+    }
+
+    // Legacy /org/{slug} routes (preserved for backward compatibility)
     @GetMapping("/org/{slug}")
     public ModelAndView orgTodayBySlug(@PathVariable String slug) throws Exception {
         String orgId = resolveOrgId(slug);

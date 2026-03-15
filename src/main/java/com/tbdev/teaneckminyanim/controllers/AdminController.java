@@ -259,7 +259,8 @@ public class AdminController {
                                            @RequestParam(value = "password", required = true) String password,
                                            @RequestParam(value = "cpassword", required = true) String cpassword,
                                            @RequestParam(value = "orgColor", required = true) String orgColor,
-                                           @RequestParam(value = "url-slug", required = false) String urlSlug) {
+                                           @RequestParam(value = "url-slug", required = false) String urlSlug,
+                                           @RequestParam(value = "whatsapp", required = false) String whatsapp) {
         if (!isSuperAdmin()) {
             throw new AccessDeniedException("You are not authorized to access this page.");
         }
@@ -325,6 +326,7 @@ public class AdminController {
                 .nusach(nusach)
                 .orgColor(orgColor)
                 .urlSlug(urlSlug)
+                .whatsapp(whatsapp != null && !whatsapp.isEmpty() ? whatsapp : null)
                 .enabled(true)
                 .build();
 
@@ -570,7 +572,8 @@ public class AdminController {
                                            @RequestParam(value = "orgColor", required = true) String orgColor,
                                            @RequestParam(value = "url-slug", required = false) String urlSlug,
                                            @RequestParam(value = "calendar", required = false) String calendar,
-                                           @RequestParam(value = "useScrapedCalendar", required = false) Boolean useScrapedCalendar) throws Exception {
+                                           @RequestParam(value = "useScrapedCalendar", required = false) Boolean useScrapedCalendar,
+                                           @RequestParam(value = "whatsapp", required = false) String whatsapp) throws Exception {
 
 //        validate input
         if (name == null || name.isEmpty()) {
@@ -602,6 +605,7 @@ public class AdminController {
                 .urlSlug(urlSlug)
                 .calendar(calendar)
                 .useScrapedCalendar(useScrapedCalendar != null ? useScrapedCalendar : false)
+                .whatsapp(whatsapp != null && !whatsapp.isEmpty() ? whatsapp : null)
                 .build();
 
         // Ensure organization has a slug (generate from name if not provided)

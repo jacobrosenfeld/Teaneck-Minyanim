@@ -46,6 +46,9 @@ public class Organization {
     @Column(name = "URL_SLUG", unique = true)
     private String urlSlug;
 
+    @Column(name = "WHATSAPP")
+    private String whatsapp;
+
     @Column(name = "ENABLED", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean enabled = true;
 
