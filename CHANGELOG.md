@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.6] - 2026-03-14
+
+### Added
+- **Auto super admin creation (#99)**: On first startup, if no super admin account exists, one is created automatically using credentials from `application.properties` (`superadmin.username` / `superadmin.password`). Existing super admins are never overwritten.
+- **Schedule type badge on org list (#88)**: The super admin Organizations table now shows a "Schedule Type" badge for each org: **Rules-based** (no calendar URL), **Calendar Import** (has calendar URL), or **Calendar + Scrape** (useScrapedCalendar enabled).
+
+### Fixed
+- **Proper 404/error page (#136, #38, #39)**: Replaced the generic error page with a custom `ErrorController` that injects `siteName`, `supportEmail`, and `appVersion` into the error template. The page now shows a friendly, specific message for 404 (Not Found), 403 (Forbidden), and 500 (Server Error) responses with working navbar and footer.
+- **Homepage stats (#137)**: The "About" stats section now shows total enabled shuls in the database and total enabled minyanim for the next 7 days (instead of that day's live counts). The "Minyanim" label updated to "Weekly Minyanim".
+
 ## [1.7.5] - 2026-03-13
 
 ### Added

@@ -146,6 +146,11 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
             @Param("endDate") LocalDate endDate);
 
     /**
+     * Count all enabled events across all orgs in a date range (for weekly stats)
+     */
+    long countByEnabledTrueAndDateBetween(LocalDate startDate, LocalDate endDate);
+
+    /**
      * Count enabled events by organization
      */
     long countByOrganizationIdAndEnabledTrue(String organizationId);
