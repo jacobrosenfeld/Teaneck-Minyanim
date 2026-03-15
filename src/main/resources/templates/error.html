@@ -35,15 +35,15 @@
                     <main class="col main pt-5 mt-4 overflow-auto" style="flex-shrink: 3; padding-bottom: 65px !important;">
                         <div class="container">
                             <div class="row justify-content-center">
-                                <div class="col-md-8 col-xl-6 text-center py-5">
+                                <div class="col-md-8 col-xl-6 text-center" style="padding: 5rem 1rem;">
                                     <div style="font-size: 6rem; font-weight: 700; color: #dee2e6; line-height: 1;" th:text="${errorCode}">404</div>
-                                    <h1 class="fw-bold mb-3 mt-2" th:text="${errorTitle}">Page Not Found</h1>
-                                    <p class="mb-4 text-muted" style="font-size: 1.15rem;" th:text="${errorMessage}">
+                                    <h1 style="font-weight: 700; margin: 1rem 0 0.75rem;" th:text="${errorTitle}">Page Not Found</h1>
+                                    <p style="font-size: 1.1rem; color: #6c757d; margin-bottom: 2rem;" th:text="${errorMessage}">
                                         The page you're looking for doesn't exist.
                                     </p>
-                                    <div class="d-flex gap-3 justify-content-center flex-wrap">
-                                        <a class="btn-cta nav-link" role="button" href="/">Go to Homepage</a>
-                                        <a class="btn-shuls nav-link" role="button" th:href="@{|mailto:${supportEmail}|}">Contact Support</a>
+                                    <div style="display: flex; gap: 0; justify-content: center; flex-wrap: wrap;">
+                                        <a class="btn-shuls" role="button" href="/">Go to Homepage</a>
+                                        <a class="btn-shuls" role="button" th:href="@{|mailto:${supportEmail ?: ''}|}">Contact Support</a>
                                     </div>
                                 </div>
                             </div>
