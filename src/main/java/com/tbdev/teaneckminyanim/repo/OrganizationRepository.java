@@ -18,6 +18,8 @@ public interface OrganizationRepository extends JpaRepository<Organization, Stri
 
     Optional<Organization> findByUrlSlug(String urlSlug);
 
+    long countByEnabled(Boolean enabled);
+
     @Query("SELECT a FROM Account a WHERE a.organizationId = :organizationId")
     List<Account> findAccountsByOrganizationId(@Param("organizationId") String organizationId);
 }

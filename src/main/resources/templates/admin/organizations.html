@@ -44,6 +44,7 @@
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
+                            <th>Schedule Type</th>
                             <th>Website</th>
                             <th>Minyan Schedule</th>
                             <th>Profile & Accounts</th>
@@ -53,6 +54,20 @@
                         <tr th:each="organization: ${organizations}">
                             <td th:text="${organization.id}">1</td>
                             <td th:text="${organization.name}">Organization Name</td>
+                            <td>
+                                <span th:if="${organization.useScrapedCalendar}"
+                                      class="badge-modern badge-info" title="Schedule imported and scraped from external calendar">
+                                    <i class="fas fa-sync-alt"></i> Calendar + Scrape
+                                </span>
+                                <span th:if="${!organization.useScrapedCalendar and organization.calendar != null and !#strings.isEmpty(organization.calendar)}"
+                                      class="badge-modern badge-success" title="Schedule imported from external calendar">
+                                    <i class="fas fa-calendar-import"></i> Calendar Import
+                                </span>
+                                <span th:if="${!organization.useScrapedCalendar and (organization.calendar == null or #strings.isEmpty(organization.calendar))}"
+                                      class="badge-modern badge-secondary" title="Schedule generated from rule-based minyan entries">
+                                    <i class="fas fa-list-alt"></i> Rules-based
+                                </span>
+                            </td>
                             <td>
                                 <a th:if="${organization.websiteURI}"
                                     th:href="@{'https://' + ${organization.websiteURI}}"
@@ -75,7 +90,7 @@
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(organizations)}">
-                            <td colspan="5" style="text-align: center; padding: var(--space-12); color: var(--text-secondary);">
+                            <td colspan="6" style="text-align: center; padding: var(--space-12); color: var(--text-secondary);">
                                 <i class="fas fa-building" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3;"></i>
                                 <p style="margin: 0; font-weight: var(--font-weight-medium);">No organizations found.</p>
                                 <p style="margin-top: var(--space-2); font-size: var(--font-size-sm);">Create a new organization to get started.</p>

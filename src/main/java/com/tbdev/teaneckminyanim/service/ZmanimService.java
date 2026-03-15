@@ -11,6 +11,8 @@ import com.tbdev.teaneckminyanim.enums.Zman;
 import com.tbdev.teaneckminyanim.model.Organization;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.tbdev.teaneckminyanim.repo.CalendarEventRepository;
+import com.tbdev.teaneckminyanim.repo.OrganizationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -37,6 +39,8 @@ public class ZmanimService {
     private final EffectiveScheduleService effectiveScheduleService;
     private final CalendarEventAdapter calendarEventAdapter;
     private final VersionService versionService;
+    private final CalendarEventRepository calendarEventRepository;
+    private final OrganizationRepository organizationRepository;
 
     Calendar calendar = Calendar.getInstance();
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy | h:mm aa");
@@ -201,6 +205,14 @@ public class ZmanimService {
                 .collect(Collectors.toList());
 
         mv.getModel().put("uniqueKolhaMinyanims", uniqueKolhaMinyanims);
+
+        // Total stats for the "about" section — database-wide counts, not day-specific
+        LocalDate statsWeekStart = LocalDate.now();
+        LocalDate statsWeekEnd = statsWeekStart.plusDays(6);
+        long totalShuls = organizationRepository.countByEnabled(true);
+        long weeklyMinyanim = calendarEventRepository.countByEnabledTrueAndDateBetween(statsWeekStart, statsWeekEnd);
+        mv.getModel().put("totalShuls", totalShuls);
+        mv.getModel().put("weeklyMinyanim", weeklyMinyanim);
         // end kol
 
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
