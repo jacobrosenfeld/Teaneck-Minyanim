@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-03-15
+
+### Fixed
+- **Critical: dynamic zmanim showing wrong times (#141)** — `TimeRule.getTime()` was instantiating a bare `ZmanimHandler()` that fell back to Jerusalem, Israel coordinates. A "Shkiya" minyan therefore computed sunset for Jerusalem (~6 PM Israel time = ~11 AM New York time) instead of Teaneck. Fixed by adding `MinyanTime.resolveLocalTime()` which accepts a properly-configured zmanim supplier from `CalendarMaterializationService`; the supplier uses the injected `ZmanimHandler` bean (Teaneck coordinates). The legacy `TimeRule.getTime()` code path is preserved for non-materialization use cases.
+
 ## [1.8.0] - 2026-03-15
 
 ### Added
