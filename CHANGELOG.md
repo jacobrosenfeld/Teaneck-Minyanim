@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Day-level precedence (IMPORTED overrides RULES) is applied server-side via `EffectiveScheduleService` — same logic as the web frontend
   - MANUAL override (issue #8) is supported in the data model; API will surface it automatically once implemented
 
+- **Notifications API**: `GET /api/v1/notifications` returns all currently active announcements. Supports optional `type=BANNER` or `type=POPUP` filter. Includes `maxDisplays` so the mobile app can mirror the website's "stop showing after N views" behavior.
+- **Swagger UI / OpenAPI docs**: Interactive API documentation at `/api/docs` (Swagger UI) and `/api/docs.json` (OpenAPI JSON), powered by springdoc-openapi. All endpoints annotated with `@Operation`, `@Tag`, and `@Parameter`. Human-readable reference at `docs/api/README.md`.
+- **API rate limiting**: Per-IP token-bucket rate limiter applies to all `/api/v1/**` requests. Default: 60 req/min/IP. Returns `429 Too Many Requests` with `Retry-After: 60`. Configurable via `api.ratelimit.requests-per-minute`.
 - **CORS configuration**: `/api/v1/**` accepts GET and OPTIONS from any origin with a 1-hour preflight cache.
 
 ### Fixed

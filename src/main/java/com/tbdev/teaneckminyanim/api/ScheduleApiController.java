@@ -7,6 +7,9 @@ import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.service.CalendarMaterializationService.WindowBounds;
 import com.tbdev.teaneckminyanim.service.EffectiveScheduleService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +39,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+@Tag(name = "Schedule", description = "Materialized minyan schedule — combined (all orgs) or per-org")
 public class ScheduleApiController {
 
     /** Maximum date range for the combined (all-orgs) endpoint. */
@@ -51,9 +55,17 @@ public class ScheduleApiController {
     // -----------------------------------------------------------------------
 
     @GetMapping("/api/v1/schedule")
+    @Operation(summary = "Combined schedule — all orgs",
+               description = "Returns effective minyan events across all organizations for a date or date range " +
+                             "(max 14 days). Omit all params to get today. " +
+                             "Day-level IMPORTED→RULES precedence is applied server-side. " +
+                             "meta includes windowStart/windowEnd so the app knows the queryable range.")
     public ResponseEntity<ApiResponse<List<ScheduleEventDto>>> getCombinedSchedule(
+            @Parameter(description = "Single date (YYYY-MM-DD). Shorthand for start=date&end=date.", example = "2026-03-15")
             @RequestParam(required = false) String date,
+            @Parameter(description = "Range start date (YYYY-MM-DD)", example = "2026-03-15")
             @RequestParam(required = false) String start,
+            @Parameter(description = "Range end date (YYYY-MM-DD), max 14 days after start", example = "2026-03-21")
             @RequestParam(required = false) String end) {
 
         // Resolve date range
@@ -102,7 +114,11 @@ public class ScheduleApiController {
     // -----------------------------------------------------------------------
 
     @GetMapping("/api/v1/organizations/{idOrSlug}/schedule")
+    @Operation(summary = "Per-org schedule",
+               description = "Returns this organization's effective events for a date or range (max 30 days). " +
+                             "Accepts org ID or slug.")
     public ResponseEntity<ApiResponse<List<ScheduleEventDto>>> getOrgSchedule(
+            @Parameter(description = "Organization ID or slug", example = "bmob")
             @PathVariable String idOrSlug,
             @RequestParam(required = false) String date,
             @RequestParam(required = false) String start,

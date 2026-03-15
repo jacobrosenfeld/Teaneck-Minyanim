@@ -5,6 +5,9 @@ import com.tbdev.teaneckminyanim.api.dto.ZmanimDto;
 import com.tbdev.teaneckminyanim.enums.Zman;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.ZmanimHandler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +30,18 @@ import java.util.TimeZone;
 @RequestMapping("/api/v1/zmanim")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+@Tag(name = "Zmanim", description = "Jewish prayer times (halachic times) calculated for Teaneck, NJ")
 public class ZmanimApiController {
 
     private final ZmanimHandler zmanimHandler;
     private final ApplicationSettingsService settingsService;
 
     @GetMapping
+    @Operation(summary = "Get Jewish prayer times",
+               description = "Returns all 14 halachic times (netz, shekiya, plag, tzeis, etc.) for a given date. " +
+                             "Omit date to get today's times. All times are in HH:mm format in the application timezone.")
     public ResponseEntity<ApiResponse<ZmanimDto>> getZmanim(
+            @Parameter(description = "Date in YYYY-MM-DD format. Defaults to today.", example = "2026-03-15")
             @RequestParam(required = false) String date) {
 
         LocalDate localDate;

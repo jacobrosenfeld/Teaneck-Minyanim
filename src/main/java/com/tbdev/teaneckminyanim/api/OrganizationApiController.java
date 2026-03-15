@@ -4,6 +4,9 @@ import com.tbdev.teaneckminyanim.api.dto.ApiResponse;
 import com.tbdev.teaneckminyanim.api.dto.OrganizationDto;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +25,14 @@ import java.util.Optional;
 @RequestMapping("/api/v1/organizations")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.OPTIONS})
+@Tag(name = "Organizations", description = "Synagogues and minyan groups")
 public class OrganizationApiController {
 
     private final OrganizationService organizationService;
 
     @GetMapping
+    @Operation(summary = "List all enabled organizations",
+               description = "Returns id, name, slug, color, nusach, address, website, and whatsapp for every enabled org.")
     public ResponseEntity<ApiResponse<List<OrganizationDto>>> listOrganizations() {
         List<OrganizationDto> orgs = organizationService.getAll()
                 .stream()
@@ -38,8 +44,11 @@ public class OrganizationApiController {
     }
 
     @GetMapping("/{idOrSlug}")
-    public ResponseEntity<ApiResponse<OrganizationDto>> getOrganization(@PathVariable String idOrSlug) {
-        // Try by ID first, then by slug
+    @Operation(summary = "Get a single organization",
+               description = "Accepts either the internal organization ID or the URL slug.")
+    public ResponseEntity<ApiResponse<OrganizationDto>> getOrganization(
+            @Parameter(description = "Organization ID or slug", example = "bmob")
+            @PathVariable String idOrSlug) {
         Optional<Organization> orgOpt = organizationService.findById(idOrSlug);
         if (orgOpt.isEmpty()) {
             orgOpt = organizationService.findByUrlSlug(idOrSlug);
