@@ -70,7 +70,7 @@ public class WebSecurityConfiguration {
                                 "/admin/*/calendar-entries", "/admin/*/calendar-entries/**",
                                 "/admin/settings", "/admin/update-settings").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN")
-                .requestMatchers("/{slug}", "/{slug}/next", "/{slug}/last").permitAll()
+                .requestMatchers("/{slug:[a-z0-9-]+}", "/{slug:[a-z0-9-]+}/next", "/{slug:[a-z0-9-]+}/last").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

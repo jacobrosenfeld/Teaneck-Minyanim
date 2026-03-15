@@ -139,13 +139,14 @@ public class ZmanimController {
     }
 
     // Clean slug-based routes (short URLs: /{slug})
-    @GetMapping("/{slug}")
+    // Regex [a-z0-9-]+ ensures only org slugs match — excludes files like mapbox.js
+    @GetMapping("/{slug:[a-z0-9-]+}")
     public ModelAndView orgTodayBySlugShort(@PathVariable String slug) throws Exception {
         String orgId = resolveOrgId(slug);
         return zmanimService.org(orgId, new Date());
     }
 
-    @GetMapping("/{slug}/next")
+    @GetMapping("/{slug:[a-z0-9-]+}/next")
     public ModelAndView nextOrgAfterBySlugShort(@PathVariable String slug,
             @RequestParam(value = "after", required = true) String dateString) throws Exception {
         String orgId = resolveOrgId(slug);
@@ -154,7 +155,7 @@ public class ZmanimController {
                 date.getMinutes(), date.getSeconds()));
     }
 
-    @GetMapping("/{slug}/last")
+    @GetMapping("/{slug:[a-z0-9-]+}/last")
     public ModelAndView lastOrgBeforeBySlugShort(@PathVariable String slug,
             @RequestParam(value = "before", required = true) String dateString) throws Exception {
         String orgId = resolveOrgId(slug);
