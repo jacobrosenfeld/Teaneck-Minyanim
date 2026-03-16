@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import {
+  Animated,
   ActivityIndicator,
   Dimensions,
   Linking,
@@ -14,8 +15,6 @@ import {
   View,
 } from 'react-native';
 import Reanimated, {
-  FadeIn,
-  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -87,7 +86,7 @@ export default function ShulDetailScreen() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }));
   const tabScrollRef = useRef<ScrollView>(null);
 
-  // Slide animation for day/week content transitions
+  // ── Reanimated slide: used only for arrow-button navigation ───────────────
   const contentOpacity = useSharedValue(1);
   const contentTranslateX = useSharedValue(0);
   const animatedContentStyle = useAnimatedStyle(() => ({
@@ -110,18 +109,28 @@ export default function ShulDetailScreen() {
     });
   }, [contentOpacity, contentTranslateX]);
 
+  // ── Animated.Value: used for real-time gesture tracking ───────────────────
+  // Separate from Reanimated so they don't conflict.
+  const dayDragX = useRef(new Animated.Value(0)).current;
+  const weekDragX = useRef(new Animated.Value(0)).current;
+
   const today = toApiDate(new Date());
   const parsedDate = parseISO(selectedDate);
   const isToday = selectedDate === today;
   const weekEnd = endOfWeek(weekStart, { weekStartsOn: 0 });
   const isThisWeek = toApiDate(weekStart) === toApiDate(startOfWeek(new Date(), { weekStartsOn: 0 }));
 
-  // Day navigation with slide animation
-  const prevDay = () => animateTransition(-1, () => setSelectedDate(toApiDate(subDays(parsedDate, 1))));
-  const nextDay = () => animateTransition(1, () => setSelectedDate(toApiDate(addDays(parsedDate, 1))));
+  // Refs so gesture callbacks always see the latest state
+  const selectedDateRef = useRef(selectedDate);
+  selectedDateRef.current = selectedDate;
+  const weekStartRef = useRef(weekStart);
+  weekStartRef.current = weekStart;
+
+  // Arrow navigation — uses Reanimated slide animation
+  const prevDay = () => animateTransition(-1, () => setSelectedDate(toApiDate(subDays(parseISO(selectedDateRef.current), 1))));
+  const nextDay = () => animateTransition(1, () => setSelectedDate(toApiDate(addDays(parseISO(selectedDateRef.current), 1))));
   const goToday = () => animateTransition(1, () => setSelectedDate(today));
 
-  // Week navigation with slide animation
   const prevWeek = () => animateTransition(-1, () => setWeekStart((w) => subWeeks(w, 1)));
   const nextWeek = () => animateTransition(1, () => setWeekStart((w) => addWeeks(w, 1)));
   const goThisWeek = () => animateTransition(1, () => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 })));
@@ -131,34 +140,86 @@ export default function ShulDetailScreen() {
     tabScrollRef.current?.scrollTo({ x: tab * SCREEN_WIDTH, animated: true });
   };
 
-  // Use refs so PanResponder closures always call the latest callbacks
-  const prevDayRef = useRef(prevDay); prevDayRef.current = prevDay;
-  const nextDayRef = useRef(nextDay); nextDayRef.current = nextDay;
-  const prevWeekRef = useRef(prevWeek); prevWeekRef.current = prevWeek;
-  const nextWeekRef = useRef(nextWeek); nextWeekRef.current = nextWeek;
+  // Gesture-only day/week changers (no Reanimated animation — gesture handles visuals)
+  const gestureNextDay = useCallback(() => {
+    setSelectedDate(toApiDate(addDays(parseISO(selectedDateRef.current), 1)));
+  }, []);
+  const gesturePrevDay = useCallback(() => {
+    setSelectedDate(toApiDate(subDays(parseISO(selectedDateRef.current), 1)));
+  }, []);
+  const gestureNextWeek = useCallback(() => { setWeekStart((w) => addWeeks(w, 1)); }, []);
+  const gesturePrevWeek = useCallback(() => { setWeekStart((w) => subWeeks(w, 1)); }, []);
 
+  // Refs so PanResponder closures always call the latest
+  const gestureNextDayRef = useRef(gestureNextDay); gestureNextDayRef.current = gestureNextDay;
+  const gesturePrevDayRef = useRef(gesturePrevDay); gesturePrevDayRef.current = gesturePrevDay;
+  const gestureNextWeekRef = useRef(gestureNextWeek); gestureNextWeekRef.current = gestureNextWeek;
+  const gesturePrevWeekRef = useRef(gesturePrevWeek); gesturePrevWeekRef.current = gesturePrevWeek;
+
+  // ── Smooth gesture completion helper ─────────────────────────────────────
+  // Slides content off, changes state, slides new content in from opposite side.
+  const completeSwipe = useCallback((
+    goNext: boolean,
+    anim: Animated.Value,
+    onNext: () => void,
+    onPrev: () => void,
+  ) => {
+    const outX = goNext ? -SCREEN_WIDTH : SCREEN_WIDTH;
+    const inX  = goNext ?  SCREEN_WIDTH * 0.25 : -SCREEN_WIDTH * 0.25;
+    Animated.timing(anim, { toValue: outX, duration: 120, useNativeDriver: false }).start(() => {
+      if (goNext) onNext(); else onPrev();
+      anim.setValue(inX);
+      Animated.spring(anim, { toValue: 0, useNativeDriver: false, stiffness: 260, damping: 28 }).start();
+    });
+  }, []);
+
+  const bounceBack = useCallback((anim: Animated.Value) => {
+    Animated.spring(anim, { toValue: 0, useNativeDriver: false, stiffness: 300, damping: 30 }).start();
+  }, []);
+
+  // ── PanResponders ─────────────────────────────────────────────────────────
+  // pageX > 60: leaves 60px safe zone for iOS edge-back gesture (was 45).
+  // dx ratio 1.2: less strict than 1.5 — easier to trigger, smoother feel.
+  // Velocity > 0.3 OR distance > 50 triggers the day change.
   const daySwipe = useRef(
     PanResponder.create({
-      // Require clearly horizontal gesture; pageX > 45 avoids iOS edge-back conflict
       onMoveShouldSetPanResponder: (evt, gs) =>
-        evt.nativeEvent.pageX > 45 &&
-        Math.abs(gs.dx) > 15 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+        evt.nativeEvent.pageX > 60 &&
+        Math.abs(gs.dx) > 10 &&
+        Math.abs(gs.dx) > Math.abs(gs.dy) * 1.2,
+      onPanResponderMove: (_, gs) => { dayDragX.setValue(gs.dx); },
       onPanResponderRelease: (_, gs) => {
-        if (gs.dx < -50) nextDayRef.current();
-        else if (gs.dx > 60) prevDayRef.current();
+        if (Math.abs(gs.dx) > 50 || Math.abs(gs.vx) > 0.3) {
+          completeSwipe(
+            gs.dx < 0, dayDragX,
+            gestureNextDayRef.current, gesturePrevDayRef.current,
+          );
+        } else {
+          bounceBack(dayDragX);
+        }
       },
+      onPanResponderTerminate: () => { bounceBack(dayDragX); },
     }),
   ).current;
 
   const weekSwipe = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gs) =>
-        evt.nativeEvent.pageX > 45 &&
-        Math.abs(gs.dx) > 15 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+        evt.nativeEvent.pageX > 60 &&
+        Math.abs(gs.dx) > 10 &&
+        Math.abs(gs.dx) > Math.abs(gs.dy) * 1.2,
+      onPanResponderMove: (_, gs) => { weekDragX.setValue(gs.dx); },
       onPanResponderRelease: (_, gs) => {
-        if (gs.dx < -50) nextWeekRef.current();
-        else if (gs.dx > 60) prevWeekRef.current();
+        if (Math.abs(gs.dx) > 50 || Math.abs(gs.vx) > 0.3) {
+          completeSwipe(
+            gs.dx < 0, weekDragX,
+            gestureNextWeekRef.current, gesturePrevWeekRef.current,
+          );
+        } else {
+          bounceBack(weekDragX);
+        }
       },
+      onPanResponderTerminate: () => { bounceBack(weekDragX); },
     }),
   ).current;
 
@@ -297,7 +358,6 @@ export default function ShulDetailScreen() {
 
           {/* ── Daily tab ── */}
           <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
-            {/* Day navigator — arrows trigger slide animation */}
             <View style={[styles.dayNav, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
               <TouchableOpacity onPress={prevDay} style={styles.navBtn} hitSlop={8}>
                 <Text style={[styles.navArrow, { color: colors.tint }]}>‹</Text>
@@ -315,50 +375,58 @@ export default function ShulDetailScreen() {
               </TouchableOpacity>
             </View>
 
-            <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]} {...daySwipe.panHandlers}>
-              {dailyLoading ? (
-                <View style={styles.center}>
-                  <ActivityIndicator color={orgColor} size="large" />
-                </View>
-              ) : dailyError ? (
-                <ErrorState message="Could not load schedule." onRetry={refetchDaily} />
-              ) : dailySorted.length === 0 ? (
-                <View style={styles.center}>
-                  <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                    No minyanim scheduled{isToday ? ' today' : ' this day'}.
-                  </Text>
-                  {isToday && (
-                    <TouchableOpacity onPress={() => switchTab(1)} style={{ marginTop: 12 }}>
-                      <Text style={[styles.switchHint, { color: colors.tint }]}>View this week →</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              ) : (
-                <ScrollView
-                  contentContainerStyle={styles.list}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={dailyFetching && !dailyLoading}
-                      onRefresh={refetchDaily}
-                      tintColor={orgColor}
-                    />
-                  }>
-                  {dailySorted.map((item) => (
-                    <MinyanCard
-                      key={item.id}
-                      event={item}
-                      showOrg={false}
-                      isHighlighted={item.id === selectedEventId}
-                    />
-                  ))}
-                </ScrollView>
-              )}
-            </Reanimated.View>
+            {/*
+              Outer Animated.View: real-time drag tracking (follows finger).
+              Inner Reanimated.View: arrow-button slide animation.
+              They use different animation systems so they never conflict.
+            */}
+            <Animated.View
+              style={{ flex: 1, transform: [{ translateX: dayDragX }] }}
+              {...daySwipe.panHandlers}>
+              <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]}>
+                {dailyLoading ? (
+                  <View style={styles.center}>
+                    <ActivityIndicator color={orgColor} size="large" />
+                  </View>
+                ) : dailyError ? (
+                  <ErrorState message="Could not load schedule." onRetry={refetchDaily} />
+                ) : dailySorted.length === 0 ? (
+                  <View style={styles.center}>
+                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                      No minyanim scheduled{isToday ? ' today' : ' this day'}.
+                    </Text>
+                    {isToday && (
+                      <TouchableOpacity onPress={() => switchTab(1)} style={{ marginTop: 12 }}>
+                        <Text style={[styles.switchHint, { color: colors.tint }]}>View this week →</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ) : (
+                  <ScrollView
+                    contentContainerStyle={styles.list}
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={dailyFetching && !dailyLoading}
+                        onRefresh={refetchDaily}
+                        tintColor={orgColor}
+                      />
+                    }>
+                    {dailySorted.map((item) => (
+                      <MinyanCard
+                        key={item.id}
+                        event={item}
+                        showOrg={false}
+                        isHighlighted={item.id === selectedEventId}
+                      />
+                    ))}
+                  </ScrollView>
+                )}
+              </Reanimated.View>
+            </Animated.View>
           </View>
 
           {/* ── Weekly tab ── */}
           <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
-            {/* Week navigator */}
             <View style={[styles.dayNav, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
               <TouchableOpacity onPress={prevWeek} style={styles.navBtn} hitSlop={8}>
                 <Text style={[styles.navArrow, { color: colors.tint }]}>‹</Text>
@@ -376,52 +444,56 @@ export default function ShulDetailScreen() {
               </TouchableOpacity>
             </View>
 
-            <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]} {...weekSwipe.panHandlers}>
-              {weeklyLoading ? (
-                <View style={styles.center}>
-                  <ActivityIndicator color={orgColor} size="large" />
-                </View>
-              ) : weeklyError ? (
-                <ErrorState message="Could not load weekly schedule." onRetry={refetchWeekly} />
-              ) : weeklySections.length === 0 ? (
-                <View style={styles.center}>
-                  <Text style={styles.emptyIcon}>📅</Text>
-                  <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                    No minyanim this week.
-                  </Text>
-                </View>
-              ) : (
-              <SectionList
-                sections={weeklySections}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <MinyanCard
-                    event={item}
-                    showOrg={false}
-                    isHighlighted={item.id === selectedEventId}
-                  />
-                )}
-                renderSectionHeader={({ section }) => (
-                  <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-                    <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
-                    <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-                      {section.title}
-                    </Text>
-                    <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+            <Animated.View
+              style={{ flex: 1, transform: [{ translateX: weekDragX }] }}
+              {...weekSwipe.panHandlers}>
+              <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]}>
+                {weeklyLoading ? (
+                  <View style={styles.center}>
+                    <ActivityIndicator color={orgColor} size="large" />
                   </View>
-                )}
-                contentContainerStyle={styles.list}
-                stickySectionHeadersEnabled={false}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={weeklyFetching && !weeklyLoading}
-                    onRefresh={refetchWeekly}
-                    tintColor={orgColor}
-                  />
-                }
-              />
-            )}
-            </Reanimated.View>
+                ) : weeklyError ? (
+                  <ErrorState message="Could not load weekly schedule." onRetry={refetchWeekly} />
+                ) : weeklySections.length === 0 ? (
+                  <View style={styles.center}>
+                    <Text style={styles.emptyIcon}>📅</Text>
+                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                      No minyanim this week.
+                    </Text>
+                  </View>
+                ) : (
+                <SectionList
+                  sections={weeklySections}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
+                    <MinyanCard
+                      event={item}
+                      showOrg={false}
+                      isHighlighted={item.id === selectedEventId}
+                    />
+                  )}
+                  renderSectionHeader={({ section }) => (
+                    <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
+                      <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+                      <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+                        {section.title}
+                      </Text>
+                      <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+                    </View>
+                  )}
+                  contentContainerStyle={styles.list}
+                  stickySectionHeadersEnabled={false}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={weeklyFetching && !weeklyLoading}
+                      onRefresh={refetchWeekly}
+                      tintColor={orgColor}
+                    />
+                  }
+                />
+              )}
+              </Reanimated.View>
+            </Animated.View>
           </View>
         </ScrollView>
       </SafeAreaView>
