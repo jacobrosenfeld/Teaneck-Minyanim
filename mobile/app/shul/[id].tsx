@@ -20,8 +20,9 @@ import Reanimated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { BlurView } from 'expo-blur';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams, Stack, router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { SymbolView } from 'expo-symbols';
 import { addDays, subDays, addWeeks, subWeeks, format, parseISO, startOfWeek, endOfWeek } from 'date-fns';
@@ -35,6 +36,15 @@ import { toApiDate } from '@/api/client';
 import type { ScheduleEvent } from '@/api/types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const TAB_BAR_HEIGHT = 49;
+
+const BOTTOM_TABS = [
+  { key: 'minyanim', label: 'Minyanim', icon: 'calendar',        iconFocused: 'calendar',           path: '/(tabs)/'      },
+  { key: 'shuls',    label: 'Shuls',    icon: 'building.2',       iconFocused: 'building.2.fill',    path: '/(tabs)/shuls' },
+  { key: 'map',      label: 'Map',      icon: 'map',              iconFocused: 'map.fill',            path: '/(tabs)/map'   },
+  { key: 'zmanim',   label: 'Zmanim',   icon: 'clock',            iconFocused: 'clock.fill',         path: '/(tabs)/zmanim'},
+] as const;
 
 const TYPE_ORDER = ['SHACHARIS', 'MINCHA', 'MINCHA_MAARIV', 'MAARIV', 'SELICHOS', 'MEGILA_READING'];
 function sortKey(t: string) { return TYPE_ORDER.indexOf(t) === -1 ? 99 : TYPE_ORDER.indexOf(t); }
@@ -76,8 +86,70 @@ function openDirections(address: string) {
   Linking.openURL(url!);
 }
 
+// ── Custom bottom tab bar ──────────────────────────────────────────────────────
+
+function CustomTabBar({
+  activeTab,
+  colors,
+  scheme,
+}: {
+  activeTab: string | undefined;
+  colors: typeof Colors.light;
+  scheme: 'light' | 'dark';
+}) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={[styles.customTabBarWrap, { height: TAB_BAR_HEIGHT + insets.bottom }]}>
+      {Platform.OS === 'ios' ? (
+        <BlurView
+          intensity={90}
+          tint={scheme === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterial'}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : (
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.card }]} />
+      )}
+      <View
+        style={[
+          styles.customTabBarBorder,
+          {
+            borderTopColor:
+              scheme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+          },
+        ]}
+      />
+      <View style={[styles.customTabBarRow, { paddingBottom: 0, height: TAB_BAR_HEIGHT }]}>
+        {BOTTOM_TABS.map((tab) => {
+          const isActive = tab.key === activeTab;
+          const iconColor = isActive ? colors.tint : colors.tabIconDefault;
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              style={styles.customTabItem}
+              onPress={() => router.navigate(tab.path as never)}>
+              <SymbolView
+                name={isActive ? tab.iconFocused : tab.icon}
+                tintColor={iconColor}
+                size={22}
+              />
+              <Text style={[styles.customTabLabel, { color: iconColor }]}>{tab.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+// ── Main screen ───────────────────────────────────────────────────────────────
+
 export default function ShulDetailScreen() {
-  const { id, selectedEventId } = useLocalSearchParams<{ id: string; selectedEventId?: string }>();
+  const { id, selectedEventId, sourceTab } = useLocalSearchParams<{
+    id: string;
+    selectedEventId?: string;
+    sourceTab?: string;
+  }>();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
@@ -110,7 +182,6 @@ export default function ShulDetailScreen() {
   }, [contentOpacity, contentTranslateX]);
 
   // ── Animated.Value: used for real-time gesture tracking ───────────────────
-  // Separate from Reanimated so they don't conflict.
   const dayDragX = useRef(new Animated.Value(0)).current;
   const weekDragX = useRef(new Animated.Value(0)).current;
 
@@ -157,7 +228,6 @@ export default function ShulDetailScreen() {
   const gesturePrevWeekRef = useRef(gesturePrevWeek); gesturePrevWeekRef.current = gesturePrevWeek;
 
   // ── Smooth gesture completion helper ─────────────────────────────────────
-  // Slides content off, changes state, slides new content in from opposite side.
   const completeSwipe = useCallback((
     goNext: boolean,
     anim: Animated.Value,
@@ -178,9 +248,6 @@ export default function ShulDetailScreen() {
   }, []);
 
   // ── PanResponders ─────────────────────────────────────────────────────────
-  // pageX > 60: leaves 60px safe zone for iOS edge-back gesture (was 45).
-  // dx ratio 1.2: less strict than 1.5 — easier to trigger, smoother feel.
-  // Velocity > 0.3 OR distance > 50 triggers the day change.
   const daySwipe = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gs) =>
@@ -223,7 +290,9 @@ export default function ShulDetailScreen() {
     }),
   ).current;
 
+  // ── Data fetching ─────────────────────────────────────────────────────────
   const { data: org } = useOrganization(id ?? '');
+
   const {
     data: dailyEvents,
     isLoading: dailyLoading,
@@ -243,6 +312,13 @@ export default function ShulDetailScreen() {
     end: toApiDate(weekEnd),
   });
 
+  // ── Prefetch adjacent days to eliminate swipe stutter ────────────────────
+  const prevDate = toApiDate(subDays(parseISO(selectedDate), 1));
+  const nextDate = toApiDate(addDays(parseISO(selectedDate), 1));
+  useOrgSchedule(id ?? '', { start: prevDate, end: prevDate });
+  useOrgSchedule(id ?? '', { start: nextDate, end: nextDate });
+
+  // ── Derived data ──────────────────────────────────────────────────────────
   const weeklySections = buildSections(weeklyEvents ?? []);
   const orgColor = org?.color ?? colors.tint;
   const dailySorted = [...(dailyEvents ?? [])].sort((a, b) => {
@@ -274,56 +350,74 @@ export default function ShulDetailScreen() {
           headerStyle: { backgroundColor: colors.card },
           headerTintColor: orgColor,
           headerShadowVisible: false,
+          // Disable iOS swipe-back — horizontal swipe is used for day navigation
+          gestureEnabled: false,
         }}
       />
-      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['bottom']}>
 
-        {/* ── Org header ── */}
+      <View style={[styles.root, { backgroundColor: colors.background }]}>
+
+        {/* ── Org header card ── */}
         <View style={[styles.orgCard, { backgroundColor: colors.card, borderBottomColor: colors.border, borderLeftColor: orgColor }]}>
-          <View style={styles.orgCardBody}>
-            <Text style={[styles.siteNameSmall, { color: colors.tint }]}>Teaneck Minyanim</Text>
-            <Text style={[styles.orgName, { color: colors.text }]}>{org?.name ?? ''}</Text>
-            {org?.nusachDisplay ? (
-              <View style={styles.orgMeta}>
-                <View style={[styles.chip, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                  <Text style={[styles.chipText, { color: colors.textSecondary }]}>{org.nusachDisplay}</Text>
-                </View>
-              </View>
-            ) : null}
-            {org?.address ? (
-              <View style={styles.addressRow}>
-                <Text style={[styles.orgAddress, { color: colors.textSecondary }]} numberOfLines={1}>
-                  📍 {org.address}
-                </Text>
-                <TouchableOpacity
-                  style={[styles.dirBtn, { backgroundColor: colors.tint }]}
-                  onPress={() => openDirections(org.address!)}>
-                  <Text style={styles.dirBtnText}>Directions</Text>
-                </TouchableOpacity>
+
+          {/* Top row: name + action buttons */}
+          <View style={styles.orgCardTop}>
+            <View style={styles.orgCardInfo}>
+              <Text style={[styles.siteNameSmall, { color: colors.tint }]}>Teaneck Minyanim</Text>
+              <Text style={[styles.orgName, { color: colors.text }]}>{org?.name ?? ''}</Text>
+            </View>
+
+            {(org?.websiteUrl || org?.whatsapp) ? (
+              <View style={styles.orgActions}>
+                {org?.websiteUrl ? (
+                  <TouchableOpacity
+                    style={[styles.actionBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
+                    onPress={openWebsite}>
+                    <Text style={[styles.actionLabel, { color: colors.textSecondary }]}>Website</Text>
+                  </TouchableOpacity>
+                ) : null}
+                {org?.whatsapp ? (
+                  <TouchableOpacity
+                    style={[styles.actionBtn, { backgroundColor: '#E8FAF0', borderColor: '#25D366' }]}
+                    onPress={openWhatsApp}>
+                    <SymbolView name="message.fill" tintColor="#1A9E4A" size={16} />
+                    <Text style={[styles.actionLabel, { color: '#1A9E4A' }]}>WhatsApp</Text>
+                  </TouchableOpacity>
+                ) : null}
               </View>
             ) : null}
           </View>
 
-          <View style={styles.orgActions}>
-            {org?.websiteUrl ? (
+          {/* Nusach chip */}
+          {org?.nusachDisplay ? (
+            <View style={styles.orgMeta}>
+              <View style={[styles.chip, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                <Text style={[styles.chipText, { color: colors.textSecondary }]}>{org.nusachDisplay}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {/* Full-width address row: tapping address opens directions */}
+          {org?.address ? (
+            <View style={styles.addressRow}>
               <TouchableOpacity
-                style={[styles.actionBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
-                onPress={openWebsite}>
-                <Text style={[styles.actionLabel, { color: colors.textSecondary }]}>Website</Text>
+                style={styles.addressTextWrap}
+                onPress={() => openDirections(org.address!)}>
+                <SymbolView name="location.fill" tintColor={colors.textSecondary} size={12} />
+                <Text style={[styles.orgAddress, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {org.address}
+                </Text>
               </TouchableOpacity>
-            ) : null}
-            {org?.whatsapp ? (
               <TouchableOpacity
-                style={[styles.actionBtn, { backgroundColor: '#E8FAF0', borderColor: '#25D366' }]}
-                onPress={openWhatsApp}>
-                <SymbolView name="message.fill" tintColor="#1A9E4A" size={20} />
-                <Text style={[styles.actionLabel, { color: '#1A9E4A' }]}>WhatsApp</Text>
+                style={[styles.dirBtn, { backgroundColor: colors.tint }]}
+                onPress={() => openDirections(org.address!)}>
+                <Text style={styles.dirBtnText}>Directions</Text>
               </TouchableOpacity>
-            ) : null}
-          </View>
+            </View>
+          ) : null}
         </View>
 
-        {/* ── Tab bar ── */}
+        {/* ── Daily / Weekly tab toggle ── */}
         <View style={[styles.tabBar, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <View style={[styles.tabTrack, { backgroundColor: colors.background }]}>
             {(['Daily', 'Weekly'] as const).map((label, i) => (
@@ -346,7 +440,7 @@ export default function ShulDetailScreen() {
           </View>
         </View>
 
-        {/* ── Sliding content ── */}
+        {/* ── Sliding tab content ── */}
         <ScrollView
           ref={tabScrollRef}
           horizontal
@@ -377,7 +471,6 @@ export default function ShulDetailScreen() {
             {/*
               Outer Animated.View: real-time drag tracking (follows finger).
               Inner Reanimated.View: arrow-button slide animation.
-              They use different animation systems so they never conflict.
             */}
             <Animated.View
               style={{ flex: 1, transform: [{ translateX: dayDragX }] }}
@@ -461,61 +554,68 @@ export default function ShulDetailScreen() {
                     </Text>
                   </View>
                 ) : (
-                <SectionList
-                  sections={weeklySections}
-                  keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => (
-                    <MinyanCard
-                      event={item}
-                      showOrg={false}
-                      isHighlighted={item.id === selectedEventId}
-                    />
-                  )}
-                  renderSectionHeader={({ section }) => (
-                    <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-                      <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
-                      <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-                        {section.title}
-                      </Text>
-                      <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
-                    </View>
-                  )}
-                  contentContainerStyle={styles.list}
-                  stickySectionHeadersEnabled={false}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={weeklyFetching && !weeklyLoading}
-                      onRefresh={refetchWeekly}
-                      tintColor={orgColor}
-                    />
-                  }
-                />
-              )}
+                  <SectionList
+                    sections={weeklySections}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (
+                      <MinyanCard
+                        event={item}
+                        showOrg={false}
+                        isHighlighted={item.id === selectedEventId}
+                      />
+                    )}
+                    renderSectionHeader={({ section }) => (
+                      <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
+                        <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+                        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+                          {section.title}
+                        </Text>
+                        <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+                      </View>
+                    )}
+                    contentContainerStyle={styles.list}
+                    stickySectionHeadersEnabled={false}
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={weeklyFetching && !weeklyLoading}
+                        onRefresh={refetchWeekly}
+                        tintColor={orgColor}
+                      />
+                    }
+                  />
+                )}
               </Reanimated.View>
             </Animated.View>
           </View>
         </ScrollView>
-      </SafeAreaView>
+
+        {/* ── Custom bottom tab bar ── */}
+        <CustomTabBar activeTab={sourceTab} colors={colors} scheme={scheme} />
+      </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
+  root: { flex: 1 },
 
+  // ── Org card (column layout so address row is full-width) ──────────────────
   orgCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
     borderBottomWidth: 1,
     borderLeftWidth: 4,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingTop: 12,
+    paddingBottom: 12,
     ...Platform.select({
       ios: { shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3 },
       android: { elevation: 1 },
     }),
   },
-  orgCardBody: { flex: 1 },
+  orgCardTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  orgCardInfo: { flex: 1, marginRight: 12 },
   siteNameSmall: {
     fontSize: 9,
     fontWeight: '800',
@@ -523,26 +623,44 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 2,
   },
-  orgName: { fontSize: 20, fontWeight: '800', letterSpacing: -0.3, marginBottom: 6 },
-  orgMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 },
+  orgName: { fontSize: 20, fontWeight: '800', letterSpacing: -0.3 },
+  orgMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 },
   chip: { borderRadius: 6, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3 },
   chipText: { fontSize: 11, fontWeight: '600' },
-  addressRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 },
-  orgAddress: { fontSize: 13, flex: 1, fontWeight: '500' },
-  dirBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+
+  // Address row — spans full card width
+  addressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 8,
+  },
+  addressTextWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  orgAddress: { fontSize: 13, fontWeight: '500', flex: 1 },
+  dirBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, flexShrink: 0 },
   dirBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
 
-  orgActions: { gap: 8, marginLeft: 12, alignItems: 'flex-end' },
+  // Action buttons (website, whatsapp) — stacked column on right of top row
+  orgActions: { gap: 6, alignItems: 'flex-end', flexShrink: 0 },
   actionBtn: {
     borderRadius: 10,
     borderWidth: 1,
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 5,
     alignItems: 'center',
     minWidth: 72,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
   },
-  actionLabel: { fontSize: 11, fontWeight: '600', marginTop: 2 },
+  actionLabel: { fontSize: 11, fontWeight: '600' },
 
+  // ── Daily/Weekly tab toggle ────────────────────────────────────────────────
   tabBar: {
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -565,6 +683,7 @@ const styles = StyleSheet.create({
   },
   tabText: { fontSize: 14 },
 
+  // ── Day navigator ─────────────────────────────────────────────────────────
   dayNav: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -577,6 +696,7 @@ const styles = StyleSheet.create({
   navDate: { fontSize: 15, fontWeight: '700' },
   todayHint: { fontSize: 11, marginTop: 2, fontWeight: '500' },
 
+  // ── List ──────────────────────────────────────────────────────────────────
   list: { paddingTop: 8, paddingBottom: 36 },
   sectionHeader: {
     flexDirection: 'row',
@@ -593,4 +713,33 @@ const styles = StyleSheet.create({
   emptyIcon: { fontSize: 36, marginBottom: 12 },
   emptyText: { fontSize: 15, textAlign: 'center' },
   switchHint: { fontSize: 14, fontWeight: '600' },
+
+  // ── Custom bottom tab bar ─────────────────────────────────────────────────
+  customTabBarWrap: {
+    overflow: 'hidden',
+    // height is set dynamically via inline style (TAB_BAR_HEIGHT + insets.bottom)
+  },
+  customTabBarBorder: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  customTabBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  customTabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+    paddingVertical: 6,
+  },
+  customTabLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
 });

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Animated,
+  Dimensions,
   LayoutChangeEvent,
   Modal,
   PanResponder,
@@ -14,6 +15,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 import Reanimated, {
   FadeInDown,
   useAnimatedStyle,
@@ -148,20 +151,48 @@ export default function MinyanimScreen() {
     }
   }, [animateTransition, today, selectedDate]);
 
-  // Use refs so PanResponder always calls the latest callbacks
-  const prevDayRef = useRef(prevDay);
-  prevDayRef.current = prevDay;
-  const nextDayRef = useRef(nextDay);
-  nextDayRef.current = nextDay;
+  // ── Smooth gesture: Animated.Value tracks finger in real time ────────────
+  const dragX = useRef(new Animated.Value(0)).current;
+
+  // Gesture-only day changers (no Reanimated slide — the drag animation handles visuals)
+  const gesturePrevDay = useCallback(() => {
+    cardEnterAnimation.current = false;
+    hasAutoScrolled.current = false;
+    nowYRef.current = -1;
+    setSelectedDate(toApiDate(subDays(parsedDateRef.current, 1)));
+  }, []);
+  const gestureNextDay = useCallback(() => {
+    cardEnterAnimation.current = false;
+    hasAutoScrolled.current = false;
+    nowYRef.current = -1;
+    setSelectedDate(toApiDate(addDays(parsedDateRef.current, 1)));
+  }, []);
+  const gesturePrevDayRef = useRef(gesturePrevDay); gesturePrevDayRef.current = gesturePrevDay;
+  const gestureNextDayRef = useRef(gestureNextDay); gestureNextDayRef.current = gestureNextDay;
 
   const swipe = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gs) =>
         evt.nativeEvent.pageX > 45 &&
-        Math.abs(gs.dx) > 15 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+        Math.abs(gs.dx) > 10 &&
+        Math.abs(gs.dx) > Math.abs(gs.dy) * 1.2,
+      onPanResponderMove: (_, gs) => { dragX.setValue(gs.dx); },
       onPanResponderRelease: (_, gs) => {
-        if (gs.dx < -50) nextDayRef.current();
-        else if (gs.dx > 50) prevDayRef.current();
+        const goNext = gs.dx < 0;
+        if (Math.abs(gs.dx) > 50 || Math.abs(gs.vx) > 0.3) {
+          const outX = goNext ? -SCREEN_WIDTH : SCREEN_WIDTH;
+          const inX  = goNext ?  SCREEN_WIDTH * 0.25 : -SCREEN_WIDTH * 0.25;
+          Animated.timing(dragX, { toValue: outX, duration: 120, useNativeDriver: false }).start(() => {
+            if (goNext) gestureNextDayRef.current(); else gesturePrevDayRef.current();
+            dragX.setValue(inX);
+            Animated.spring(dragX, { toValue: 0, useNativeDriver: false, stiffness: 260, damping: 28 }).start();
+          });
+        } else {
+          Animated.spring(dragX, { toValue: 0, useNativeDriver: false, stiffness: 300, damping: 30 }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(dragX, { toValue: 0, useNativeDriver: false, stiffness: 300, damping: 30 }).start();
       },
     }),
   ).current;
@@ -341,7 +372,9 @@ export default function MinyanimScreen() {
       </View>
 
       {/* ── Content (swipeable) ── */}
-      <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]} {...swipe.panHandlers}>
+      {/* Outer Animated.View: real-time finger tracking. Inner Reanimated.View: arrow-button slide. */}
+      <Animated.View style={{ flex: 1, transform: [{ translateX: dragX }] }} {...swipe.panHandlers}>
+      <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]}>
         {isLoading && !hasEvents ? (
           <View style={styles.center}>
             <ActivityIndicator color={colors.tint} size="large" />
@@ -422,6 +455,7 @@ export default function MinyanimScreen() {
                         params: {
                           id: event.organization?.slug ?? event.organization?.id ?? '',
                           selectedEventId: event.id,
+                          sourceTab: 'minyanim',
                         },
                       } as never)
                     }
@@ -432,6 +466,7 @@ export default function MinyanimScreen() {
           </ScrollView>
         )}
       </Reanimated.View>
+      </Animated.View>
 
       {/* ── Jump to Now FAB (today only) ── */}
       <Animated.View
