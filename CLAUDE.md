@@ -187,6 +187,20 @@ mvn test
 - Form validation is minimal; relies on browser validation
 - Schedule times stored as strings ("HH:MM" or "NETZ+5") - parsed at runtime
 
+## Privacy Policy
+
+The privacy policy lives at `src/main/resources/templates/privacy.html` and is served at `https://teaneckminyanim.com/privacy`. It is linked from the iOS App Store listing and must stay accurate.
+
+**Review and update the privacy policy whenever a change involves any of the following:**
+- New data collected from users (location, notifications, analytics, personal info, device identifiers)
+- New third-party services integrated (analytics, maps, crash reporting, payment, authentication, etc.)
+- Changes to how existing data is used, stored, or shared
+- New API endpoints that accept or return user-identifiable data
+- Push notification changes (new triggers, new data passed in payloads)
+- Any backend feature that logs, persists, or transmits user behaviour
+
+**What to update:** Edit the relevant section(s) in `privacy.html` (plain language, matching the existing style) and update the "last updated" date at the bottom of the page. No version bump or CHANGELOG entry is needed for privacy policy text-only edits.
+
 ## Version Management
 - **ALWAYS increment the version number for changes that necessitate a PR**
   - Use semantic versioning: patch (`x.x.1`) for UI updates/fixes, minor (`x.1.0`) for new features, major (`1.x.0`) for breaking changes
