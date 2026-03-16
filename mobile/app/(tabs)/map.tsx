@@ -107,7 +107,7 @@ export default function MapScreen() {
             <Callout
               tooltip
               onPress={() =>
-                router.push({ pathname: '/shuls/[id]', params: { id: org.slug ?? org.id } } as never)
+                router.push({ pathname: '/shul/[id]', params: { id: org.slug ?? org.id } } as never)
               }>
               <View style={[styles.callout, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={[styles.calloutBanner, { backgroundColor: org.color ?? colors.tint }]} />

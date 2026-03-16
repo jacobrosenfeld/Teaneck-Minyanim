@@ -418,7 +418,7 @@ export default function MinyanimScreen() {
                     isNext={false}
                     onPress={() =>
                       router.push({
-                        pathname: '/shuls/[id]',
+                        pathname: '/shul/[id]',
                         params: {
                           id: event.organization?.slug ?? event.organization?.id ?? '',
                           selectedEventId: event.id,

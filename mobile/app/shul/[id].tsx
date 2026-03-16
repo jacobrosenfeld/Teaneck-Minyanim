@@ -470,7 +470,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minWidth: 72,
   },
-  actionIcon: { fontSize: 18 },
   actionLabel: { fontSize: 11, fontWeight: '600', marginTop: 2 },
 
   tabBar: {
