@@ -14,6 +14,13 @@
             <p class="page-description" th:text="|Manage the data and accounts for all organizations on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
         </div>
         <div class="page-actions">
+            <form th:action="@{/admin/geocode-all-organizations}" method="post" style="display:inline"
+                  onsubmit="return confirm('This will geocode all organizations missing lat/lng coordinates using Mapbox. Continue?')">
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Geocode All</span>
+                </button>
+            </form>
             <a href="/admin/new-organization" class="btn-modern btn-primary">
                 <i class="fas fa-plus"></i>
                 <span>New Organization</span>

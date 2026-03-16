@@ -52,6 +52,12 @@ public class Organization {
     @Column(name = "ENABLED", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean enabled = true;
 
+    @Column(name = "LATITUDE")
+    private Double latitude;
+
+    @Column(name = "LONGITUDE")
+    private Double longitude;
+
     @Transient
     private URI websiteURI;
 

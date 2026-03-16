@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.2] - 2026-03-15
+
+### Added
+- **Organization geocoding (#143)**: Addresses are now automatically geocoded to lat/lng coordinates via the Mapbox Geocoding API when an organization is created or updated. Coordinates are proximity-biased toward Teaneck, NJ for accurate local resolution. The Mapbox token is read from the existing `mapbox.access.token` application setting — no new configuration required.
+  - `latitude` and `longitude` columns added to the `organization` table (Hibernate auto-migration)
+  - `GeocodingService` handles Mapbox API calls with 5s connect / 10s read timeouts and graceful fallback on failure
+  - On update: coordinates are only re-fetched if the address changed or coordinates are missing; otherwise existing values are preserved
+  - **"Geocode All" button** on the super-admin Organizations page to backfill coordinates for existing shuls
+  - `latitude` and `longitude` exposed in the public API (`/api/v1/organizations`) for mobile map display
+
 ## [1.8.1] - 2026-03-15
 
 ### Fixed

@@ -54,6 +54,9 @@ public class AdminController {
     @Autowired
     private ApplicationSettingsService settingsService;
 
+    @Autowired
+    private GeocodingService geocodingService;
+
     @ModelAttribute("siteName")
     public String siteName() {
         return settingsService.getSiteName();
@@ -333,6 +336,13 @@ public class AdminController {
         // Ensure organization has a slug (generate from name if not provided)
         organizationService.ensureSlug(organization);
 
+        // Geocode the address and store lat/lng for map display
+        double[] coords = geocodingService.geocodeAddress(address);
+        if (coords != null) {
+            organization.setLatitude(coords[0]);
+            organization.setLongitude(coords[1]);
+        }
+
         if  (this.organizationService.save(organization)) {
 
             TNMUser user = TNMUser.builder()
@@ -611,6 +621,24 @@ public class AdminController {
         // Ensure organization has a slug (generate from name if not provided)
         organizationService.ensureSlug(organization);
 
+        // Geocode if address changed or coordinates are missing; preserve existing coords otherwise
+        Optional<Organization> existing = organizationService.findById(id);
+        if (existing.isPresent()) {
+            String existingAddress = existing.get().getAddress();
+            boolean addressChanged = address != null && !address.equals(existingAddress);
+            boolean missingCoords = existing.get().getLatitude() == null || existing.get().getLongitude() == null;
+            if (addressChanged || missingCoords) {
+                double[] coords = geocodingService.geocodeAddress(address);
+                if (coords != null) {
+                    organization.setLatitude(coords[0]);
+                    organization.setLongitude(coords[1]);
+                }
+            } else {
+                organization.setLatitude(existing.get().getLatitude());
+                organization.setLongitude(existing.get().getLongitude());
+            }
+        }
+
 //        check permissions
         if (isAdmin()) {
             if (this.organizationService.update(organization)) {
@@ -714,6 +742,45 @@ public class AdminController {
         }*/ else {
             throw new AccessDeniedException("You do not have permission to delete an organization.");
         }
+    }
+
+    /**
+     * Re-geocodes all organizations that are missing lat/lng, or all if force=true.
+     * Super admin only. Used to backfill coordinates after the geocoding feature was added.
+     */
+    @RequestMapping(value = "/admin/geocode-all-organizations", method = RequestMethod.POST)
+    public ModelAndView geocodeAllOrganizations(
+            @RequestParam(value = "force", required = false, defaultValue = "false") boolean force) {
+        if (!isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to perform this action.");
+        }
+
+        List<Organization> allOrgs = organizationService.getAll();
+        int updated = 0;
+        int skipped = 0;
+        int failed = 0;
+
+        for (Organization org : allOrgs) {
+            boolean missingCoords = org.getLatitude() == null || org.getLongitude() == null;
+            if (!force && !missingCoords) {
+                skipped++;
+                continue;
+            }
+            double[] coords = geocodingService.geocodeAddress(org.getAddress());
+            if (coords != null) {
+                org.setLatitude(coords[0]);
+                org.setLongitude(coords[1]);
+                organizationService.save(org);
+                updated++;
+            } else {
+                failed++;
+            }
+        }
+
+        log.info("Re-geocode all: updated={}, skipped={}, failed={}", updated, skipped, failed);
+        String msg = String.format("Geocoding complete: %d updated, %d already had coords (skipped), %d failed.",
+                updated, skipped, failed);
+        return organizations(msg, failed > 0 ? failed + " organization(s) could not be geocoded — check Mapbox token and addresses." : null);
     }
 
     @RequestMapping(value = "/admin/delete-account")

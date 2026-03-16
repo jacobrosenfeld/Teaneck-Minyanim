@@ -17,7 +17,9 @@ public record OrganizationDto(
         String nusachDisplay,
         String address,
         String websiteUrl,
-        String whatsapp
+        String whatsapp,
+        Double latitude,
+        Double longitude
 ) {
     public static OrganizationDto from(Organization org) {
         return new OrganizationDto(
@@ -29,7 +31,9 @@ public record OrganizationDto(
                 org.getNusach() != null ? org.getNusach().displayName() : null,
                 org.getAddress(),
                 org.getWebsiteURIStr(),
-                org.getWhatsapp()
+                org.getWhatsapp(),
+                org.getLatitude(),
+                org.getLongitude()
         );
     }
 }
