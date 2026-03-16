@@ -127,7 +127,18 @@ function CustomTabBar({
             <TouchableOpacity
               key={tab.key}
               style={styles.customTabItem}
-              onPress={() => router.replace(tab.path as never)}>
+              onPress={() => {
+                // Always go BACK first — this pops shul/[id] and returns to
+                // the existing (tabs) group already in the root stack.
+                // Then, if the target is a different tab than where we came
+                // from, navigate within (tabs) to switch the active tab.
+                // Both dispatches are processed synchronously so the final
+                // animated state is correct (no forward-navigation chain).
+                router.back();
+                if (tab.key !== activeTab) {
+                  router.navigate(tab.path as never);
+                }
+              }}>
               <SymbolView
                 name={isActive ? tab.iconFocused : tab.icon}
                 tintColor={iconColor}
