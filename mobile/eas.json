@@ -26,9 +26,9 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "",
-        "ascAppId": "",
-        "appleTeamId": ""
+        "appleId": "admin@josephjacobsadvertising.com",
+        "ascAppId": "6760630633",
+        "appleTeamId": "5Z2KL9NX3F"
       }
     }
   }
