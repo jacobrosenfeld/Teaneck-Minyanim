@@ -4,6 +4,7 @@ import {
   Animated,
   LayoutChangeEvent,
   Modal,
+  PanResponder,
   Platform,
   Pressable,
   RefreshControl,
@@ -13,21 +14,26 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Reanimated, { FadeInDown } from 'react-native-reanimated';
+import Reanimated, {
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { format } from 'date-fns';
+import { format, addDays, subDays, parseISO } from 'date-fns';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { registerScrollToNow, unregisterScrollToNow } from '@/utils/tabEvents';
 import MinyanCard from '@/components/MinyanCard';
 import ErrorState from '@/components/ErrorState';
-import { useTodaySchedule, useZmanim, useOrganizations } from '@/api/hooks';
+import { useSchedule, useZmanim, useOrganizations } from '@/api/hooks';
 import { toApiDate } from '@/api/client';
-import type { ScheduleEvent, Organization, ZmanimTimes } from '@/api/types';
-import { formatTime, getNextZman } from '@/utils/time';
-import { addDays } from 'date-fns';
+import type { ScheduleEvent, Organization } from '@/api/types';
+import { formatTime } from '@/utils/time';
+import { registerScrollToNow, unregisterScrollToNow } from '@/utils/tabEvents';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -49,20 +55,6 @@ const TYPE_FILTERS: { key: TypeFilter; label: string }[] = [
   { key: 'MAARIV', label: 'Maariv' },
 ];
 
-const ZMANIM_ORDERED: { label: string; key: keyof ZmanimTimes }[] = [
-  { label: 'Alos HaShachar', key: 'alotHashachar' },
-  { label: 'Misheyakir', key: 'misheyakir' },
-  { label: 'Netz', key: 'netz' },
-  { label: 'Sof Zman Krias Shema', key: 'sofZmanShmaGra' },
-  { label: 'Sof Zman Tefilla', key: 'sofZmanTfilaGra' },
-  { label: 'Chatzos', key: 'chatzos' },
-  { label: 'Mincha Gedola', key: 'minchaGedola' },
-  { label: 'Mincha Ketana', key: 'minchaKetana' },
-  { label: 'Plag HaMincha', key: 'plagHamincha' },
-  { label: 'Shekiya', key: 'shekiya' },
-  { label: 'Tzes HaKochavim', key: 'tzeis' },
-];
-
 function getNowTime(): string {
   const n = new Date();
   return `${n.getHours().toString().padStart(2, '0')}:${n.getMinutes().toString().padStart(2, '0')}`;
@@ -76,32 +68,98 @@ function matchesTypeFilter(eventType: string, filter: TypeFilter): boolean {
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
-export default function TodayScreen() {
+export default function MinyanimScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
   const insets = useSafeAreaInsets();
 
+  const today = toApiDate(new Date());
+
+  const [selectedDate, setSelectedDate] = useState(today);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
   const [orgFilter, setOrgFilter] = useState<string | null>(null);
   const [orgPickerVisible, setOrgPickerVisible] = useState(false);
   const [nowTime, setNowTime] = useState(getNowTime);
   const [scrollY, setScrollY] = useState(0);
 
-  // Use ScrollView + exact onLayout position — eliminates getItemLayout estimation errors
+  const parsedDate = parseISO(selectedDate);
+  const isToday = selectedDate === today;
+
+  // Use ScrollView + exact onLayout position for reliable scroll-to-now
   const scrollViewRef = useRef<ScrollView>(null);
-  const nowYRef = useRef(-1);       // exact Y of NOW divider, set by onLayout
+  const nowYRef = useRef(-1);
   const hasAutoScrolled = useRef(false);
   const jumpBtnOpacity = useRef(new Animated.Value(0)).current;
 
-  const { data: events, isLoading, isError, refetch, isFetching } = useTodaySchedule();
+  // Slide animation for day transitions — mirrors shul detail page
+  const contentOpacity = useSharedValue(1);
+  const contentTranslateX = useSharedValue(0);
+  const animatedContentStyle = useAnimatedStyle(() => ({
+    opacity: contentOpacity.value,
+    transform: [{ translateX: contentTranslateX.value }],
+  }));
+
+  const animateTransition = useCallback((direction: 1 | -1, apply: () => void) => {
+    'worklet';
+    const SLIDE = 24;
+    const OUT_MS = 130;
+    const IN_MS = 220;
+    contentTranslateX.value = withTiming(-direction * SLIDE, { duration: OUT_MS });
+    contentOpacity.value = withTiming(0, { duration: OUT_MS }, () => {
+      runOnJS(apply)();
+      contentTranslateX.value = direction * SLIDE;
+      contentOpacity.value = 0;
+      contentTranslateX.value = withTiming(0, { duration: IN_MS });
+      contentOpacity.value = withTiming(1, { duration: IN_MS });
+    });
+  }, [contentOpacity, contentTranslateX]);
+
+  // Use a ref to always call the latest parsedDate without recreating PanResponder
+  const parsedDateRef = useRef(parsedDate);
+  parsedDateRef.current = parsedDate;
+
+  const prevDay = useCallback(() =>
+    animateTransition(-1, () => {
+      hasAutoScrolled.current = false;
+      nowYRef.current = -1;
+      setSelectedDate(toApiDate(subDays(parsedDateRef.current, 1)));
+    }), [animateTransition]);
+
+  const nextDay = useCallback(() =>
+    animateTransition(1, () => {
+      hasAutoScrolled.current = false;
+      nowYRef.current = -1;
+      setSelectedDate(toApiDate(addDays(parsedDateRef.current, 1)));
+    }), [animateTransition]);
+
+  const goToday = useCallback(() =>
+    animateTransition(1, () => {
+      hasAutoScrolled.current = false;
+      nowYRef.current = -1;
+      setSelectedDate(today);
+    }), [animateTransition, today]);
+
+  // Use refs so PanResponder always calls the latest callbacks
+  const prevDayRef = useRef(prevDay);
+  prevDayRef.current = prevDay;
+  const nextDayRef = useRef(nextDay);
+  nextDayRef.current = nextDay;
+
+  const swipe = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gs) =>
+        evt.nativeEvent.pageX > 30 &&
+        Math.abs(gs.dx) > 15 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dx < -50) nextDayRef.current();
+        else if (gs.dx > 50) prevDayRef.current();
+      },
+    }),
+  ).current;
+
+  const { data: events, isLoading, isError, refetch, isFetching } = useSchedule({ date: selectedDate });
   const { data: zmanim } = useZmanim();
   const { data: orgs } = useOrganizations();
-
-  // After tzeis, the Jewish day advances — show tomorrow's Hebrew date
-  const isAfterTzeis = !!(zmanim?.times?.tzeis && nowTime >= zmanim.times.tzeis);
-  const tomorrowStr = toApiDate(addDays(new Date(), 1));
-  const { data: tomorrowZmanim } = useZmanim(isAfterTzeis ? tomorrowStr : undefined);
-  const hebrewDate = isAfterTzeis ? tomorrowZmanim?.hebrewDate : zmanim?.hebrewDate;
 
   // Update current time every minute
   useEffect(() => {
@@ -109,16 +167,11 @@ export default function TodayScreen() {
     return () => clearInterval(id);
   }, []);
 
-  // Next upcoming zman
-  const nextZman = useMemo(() => {
-    if (!zmanim?.times) return null;
-    const entries = ZMANIM_ORDERED.map((z) => ({
-      label: z.label,
-      key: z.key,
-      time: zmanim.times[z.key] ?? null,
-    }));
-    return getNextZman(entries);
-  }, [zmanim]);
+  // Hebrew date: advances at tzeis per Jewish law (#159)
+  const isAfterTzeis = !!(zmanim?.times?.tzeis && nowTime >= zmanim.times.tzeis);
+  const tomorrowStr = toApiDate(addDays(new Date(), 1));
+  const { data: tomorrowZmanim } = useZmanim(isAfterTzeis ? tomorrowStr : undefined);
+  const hebrewDate = isAfterTzeis ? tomorrowZmanim?.hebrewDate : zmanim?.hebrewDate;
 
   // Filter events
   const filtered = useMemo(() => {
@@ -130,10 +183,14 @@ export default function TodayScreen() {
     });
   }, [events, typeFilter, orgFilter]);
 
-  // Build list: events sorted by time, NOW divider at current time,
-  // "no more" message when all minyanim are in the past
+  // Build list — NOW divider only on today
   const listItems = useMemo((): ListItem[] => {
     const sorted = [...filtered].sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+    if (!isToday) {
+      return sorted.map((e) => ({ _type: 'event' as const, event: e, key: e.id }));
+    }
+
     const nowTimeStr = formatTime(nowTime);
     const insertAt = sorted.findIndex((e) => e.startTime >= nowTime);
     const allPast = insertAt === -1;
@@ -146,26 +203,22 @@ export default function TodayScreen() {
       }
       items.push({ _type: 'event', event: sorted[i], key: sorted[i].id });
     }
-    // If all events are in the past: NOW divider + "no more" message at end
     if (allPast && sorted.length > 0) {
       items.push({ _type: 'now', key: 'now-divider', timeStr: nowTimeStr });
       items.push({ _type: 'no_more', key: 'no-more-today' });
     }
-    // If no events at all, still add the NOW divider so it shows on empty days
     if (sorted.length === 0) {
       items.push({ _type: 'now', key: 'now-divider', timeStr: nowTimeStr });
     }
     return items;
-  }, [filtered, nowTime]);
+  }, [filtered, nowTime, isToday]);
 
-  // Called by onLayout on the NOW divider — gives us the exact pixel Y position.
-  // This is the reliable alternative to scrollToIndex with estimated heights.
+  // onLayout on the NOW divider — exact Y for scroll-to-now
   const onNowDividerLayout = useCallback((e: LayoutChangeEvent) => {
     const y = e.nativeEvent.layout.y;
     nowYRef.current = y;
     if (!hasAutoScrolled.current) {
       hasAutoScrolled.current = true;
-      // Small rAF to ensure the layout pass is fully committed before scrolling
       requestAnimationFrame(() => {
         scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 130), animated: false });
       });
@@ -178,14 +231,14 @@ export default function TodayScreen() {
     }
   }, []);
 
-  // Register scroll callback so the tab bar can trigger it on tab press
+  // Register scroll callback so tab press triggers it
   useEffect(() => {
     registerScrollToNow(scrollToNow);
     return () => unregisterScrollToNow();
   }, [scrollToNow]);
 
-  // Show Jump to Now when scrolled >300px away from the NOW divider
-  const showJump = !isLoading && nowYRef.current >= 0 &&
+  // Show FAB only on today, when scrolled >300px from the NOW divider
+  const showJump = isToday && !isLoading && nowYRef.current >= 0 &&
     listItems.filter((i) => i._type === 'event').length > 0 &&
     Math.abs(scrollY - nowYRef.current) > 300;
 
@@ -199,7 +252,6 @@ export default function TodayScreen() {
 
   const selectedOrg = orgs?.find((o) => o.id === orgFilter);
   const activeFilters = typeFilter !== 'ALL' || orgFilter !== null;
-  const today = format(new Date(), 'EEEE, MMMM d');
   const hasEvents = listItems.some((i) => i._type === 'event');
 
   return (
@@ -207,31 +259,35 @@ export default function TodayScreen() {
 
       {/* ── Header ── */}
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <View style={styles.headerMain}>
-          <View style={styles.headerLeft}>
-            <Text style={[styles.siteName, { color: colors.tint }]}>Teaneck Minyanim</Text>
-            <View style={styles.dateRow}>
-              <Text style={[styles.headerDate, { color: colors.text }]}>{today}</Text>
-              {hebrewDate ? (
-                <Text style={[styles.hebrewDate, { color: colors.textSecondary }]}>
-                  {hebrewDate}
-                </Text>
-              ) : null}
-            </View>
-          </View>
-
-          {nextZman && (
-            <View style={[styles.nextZmanBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <Text style={[styles.nextZmanLabel, { color: colors.textSecondary }]}>Next</Text>
-              <Text style={[styles.nextZmanName, { color: colors.text }]} numberOfLines={1}>
-                {nextZman.label}
-              </Text>
-              <Text style={[styles.nextZmanTime, { color: colors.tint }]}>
-                {formatTime(nextZman.time)}
-              </Text>
-            </View>
-          )}
+        <Text style={[styles.siteName, { color: colors.tint }]}>Teaneck Minyanim</Text>
+        <View style={styles.headerRow}>
+          <Text style={[styles.headerDate, { color: colors.text }]}>
+            {isToday ? `Today · ${format(parsedDate, 'MMM d')}` : format(parsedDate, 'EEEE, MMM d')}
+          </Text>
+          {hebrewDate ? (
+            <Text style={[styles.hebrewDate, { color: colors.textSecondary }]} numberOfLines={1}>
+              {hebrewDate}
+            </Text>
+          ) : null}
         </View>
+      </View>
+
+      {/* ── Date navigator ── */}
+      <View style={[styles.dateNav, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={prevDay} style={styles.navBtn} hitSlop={8}>
+          <Text style={[styles.navArrow, { color: colors.tint }]}>‹</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navCenter} onPress={isToday ? undefined : goToday}>
+          <Text style={[styles.navDate, { color: colors.text }]}>
+            {format(parsedDate, 'EEEE, MMMM d')}
+          </Text>
+          {!isToday && (
+            <Text style={[styles.todayHint, { color: colors.tint }]}>↩ Back to today</Text>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={nextDay} style={styles.navBtn} hitSlop={8}>
+          <Text style={[styles.navArrow, { color: colors.tint }]}>›</Text>
+        </TouchableOpacity>
       </View>
 
       {/* ── Filter chips ── */}
@@ -274,99 +330,100 @@ export default function TodayScreen() {
         </ScrollView>
       </View>
 
-      {/* ── Content ── */}
-      {isLoading && !hasEvents ? (
-        <View style={styles.center}>
-          <ActivityIndicator color={colors.tint} size="large" />
-        </View>
-      ) : isError ? (
-        <ErrorState message="Could not load today's schedule." onRetry={refetch} />
-      ) : !hasEvents ? (
-        <View style={styles.center}>
-          {activeFilters ? (
-            <>
-              <Text style={styles.emptyIcon}>🔍</Text>
+      {/* ── Content (swipeable) ── */}
+      <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]} {...swipe.panHandlers}>
+        {isLoading && !hasEvents ? (
+          <View style={styles.center}>
+            <ActivityIndicator color={colors.tint} size="large" />
+          </View>
+        ) : isError ? (
+          <ErrorState message="Could not load schedule." onRetry={refetch} />
+        ) : !hasEvents ? (
+          <View style={styles.center}>
+            {activeFilters ? (
+              <>
+                <Text style={styles.emptyIcon}>🔍</Text>
+                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                  No minyanim match these filters.
+                </Text>
+                <TouchableOpacity onPress={() => { setTypeFilter('ALL'); setOrgFilter(null); }}>
+                  <Text style={[styles.clearLink, { color: colors.tint }]}>Clear filters</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
               <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                No minyanim match these filters.
+                No minyanim scheduled{isToday ? ' today' : ' this day'}.
               </Text>
-              <TouchableOpacity onPress={() => { setTypeFilter('ALL'); setOrgFilter(null); }}>
-                <Text style={[styles.clearLink, { color: colors.tint }]}>Clear filters</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              No minyanim scheduled today.
-            </Text>
-          )}
-        </View>
-      ) : (
-        <ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={styles.list}
-          onScroll={(e) => setScrollY(e.nativeEvent.contentOffset.y)}
-          scrollEventThrottle={16}
-          refreshControl={
-            <RefreshControl
-              refreshing={isFetching && !isLoading}
-              onRefresh={() => {
-                hasAutoScrolled.current = false;
-                nowYRef.current = -1;
-                refetch();
-              }}
-              tintColor={colors.tint}
-            />
-          }>
-          {listItems.map((item, index) => {
-            if (item._type === 'now') {
-              return (
-                // onLayout gives the exact Y coordinate — used for scrollTo (reliable vs scrollToIndex)
-                <View key={item.key} onLayout={onNowDividerLayout}>
-                  <View style={styles.nowDivider}>
-                    <View style={[styles.nowLine, { backgroundColor: colors.tint }]} />
-                    <View style={[styles.nowBadge, { backgroundColor: colors.tint }]}>
-                      <Text style={styles.nowBadgeText}>NOW  {item.timeStr}</Text>
+            )}
+          </View>
+        ) : (
+          <ScrollView
+            ref={scrollViewRef}
+            contentContainerStyle={styles.list}
+            onScroll={(e) => setScrollY(e.nativeEvent.contentOffset.y)}
+            scrollEventThrottle={16}
+            refreshControl={
+              <RefreshControl
+                refreshing={isFetching && !isLoading}
+                onRefresh={() => {
+                  hasAutoScrolled.current = false;
+                  nowYRef.current = -1;
+                  refetch();
+                }}
+                tintColor={colors.tint}
+              />
+            }>
+            {listItems.map((item, index) => {
+              if (item._type === 'now') {
+                return (
+                  <View key={item.key} onLayout={onNowDividerLayout}>
+                    <View style={styles.nowDivider}>
+                      <View style={[styles.nowLine, { backgroundColor: colors.tint }]} />
+                      <View style={[styles.nowBadge, { backgroundColor: colors.tint }]}>
+                        <Text style={styles.nowBadgeText}>NOW  {item.timeStr}</Text>
+                      </View>
+                      <View style={[styles.nowLine, { backgroundColor: colors.tint }]} />
                     </View>
-                    <View style={[styles.nowLine, { backgroundColor: colors.tint }]} />
                   </View>
-                </View>
-              );
-            }
+                );
+              }
 
-            if (item._type === 'no_more') {
+              if (item._type === 'no_more') {
+                return (
+                  <View key={item.key} style={styles.noMoreBox}>
+                    <Text style={[styles.noMoreText, { color: colors.textTertiary }]}>
+                      No more minyanim today
+                    </Text>
+                  </View>
+                );
+              }
+
+              const { event } = item;
+              const delay = Math.min(index * 20, 300);
               return (
-                <View key={item.key} style={styles.noMoreBox}>
-                  <Text style={[styles.noMoreText, { color: colors.textTertiary }]}>
-                    No more minyanim today
-                  </Text>
-                </View>
+                <Reanimated.View key={item.key} entering={FadeInDown.delay(delay).duration(320)}>
+                  <MinyanCard
+                    event={event}
+                    showOrg
+                    isNext={false}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/shuls/[id]',
+                        params: {
+                          id: event.organization?.slug ?? event.organization?.id ?? '',
+                          selectedEventId: event.id,
+                        },
+                      } as never)
+                    }
+                  />
+                </Reanimated.View>
               );
-            }
+            })}
+          </ScrollView>
+        )}
+      </Reanimated.View>
 
-            const { event } = item;
-            const delay = Math.min(index * 20, 300);
-            return (
-              <Reanimated.View key={item.key} entering={FadeInDown.delay(delay).duration(320)}>
-                <MinyanCard
-                  event={event}
-                  showOrg
-                  isNext={false}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/shuls/[id]',
-                      params: {
-                        id: event.organization?.slug ?? event.organization?.id ?? '',
-                        selectedEventId: event.id,
-                      },
-                    } as never)
-                  }
-                />
-              </Reanimated.View>
-            );
-          })}
-        </ScrollView>
-      )}
-
-      {/* ── Jump to Now FAB ── */}
+      {/* ── Jump to Now FAB (today only) ── */}
       <Animated.View
         style={[styles.jumpBtn, { opacity: jumpBtnOpacity, bottom: insets.bottom + 58 }]}
         pointerEvents={showJump ? 'auto' : 'none'}>
@@ -458,19 +515,13 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingTop: 14,
-    paddingBottom: 14,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     ...Platform.select({
       ios: { shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4 },
       android: { elevation: 2 },
     }),
   },
-  headerMain: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  headerLeft: { flex: 1, marginRight: 12 },
   siteName: {
     fontSize: 11,
     fontWeight: '800',
@@ -478,25 +529,26 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 4,
   },
-  dateRow: {
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
+    gap: 8,
   },
-  headerDate: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
-  hebrewDate: { fontSize: 20, fontWeight: '600', letterSpacing: -0.3, textAlign: 'right' },
+  headerDate: { fontSize: 20, fontWeight: '800', letterSpacing: -0.4, flex: 1 },
+  hebrewDate: { fontSize: 17, fontWeight: '600', letterSpacing: -0.2, textAlign: 'right' },
 
-  nextZmanBox: {
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 12,
+  dateNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
     paddingVertical: 8,
-    alignItems: 'flex-end',
-    minWidth: 110,
   },
-  nextZmanLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 2 },
-  nextZmanName: { fontSize: 12, fontWeight: '700', marginBottom: 1, maxWidth: 110 },
-  nextZmanTime: { fontSize: 15, fontWeight: '800' },
+  navBtn: { paddingHorizontal: 16, minWidth: 50, alignItems: 'center' },
+  navArrow: { fontSize: 30, fontWeight: '300', lineHeight: 34 },
+  navCenter: { flex: 1, alignItems: 'center' },
+  navDate: { fontSize: 15, fontWeight: '700' },
+  todayHint: { fontSize: 11, marginTop: 2, fontWeight: '500' },
 
   filterBar: { paddingVertical: 10, borderBottomWidth: 1 },
   filterChips: { paddingHorizontal: 16, gap: 8 },
@@ -537,7 +589,6 @@ const styles = StyleSheet.create({
 
   jumpBtn: {
     position: 'absolute',
-    bottom: 28,
     left: 0,
     right: 0,
     alignItems: 'center',

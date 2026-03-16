@@ -61,7 +61,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Today',
+          title: 'Minyanim',
           tabBarIcon: ({ color }) => (
             <SymbolView
               name="calendar"

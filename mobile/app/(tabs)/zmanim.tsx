@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   ActivityIndicator,
   Linking,
@@ -10,6 +10,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
+import Reanimated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format, addDays, subDays, parseISO } from 'date-fns';
 import Constants from 'expo-constants';
@@ -54,17 +61,53 @@ export default function ZmanimScreen() {
   const parsedDate = parseISO(selectedDate);
   const isToday = selectedDate === toApiDate(new Date());
 
-  const prev = () => setSelectedDate(toApiDate(subDays(parsedDate, 1)));
-  const next = () => setSelectedDate(toApiDate(addDays(parsedDate, 1)));
-  const goToday = () => setSelectedDate(toApiDate(new Date()));
+  // Slide animation — mirrors shul detail page
+  const contentOpacity = useSharedValue(1);
+  const contentTranslateX = useSharedValue(0);
+  const animatedContentStyle = useAnimatedStyle(() => ({
+    opacity: contentOpacity.value,
+    transform: [{ translateX: contentTranslateX.value }],
+  }));
+
+  const animateTransition = useCallback((direction: 1 | -1, apply: () => void) => {
+    'worklet';
+    const SLIDE = 24;
+    const OUT_MS = 130;
+    const IN_MS = 220;
+    contentTranslateX.value = withTiming(-direction * SLIDE, { duration: OUT_MS });
+    contentOpacity.value = withTiming(0, { duration: OUT_MS }, () => {
+      runOnJS(apply)();
+      contentTranslateX.value = direction * SLIDE;
+      contentOpacity.value = 0;
+      contentTranslateX.value = withTiming(0, { duration: IN_MS });
+      contentOpacity.value = withTiming(1, { duration: IN_MS });
+    });
+  }, [contentOpacity, contentTranslateX]);
+
+  const parsedDateRef = useRef(parsedDate);
+  parsedDateRef.current = parsedDate;
+
+  const prev = useCallback(() =>
+    animateTransition(-1, () => setSelectedDate(toApiDate(subDays(parsedDateRef.current, 1)))),
+    [animateTransition]);
+  const next = useCallback(() =>
+    animateTransition(1, () => setSelectedDate(toApiDate(addDays(parsedDateRef.current, 1)))),
+    [animateTransition]);
+  const goToday = useCallback(() =>
+    animateTransition(1, () => setSelectedDate(toApiDate(new Date()))),
+    [animateTransition]);
+
+  const prevRef = useRef(prev); prevRef.current = prev;
+  const nextRef = useRef(next); nextRef.current = next;
 
   const swipe = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gs) =>
-        Math.abs(gs.dx) > 12 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+      onMoveShouldSetPanResponder: (evt, gs) =>
+        evt.nativeEvent.pageX > 30 &&
+        Math.abs(gs.dx) > 15 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
       onPanResponderRelease: (_, gs) => {
-        if (gs.dx < -40) next();
-        else if (gs.dx > 40) prev();
+        if (gs.dx < -50) nextRef.current();
+        else if (gs.dx > 50) prevRef.current();
       },
     }),
   ).current;
@@ -105,6 +148,7 @@ export default function ZmanimScreen() {
         </TouchableOpacity>
       </View>
 
+      <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]} {...swipe.panHandlers}>
       {isLoading ? (
         <View style={styles.center}>
           <ActivityIndicator color={colors.tint} size="large" />
@@ -112,7 +156,7 @@ export default function ZmanimScreen() {
       ) : isError ? (
         <ErrorState message="Could not load zmanim." onRetry={refetch} />
       ) : (
-        <ScrollView contentContainerStyle={styles.list} {...swipe.panHandlers}>
+        <ScrollView contentContainerStyle={styles.list}>
           {/* Zmanim rows */}
           {ZMANIM_ROWS.map((row) => {
             const raw = zmanim?.times?.[row.key];
@@ -169,6 +213,7 @@ export default function ZmanimScreen() {
           </View>
         </ScrollView>
       )}
+      </Reanimated.View>
     </SafeAreaView>
   );
 }

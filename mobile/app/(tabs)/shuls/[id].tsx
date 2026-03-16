@@ -130,24 +130,33 @@ export default function ShulDetailScreen() {
     tabScrollRef.current?.scrollTo({ x: tab * SCREEN_WIDTH, animated: true });
   };
 
+  // Use refs so PanResponder closures always call the latest callbacks
+  const prevDayRef = useRef(prevDay); prevDayRef.current = prevDay;
+  const nextDayRef = useRef(nextDay); nextDayRef.current = nextDay;
+  const prevWeekRef = useRef(prevWeek); prevWeekRef.current = prevWeek;
+  const nextWeekRef = useRef(nextWeek); nextWeekRef.current = nextWeek;
+
   const daySwipe = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gs) =>
-        Math.abs(gs.dx) > 12 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+      // Require clearly horizontal gesture; pageX > 45 avoids iOS edge-back conflict
+      onMoveShouldSetPanResponder: (evt, gs) =>
+        evt.nativeEvent.pageX > 45 &&
+        Math.abs(gs.dx) > 15 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
       onPanResponderRelease: (_, gs) => {
-        if (gs.dx < -40) nextDay();
-        else if (gs.dx > 40) prevDay();
+        if (gs.dx < -50) nextDayRef.current();
+        else if (gs.dx > 60) prevDayRef.current();
       },
     }),
   ).current;
 
   const weekSwipe = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gs) =>
-        Math.abs(gs.dx) > 12 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+      onMoveShouldSetPanResponder: (evt, gs) =>
+        evt.nativeEvent.pageX > 45 &&
+        Math.abs(gs.dx) > 15 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
       onPanResponderRelease: (_, gs) => {
-        if (gs.dx < -40) nextWeek();
-        else if (gs.dx > 40) prevWeek();
+        if (gs.dx < -50) nextWeekRef.current();
+        else if (gs.dx > 60) prevWeekRef.current();
       },
     }),
   ).current;
