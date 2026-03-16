@@ -10,6 +10,7 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { requestNotificationPermission } from '@/utils/notifications';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -49,6 +50,11 @@ export default function RootLayout() {
   useEffect(() => {
     if (error) throw error;
   }, [error]);
+
+  // Request notification permission early so reminders work immediately
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
 
   useEffect(() => {
     if (loaded) {

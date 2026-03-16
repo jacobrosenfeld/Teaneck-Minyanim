@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Linking, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SymbolView } from 'expo-symbols';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { formatTime } from '@/utils/time';
+import { scheduleReminder, cancelReminder, isReminderSet } from '@/utils/notifications';
 import type { ScheduleEvent } from '@/api/types';
 
 const TYPE_COLORS: Record<string, { text: string; darkText: string }> = {
   SHACHARIS:     { text: '#1A4FAD', darkText: '#93B8FF' },
   MINCHA:        { text: '#92650A', darkText: '#FCD34D' },
   MAARIV:        { text: '#5B21B6', darkText: '#C4B5FD' },
-  MINCHA_MAARIV: { text: '#92650A', darkText: '#FCD34D' }, // same amber as Mincha
+  MINCHA_MAARIV: { text: '#92650A', darkText: '#FCD34D' },
   SELICHOS:      { text: '#9B1C1C', darkText: '#FCA5A5' },
   default:       { text: '#374151', darkText: '#D1D5DB' },
 };
@@ -45,6 +47,33 @@ export default function MinyanCard({
     Linking.openURL(`https://wa.me/${num}`);
   };
 
+  // ── Reminder bell ──────────────────────────────────────────────────────────
+  const [reminderSet, setReminderSet] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    isReminderSet(event.id).then((v) => { if (!cancelled) setReminderSet(v); });
+    return () => { cancelled = true; };
+  }, [event.id]);
+
+  const toggleReminder = useCallback(async () => {
+    if (reminderSet) {
+      await cancelReminder(event.id);
+      setReminderSet(false);
+    } else {
+      const id = await scheduleReminder({
+        eventId: event.id,
+        orgName: event.organization?.name ?? '',
+        minyanType: event.minyanTypeDisplay,
+        startTime: event.startTime,
+        date: event.date,
+        minutesBefore: 10,
+      });
+      setReminderSet(id != null);
+    }
+  }, [reminderSet, event]);
+  // ──────────────────────────────────────────────────────────────────────────
+
   return (
     <Pressable
       onPress={onPress}
@@ -59,7 +88,7 @@ export default function MinyanCard({
           transform: [{ scale: pressed && onPress ? 0.98 : 1 }],
         },
       ]}>
-      {/* Full-width org color banner — mirrors mobile website */}
+      {/* Full-width org color banner */}
       {showOrg && event.organization?.name ? (
         <View style={[styles.orgBanner, { backgroundColor: orgColor }]}>
           <Text style={styles.orgBannerText} numberOfLines={1}>
@@ -74,9 +103,19 @@ export default function MinyanCard({
           <Text style={[styles.type, { color: typeColor }]} numberOfLines={1}>
             {event.minyanTypeDisplay}
           </Text>
-          <Text style={[styles.time, { color: colors.text }]}>
-            {formatTime(event.startTime)}
-          </Text>
+          <View style={styles.timeRow}>
+            <Text style={[styles.time, { color: colors.text }]}>
+              {formatTime(event.startTime)}
+            </Text>
+            {/* Reminder bell */}
+            <TouchableOpacity onPress={toggleReminder} hitSlop={10} style={styles.bellBtn}>
+              <SymbolView
+                name={reminderSet ? 'bell.fill' : 'bell'}
+                tintColor={reminderSet ? orgColor : colors.textTertiary}
+                size={16}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Nusach */}
@@ -160,11 +199,19 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
     flex: 1,
   },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 0,
+  },
   time: {
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: -0.3,
-    flexShrink: 0,
+  },
+  bellBtn: {
+    padding: 2,
   },
   nusach: {
     fontSize: 12,
