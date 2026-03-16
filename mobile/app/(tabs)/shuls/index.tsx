@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flex: 1, marginRight: 12 },
   siteName: { fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 3 },
-  title: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
+  title: { fontSize: 20, fontWeight: '800', letterSpacing: -0.3 },
   subtitle: { fontSize: 13, marginTop: 2 },
 
   sortToggle: {

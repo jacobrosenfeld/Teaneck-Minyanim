@@ -33,7 +33,7 @@ import { useSchedule, useZmanim, useOrganizations } from '@/api/hooks';
 import { toApiDate } from '@/api/client';
 import type { ScheduleEvent, Organization } from '@/api/types';
 import { formatTime } from '@/utils/time';
-import { registerScrollToNow, unregisterScrollToNow } from '@/utils/tabEvents';
+import { registerScrollToNow, unregisterScrollToNow, registerGoToday, unregisterGoToday } from '@/utils/tabEvents';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -114,12 +114,16 @@ export default function MinyanimScreen() {
     });
   }, [contentOpacity, contentTranslateX]);
 
+  // Track whether initial card entrance animation has been shown (#166)
+  const cardEnterAnimation = useRef(true);
+
   // Use a ref to always call the latest parsedDate without recreating PanResponder
   const parsedDateRef = useRef(parsedDate);
   parsedDateRef.current = parsedDate;
 
   const prevDay = useCallback(() =>
     animateTransition(-1, () => {
+      cardEnterAnimation.current = false;
       hasAutoScrolled.current = false;
       nowYRef.current = -1;
       setSelectedDate(toApiDate(subDays(parsedDateRef.current, 1)));
@@ -127,17 +131,22 @@ export default function MinyanimScreen() {
 
   const nextDay = useCallback(() =>
     animateTransition(1, () => {
+      cardEnterAnimation.current = false;
       hasAutoScrolled.current = false;
       nowYRef.current = -1;
       setSelectedDate(toApiDate(addDays(parsedDateRef.current, 1)));
     }), [animateTransition]);
 
-  const goToday = useCallback(() =>
-    animateTransition(1, () => {
-      hasAutoScrolled.current = false;
-      nowYRef.current = -1;
-      setSelectedDate(today);
-    }), [animateTransition, today]);
+  const goToday = useCallback(() => {
+    if (selectedDate !== today) {
+      animateTransition(1, () => {
+        cardEnterAnimation.current = false;
+        hasAutoScrolled.current = false;
+        nowYRef.current = -1;
+        setSelectedDate(today);
+      });
+    }
+  }, [animateTransition, today, selectedDate]);
 
   // Use refs so PanResponder always calls the latest callbacks
   const prevDayRef = useRef(prevDay);
@@ -148,7 +157,7 @@ export default function MinyanimScreen() {
   const swipe = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gs) =>
-        evt.nativeEvent.pageX > 30 &&
+        evt.nativeEvent.pageX > 45 &&
         Math.abs(gs.dx) > 15 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
       onPanResponderRelease: (_, gs) => {
         if (gs.dx < -50) nextDayRef.current();
@@ -231,11 +240,12 @@ export default function MinyanimScreen() {
     }
   }, []);
 
-  // Register scroll callback so tab press triggers it
+  // Register scroll/today callbacks so tab press triggers them
   useEffect(() => {
     registerScrollToNow(scrollToNow);
-    return () => unregisterScrollToNow();
-  }, [scrollToNow]);
+    registerGoToday(goToday);
+    return () => { unregisterScrollToNow(); unregisterGoToday(); };
+  }, [scrollToNow, goToday]);
 
   // Show FAB only on today, when scrolled >300px from the NOW divider
   const showJump = isToday && !isLoading && nowYRef.current >= 0 &&
@@ -262,7 +272,7 @@ export default function MinyanimScreen() {
         <Text style={[styles.siteName, { color: colors.tint }]}>Teaneck Minyanim</Text>
         <View style={styles.headerRow}>
           <Text style={[styles.headerDate, { color: colors.text }]}>
-            {isToday ? `Today · ${format(parsedDate, 'MMM d')}` : format(parsedDate, 'EEEE, MMM d')}
+            Today · {format(parseISO(today), 'MMM d')}
           </Text>
           {hebrewDate ? (
             <Text style={[styles.hebrewDate, { color: colors.textSecondary }]} numberOfLines={1}>
@@ -401,7 +411,7 @@ export default function MinyanimScreen() {
               const { event } = item;
               const delay = Math.min(index * 20, 300);
               return (
-                <Reanimated.View key={item.key} entering={FadeInDown.delay(delay).duration(320)}>
+                <Reanimated.View key={item.key} entering={cardEnterAnimation.current ? FadeInDown.delay(delay).duration(320) : undefined}>
                   <MinyanCard
                     event={event}
                     showOrg
@@ -430,7 +440,7 @@ export default function MinyanimScreen() {
         <TouchableOpacity
           style={[styles.jumpBtnInner, { backgroundColor: colors.tint }]}
           onPress={scrollToNow}>
-          <Text style={styles.jumpBtnText}>Next Minyan ↓</Text>
+          <Text style={styles.jumpBtnText}>Next Minyan</Text>
         </TouchableOpacity>
       </Animated.View>
 
@@ -459,11 +469,22 @@ function OrgPickerModal({
   onSelect: (id: string | null) => void;
   onClose: () => void;
 }) {
+  const dismissPan = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dy > 60 || gs.vy > 0.5) onClose();
+      },
+    }),
+  ).current;
+
   return (
     <Modal visible={visible} animationType="slide" transparent presentationStyle="pageSheet">
       <View style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.card }]}>
-          <View style={[styles.handle, { backgroundColor: colors.border }]} />
+          <View style={styles.handleArea} {...dismissPan.panHandlers}>
+            <View style={[styles.handle, { backgroundColor: colors.border }]} />
+          </View>
           <Text style={[styles.sheetTitle, { color: colors.text }]}>Filter by Shul</Text>
 
           <ScrollView style={styles.sheetList} showsVerticalScrollIndicator={false}>
@@ -611,7 +632,8 @@ const styles = StyleSheet.create({
 
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.35)' },
   sheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 10, maxHeight: '78%' },
-  handle: { width: 36, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 14 },
+  handleArea: { alignSelf: 'stretch', alignItems: 'center', paddingTop: 0, paddingBottom: 14 },
+  handle: { width: 36, height: 4, borderRadius: 2 },
   sheetTitle: { fontSize: 17, fontWeight: '700', paddingHorizontal: 20, marginBottom: 8 },
   sheetList: { flexGrow: 0 },
   sheetRow: {

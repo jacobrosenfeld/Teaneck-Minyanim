@@ -24,6 +24,7 @@ import Reanimated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import { SymbolView } from 'expo-symbols';
 import { addDays, subDays, addWeeks, subWeeks, format, parseISO, startOfWeek, endOfWeek } from 'date-fns';
 
 import Colors from '@/constants/Colors';
@@ -247,7 +248,7 @@ export default function ShulDetailScreen() {
               <TouchableOpacity
                 style={[styles.actionBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
                 onPress={openWebsite}>
-                <Text style={styles.actionIcon}>🌐</Text>
+                <SymbolView name="globe" tintColor={colors.textSecondary} size={20} />
                 <Text style={[styles.actionLabel, { color: colors.textSecondary }]}>Website</Text>
               </TouchableOpacity>
             ) : null}
@@ -255,7 +256,7 @@ export default function ShulDetailScreen() {
               <TouchableOpacity
                 style={[styles.actionBtn, { backgroundColor: '#E8FAF0', borderColor: '#25D366' }]}
                 onPress={openWhatsApp}>
-                <Text style={styles.actionIcon}>💬</Text>
+                <SymbolView name="message.fill" tintColor="#1A9E4A" size={20} />
                 <Text style={[styles.actionLabel, { color: '#1A9E4A' }]}>WhatsApp</Text>
               </TouchableOpacity>
             ) : null}

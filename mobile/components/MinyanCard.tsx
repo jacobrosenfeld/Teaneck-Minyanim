@@ -50,7 +50,9 @@ export default function MinyanCard({
   // ── Reminder bell ──────────────────────────────────────────────────────────
   const [reminderSet, setReminderSet] = useState(false);
 
-  const isPastEvent = `${event.date}T${event.startTime}` < new Date().toISOString().slice(0, 16);
+  const now = new Date();
+  const localNow = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const isPastEvent = `${event.date}T${event.startTime}` < localNow;
 
   useEffect(() => {
     if (isPastEvent) return;
@@ -148,7 +150,8 @@ export default function MinyanCard({
         {whatsappNum ? (
           <TouchableOpacity onPress={openWhatsApp} hitSlop={8} style={styles.whatsappRow}>
             <View style={styles.whatsappBadge}>
-              <Text style={styles.whatsappText}>💬 WhatsApp</Text>
+              <SymbolView name="message.fill" tintColor="#1A9E4A" size={11} />
+              <Text style={styles.whatsappText}>WhatsApp</Text>
             </View>
           </TouchableOpacity>
         ) : null}
@@ -245,6 +248,9 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderWidth: 1,
     borderColor: '#25D366',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   whatsappText: {
     fontSize: 11,
