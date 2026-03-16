@@ -79,6 +79,18 @@ public class OrganizationService {
         return true;
     }
 
+    /**
+     * Targeted geocode update — only writes latitude and longitude.
+     * Uses a direct JPQL UPDATE to avoid entity-state issues with detached objects.
+     */
+    public boolean updateGeocode(String id, double lat, double lng) {
+        try {
+            return organizationRepository.updateGeocode(id, lat, lng) > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public List<TNMUser> getUsersForOrganization(Organization organization) {
         List<TNMUser> users = new ArrayList<>();
         List<Account> accountsByOrganizationId = organizationRepository.findAccountsByOrganizationId(organization.getId());

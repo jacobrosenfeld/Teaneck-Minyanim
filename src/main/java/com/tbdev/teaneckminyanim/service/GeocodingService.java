@@ -33,6 +33,10 @@ public class GeocodingService {
     private final ApplicationSettingsService settingsService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    // Fallback origin sent with all geocoding requests so Mapbox URL-restricted tokens
+    // (public pk.* tokens that allow only specific referrer URLs) accept server-side calls.
+    private static final String FALLBACK_ORIGIN = "https://teaneckminyanim.com";
+
     /**
      * Geocodes the given address string.
      *
@@ -63,9 +67,15 @@ public class GeocodingService {
                     .followRedirects(HttpClient.Redirect.NORMAL)
                     .build();
 
+            // Include Referer/Origin so Mapbox URL-restricted public tokens accept the request
+            String siteUrl = settingsService.getSiteRootUrl();
+            String origin = (siteUrl != null && !siteUrl.isBlank()) ? siteUrl : FALLBACK_ORIGIN;
+
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .timeout(Duration.ofSeconds(10))
+                    .header("Referer", origin)
+                    .header("Origin", origin)
                     .GET()
                     .build();
 

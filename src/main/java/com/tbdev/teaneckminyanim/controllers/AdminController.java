@@ -95,6 +95,24 @@ public class AdminController {
 //        }
 //    }
 
+    /**
+     * Geocodes the new address for an org and writes lat/lng only if the address changed
+     * or coords are missing. Uses targeted UPDATE to avoid entity-state issues.
+     */
+    private void geocodeIfAddressChanged(String orgId, String newAddress) {
+        Optional<Organization> existing = organizationService.findById(orgId);
+        if (existing.isEmpty()) return;
+        Organization org = existing.get();
+        boolean addressChanged = newAddress != null && !newAddress.equals(org.getAddress());
+        boolean missingCoords = org.getLatitude() == null || org.getLongitude() == null;
+        if (addressChanged || missingCoords) {
+            double[] coords = geocodingService.geocodeAddress(newAddress);
+            if (coords != null) {
+                organizationService.updateGeocode(orgId, coords[0], coords[1]);
+            }
+        }
+    }
+
     private void addStandardPageData(ModelAndView mv) {
         mv.addObject("user", getCurrentUser());
         
@@ -336,14 +354,12 @@ public class AdminController {
         // Ensure organization has a slug (generate from name if not provided)
         organizationService.ensureSlug(organization);
 
-        // Geocode the address and store lat/lng for map display
-        double[] coords = geocodingService.geocodeAddress(address);
-        if (coords != null) {
-            organization.setLatitude(coords[0]);
-            organization.setLongitude(coords[1]);
-        }
-
         if  (this.organizationService.save(organization)) {
+            // Geocode after save so the record exists in DB before the targeted UPDATE
+            double[] createCoords = geocodingService.geocodeAddress(address);
+            if (createCoords != null) {
+                organizationService.updateGeocode(organization.getId(), createCoords[0], createCoords[1]);
+            }
 
             TNMUser user = TNMUser.builder()
                     .id(IDGenerator.generateID('A'))
@@ -621,43 +637,21 @@ public class AdminController {
         // Ensure organization has a slug (generate from name if not provided)
         organizationService.ensureSlug(organization);
 
-        // Geocode if address changed or coordinates are missing; preserve existing coords otherwise
-        Optional<Organization> existing = organizationService.findById(id);
-        if (existing.isPresent()) {
-            String existingAddress = existing.get().getAddress();
-            boolean addressChanged = address != null && !address.equals(existingAddress);
-            boolean missingCoords = existing.get().getLatitude() == null || existing.get().getLongitude() == null;
-            if (addressChanged || missingCoords) {
-                double[] coords = geocodingService.geocodeAddress(address);
-                if (coords != null) {
-                    organization.setLatitude(coords[0]);
-                    organization.setLongitude(coords[1]);
-                }
-            } else {
-                organization.setLatitude(existing.get().getLatitude());
-                organization.setLongitude(existing.get().getLongitude());
-            }
-        }
-
 //        check permissions
         if (isAdmin()) {
             if (this.organizationService.update(organization)) {
-                // Redirect to the organization page after a successful update
+                geocodeIfAddressChanged(id, address);
                 RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
                 return new ModelAndView(redirectView);
             } else {
-                // Handle update failure
                 return organization(id, null, null, "Sorry, the update failed.", null);
             }
         } else if (isUser()) {
-            // ... (Permissions check and organization update, similar to admin case)
-
             if (this.organizationService.update(organization)) {
-                // Redirect to the organization page after a successful update
+                geocodeIfAddressChanged(id, address);
                 RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
                 return new ModelAndView(redirectView);
             } else {
-                // Handle update failure
                 return organization(id, null, "Sorry, the update failed.", null, null);
             }
         } else {
@@ -768,11 +762,14 @@ public class AdminController {
             }
             double[] coords = geocodingService.geocodeAddress(org.getAddress());
             if (coords != null) {
-                org.setLatitude(coords[0]);
-                org.setLongitude(coords[1]);
-                organizationService.save(org);
-                updated++;
+                if (organizationService.updateGeocode(org.getId(), coords[0], coords[1])) {
+                    updated++;
+                } else {
+                    log.warn("updateGeocode returned false for org id={} name={}", org.getId(), org.getName());
+                    failed++;
+                }
             } else {
+                log.warn("Geocoding returned null for org id={} name={} address={}", org.getId(), org.getName(), org.getAddress());
                 failed++;
             }
         }

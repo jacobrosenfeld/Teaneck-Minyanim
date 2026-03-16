@@ -14,13 +14,10 @@
             <p class="page-description" th:text="|Manage the data and accounts for all organizations on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
         </div>
         <div class="page-actions">
-            <form th:action="@{/admin/geocode-all-organizations}" method="post" style="display:inline"
-                  onsubmit="return confirm('This will geocode all organizations missing lat/lng coordinates using Mapbox. Continue?')">
-                <button type="submit" class="btn-modern btn-secondary">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>Geocode All</span>
-                </button>
-            </form>
+            <button type="button" class="btn-modern btn-secondary" data-toggle="modal" data-target="#geocode-all-modal">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Geocode All</span>
+            </button>
             <a href="/admin/new-organization" class="btn-modern btn-primary">
                 <i class="fas fa-plus"></i>
                 <span>New Organization</span>
@@ -54,7 +51,7 @@
                             <th>Schedule Type</th>
                             <th>Website</th>
                             <th>Minyan Schedule</th>
-                            <th>Profile & Accounts</th>
+                            <th>Profile &amp; Accounts</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -110,24 +107,60 @@
     </div>
 </div>
 
+<!-- Geocode All Confirmation Modal -->
+<div layout:fragment="modals">
+    <div class="modal fade" id="geocode-all-modal" tabindex="-1" aria-labelledby="geocode-all-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="geocode-all-modal-label">
+                        <i class="fas fa-map-marker-alt" style="color: var(--color-primary); margin-right: 8px;"></i>
+                        Geocode All Organizations
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>This will look up GPS coordinates for all organizations that are missing a location using the Mapbox Geocoding API.</p>
+                    <p style="margin-bottom: 0; color: var(--text-secondary); font-size: 0.9em;">
+                        Organizations that already have coordinates will be skipped. To re-geocode all organizations regardless, check the box below.
+                    </p>
+                    <div style="margin-top: 16px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
+                            <input type="checkbox" id="geocode-force-checkbox" style="width: 16px; height: 16px;">
+                            Re-geocode all organizations (including those with existing coordinates)
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modern btn-secondary" data-dismiss="modal">Cancel</button>
+                    <form th:action="@{/admin/geocode-all-organizations}" method="post" id="geocode-all-form" style="display:inline">
+                        <input type="hidden" name="force" id="geocode-force-input" value="false">
+                        <button type="submit" class="btn-modern btn-primary">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Run Geocoding</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <th:block layout:fragment="scripts">
     <script>
-        // Show success/error messages as toast notifications
         document.addEventListener('DOMContentLoaded', function() {
+            // Sync force checkbox to hidden form input
+            document.getElementById('geocode-force-checkbox').addEventListener('change', function() {
+                document.getElementById('geocode-force-input').value = this.checked ? 'true' : 'false';
+            });
+
+            // Show success/error messages as toast notifications
             const successAlert = document.querySelector('.alert-modern.alert-success');
             const errorAlert = document.querySelector('.alert-modern.alert-danger');
-            
-            if (successAlert) {
-                const message = successAlert.textContent.trim();
-                window.showToast(message, 'success');
-                successAlert.remove();
-            }
-            
-            if (errorAlert) {
-                const message = errorAlert.textContent.trim();
-                window.showToast(message, 'error');
-                errorAlert.remove();
-            }
+            if (successAlert) { window.showToast(successAlert.textContent.trim(), 'success'); successAlert.remove(); }
+            if (errorAlert) { window.showToast(errorAlert.textContent.trim(), 'error'); errorAlert.remove(); }
         });
     </script>
 </th:block>
