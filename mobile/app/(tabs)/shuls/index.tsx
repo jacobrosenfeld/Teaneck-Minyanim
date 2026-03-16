@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -46,17 +46,17 @@ export default function ShulsScreen() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationGranted, setLocationGranted] = useState<boolean>(false);
 
-  // Request location once; enable distance sort button if granted
-  useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        setLocationGranted(true);
-        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-        setUserLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
-      }
-    })();
+  const fetchLocation = useCallback(async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status === 'granted') {
+      setLocationGranted(true);
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      setUserLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
+    }
   }, []);
+
+  // Request location once; enable distance sort button if granted
+  useEffect(() => { fetchLocation(); }, [fetchLocation]);
 
   const orgs = React.useMemo(() => {
     if (!rawOrgs) return rawOrgs;
@@ -142,7 +142,7 @@ export default function ShulsScreen() {
           refreshControl={
             <RefreshControl
               refreshing={isFetching && !isLoading}
-              onRefresh={refetch}
+              onRefresh={() => { refetch(); fetchLocation(); }}
               tintColor={colors.tint}
             />
           }

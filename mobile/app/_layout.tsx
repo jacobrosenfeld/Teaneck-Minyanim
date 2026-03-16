@@ -8,9 +8,10 @@ import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 
 import { useColorScheme } from '@/components/useColorScheme';
-import { requestNotificationPermission } from '@/utils/notifications';
+import { requestNotificationPermission, SNOOZE_ACTION } from '@/utils/notifications';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -54,6 +55,28 @@ export default function RootLayout() {
   // Request notification permission early so reminders work immediately
   useEffect(() => {
     requestNotificationPermission();
+  }, []);
+
+  // Handle snooze action: reschedule the same notification 5 minutes later
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener(async (response) => {
+      if (response.actionIdentifier !== SNOOZE_ACTION) return;
+      const data = response.notification.request.content.data as {
+        originalTitle?: string;
+        originalBody?: string;
+      };
+      const snoozeDate = new Date(Date.now() + 5 * 60 * 1000);
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: data.originalTitle ?? response.notification.request.content.title ?? '',
+          body: data.originalBody ?? response.notification.request.content.body ?? '',
+          sound: true,
+          data: response.notification.request.content.data,
+        },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: snoozeDate },
+      });
+    });
+    return () => sub.remove();
   }, []);
 
   useEffect(() => {

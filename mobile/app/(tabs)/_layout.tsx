@@ -5,6 +5,7 @@ import { BlurView } from 'expo-blur';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
+import { triggerScrollToNow } from '@/utils/tabEvents';
 
 export default function TabLayout() {
   const scheme = useColorScheme() ?? 'light';
@@ -61,13 +62,16 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Today',
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ color }) => (
             <SymbolView
-              name={focused ? 'calendar.day.timeline.left' : 'calendar'}
+              name="calendar"
               tintColor={color}
               size={24}
             />
           ),
+        }}
+        listeners={{
+          tabPress: () => { triggerScrollToNow(); },
         }}
       />
 

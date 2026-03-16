@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   ActivityIndicator,
   Linking,
+  PanResponder,
   Platform,
   ScrollView,
   StyleSheet,
@@ -57,6 +58,17 @@ export default function ZmanimScreen() {
   const next = () => setSelectedDate(toApiDate(addDays(parsedDate, 1)));
   const goToday = () => setSelectedDate(toApiDate(new Date()));
 
+  const swipe = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) =>
+        Math.abs(gs.dx) > 12 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dx < -40) next();
+        else if (gs.dx > 40) prev();
+      },
+    }),
+  ).current;
+
   // Find which rows form section headers
   let currentSection = '';
 
@@ -100,7 +112,7 @@ export default function ZmanimScreen() {
       ) : isError ? (
         <ErrorState message="Could not load zmanim." onRetry={refetch} />
       ) : (
-        <ScrollView contentContainerStyle={styles.list}>
+        <ScrollView contentContainerStyle={styles.list} {...swipe.panHandlers}>
           {/* Zmanim rows */}
           {ZMANIM_ROWS.map((row) => {
             const raw = zmanim?.times?.[row.key];

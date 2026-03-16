@@ -14,17 +14,20 @@ import {
   View,
 } from 'react-native';
 import Reanimated, { FadeInDown } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { format } from 'date-fns';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
+import { registerScrollToNow, unregisterScrollToNow } from '@/utils/tabEvents';
 import MinyanCard from '@/components/MinyanCard';
 import ErrorState from '@/components/ErrorState';
 import { useTodaySchedule, useZmanim, useOrganizations } from '@/api/hooks';
+import { toApiDate } from '@/api/client';
 import type { ScheduleEvent, Organization, ZmanimTimes } from '@/api/types';
 import { formatTime, getNextZman } from '@/utils/time';
+import { addDays } from 'date-fns';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -76,6 +79,7 @@ function matchesTypeFilter(eventType: string, filter: TypeFilter): boolean {
 export default function TodayScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const insets = useSafeAreaInsets();
 
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
   const [orgFilter, setOrgFilter] = useState<string | null>(null);
@@ -92,6 +96,12 @@ export default function TodayScreen() {
   const { data: events, isLoading, isError, refetch, isFetching } = useTodaySchedule();
   const { data: zmanim } = useZmanim();
   const { data: orgs } = useOrganizations();
+
+  // After tzeis, the Jewish day advances — show tomorrow's Hebrew date
+  const isAfterTzeis = !!(zmanim?.times?.tzeis && nowTime >= zmanim.times.tzeis);
+  const tomorrowStr = toApiDate(addDays(new Date(), 1));
+  const { data: tomorrowZmanim } = useZmanim(isAfterTzeis ? tomorrowStr : undefined);
+  const hebrewDate = isAfterTzeis ? tomorrowZmanim?.hebrewDate : zmanim?.hebrewDate;
 
   // Update current time every minute
   useEffect(() => {
@@ -168,6 +178,12 @@ export default function TodayScreen() {
     }
   }, []);
 
+  // Register scroll callback so the tab bar can trigger it on tab press
+  useEffect(() => {
+    registerScrollToNow(scrollToNow);
+    return () => unregisterScrollToNow();
+  }, [scrollToNow]);
+
   // Show Jump to Now when scrolled >300px away from the NOW divider
   const showJump = !isLoading && nowYRef.current >= 0 &&
     listItems.filter((i) => i._type === 'event').length > 0 &&
@@ -196,9 +212,9 @@ export default function TodayScreen() {
             <Text style={[styles.siteName, { color: colors.tint }]}>Teaneck Minyanim</Text>
             <View style={styles.dateRow}>
               <Text style={[styles.headerDate, { color: colors.text }]}>{today}</Text>
-              {zmanim?.hebrewDate ? (
+              {hebrewDate ? (
                 <Text style={[styles.hebrewDate, { color: colors.textSecondary }]}>
-                  {zmanim.hebrewDate}
+                  {hebrewDate}
                 </Text>
               ) : null}
             </View>
@@ -352,7 +368,7 @@ export default function TodayScreen() {
 
       {/* ── Jump to Now FAB ── */}
       <Animated.View
-        style={[styles.jumpBtn, { opacity: jumpBtnOpacity }]}
+        style={[styles.jumpBtn, { opacity: jumpBtnOpacity, bottom: insets.bottom + 58 }]}
         pointerEvents={showJump ? 'auto' : 'none'}>
         <TouchableOpacity
           style={[styles.jumpBtnInner, { backgroundColor: colors.tint }]}
@@ -487,7 +503,7 @@ const styles = StyleSheet.create({
   chip: { borderRadius: 20, paddingHorizontal: 15, paddingVertical: 7 },
   chipText: { fontSize: 13, fontWeight: '600' },
 
-  list: { paddingTop: 10, paddingBottom: 120 },
+  list: { paddingTop: 10, paddingBottom: 140 },
 
   nowDivider: {
     flexDirection: 'row',

@@ -50,11 +50,14 @@ export default function MinyanCard({
   // ── Reminder bell ──────────────────────────────────────────────────────────
   const [reminderSet, setReminderSet] = useState(false);
 
+  const isPastEvent = `${event.date}T${event.startTime}` < new Date().toISOString().slice(0, 16);
+
   useEffect(() => {
+    if (isPastEvent) return;
     let cancelled = false;
     isReminderSet(event.id).then((v) => { if (!cancelled) setReminderSet(v); });
     return () => { cancelled = true; };
-  }, [event.id]);
+  }, [event.id, isPastEvent]);
 
   const toggleReminder = useCallback(async () => {
     if (reminderSet) {
@@ -107,14 +110,16 @@ export default function MinyanCard({
             <Text style={[styles.time, { color: colors.text }]}>
               {formatTime(event.startTime)}
             </Text>
-            {/* Reminder bell */}
-            <TouchableOpacity onPress={toggleReminder} hitSlop={10} style={styles.bellBtn}>
-              <SymbolView
-                name={reminderSet ? 'bell.fill' : 'bell'}
-                tintColor={reminderSet ? orgColor : colors.textTertiary}
-                size={16}
-              />
-            </TouchableOpacity>
+            {/* Reminder bell — hidden for past events */}
+            {!isPastEvent && (
+              <TouchableOpacity onPress={toggleReminder} hitSlop={10} style={styles.bellBtn}>
+                <SymbolView
+                  name={reminderSet ? 'bell.fill' : 'bell'}
+                  tintColor={reminderSet ? orgColor : colors.textTertiary}
+                  size={16}
+                />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 

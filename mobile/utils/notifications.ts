@@ -11,6 +11,9 @@ Notifications.setNotificationHandler({
   }),
 });
 
+export const REMINDER_CATEGORY = 'minyan-reminder';
+export const SNOOZE_ACTION = 'SNOOZE_5';
+
 export async function requestNotificationPermission(): Promise<boolean> {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('minyan-reminders', {
@@ -22,10 +25,24 @@ export async function requestNotificationPermission(): Promise<boolean> {
   }
 
   const { status: existing } = await Notifications.getPermissionsAsync();
-  if (existing === 'granted') return true;
+  if (existing === 'granted') {
+    await setupReminderCategory();
+    return true;
+  }
 
   const { status } = await Notifications.requestPermissionsAsync();
+  if (status === 'granted') await setupReminderCategory();
   return status === 'granted';
+}
+
+async function setupReminderCategory() {
+  await Notifications.setNotificationCategoryAsync(REMINDER_CATEGORY, [
+    {
+      identifier: SNOOZE_ACTION,
+      buttonTitle: 'Snooze 5 min',
+      options: { opensAppToForeground: false },
+    },
+  ]);
 }
 
 export interface ReminderOptions {
@@ -64,7 +81,13 @@ export async function scheduleReminder(opts: ReminderOptions): Promise<string | 
       title: `${opts.minyanType} in ${minutesBefore} minutes`,
       body: `${opts.orgName} · ${formatDisplayTime(opts.startTime)}`,
       sound: true,
-      data: { eventId: opts.eventId, date: opts.date },
+      categoryIdentifier: REMINDER_CATEGORY,
+      data: {
+        eventId: opts.eventId,
+        date: opts.date,
+        originalTitle: `${opts.minyanType} in ${minutesBefore} minutes`,
+        originalBody: `${opts.orgName} · ${formatDisplayTime(opts.startTime)}`,
+      },
     },
     trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: triggerDate },
   });

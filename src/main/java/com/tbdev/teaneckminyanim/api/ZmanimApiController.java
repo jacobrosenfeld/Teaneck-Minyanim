@@ -38,7 +38,7 @@ public class ZmanimApiController {
 
     @GetMapping
     @Operation(summary = "Get Jewish prayer times",
-               description = "Returns all 14 halachic times (netz, shekiya, plag, tzeis, etc.) for a given date. " +
+               description = "Returns all 15 halachic times (netz, shekiya, plag, tzeis, etc.) for a given date. " +
                              "Omit date to get today's times. All times are in HH:mm format in the application timezone.")
     public ResponseEntity<ApiResponse<ZmanimDto>> getZmanim(
             @Parameter(description = "Date in YYYY-MM-DD format. Defaults to today.", example = "2026-03-15")
@@ -72,6 +72,7 @@ public class ZmanimApiController {
                         fmt(zmanim.get(Zman.MINCHA_KETANA)),
                         fmt(zmanim.get(Zman.PLAG_HAMINCHA)),
                         fmt(zmanim.get(Zman.SHEKIYA)),
+                        fmt(zmanim.get(Zman.EARLIEST_SHEMA)),
                         fmt(zmanim.get(Zman.TZES)),
                         fmt(zmanim.get(Zman.CHATZOS_LAILA))
                 )

@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Linking,
+  PanResponder,
   Platform,
   RefreshControl,
   ScrollView,
@@ -129,6 +130,28 @@ export default function ShulDetailScreen() {
     tabScrollRef.current?.scrollTo({ x: tab * SCREEN_WIDTH, animated: true });
   };
 
+  const daySwipe = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) =>
+        Math.abs(gs.dx) > 12 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dx < -40) nextDay();
+        else if (gs.dx > 40) prevDay();
+      },
+    }),
+  ).current;
+
+  const weekSwipe = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) =>
+        Math.abs(gs.dx) > 12 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dx < -40) nextWeek();
+        else if (gs.dx > 40) prevWeek();
+      },
+    }),
+  ).current;
+
   const { data: org } = useOrganization(id ?? '');
   const {
     data: dailyEvents,
@@ -174,6 +197,7 @@ export default function ShulDetailScreen() {
     <>
       <Stack.Screen
         options={{
+          headerShown: true,
           title: '',
           headerBackTitle: 'Back',
           headerStyle: { backgroundColor: colors.card },
@@ -281,7 +305,7 @@ export default function ShulDetailScreen() {
               </TouchableOpacity>
             </View>
 
-            <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]}>
+            <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]} {...daySwipe.panHandlers}>
               {dailyLoading ? (
                 <View style={styles.center}>
                   <ActivityIndicator color={orgColor} size="large" />
@@ -342,7 +366,7 @@ export default function ShulDetailScreen() {
               </TouchableOpacity>
             </View>
 
-            <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]}>
+            <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]} {...weekSwipe.panHandlers}>
               {weeklyLoading ? (
                 <View style={styles.center}>
                   <ActivityIndicator color={orgColor} size="large" />

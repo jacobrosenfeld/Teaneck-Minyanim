@@ -25,6 +25,7 @@ public record ZmanimDto(
             String minchaKetana,     // Mincha Ketana
             String plagHamincha,     // Plag HaMincha
             String shekiya,          // Shekiya (sunset)
+            String earliestShema,    // Earliest time to recite Shema at night
             String tzeis,            // Tzeis Hakochavim (nightfall)
             String chatzosLaila      // Chatzos Laila (midnight)
     ) {}
