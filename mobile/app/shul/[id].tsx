@@ -312,11 +312,17 @@ export default function ShulDetailScreen() {
     end: toApiDate(weekEnd),
   });
 
-  // ── Prefetch adjacent days to eliminate swipe stutter ────────────────────
-  const prevDate = toApiDate(subDays(parseISO(selectedDate), 1));
-  const nextDate = toApiDate(addDays(parseISO(selectedDate), 1));
-  useOrgSchedule(id ?? '', { start: prevDate, end: prevDate });
-  useOrgSchedule(id ?? '', { start: nextDate, end: nextDate });
+  // ── Prefetch ±2 days (rolling window) — data is ready before the swipe ───
+  // Because these are based on selectedDate, navigating one day forward
+  // automatically prefetches two days further ahead (and two days behind).
+  const p1 = toApiDate(subDays(parseISO(selectedDate), 1));
+  const p2 = toApiDate(subDays(parseISO(selectedDate), 2));
+  const n1 = toApiDate(addDays(parseISO(selectedDate), 1));
+  const n2 = toApiDate(addDays(parseISO(selectedDate), 2));
+  useOrgSchedule(id ?? '', { start: p1, end: p1 });
+  useOrgSchedule(id ?? '', { start: p2, end: p2 });
+  useOrgSchedule(id ?? '', { start: n1, end: n1 });
+  useOrgSchedule(id ?? '', { start: n2, end: n2 });
 
   // ── Derived data ──────────────────────────────────────────────────────────
   const weeklySections = buildSections(weeklyEvents ?? []);
