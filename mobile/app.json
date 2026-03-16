@@ -17,7 +17,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Teaneck Minyanim uses your location to show nearby shuls and sort by distance.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Teaneck Minyanim uses your location to show nearby shuls and sort by distance."
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Teaneck Minyanim uses your location to show nearby shuls and sort by distance.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -33,7 +34,15 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
@@ -60,6 +69,19 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "95dba4f3-e045-472d-b34e-05f45ca7add8"
+      }
+    },
+    "owner": "jacobrosenfeld",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/95dba4f3-e045-472d-b34e-05f45ca7add8"
     }
   }
 }
