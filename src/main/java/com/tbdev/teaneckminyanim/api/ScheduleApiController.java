@@ -7,6 +7,7 @@ import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.service.CalendarMaterializationService.WindowBounds;
 import com.tbdev.teaneckminyanim.service.EffectiveScheduleService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
+import com.tbdev.teaneckminyanim.service.ScheduleEnrichmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,6 +50,7 @@ public class ScheduleApiController {
 
     private final EffectiveScheduleService effectiveScheduleService;
     private final OrganizationService organizationService;
+    private final ScheduleEnrichmentService enrichmentService;
 
     // -----------------------------------------------------------------------
     // Combined schedule (all orgs) — powers the app's "Today" / "Week" views
@@ -104,7 +106,7 @@ public class ScheduleApiController {
 
         List<CalendarEvent> events = effectiveScheduleService.getAllOrgsEffectiveEventsInRange(from, to);
         Map<String, Organization> orgCache = buildOrgCache(events);
-        List<ScheduleEventDto> dtos = toSortedDtos(events, orgCache);
+        List<ScheduleEventDto> dtos = enrichmentService.annotatePlag(toSortedDtos(events, orgCache));
 
         return ResponseEntity.ok(ApiResponse.ok(dtos, buildMeta(from, to, dtos.size(), window)));
     }
@@ -170,10 +172,10 @@ public class ScheduleApiController {
         }
 
         List<CalendarEvent> events = effectiveScheduleService.getEffectiveEventsInRange(org.getId(), from, to);
-        List<ScheduleEventDto> dtos = events.stream()
+        List<ScheduleEventDto> dtos = enrichmentService.annotatePlag(events.stream()
                 .sorted(Comparator.comparing(CalendarEvent::getDate).thenComparing(CalendarEvent::getStartTime))
                 .map(e -> ScheduleEventDto.from(e, org))
-                .toList();
+                .toList());
 
         return ResponseEntity.ok(ApiResponse.ok(dtos, buildMeta(from, to, dtos.size(), window)));
     }

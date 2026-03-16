@@ -186,6 +186,52 @@ public class CalendarImportService {
     }
 
     /**
+     * Force-reimport calendars for all organizations with calendar URLs, regardless of
+     * useScrapedCalendar flag.  All existing entries are deleted before the fresh import
+     * so the classifier re-processes every event from scratch (fixes stale notes like
+     * "Shkiya:" that should have been replaced on the original import pass).
+     *
+     * @return Map of organization ID → import result
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Map<String, ImportResult> forceReimportAllOrganizations() {
+        Map<String, ImportResult> results = new LinkedHashMap<>();
+
+        List<Organization> orgs = organizationService.getAll();
+        log.info("Force-reimporting calendars for all {} organizations", orgs.size());
+
+        for (Organization org : orgs) {
+            if (org.getCalendar() == null || org.getCalendar().trim().isEmpty()) continue;
+
+            String orgId = org.getId();
+            log.info("Force-reimporting: {} ({})", org.getName(), orgId);
+
+            try {
+                // Delete all existing entries so the classifier starts clean
+                List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> existing =
+                        entryRepository.findByOrganizationIdOrderByDateDesc(orgId);
+                entryRepository.deleteAll(existing);
+                log.info("Deleted {} existing entries for {}", existing.size(), org.getName());
+
+                ImportResult result = importCalendarForOrganization(orgId);
+                results.put(orgId, result);
+
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                ImportResult errorResult = new ImportResult();
+                errorResult.success = false;
+                errorResult.organizationId = orgId;
+                errorResult.errorMessage = "Exception during force-reimport: " + e.getMessage();
+                results.put(orgId, errorResult);
+                log.error("Force-reimport failed for: {}", org.getName(), e);
+            }
+        }
+
+        log.info("Force-reimport completed for {} organizations", results.size());
+        return results;
+    }
+
+    /**
      * Fetch CSV content from URL using Java HttpClient.
      */
     private String fetchCsvContent(String url) throws IOException, InterruptedException {

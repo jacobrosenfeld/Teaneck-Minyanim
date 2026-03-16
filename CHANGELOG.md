@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.3] - 2026-03-16
+
+### Added
+- **Super Admin Maintenance panel** at `/admin/super/maintenance` (super admins only, sidebar link under "Super Admin" section).
+  - **Reimport All Calendars** — deletes all `OrganizationCalendarEntry` records for every org with a calendar URL and re-fetches/re-classifies from scratch. Fixes stale notes (e.g. "Shkiya:" entries that should have been "Plag:") by running the current classifier pipeline over all data.
+  - **Rematerialize All** — manually triggers the full `calendar_events` table rebuild (same job as the weekly Sunday 2 AM run). Run after reimporting calendars to push changes to the live schedule.
+  - All confirmation dialogs use Bootstrap modals — no browser `confirm()` popups.
+
+### Fixed
+- **Plag annotation now shared between website and API** — extracted `ScheduleEnrichmentService` which both `ZmanimService` (web) and `ScheduleApiController` (API) call. The app previously showed "Shkiya: HH:MM" for maariv minyanim near plag while the website correctly showed "Plag: HH:MM". The shared service strips existing Shkiya/Plag fragments and injects "Plag: HH:MM" at response time for both paths.
+
 ## [1.8.2] - 2026-03-15
 
 ### Added

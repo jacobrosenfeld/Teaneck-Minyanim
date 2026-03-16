@@ -38,6 +38,7 @@ public class ZmanimService {
     private final ZmanimHandler zmanimHandler;
     private final EffectiveScheduleService effectiveScheduleService;
     private final CalendarEventAdapter calendarEventAdapter;
+    private final ScheduleEnrichmentService scheduleEnrichmentService;
     private final VersionService versionService;
     private final CalendarEventRepository calendarEventRepository;
     private final OrganizationRepository organizationRepository;
@@ -224,7 +225,7 @@ public class ZmanimService {
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
         
         // Annotate Maariv/Mincha-Maariv events near Plag with the Plag time in their notes
-        annotatePlagTimeIfNearPlag(minyanEvents, zmanim);
+        scheduleEnrichmentService.annotatePlag(minyanEvents, zmanim);
 
         // Populate organization slugs for all minyan events
         populateOrganizationSlugs(minyanEvents);
@@ -322,7 +323,7 @@ public class ZmanimService {
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
 
         // Annotate Maariv/Mincha-Maariv events near Plag with the Plag time in their notes
-        annotatePlagTimeIfNearPlag(minyanEvents, zmanim);
+        scheduleEnrichmentService.annotatePlag(minyanEvents, zmanim);
 
         mv.getModel().put("allminyanim", minyanEvents);
 
@@ -525,38 +526,4 @@ public class ZmanimService {
         return true;
     }
 
-    /**
-     * For MAARIV and MINCHA_MAARIV events whose start time is within 30 minutes of
-     * Plag Hamincha, appends the Plag time to the event's notes so it's visible in
-     * the UI (e.g. "Plag: 6:14 PM").
-     */
-    private void annotatePlagTimeIfNearPlag(List<MinyanEvent> events, Dictionary<Zman, Date> zmanim) {
-        Date plagTime = zmanim.get(Zman.PLAG_HAMINCHA);
-        if (plagTime == null) return;
-
-        SimpleDateFormat fmt = new SimpleDateFormat("h:mm aa");
-        fmt.setTimeZone(settingsService.getTimeZone());
-        String plagLabel = "Plag: " + fmt.format(plagTime);
-        long thirtyMinutes = 30L * 60 * 1000;
-
-        for (MinyanEvent event : events) {
-            if (event.getStartTime() == null) continue;
-            if (!event.getType().isMaariv() && !event.getType().isMinchaMariv()) continue;
-            // Only annotate fixed-time events — dynamic-time events (plag-based, shekiya-based)
-            // already convey their timing via the formatted time string
-            if (event.dynamicTimeString() != null) continue;
-
-            long diff = Math.abs(event.getStartTime().getTime() - plagTime.getTime());
-            if (diff <= thirtyMinutes) {
-                // Strip any existing Shkiya/Plag notes and replace with just the plag label
-                String existing = event.getNotes();
-                String stripped = existing == null ? "" : Arrays.stream(existing.split(" \\| "))
-                        .map(String::trim)
-                        .filter(p -> !p.startsWith("Shkiya:") && !p.startsWith("Plag:"))
-                        .reduce((a, b) -> a + " | " + b)
-                        .orElse("");
-                event.setNotes(stripped.isEmpty() ? plagLabel : stripped + " | " + plagLabel);
-            }
-        }
-    }
 }

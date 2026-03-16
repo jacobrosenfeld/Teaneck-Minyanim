@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="|Maintenance - ${siteName ?: 'Minyanim Platform'}|">Maintenance</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+
+    <!-- Page header -->
+    <div class="admin-page-header">
+        <div>
+            <h1 class="admin-page-title">
+                <svg class="me-2" style="width:1.2em;height:1.2em;vertical-align:-0.15em" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Maintenance
+            </h1>
+            <p class="admin-page-lead">Super-admin tools for data cleanup and system refresh. These operations affect all organizations.</p>
+        </div>
+    </div>
+
+    <!-- Flash messages -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    <div th:if="${warningMessage}" class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        <span th:text="${warningMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-times-circle mr-2"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;">
+        <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
+            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${totalOrgs}">0</div>
+            <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Total Orgs</div>
+        </div>
+        <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
+            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${orgsWithCalendars}">0</div>
+            <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Orgs w/ Calendars</div>
+        </div>
+        <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
+            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${totalCalendarEntries}">0</div>
+            <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Calendar Entries</div>
+        </div>
+        <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
+            <div style="font-size:2rem;font-weight:700;color:#28a745;" th:text="${enabledCalendarEntries}">0</div>
+            <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Enabled Entries</div>
+        </div>
+    </div>
+
+    <!-- Tool cards -->
+    <div class="row">
+
+        <!-- Reimport All Calendars -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge badge-warning mr-2" style="font-size:.75rem;">Destructive</span>
+                        <h5 class="card-title mb-0">Reimport All Calendars</h5>
+                    </div>
+                    <p class="card-text text-muted" style="font-size:.9rem;">
+                        Deletes all existing calendar entries for every organization that has a calendar URL configured,
+                        then fetches and re-classifies everything from scratch. Use this to fix stale data — for
+                        example, entries that show "Shkiya:" instead of "Plag:" because they were imported before
+                        the classifier was improved.
+                    </p>
+                    <ul class="text-muted" style="font-size:.85rem;">
+                        <li>Applies to all orgs with a calendar URL (ignores useScrapedCalendar flag)</li>
+                        <li>Re-runs the full classification pipeline on every event</li>
+                        <li>Fixes notes/Plag annotations on reimport</li>
+                        <li>After reimport, rematerialize to update live schedule</li>
+                    </ul>
+                    <button type="button" class="btn btn-warning mt-2"
+                            data-toggle="modal" data-target="#reimport-all-modal">
+                        <i class="fas fa-sync-alt mr-1"></i> Reimport All Calendars
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rematerialize All -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge badge-secondary mr-2" style="font-size:.75rem;">Safe</span>
+                        <h5 class="card-title mb-0">Rematerialize All</h5>
+                    </div>
+                    <p class="card-text text-muted" style="font-size:.9rem;">
+                        Triggers a full rebuild of the materialized <code>calendar_events</code> table from
+                        Minyan rules and imported calendar entries. This is the same job that runs automatically
+                        every Sunday at 2 AM. Run this after reimporting calendars or editing Minyan schedules
+                        to push changes live immediately.
+                    </p>
+                    <ul class="text-muted" style="font-size:.85rem;">
+                        <li>Deletes and rebuilds all RULES-sourced events</li>
+                        <li>Preserves IMPORTED and MANUAL events</li>
+                        <li>Covers the rolling 11-week window</li>
+                    </ul>
+                    <button type="button" class="btn btn-secondary mt-2"
+                            data-toggle="modal" data-target="#rematerialize-all-modal">
+                        <i class="fas fa-calendar-alt mr-1"></i> Rematerialize All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Confirmation modals                                                  -->
+    <!-- ------------------------------------------------------------------ -->
+
+    <!-- Reimport All modal -->
+    <div class="modal fade" id="reimport-all-modal" tabindex="-1"
+         aria-labelledby="reimport-all-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="reimport-all-modal-label">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Reimport All Calendars?
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p>This will <strong>delete all existing calendar entries</strong> for every organization
+                       that has a calendar URL, then re-fetch and re-classify from scratch.</p>
+                    <p class="text-muted" style="font-size:.9rem;">
+                        This operation may take a minute or two. The page will reload when it completes.
+                        After reimporting, run <strong>Rematerialize All</strong> to push the updated
+                        data to the live schedule.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+                    <form method="post" th:action="@{/admin/super/maintenance/reimport-all}" style="display:inline;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-sync-alt mr-1"></i> Yes, Reimport All
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rematerialize All modal -->
+    <div class="modal fade" id="rematerialize-all-modal" tabindex="-1"
+         aria-labelledby="rematerialize-all-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rematerialize-all-modal-label">
+                        <i class="fas fa-calendar-alt mr-2"></i>Rematerialize All?
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p>This will trigger a full rebuild of the materialized calendar events table.
+                       All RULES-sourced events will be deleted and regenerated. IMPORTED and MANUAL
+                       events are preserved.</p>
+                    <p class="text-muted" style="font-size:.9rem;">
+                        This is safe to run at any time and typically takes a few seconds.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+                    <form method="post" th:action="@{/admin/super/maintenance/rematerialize-all}" style="display:inline;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-calendar-alt mr-1"></i> Yes, Rematerialize
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

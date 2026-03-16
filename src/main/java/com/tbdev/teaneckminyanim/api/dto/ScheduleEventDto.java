@@ -30,6 +30,13 @@ public record ScheduleEventDto(
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record OrgSummary(String id, String name, String slug, String color, String whatsapp) {}
 
+    /** Return a copy with a different notes value (used for plag annotation at API response time). */
+    public ScheduleEventDto withNotes(String notes) {
+        return new ScheduleEventDto(id, date, startTime, minyanType, minyanTypeDisplay,
+                organization, locationName, notes, nusach, nusachDisplay,
+                dynamicTimeString, source, whatsapp);
+    }
+
     public static ScheduleEventDto from(CalendarEvent event, Organization org) {
         OrgSummary orgSummary = new OrgSummary(
                 org.getId(),
