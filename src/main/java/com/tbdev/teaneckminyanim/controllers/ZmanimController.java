@@ -43,6 +43,13 @@ public class ZmanimController {
         return mv;
     }
 
+    @GetMapping("/privacy")
+    public ModelAndView privacy() {
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("privacy");
+        return mv;
+    }
+
     @ModelAttribute("settings")
     public List<TNMSettings> settings() {
         // Legacy support - Load and return the old notification settings

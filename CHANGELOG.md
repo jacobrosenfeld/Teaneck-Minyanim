@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.4] - 2026-03-16
+
+### Added
+- **Privacy policy page** at `/privacy` — required for App Store submission. Covers location data, push notification tokens, analytics (Google Tag Manager), third-party services (Expo, Mapbox), and user choices. Rendered by the existing Thymeleaf layout with navbar and footer.
+
 ## [1.8.3] - 2026-03-16
 
 ### Added
