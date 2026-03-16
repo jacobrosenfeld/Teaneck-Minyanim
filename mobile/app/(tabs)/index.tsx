@@ -129,6 +129,7 @@ export default function MinyanimScreen() {
       cardEnterAnimation.current = false;
       hasAutoScrolled.current = false;
       nowYRef.current = -1;
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
       setSelectedDate(toApiDate(subDays(parsedDateRef.current, 1)));
     }), [animateTransition]);
 
@@ -137,6 +138,7 @@ export default function MinyanimScreen() {
       cardEnterAnimation.current = false;
       hasAutoScrolled.current = false;
       nowYRef.current = -1;
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
       setSelectedDate(toApiDate(addDays(parsedDateRef.current, 1)));
     }), [animateTransition]);
 
@@ -146,6 +148,7 @@ export default function MinyanimScreen() {
         cardEnterAnimation.current = false;
         hasAutoScrolled.current = false;
         nowYRef.current = -1;
+        scrollViewRef.current?.scrollTo({ y: 0, animated: false });
         setSelectedDate(today);
       });
     }
@@ -159,12 +162,14 @@ export default function MinyanimScreen() {
     cardEnterAnimation.current = false;
     hasAutoScrolled.current = false;
     nowYRef.current = -1;
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     setSelectedDate(toApiDate(subDays(parsedDateRef.current, 1)));
   }, []);
   const gestureNextDay = useCallback(() => {
     cardEnterAnimation.current = false;
     hasAutoScrolled.current = false;
     nowYRef.current = -1;
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     setSelectedDate(toApiDate(addDays(parsedDateRef.current, 1)));
   }, []);
   const gesturePrevDayRef = useRef(gesturePrevDay); gesturePrevDayRef.current = gesturePrevDay;
@@ -200,6 +205,12 @@ export default function MinyanimScreen() {
   const { data: events, isLoading, isError, refetch, isFetching } = useSchedule({ date: selectedDate });
   const { data: zmanim } = useZmanim();
   const { data: orgs } = useOrganizations();
+
+  // ── Prefetch ±2 days so adjacent days load instantly on swipe ─────────────
+  useSchedule({ date: toApiDate(subDays(parseISO(selectedDate), 1)) });
+  useSchedule({ date: toApiDate(subDays(parseISO(selectedDate), 2)) });
+  useSchedule({ date: toApiDate(addDays(parseISO(selectedDate), 1)) });
+  useSchedule({ date: toApiDate(addDays(parseISO(selectedDate), 2)) });
 
   // Update current time every minute
   useEffect(() => {

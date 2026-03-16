@@ -127,7 +127,7 @@ function CustomTabBar({
             <TouchableOpacity
               key={tab.key}
               style={styles.customTabItem}
-              onPress={() => router.navigate(tab.path as never)}>
+              onPress={() => router.replace(tab.path as never)}>
               <SymbolView
                 name={isActive ? tab.iconFocused : tab.icon}
                 tintColor={iconColor}
