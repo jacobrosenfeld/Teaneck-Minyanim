@@ -1,125 +1,147 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title th:text="|Privacy Policy - ${siteName ?: 'Teaneck Minyanim'}|">Privacy Policy - Teaneck Minyanim</title>
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
-    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css}"/>
-    <link th:rel="stylesheet" th:href="@{/styles.css}">
-    <style>
-        body { padding-top: 70px; }
-        .privacy-container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-        h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
-        .effective-date { color: #6c757d; font-size: 0.9rem; margin-bottom: 2.5rem; }
-        h2 { font-size: 1.2rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.5rem; }
-        p, li { color: #444; line-height: 1.7; }
-        ul { padding-left: 1.5rem; }
-        a { color: #275ed8; }
-        hr { margin: 2.5rem 0; }
-    </style>
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+    <link rel="manifest" href="/assets/icons/site.webmanifest">
+    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
+    <meta name="msapplication-TileColor" content="#275ed8">
+    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+        crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/animate.css">
+    <link rel="stylesheet" href="/assets/css/ionicons.min.css">
+    <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
 </head>
+
 <body>
+    <div class="wrapper">
+        <div id="wrapper" class="horizontal-container d-flex container-md">
+            <th:block th:include="~{frontnavbar}"></th:block>
+            <div class="container-fluid" id="main">
+                <div class="row" style="flex-direction: column;">
+                    <main class="col main pt-5 mt-4 overflow-auto"
+                          style="padding-bottom: 5rem !important; padding-top: 5rem !important;">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-md-10 col-lg-8">
 
-<div th:replace="~{frontnavbar :: body}"></div>
+                                    <h1 class="font-weight-bold mb-1">Privacy Policy</h1>
+                                    <p class="text-muted mb-4" style="font-size: 0.9rem;">Effective date: March 16, 2026</p>
 
-<div class="privacy-container">
+                                    <p>Teaneck Minyanim ("we", "us", or "our") operates the Teaneck Minyanim website at
+                                    <a href="https://teaneckminyanim.com">teaneckminyanim.com</a> and the Teaneck Minyanim
+                                    mobile application (collectively, the "Service"). This page explains what information
+                                    we collect, how we use it, and your choices.</p>
 
-    <h1>Privacy Policy</h1>
-    <p class="effective-date">Effective date: March 16, 2026</p>
+                                    <h5 class="font-weight-bold mt-4">1. Information We Collect</h5>
+                                    <p><strong>Location data.</strong> When you use the mobile app, we request access to your
+                                    device's location solely to sort nearby synagogues by distance and to center the map on
+                                    your position. Location data is used on-device and is not transmitted to or stored on
+                                    our servers.</p>
+                                    <p><strong>Usage data.</strong> The website uses Google Tag Manager and associated
+                                    analytics tools to collect standard web traffic information such as pages visited, time
+                                    spent on pages, browser type, and referring URLs. This data is aggregated and anonymous.</p>
+                                    <p><strong>Notification tokens.</strong> If you enable prayer-time reminders in the mobile
+                                    app, a push notification token is generated by Expo's notification service and stored on
+                                    your device. We use this token only to deliver reminders you have explicitly scheduled;
+                                    it is not shared with third parties.</p>
+                                    <p><strong>No account registration.</strong> The app does not require you to create an
+                                    account or provide any personal information such as your name, email address, or phone
+                                    number.</p>
 
-    <p>
-        Teaneck Minyanim ("we", "us", or "our") operates the Teaneck Minyanim website at
-        <a href="https://teaneckminyanim.com">teaneckminyanim.com</a> and the Teaneck Minyanim
-        mobile application (collectively, the "Service"). This page explains what information
-        we collect, how we use it, and your choices.
-    </p>
+                                    <h5 class="font-weight-bold mt-4">2. How We Use Information</h5>
+                                    <ul>
+                                        <li>To display minyan schedules and Jewish prayer times relevant to your location</li>
+                                        <li>To sort synagogue listings by distance from you</li>
+                                        <li>To deliver prayer-time reminder notifications you have scheduled</li>
+                                        <li>To understand aggregate usage patterns and improve the Service</li>
+                                    </ul>
 
-    <h2>1. Information We Collect</h2>
-    <p><strong>Location data.</strong> When you use the mobile app, we request access to your
-    device's location solely to sort nearby synagogues by distance and to center the map on your
-    position. Location data is used on-device and is not transmitted to or stored on our servers.</p>
+                                    <h5 class="font-weight-bold mt-4">3. Information Sharing</h5>
+                                    <p>We do not sell, trade, or rent your personal information to third parties. We may
+                                    share anonymous, aggregated usage data with analytics providers (Google Analytics via
+                                    Google Tag Manager). No personally identifiable information is shared.</p>
 
-    <p><strong>Usage data.</strong> The website uses Google Tag Manager and associated analytics
-    tools to collect standard web traffic information such as pages visited, time spent on pages,
-    browser type, and referring URLs. This data is aggregated and anonymous.</p>
+                                    <h5 class="font-weight-bold mt-4">4. Third-Party Services</h5>
+                                    <p>The Service integrates with the following third-party services, each governed by its
+                                    own privacy policy:</p>
+                                    <ul>
+                                        <li><strong>Google Tag Manager / Google Analytics</strong> — website analytics</li>
+                                        <li><strong>Expo / EAS</strong> — mobile app build and push notification delivery
+                                            (<a href="https://expo.dev/privacy" target="_blank" rel="noopener">expo.dev/privacy</a>)</li>
+                                        <li><strong>Mapbox</strong> — map tiles and geocoding
+                                            (<a href="https://www.mapbox.com/legal/privacy" target="_blank" rel="noopener">mapbox.com/legal/privacy</a>)</li>
+                                    </ul>
 
-    <p><strong>Notification tokens.</strong> If you enable prayer-time reminders in the mobile app,
-    a push notification token is generated by Expo's notification service and stored on your device.
-    We use this token only to deliver reminders you have explicitly scheduled; it is not shared with
-    third parties.</p>
+                                    <h5 class="font-weight-bold mt-4">5. Data Retention</h5>
+                                    <p>We do not store personal data on our servers beyond what is necessary to operate the
+                                    Service. Cached schedule data stored on your device by the app is managed by your
+                                    device's operating system and can be cleared by deleting the app.</p>
 
-    <p><strong>No account registration.</strong> The app does not require you to create an account
-    or provide any personal information such as your name, email address, or phone number.</p>
+                                    <h5 class="font-weight-bold mt-4">6. Children's Privacy</h5>
+                                    <p>The Service is not directed to children under 13. We do not knowingly collect personal
+                                    information from children. If you believe a child has provided us with personal
+                                    information, please contact us and we will delete it promptly.</p>
 
-    <h2>2. How We Use Information</h2>
-    <ul>
-        <li>To display minyan schedules and Jewish prayer times relevant to your location</li>
-        <li>To sort synagogue listings by distance from you</li>
-        <li>To deliver prayer-time reminder notifications you have scheduled</li>
-        <li>To understand aggregate usage patterns and improve the Service</li>
-    </ul>
+                                    <h5 class="font-weight-bold mt-4">7. Your Choices</h5>
+                                    <ul>
+                                        <li><strong>Location:</strong> You can deny or revoke location permission at any time
+                                            in your device settings. The app will still function; shuls will not be sorted
+                                            by distance.</li>
+                                        <li><strong>Notifications:</strong> You can disable notifications in your device
+                                            settings or within the app at any time.</li>
+                                        <li><strong>Analytics:</strong> You can opt out of Google Analytics by installing the
+                                            <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Google Analytics Opt-out Browser Add-on</a>.</li>
+                                    </ul>
 
-    <h2>3. Information Sharing</h2>
-    <p>We do not sell, trade, or rent your personal information to third parties. We may share
-    anonymous, aggregated usage data with analytics providers (Google Analytics via Google Tag
-    Manager). No personally identifiable information is shared.</p>
+                                    <h5 class="font-weight-bold mt-4">8. Security</h5>
+                                    <p>We take reasonable technical measures to protect information transmitted to and from
+                                    our Service. All API communication uses HTTPS. However, no method of transmission over
+                                    the Internet is 100% secure.</p>
 
-    <h2>4. Third-Party Services</h2>
-    <p>The Service integrates with the following third-party services, each governed by its own
-    privacy policy:</p>
-    <ul>
-        <li><strong>Google Tag Manager / Google Analytics</strong> — website analytics</li>
-        <li><strong>Expo / EAS</strong> — mobile app build and push notification delivery
-            (<a href="https://expo.dev/privacy" target="_blank" rel="noopener">expo.dev/privacy</a>)</li>
-        <li><strong>Mapbox</strong> — map tiles and geocoding
-            (<a href="https://www.mapbox.com/legal/privacy" target="_blank" rel="noopener">mapbox.com/legal/privacy</a>)</li>
-    </ul>
+                                    <h5 class="font-weight-bold mt-4">9. Changes to This Policy</h5>
+                                    <p>We may update this Privacy Policy from time to time. Changes will be posted at this
+                                    URL with an updated effective date. Continued use of the Service after changes
+                                    constitutes acceptance of the updated policy.</p>
 
-    <h2>5. Data Retention</h2>
-    <p>We do not store personal data on our servers beyond what is necessary to operate the
-    Service. Cached schedule data stored on your device by the app is managed by your device's
-    operating system and can be cleared by deleting the app.</p>
+                                    <h5 class="font-weight-bold mt-4">10. Contact Us</h5>
+                                    <p>If you have questions about this Privacy Policy, please contact us at
+                                    <a th:href="@{|mailto:${supportEmail}|}" th:text="${supportEmail}">info@teaneckminyanim.com</a>.</p>
 
-    <h2>6. Children's Privacy</h2>
-    <p>The Service is not directed to children under 13. We do not knowingly collect personal
-    information from children. If you believe a child has provided us with personal information,
-    please contact us and we will delete it promptly.</p>
+                                    <hr class="mt-5">
+                                    <p class="text-muted" style="font-size: 0.85rem;">
+                                        &copy; <span th:text="${siteName ?: 'Teaneck Minyanim'}">Teaneck Minyanim</span>.
+                                        Last updated March 16, 2026.
+                                    </p>
 
-    <h2>7. Your Choices</h2>
-    <ul>
-        <li><strong>Location:</strong> You can deny or revoke location permission at any time in
-            your device settings. The app will still function; shuls will not be sorted by distance.</li>
-        <li><strong>Notifications:</strong> You can disable notifications in your device settings
-            or within the app at any time.</li>
-        <li><strong>Analytics:</strong> You can opt out of Google Analytics by installing the
-            <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Google Analytics Opt-out Browser Add-on</a>.</li>
-    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <h2>8. Security</h2>
-    <p>We take reasonable technical measures to protect information transmitted to and from our
-    Service. All API communication uses HTTPS. However, no method of transmission over the Internet
-    is 100% secure.</p>
+    <th:block th:include="~{footer}"></th:block>
 
-    <h2>9. Changes to This Policy</h2>
-    <p>We may update this Privacy Policy from time to time. Changes will be posted at this URL
-    with an updated effective date. Continued use of the Service after changes constitutes
-    acceptance of the updated policy.</p>
-
-    <h2>10. Contact Us</h2>
-    <p>If you have questions about this Privacy Policy, please contact us at
-    <a th:href="@{|mailto:${supportEmail}|}" th:text="${supportEmail}">info@teaneckminyanim.com</a>.</p>
-
-    <hr>
-    <p style="font-size:0.85rem; color:#6c757d;">
-        &copy; <span th:text="${siteName ?: 'Teaneck Minyanim'}">Teaneck Minyanim</span>.
-        This privacy policy was last updated on March 16, 2026.
-    </p>
-
-</div>
-
-<div th:replace="~{footer :: body}"></div>
-
+    <script type="text/javascript" src="/assets/js/jquery-2.1.1.js"></script>
+    <script type="text/javascript" src="/assets/js/plugins.js"></script>
+    <script type="text/javascript" src="/assets/js/custom.js"></script>
 </body>
+
 </html>
