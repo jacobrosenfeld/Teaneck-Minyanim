@@ -291,16 +291,16 @@ export default function ShulDetailScreen() {
               </View>
             ) : null}
             {org?.address ? (
-              <TouchableOpacity
-                style={styles.addressRow}
-                onPress={() => openDirections(org.address!)}>
-                <Text style={[styles.orgAddress, { color: colors.tint }]} numberOfLines={1}>
+              <View style={styles.addressRow}>
+                <Text style={[styles.orgAddress, { color: colors.textSecondary }]} numberOfLines={1}>
                   📍 {org.address}
                 </Text>
-                <View style={[styles.dirBtn, { backgroundColor: colors.tint }]}>
+                <TouchableOpacity
+                  style={[styles.dirBtn, { backgroundColor: colors.tint }]}
+                  onPress={() => openDirections(org.address!)}>
                   <Text style={styles.dirBtnText}>Directions</Text>
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </View>
             ) : null}
           </View>
 
@@ -309,7 +309,6 @@ export default function ShulDetailScreen() {
               <TouchableOpacity
                 style={[styles.actionBtn, { backgroundColor: colors.background, borderColor: colors.border }]}
                 onPress={openWebsite}>
-                <SymbolView name="globe" tintColor={colors.textSecondary} size={20} />
                 <Text style={[styles.actionLabel, { color: colors.textSecondary }]}>Website</Text>
               </TouchableOpacity>
             ) : null}
@@ -528,7 +527,7 @@ const styles = StyleSheet.create({
   orgMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 },
   chip: { borderRadius: 6, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3 },
   chipText: { fontSize: 11, fontWeight: '600' },
-  addressRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8, flexShrink: 1 },
+  addressRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 },
   orgAddress: { fontSize: 13, flex: 1, fontWeight: '500' },
   dirBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   dirBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
