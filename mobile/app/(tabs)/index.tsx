@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Animated,
+  Dimensions,
   LayoutChangeEvent,
   Modal,
   PanResponder,
@@ -14,6 +15,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 import Reanimated, {
   FadeInDown,
   useAnimatedStyle,
@@ -33,7 +36,7 @@ import { useSchedule, useZmanim, useOrganizations } from '@/api/hooks';
 import { toApiDate } from '@/api/client';
 import type { ScheduleEvent, Organization } from '@/api/types';
 import { formatTime } from '@/utils/time';
-import { registerScrollToNow, unregisterScrollToNow } from '@/utils/tabEvents';
+import { registerScrollToNow, unregisterScrollToNow, registerGoToday, unregisterGoToday } from '@/utils/tabEvents';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -114,45 +117,87 @@ export default function MinyanimScreen() {
     });
   }, [contentOpacity, contentTranslateX]);
 
+  // Track whether initial card entrance animation has been shown (#166)
+  const cardEnterAnimation = useRef(true);
+
   // Use a ref to always call the latest parsedDate without recreating PanResponder
   const parsedDateRef = useRef(parsedDate);
   parsedDateRef.current = parsedDate;
 
   const prevDay = useCallback(() =>
     animateTransition(-1, () => {
+      cardEnterAnimation.current = false;
       hasAutoScrolled.current = false;
       nowYRef.current = -1;
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
       setSelectedDate(toApiDate(subDays(parsedDateRef.current, 1)));
     }), [animateTransition]);
 
   const nextDay = useCallback(() =>
     animateTransition(1, () => {
+      cardEnterAnimation.current = false;
       hasAutoScrolled.current = false;
       nowYRef.current = -1;
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
       setSelectedDate(toApiDate(addDays(parsedDateRef.current, 1)));
     }), [animateTransition]);
 
-  const goToday = useCallback(() =>
-    animateTransition(1, () => {
-      hasAutoScrolled.current = false;
-      nowYRef.current = -1;
-      setSelectedDate(today);
-    }), [animateTransition, today]);
+  const goToday = useCallback(() => {
+    if (selectedDate !== today) {
+      animateTransition(1, () => {
+        cardEnterAnimation.current = false;
+        hasAutoScrolled.current = false;
+        nowYRef.current = -1;
+        scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+        setSelectedDate(today);
+      });
+    }
+  }, [animateTransition, today, selectedDate]);
 
-  // Use refs so PanResponder always calls the latest callbacks
-  const prevDayRef = useRef(prevDay);
-  prevDayRef.current = prevDay;
-  const nextDayRef = useRef(nextDay);
-  nextDayRef.current = nextDay;
+  // ── Smooth gesture: Animated.Value tracks finger in real time ────────────
+  const dragX = useRef(new Animated.Value(0)).current;
+
+  // Gesture-only day changers (no Reanimated slide — the drag animation handles visuals)
+  const gesturePrevDay = useCallback(() => {
+    cardEnterAnimation.current = false;
+    hasAutoScrolled.current = false;
+    nowYRef.current = -1;
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    setSelectedDate(toApiDate(subDays(parsedDateRef.current, 1)));
+  }, []);
+  const gestureNextDay = useCallback(() => {
+    cardEnterAnimation.current = false;
+    hasAutoScrolled.current = false;
+    nowYRef.current = -1;
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    setSelectedDate(toApiDate(addDays(parsedDateRef.current, 1)));
+  }, []);
+  const gesturePrevDayRef = useRef(gesturePrevDay); gesturePrevDayRef.current = gesturePrevDay;
+  const gestureNextDayRef = useRef(gestureNextDay); gestureNextDayRef.current = gestureNextDay;
 
   const swipe = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gs) =>
-        evt.nativeEvent.pageX > 30 &&
-        Math.abs(gs.dx) > 15 && Math.abs(gs.dx) > Math.abs(gs.dy) * 1.5,
+        evt.nativeEvent.pageX > 45 &&
+        Math.abs(gs.dx) > 10 &&
+        Math.abs(gs.dx) > Math.abs(gs.dy) * 1.2,
+      onPanResponderMove: (_, gs) => { dragX.setValue(gs.dx); },
       onPanResponderRelease: (_, gs) => {
-        if (gs.dx < -50) nextDayRef.current();
-        else if (gs.dx > 50) prevDayRef.current();
+        const goNext = gs.dx < 0;
+        if (Math.abs(gs.dx) > 50 || Math.abs(gs.vx) > 0.3) {
+          const outX = goNext ? -SCREEN_WIDTH : SCREEN_WIDTH;
+          const inX  = goNext ?  SCREEN_WIDTH * 0.25 : -SCREEN_WIDTH * 0.25;
+          Animated.timing(dragX, { toValue: outX, duration: 120, useNativeDriver: false }).start(() => {
+            if (goNext) gestureNextDayRef.current(); else gesturePrevDayRef.current();
+            dragX.setValue(inX);
+            Animated.spring(dragX, { toValue: 0, useNativeDriver: false, stiffness: 260, damping: 28 }).start();
+          });
+        } else {
+          Animated.spring(dragX, { toValue: 0, useNativeDriver: false, stiffness: 300, damping: 30 }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(dragX, { toValue: 0, useNativeDriver: false, stiffness: 300, damping: 30 }).start();
       },
     }),
   ).current;
@@ -160,6 +205,12 @@ export default function MinyanimScreen() {
   const { data: events, isLoading, isError, refetch, isFetching } = useSchedule({ date: selectedDate });
   const { data: zmanim } = useZmanim();
   const { data: orgs } = useOrganizations();
+
+  // ── Prefetch ±2 days so adjacent days load instantly on swipe ─────────────
+  useSchedule({ date: toApiDate(subDays(parseISO(selectedDate), 1)) });
+  useSchedule({ date: toApiDate(subDays(parseISO(selectedDate), 2)) });
+  useSchedule({ date: toApiDate(addDays(parseISO(selectedDate), 1)) });
+  useSchedule({ date: toApiDate(addDays(parseISO(selectedDate), 2)) });
 
   // Update current time every minute
   useEffect(() => {
@@ -231,11 +282,12 @@ export default function MinyanimScreen() {
     }
   }, []);
 
-  // Register scroll callback so tab press triggers it
+  // Register scroll/today callbacks so tab press triggers them
   useEffect(() => {
     registerScrollToNow(scrollToNow);
-    return () => unregisterScrollToNow();
-  }, [scrollToNow]);
+    registerGoToday(goToday);
+    return () => { unregisterScrollToNow(); unregisterGoToday(); };
+  }, [scrollToNow, goToday]);
 
   // Show FAB only on today, when scrolled >300px from the NOW divider
   const showJump = isToday && !isLoading && nowYRef.current >= 0 &&
@@ -262,7 +314,7 @@ export default function MinyanimScreen() {
         <Text style={[styles.siteName, { color: colors.tint }]}>Teaneck Minyanim</Text>
         <View style={styles.headerRow}>
           <Text style={[styles.headerDate, { color: colors.text }]}>
-            {isToday ? `Today · ${format(parsedDate, 'MMM d')}` : format(parsedDate, 'EEEE, MMM d')}
+            Today · {format(parseISO(today), 'MMM d')}
           </Text>
           {hebrewDate ? (
             <Text style={[styles.hebrewDate, { color: colors.textSecondary }]} numberOfLines={1}>
@@ -331,7 +383,9 @@ export default function MinyanimScreen() {
       </View>
 
       {/* ── Content (swipeable) ── */}
-      <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]} {...swipe.panHandlers}>
+      {/* Outer Animated.View: real-time finger tracking. Inner Reanimated.View: arrow-button slide. */}
+      <Animated.View style={{ flex: 1, transform: [{ translateX: dragX }] }} {...swipe.panHandlers}>
+      <Reanimated.View style={[{ flex: 1 }, animatedContentStyle]}>
         {isLoading && !hasEvents ? (
           <View style={styles.center}>
             <ActivityIndicator color={colors.tint} size="large" />
@@ -401,17 +455,18 @@ export default function MinyanimScreen() {
               const { event } = item;
               const delay = Math.min(index * 20, 300);
               return (
-                <Reanimated.View key={item.key} entering={FadeInDown.delay(delay).duration(320)}>
+                <Reanimated.View key={item.key} entering={cardEnterAnimation.current ? FadeInDown.delay(delay).duration(320) : undefined}>
                   <MinyanCard
                     event={event}
                     showOrg
                     isNext={false}
                     onPress={() =>
                       router.push({
-                        pathname: '/shuls/[id]',
+                        pathname: '/shul/[id]',
                         params: {
                           id: event.organization?.slug ?? event.organization?.id ?? '',
                           selectedEventId: event.id,
+                          sourceTab: 'minyanim',
                         },
                       } as never)
                     }
@@ -422,6 +477,7 @@ export default function MinyanimScreen() {
           </ScrollView>
         )}
       </Reanimated.View>
+      </Animated.View>
 
       {/* ── Jump to Now FAB (today only) ── */}
       <Animated.View
@@ -430,7 +486,7 @@ export default function MinyanimScreen() {
         <TouchableOpacity
           style={[styles.jumpBtnInner, { backgroundColor: colors.tint }]}
           onPress={scrollToNow}>
-          <Text style={styles.jumpBtnText}>Next Minyan ↓</Text>
+          <Text style={styles.jumpBtnText}>Next Minyan</Text>
         </TouchableOpacity>
       </Animated.View>
 
@@ -459,11 +515,22 @@ function OrgPickerModal({
   onSelect: (id: string | null) => void;
   onClose: () => void;
 }) {
+  const dismissPan = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dy > 60 || gs.vy > 0.5) onClose();
+      },
+    }),
+  ).current;
+
   return (
     <Modal visible={visible} animationType="slide" transparent presentationStyle="pageSheet">
       <View style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.card }]}>
-          <View style={[styles.handle, { backgroundColor: colors.border }]} />
+          <View style={styles.handleArea} {...dismissPan.panHandlers}>
+            <View style={[styles.handle, { backgroundColor: colors.border }]} />
+          </View>
           <Text style={[styles.sheetTitle, { color: colors.text }]}>Filter by Shul</Text>
 
           <ScrollView style={styles.sheetList} showsVerticalScrollIndicator={false}>
@@ -611,7 +678,8 @@ const styles = StyleSheet.create({
 
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.35)' },
   sheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 10, maxHeight: '78%' },
-  handle: { width: 36, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 14 },
+  handleArea: { alignSelf: 'stretch', alignItems: 'center', paddingTop: 0, paddingBottom: 14 },
+  handle: { width: 36, height: 4, borderRadius: 2 },
   sheetTitle: { fontSize: 17, fontWeight: '700', paddingHorizontal: 20, marginBottom: 8 },
   sheetList: { flexGrow: 0 },
   sheetRow: {

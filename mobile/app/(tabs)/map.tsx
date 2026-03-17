@@ -49,6 +49,10 @@ export default function MapScreen() {
       if (status === 'granted') {
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         setUserLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+        mapRef.current?.animateToRegion(
+          { latitude: loc.coords.latitude, longitude: loc.coords.longitude, latitudeDelta: 0.02, longitudeDelta: 0.02 },
+          600,
+        );
       }
     })();
   }, []);
@@ -73,9 +77,16 @@ export default function MapScreen() {
     }
   }, [userLocation, locationGranted]);
 
-  const resetToTeaneck = useCallback(() => {
-    mapRef.current?.animateToRegion(TEANECK, 400);
-  }, []);
+  const fitAllPins = useCallback(() => {
+    if (mappable.length === 0) {
+      mapRef.current?.animateToRegion(TEANECK, 400);
+      return;
+    }
+    mapRef.current?.fitToCoordinates(
+      mappable.map((o) => ({ latitude: o.latitude, longitude: o.longitude })),
+      { edgePadding: { top: 80, right: 50, bottom: 120, left: 50 }, animated: true },
+    );
+  }, [mappable]);
 
   return (
     <View style={styles.root}>
@@ -96,7 +107,7 @@ export default function MapScreen() {
             <Callout
               tooltip
               onPress={() =>
-                router.push({ pathname: '/shuls/[id]', params: { id: org.slug ?? org.id } } as never)
+                router.push({ pathname: '/shul/[id]', params: { id: org.slug ?? org.id, sourceTab: 'map' } } as never)
               }>
               <View style={[styles.callout, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={[styles.calloutBanner, { backgroundColor: org.color ?? colors.tint }]} />
@@ -144,11 +155,11 @@ export default function MapScreen() {
             <SymbolView name="location.fill" tintColor={colors.tint} size={20} />
           </TouchableOpacity>
         )}
-        {/* Reset to Teaneck */}
+        {/* Fit all pins */}
         <TouchableOpacity
           style={[styles.controlBtn, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadowStrong }]}
-          onPress={resetToTeaneck}>
-          <SymbolView name="arrow.counterclockwise" tintColor={colors.tint} size={20} />
+          onPress={fitAllPins}>
+          <SymbolView name="scope" tintColor={colors.tint} size={20} />
         </TouchableOpacity>
       </View>
 

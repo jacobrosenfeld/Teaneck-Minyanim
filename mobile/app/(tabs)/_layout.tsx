@@ -5,7 +5,7 @@ import { BlurView } from 'expo-blur';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { triggerScrollToNow } from '@/utils/tabEvents';
+import { triggerScrollToNow, triggerGoToday } from '@/utils/tabEvents';
 
 export default function TabLayout() {
   const scheme = useColorScheme() ?? 'light';
@@ -71,7 +71,7 @@ export default function TabLayout() {
           ),
         }}
         listeners={{
-          tabPress: () => { triggerScrollToNow(); },
+          tabPress: () => { triggerGoToday(); triggerScrollToNow(); },
         }}
       />
 

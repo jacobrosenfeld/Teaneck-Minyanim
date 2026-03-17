@@ -105,6 +105,7 @@ function RootLayoutNav() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="shul/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>
