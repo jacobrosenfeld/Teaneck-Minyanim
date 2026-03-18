@@ -86,6 +86,8 @@ export default function MinyanimScreen() {
   const [orgPickerVisible, setOrgPickerVisible] = useState(false);
   const [nowTime, setNowTime] = useState(getNowTime);
   const [scrollY, setScrollY] = useState(0);
+  const scrollContentHeightRef = useRef(0);
+  const scrollViewHeightRef = useRef(0);
 
   const parsedDate = parseISO(selectedDate);
   const isToday = selectedDate === today;
@@ -337,9 +339,24 @@ export default function MinyanimScreen() {
     return () => unregisterOpenSheet();
   }, []);
 
-  // Show FAB only on today, when scrolled >300px from the NOW divider
+  // True only if there are upcoming events after the NOW divider
+  const hasFutureEvents = useMemo(() => {
+    let seenNow = false;
+    for (const item of listItems) {
+      if (item._type === 'now') { seenNow = true; continue; }
+      if (seenNow && item._type === 'event') return true;
+    }
+    return false;
+  }, [listItems]);
+
+  // True when the scroll view is at (or near) the bottom
+  const atBottom = scrollContentHeightRef.current > 0 && scrollViewHeightRef.current > 0 &&
+    scrollY + scrollViewHeightRef.current >= scrollContentHeightRef.current - 20;
+
+  // Show FAB only on today, when scrolled >300px from NOW, there are future events, and not at bottom
   const showJump = isToday && !isLoading && nowYRef.current >= 0 &&
-    listItems.filter((i) => i._type === 'event').length > 0 &&
+    hasFutureEvents &&
+    !atBottom &&
     Math.abs(scrollY - nowYRef.current) > 300;
 
   useEffect(() => {
@@ -486,6 +503,8 @@ export default function MinyanimScreen() {
             contentContainerStyle={styles.list}
             onScroll={(e) => setScrollY(e.nativeEvent.contentOffset.y)}
             scrollEventThrottle={16}
+            onLayout={(e) => { scrollViewHeightRef.current = e.nativeEvent.layout.height; }}
+            onContentSizeChange={(_w, h) => { scrollContentHeightRef.current = h; }}
             refreshControl={
               <RefreshControl
                 refreshing={isFetching && !isLoading}
