@@ -160,47 +160,48 @@ public class CalendarEventsAdminController {
         Organization org = orgOpt.get();
         mv.addObject("organization", org);
         
-        // Default date range to materialization window
-        CalendarMaterializationService.WindowBounds bounds = materializationService.getWindowBounds();
-        LocalDate effectiveStartDate = startDate != null ? startDate : bounds.getStartDate();
-        LocalDate effectiveEndDate = endDate != null ? endDate : bounds.getEndDate();
-        
-        // Build sort
-        Sort sort = buildSort(sortBy, sortDir);
-        
-        // Query events with filters
+        // Default to current date through 2 weeks ahead (compact preview window)
+        LocalDate today = LocalDate.now();
+        LocalDate effectiveStartDate = startDate != null ? startDate : today;
+        LocalDate effectiveEndDate = endDate != null ? endDate : today.plusDays(13);
+
+        // Build sort (always date+time ascending for schedule view)
+        Sort sort = buildSort(null, null);
+
+        // Query effective events
         List<CalendarEvent> events = queryEventsWithFilters(
                 orgId, effectiveStartDate, effectiveEndDate, minyanType, source, sort);
-        
-        // Add to model
-        mv.addObject("events", events);
+
+        // Group by date for compact schedule view
+        java.util.LinkedHashMap<LocalDate, List<CalendarEvent>> eventsByDate = events.stream()
+                .collect(Collectors.groupingBy(CalendarEvent::getDate,
+                        java.util.LinkedHashMap::new, Collectors.toList()));
+
+        // Track which dates have imported overrides (for visual indicator)
+        java.util.Set<LocalDate> importedDates = events.stream()
+                .filter(e -> e.getSource() == EventSource.IMPORTED)
+                .map(CalendarEvent::getDate)
+                .collect(Collectors.toSet());
+
+        mv.addObject("eventsByDate", eventsByDate);
+        mv.addObject("importedDates", importedDates);
         mv.addObject("startDate", effectiveStartDate);
         mv.addObject("endDate", effectiveEndDate);
         mv.addObject("minyanTypeFilter", minyanType);
         mv.addObject("sourceFilter", source);
-        mv.addObject("sortBy", sortBy != null ? sortBy : "date");
-        mv.addObject("sortDir", sortDir != null ? sortDir : "asc");
-
-        // Add filter options
         mv.addObject("minyanTypes", MinyanType.values());
         mv.addObject("eventSources", EventSource.values());
-        mv.addObject("windowBounds", bounds);
+        mv.addObject("windowBounds", materializationService.getWindowBounds());
 
-        // Add locations for editing
-        List<Location> locations = locationService.findMatching(orgId);
-        mv.addObject("locations", locations);
+        // Stats
+        long totalDays = eventsByDate.size();
+        long importedDaysCount = importedDates.size();
+        long rulesDaysCount = totalDays - importedDaysCount;
 
-        // Statistics (all effective — always enabled by definition)
-        long totalEvents = events.size();
-        long rulesEvents = events.stream().filter(e -> e.getSource() == EventSource.RULES).count();
-        long importedEvents = events.stream().filter(e -> e.getSource() == EventSource.IMPORTED).count();
-        long manualEvents = events.stream().filter(e -> e.getSource() == EventSource.MANUAL).count();
+        mv.addObject("totalDays", totalDays);
+        mv.addObject("importedDaysCount", importedDaysCount);
+        mv.addObject("rulesDaysCount", rulesDaysCount);
 
-        mv.addObject("totalEvents", totalEvents);
-        mv.addObject("rulesEvents", rulesEvents);
-        mv.addObject("importedEvents", importedEvents);
-        mv.addObject("manualEvents", manualEvents);
-        
         return mv;
     }
 

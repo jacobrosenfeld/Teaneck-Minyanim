@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.10] - 2026-03-18
+
+### Changed
+- **Calendar Events page redesigned as compact schedule preview**: The org-specific `/admin/{orgId}/calendar-events` page now shows a day-by-day schedule digest instead of a bloated data table.
+  - Defaults to current date + 2 weeks (instead of full materialization window)
+  - Events grouped by date; each day shows compact service pills (time + type, color-coded)
+  - Amber "Calendar Import" badge and left border on days where imports override rules
+  - "Today" label on the current date row
+  - Week headers inserted at week boundaries
+  - Read-only with action links: Manage Minyan Rules, Manage Calendar Entries, Rematerialize
+  - Stats show: total days with services, days using calendar import, days using rules
+
 ## [1.8.9] - 2026-03-18
 
 ### Changed
