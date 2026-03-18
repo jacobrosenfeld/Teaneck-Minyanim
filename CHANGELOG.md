@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.9] - 2026-03-18
+
+### Changed
+- **Calendar Events pages now show effective schedule**: Both `/admin/{orgId}/calendar-events` and `/admin/calendar-events/all` now use `EffectiveScheduleService.getEffectiveEventsInRange()` instead of raw repository queries. The pages show only the events that the public actually sees — IMPORTED events take precedence over RULES on days where imports exist.
+  - Removed "Enabled/Disabled" status filter and stat card (effective events are always enabled by definition)
+  - Removed Status column and Enable/Disable toggle button from the table
+- **Master Calendar added to Super Admin sidebar**: `/admin/calendar-events/all` is now accessible directly from the sidebar under the Super Admin section.
+
 ## [1.8.8] - 2026-03-18
 
 ### Fixed

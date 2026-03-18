@@ -265,10 +265,6 @@
             <div class="stat-label">Total Events</div>
         </div>
         <div class="stat-card-modern">
-            <div class="stat-number" th:text="${enabledEvents}">0</div>
-            <div class="stat-label">Enabled</div>
-        </div>
-        <div class="stat-card-modern">
             <div class="stat-number" th:text="${rulesEvents}">0</div>
             <div class="stat-label">Rules-Based</div>
         </div>
@@ -323,14 +319,6 @@
                         </select>
                     </div>
                     <div class="form-group-modern">
-                        <label class="form-label-modern">Status</label>
-                        <select name="enabled" class="form-select-modern">
-                            <option value="">All</option>
-                            <option value="true" th:selected="${enabledFilter == 'true'}">Enabled Only</option>
-                            <option value="false" th:selected="${enabledFilter == 'false'}">Disabled Only</option>
-                        </select>
-                    </div>
-                    <div class="form-group-modern">
                         <label class="form-label-modern">&nbsp;</label>
                         <button type="submit" class="btn-modern btn-primary w-full">
                             <i class="fas fa-search"></i>
@@ -354,7 +342,6 @@
                         <th>Source</th>
                         <th>Location</th>
                         <th>Notes</th>
-                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -409,18 +396,7 @@
                                        onchange="this.form.submit()">
                             </form>
                         </td>
-                        <td>
-                            <span class="badge-event"
-                                  th:classappend="${event.enabled} ? 'badge-enabled' : 'badge-disabled'"
-                                  th:text="${event.enabled} ? 'Enabled' : 'Disabled'">Status</span>
-                        </td>
                         <td style="white-space: nowrap;">
-                            <form method="post"
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/toggle(orgId=${organization.id},eventId=${event.id})}"
-                                  style="display: inline;">
-                                <button type="submit" class="action-btn btn-toggle"
-                                        th:text="${event.enabled} ? 'Disable' : 'Enable'">Toggle</button>
-                            </form>
                             <form th:if="${event.source.name() == 'MANUAL'}"
                                   method="post"
                                   th:action="@{/admin/{orgId}/calendar-events/{eventId}/delete(orgId=${organization.id},eventId=${event.id})}"
