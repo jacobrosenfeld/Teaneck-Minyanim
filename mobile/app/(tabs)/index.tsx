@@ -586,23 +586,67 @@ function OrgPickerModal({
   onSelect: (id: string | null) => void;
   onClose: () => void;
 }) {
+  const translateY = useRef(new Animated.Value(600)).current;
+
+  // Animate in when shown, reset when hidden
+  useEffect(() => {
+    if (visible) {
+      translateY.setValue(600);
+      Animated.spring(translateY, {
+        toValue: 0,
+        useNativeDriver: true,
+        stiffness: 280,
+        damping: 28,
+      }).start();
+    } else {
+      translateY.setValue(600);
+    }
+  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const dismiss = useCallback(() => {
+    Animated.timing(translateY, {
+      toValue: 600,
+      duration: 220,
+      useNativeDriver: true,
+    }).start(onClose);
+  }, [onClose, translateY]);
+
+  // Drag zone covers handle + "Filter by Shul" title
   const dismissPan = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gs) =>
+        gs.dy > 5 && Math.abs(gs.dy) > Math.abs(gs.dx),
+      onPanResponderMove: (_, gs) => {
+        if (gs.dy > 0) translateY.setValue(gs.dy);
+      },
       onPanResponderRelease: (_, gs) => {
-        if (gs.dy > 60 || gs.vy > 0.5) onClose();
+        if (gs.dy > 80 || gs.vy > 0.5) {
+          dismiss();
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            stiffness: 300,
+            damping: 30,
+          }).start();
+        }
       },
     }),
   ).current;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent presentationStyle="pageSheet">
+    <Modal visible={visible} animationType="none" transparent onRequestClose={dismiss}>
       <View style={styles.overlay}>
-        <View style={[styles.sheet, { backgroundColor: colors.card }]}>
-          <View style={styles.handleArea} {...dismissPan.panHandlers}>
-            <View style={[styles.handle, { backgroundColor: colors.border }]} />
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={dismiss} />
+
+        <Animated.View style={[styles.sheet, { backgroundColor: colors.card, transform: [{ translateY }] }]}>
+          {/* Drag zone: handle + title */}
+          <View {...dismissPan.panHandlers}>
+            <View style={styles.handleArea}>
+              <View style={[styles.handle, { backgroundColor: colors.border }]} />
+            </View>
+            <Text style={[styles.sheetTitle, { color: colors.text }]}>Filter by Shul</Text>
           </View>
-          <Text style={[styles.sheetTitle, { color: colors.text }]}>Filter by Shul</Text>
 
           <ScrollView style={styles.sheetList} showsVerticalScrollIndicator={false}>
             <Pressable
@@ -636,10 +680,10 @@ function OrgPickerModal({
 
           <TouchableOpacity
             style={[styles.sheetClose, { borderTopColor: colors.border }]}
-            onPress={onClose}>
+            onPress={dismiss}>
             <Text style={[styles.sheetCloseText, { color: colors.tint }]}>Done</Text>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -747,7 +791,8 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 15, textAlign: 'center', lineHeight: 22 },
   clearLink: { fontSize: 14, fontWeight: '600', marginTop: 12 },
 
-  overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.35)' },
+  overlay: { flex: 1, justifyContent: 'flex-end' },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)' },
   sheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 10, maxHeight: '78%' },
   handleArea: { alignSelf: 'stretch', alignItems: 'center', paddingTop: 0, paddingBottom: 14 },
   handle: { width: 36, height: 4, borderRadius: 2 },
