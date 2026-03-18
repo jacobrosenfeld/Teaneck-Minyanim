@@ -1,21 +1,34 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import {
   Animated,
+  Linking,
   Modal,
   PanResponder,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SymbolView } from 'expo-symbols';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import MinyanCard from '@/components/MinyanCard';
-import { useOrgSchedule } from '@/api/hooks';
+import { useOrgSchedule, useOrganization } from '@/api/hooks';
 import { toApiDate } from '@/api/client';
 import type { ScheduleEvent } from '@/api/types';
 import { format, parseISO } from 'date-fns';
+
+function openDirections(address: string) {
+  const encoded = encodeURIComponent(address);
+  const url = Platform.select({
+    ios: `maps://?q=${encoded}`,
+    android: `geo:0,0?q=${encoded}`,
+    default: `https://maps.google.com/maps?q=${encoded}`,
+  });
+  Linking.openURL(url!);
+}
 
 interface Props {
   event: ScheduleEvent | null;  // The tapped event (determines org + date + highlight)
@@ -32,6 +45,7 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
   const orgName = event?.organization?.name ?? '';
 
   const { data: events } = useOrgSchedule(orgSlug, { date });
+  const { data: org } = useOrganization(orgSlug);
 
   // Sort events by start time
   const sorted = events
@@ -136,6 +150,21 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
                     {format(parsedDate, 'EEEE, MMMM d')}
                   </Text>
                 ) : null}
+                {org?.address ? (
+                  <View style={styles.addressRow}>
+                    <TouchableOpacity style={styles.addressTextWrap} onPress={() => openDirections(org.address!)}>
+                      <SymbolView name="location.fill" tintColor={colors.textSecondary} size={11} />
+                      <Text style={[styles.addressText, { color: colors.textSecondary }]} numberOfLines={1}>
+                        {org.address}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.dirBtn, { backgroundColor: colors.tint }]}
+                      onPress={() => openDirections(org.address!)}>
+                      <Text style={styles.dirBtnText}>Directions</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
               </View>
               <TouchableOpacity onPress={dismiss} hitSlop={10} style={styles.closeBtn}>
                 <Text style={[styles.closeText, { color: colors.textTertiary }]}>✕</Text>
@@ -213,10 +242,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  headerContent: { flex: 1 },
+  headerContent: { flex: 1, marginRight: 8 },
   orgName: { fontSize: 17, fontWeight: '800', letterSpacing: -0.3 },
   dateLabel: { fontSize: 13, marginTop: 2 },
-  closeBtn: { padding: 4 },
+  addressRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 8 },
+  addressTextWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  addressText: { fontSize: 12, fontWeight: '500', flex: 1 },
+  dirBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, flexShrink: 0 },
+  dirBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
+  closeBtn: { padding: 4, alignSelf: 'flex-start' },
   closeText: { fontSize: 16 },
   list: { flexGrow: 1 },
   listContent: { paddingTop: 8, paddingBottom: 40 },
