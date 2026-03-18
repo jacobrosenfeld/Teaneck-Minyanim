@@ -20,9 +20,7 @@ import Reanimated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
-import { BlurView } from 'expo-blur';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, Stack, router } from 'expo-router';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { SymbolView } from 'expo-symbols';
 import { addDays, subDays, addWeeks, subWeeks, format, parseISO, startOfWeek, endOfWeek } from 'date-fns';
@@ -36,15 +34,6 @@ import { toApiDate } from '@/api/client';
 import type { ScheduleEvent } from '@/api/types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-const TAB_BAR_HEIGHT = 49;
-
-const BOTTOM_TABS = [
-  { key: 'minyanim', label: 'Minyanim', icon: 'calendar',        iconFocused: 'calendar',           path: '/(tabs)/'      },
-  { key: 'shuls',    label: 'Shuls',    icon: 'building.2',       iconFocused: 'building.2.fill',    path: '/(tabs)/shuls' },
-  { key: 'map',      label: 'Map',      icon: 'map',              iconFocused: 'map.fill',            path: '/(tabs)/map'   },
-  { key: 'zmanim',   label: 'Zmanim',   icon: 'clock',            iconFocused: 'clock.fill',         path: '/(tabs)/zmanim'},
-] as const;
 
 const TYPE_ORDER = ['SHACHARIS', 'MINCHA', 'MINCHA_MAARIV', 'MAARIV', 'SELICHOS', 'MEGILA_READING'];
 function sortKey(t: string) { return TYPE_ORDER.indexOf(t) === -1 ? 99 : TYPE_ORDER.indexOf(t); }
@@ -86,80 +75,10 @@ function openDirections(address: string) {
   Linking.openURL(url!);
 }
 
-// ── Custom bottom tab bar ──────────────────────────────────────────────────────
-
-function CustomTabBar({
-  activeTab,
-  colors,
-  scheme,
-}: {
-  activeTab: string | undefined;
-  colors: typeof Colors.light;
-  scheme: 'light' | 'dark';
-}) {
-  const insets = useSafeAreaInsets();
-
-  return (
-    <View style={[styles.customTabBarWrap, { height: TAB_BAR_HEIGHT + insets.bottom }]}>
-      {Platform.OS === 'ios' ? (
-        <BlurView
-          intensity={90}
-          tint={scheme === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterial'}
-          style={StyleSheet.absoluteFill}
-        />
-      ) : (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.card }]} />
-      )}
-      <View
-        style={[
-          styles.customTabBarBorder,
-          {
-            borderTopColor:
-              scheme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
-          },
-        ]}
-      />
-      <View style={[styles.customTabBarRow, { paddingBottom: 0, height: TAB_BAR_HEIGHT }]}>
-        {BOTTOM_TABS.map((tab) => {
-          const isActive = tab.key === activeTab;
-          const iconColor = isActive ? colors.tint : colors.tabIconDefault;
-          return (
-            <TouchableOpacity
-              key={tab.key}
-              style={styles.customTabItem}
-              onPress={() => {
-                // Always go BACK first — this pops shul/[id] and returns to
-                // the existing (tabs) group already in the root stack.
-                // Then, if the target is a different tab than where we came
-                // from, navigate within (tabs) to switch the active tab.
-                // Both dispatches are processed synchronously so the final
-                // animated state is correct (no forward-navigation chain).
-                router.back();
-                if (tab.key !== activeTab) {
-                  router.navigate(tab.path as never);
-                }
-              }}>
-              <SymbolView
-                name={isActive ? tab.iconFocused : tab.icon}
-                tintColor={iconColor}
-                size={22}
-              />
-              <Text style={[styles.customTabLabel, { color: iconColor }]}>{tab.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    </View>
-  );
-}
-
-// ── Main screen ───────────────────────────────────────────────────────────────
-
 export default function ShulDetailScreen() {
-  const { id, selectedEventId, sourceTab } = useLocalSearchParams<{
+  const { id, selectedEventId } = useLocalSearchParams<{
     id: string;
     selectedEventId?: string;
-    sourceTab?: string;
   }>();
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
@@ -169,7 +88,6 @@ export default function ShulDetailScreen() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }));
   const tabScrollRef = useRef<ScrollView>(null);
 
-  // ── Reanimated slide: used only for arrow-button navigation ───────────────
   const contentOpacity = useSharedValue(1);
   const contentTranslateX = useSharedValue(0);
   const animatedContentStyle = useAnimatedStyle(() => ({
@@ -192,10 +110,8 @@ export default function ShulDetailScreen() {
     });
   }, [contentOpacity, contentTranslateX]);
 
-  // ── Animated.Value: used for real-time gesture tracking ───────────────────
   const dayDragX = useRef(new Animated.Value(0)).current;
   const weekDragX = useRef(new Animated.Value(0)).current;
-  // Deferred slide-in refs: set in swipe callback, consumed by useEffect after React commits.
   const daySlideInXRef = useRef<number | null>(null);
   const weekSlideInXRef = useRef<number | null>(null);
 
@@ -205,13 +121,11 @@ export default function ShulDetailScreen() {
   const weekEnd = endOfWeek(weekStart, { weekStartsOn: 0 });
   const isThisWeek = toApiDate(weekStart) === toApiDate(startOfWeek(new Date(), { weekStartsOn: 0 }));
 
-  // Refs so gesture callbacks always see the latest state
   const selectedDateRef = useRef(selectedDate);
   selectedDateRef.current = selectedDate;
   const weekStartRef = useRef(weekStart);
   weekStartRef.current = weekStart;
 
-  // Arrow navigation — uses Reanimated slide animation
   const prevDay = () => animateTransition(-1, () => setSelectedDate(toApiDate(subDays(parseISO(selectedDateRef.current), 1))));
   const nextDay = () => animateTransition(1, () => setSelectedDate(toApiDate(addDays(parseISO(selectedDateRef.current), 1))));
   const goToday = () => animateTransition(1, () => setSelectedDate(today));
@@ -225,7 +139,6 @@ export default function ShulDetailScreen() {
     tabScrollRef.current?.scrollTo({ x: tab * SCREEN_WIDTH, animated: true });
   };
 
-  // Gesture-only day/week changers (no Reanimated animation — gesture handles visuals)
   const gestureNextDay = useCallback(() => {
     setSelectedDate(toApiDate(addDays(parseISO(selectedDateRef.current), 1)));
   }, []);
@@ -235,15 +148,11 @@ export default function ShulDetailScreen() {
   const gestureNextWeek = useCallback(() => { setWeekStart((w) => addWeeks(w, 1)); }, []);
   const gesturePrevWeek = useCallback(() => { setWeekStart((w) => subWeeks(w, 1)); }, []);
 
-  // Refs so PanResponder closures always call the latest
   const gestureNextDayRef = useRef(gestureNextDay); gestureNextDayRef.current = gestureNextDay;
   const gesturePrevDayRef = useRef(gesturePrevDay); gesturePrevDayRef.current = gesturePrevDay;
   const gestureNextWeekRef = useRef(gestureNextWeek); gestureNextWeekRef.current = gestureNextWeek;
   const gesturePrevWeekRef = useRef(gesturePrevWeek); gesturePrevWeekRef.current = gesturePrevWeek;
 
-  // ── Smooth gesture completion helper ─────────────────────────────────────
-  // slideInXRef: when provided, the spring is deferred until a useEffect fires
-  // after React commits the new render, eliminating the flash of old content.
   const completeSwipe = useCallback((
     goNext: boolean,
     anim: Animated.Value,
@@ -257,7 +166,7 @@ export default function ShulDetailScreen() {
       if (slideInXRef) {
         slideInXRef.current = inX;
         if (goNext) onNext(); else onPrev();
-        anim.setValue(outX); // stay off-screen; useEffect will spring in after new content paints
+        anim.setValue(outX);
       } else {
         if (goNext) onNext(); else onPrev();
         anim.setValue(inX);
@@ -270,7 +179,6 @@ export default function ShulDetailScreen() {
     Animated.spring(anim, { toValue: 0, useNativeDriver: false, stiffness: 300, damping: 30 }).start();
   }, []);
 
-  // ── PanResponders ─────────────────────────────────────────────────────────
   const daySwipe = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gs) =>
@@ -280,11 +188,7 @@ export default function ShulDetailScreen() {
       onPanResponderMove: (_, gs) => { dayDragX.setValue(gs.dx); },
       onPanResponderRelease: (_, gs) => {
         if (Math.abs(gs.dx) > 50 || Math.abs(gs.vx) > 0.3) {
-          completeSwipe(
-            gs.dx < 0, dayDragX,
-            gestureNextDayRef.current, gesturePrevDayRef.current,
-            daySlideInXRef,
-          );
+          completeSwipe(gs.dx < 0, dayDragX, gestureNextDayRef.current, gesturePrevDayRef.current, daySlideInXRef);
         } else {
           bounceBack(dayDragX);
         }
@@ -302,11 +206,7 @@ export default function ShulDetailScreen() {
       onPanResponderMove: (_, gs) => { weekDragX.setValue(gs.dx); },
       onPanResponderRelease: (_, gs) => {
         if (Math.abs(gs.dx) > 50 || Math.abs(gs.vx) > 0.3) {
-          completeSwipe(
-            gs.dx < 0, weekDragX,
-            gestureNextWeekRef.current, gesturePrevWeekRef.current,
-            weekSlideInXRef,
-          );
+          completeSwipe(gs.dx < 0, weekDragX, gestureNextWeekRef.current, gesturePrevWeekRef.current, weekSlideInXRef);
         } else {
           bounceBack(weekDragX);
         }
@@ -315,7 +215,6 @@ export default function ShulDetailScreen() {
     }),
   ).current;
 
-  // ── Data fetching ─────────────────────────────────────────────────────────
   const { data: org } = useOrganization(id ?? '');
 
   const {
@@ -337,9 +236,6 @@ export default function ShulDetailScreen() {
     end: toApiDate(weekEnd),
   });
 
-  // ── Prefetch ±2 days (rolling window) — data is ready before the swipe ───
-  // Because these are based on selectedDate, navigating one day forward
-  // automatically prefetches two days further ahead (and two days behind).
   const p1 = toApiDate(subDays(parseISO(selectedDate), 1));
   const p2 = toApiDate(subDays(parseISO(selectedDate), 2));
   const n1 = toApiDate(addDays(parseISO(selectedDate), 1));
@@ -349,8 +245,6 @@ export default function ShulDetailScreen() {
   useOrgSchedule(id ?? '', { start: n1, end: n1 });
   useOrgSchedule(id ?? '', { start: n2, end: n2 });
 
-  // Deferred slide-in: fires after React commits the new render so the spring
-  // always starts with the correct day/week content already painted.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (daySlideInXRef.current !== null) {
@@ -371,7 +265,6 @@ export default function ShulDetailScreen() {
     }
   }, [weekStart]);
 
-  // ── Derived data ──────────────────────────────────────────────────────────
   const weeklySections = buildSections(weeklyEvents ?? []);
   const orgColor = org?.color ?? colors.tint;
   const dailySorted = [...(dailyEvents ?? [])].sort((a, b) => {
@@ -389,8 +282,7 @@ export default function ShulDetailScreen() {
 
   const openWhatsApp = () => {
     if (!org?.whatsapp) return;
-    const num = org.whatsapp.replace(/\D/g, '');
-    WebBrowser.openBrowserAsync(`https://wa.me/${num}`);
+    Linking.openURL(org.whatsapp);
   };
 
   return (
@@ -399,7 +291,7 @@ export default function ShulDetailScreen() {
         options={{
           headerShown: true,
           title: '',
-          headerBackTitle: 'Back',
+          headerBackTitle: 'Shuls',
           headerStyle: { backgroundColor: colors.card },
           headerTintColor: orgColor,
           headerShadowVisible: false,
@@ -412,14 +304,11 @@ export default function ShulDetailScreen() {
 
         {/* ── Org header card ── */}
         <View style={[styles.orgCard, { backgroundColor: colors.card, borderBottomColor: colors.border, borderLeftColor: orgColor }]}>
-
-          {/* Top row: name + action buttons */}
           <View style={styles.orgCardTop}>
             <View style={styles.orgCardInfo}>
               <Text style={[styles.siteNameSmall, { color: colors.tint }]}>Teaneck Minyanim</Text>
               <Text style={[styles.orgName, { color: colors.text }]}>{org?.name ?? ''}</Text>
             </View>
-
             {(org?.websiteUrl || org?.whatsapp) ? (
               <View style={styles.orgActions}>
                 {org?.websiteUrl ? (
@@ -441,7 +330,6 @@ export default function ShulDetailScreen() {
             ) : null}
           </View>
 
-          {/* Nusach chip */}
           {org?.nusachDisplay ? (
             <View style={styles.orgMeta}>
               <View style={[styles.chip, { backgroundColor: colors.background, borderColor: colors.border }]}>
@@ -450,7 +338,6 @@ export default function ShulDetailScreen() {
             </View>
           ) : null}
 
-          {/* Full-width address row: tapping address opens directions */}
           {org?.address ? (
             <View style={styles.addressRow}>
               <TouchableOpacity
@@ -521,10 +408,6 @@ export default function ShulDetailScreen() {
               </TouchableOpacity>
             </View>
 
-            {/*
-              Outer Animated.View: real-time drag tracking (follows finger).
-              Inner Reanimated.View: arrow-button slide animation.
-            */}
             <Animated.View
               style={{ flex: 1, transform: [{ translateX: dayDragX }] }}
               {...daySwipe.panHandlers}>
@@ -641,9 +524,6 @@ export default function ShulDetailScreen() {
             </Animated.View>
           </View>
         </ScrollView>
-
-        {/* ── Custom bottom tab bar ── */}
-        <CustomTabBar activeTab={sourceTab} colors={colors} scheme={scheme} />
       </View>
     </>
   );
@@ -652,7 +532,6 @@ export default function ShulDetailScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
 
-  // ── Org card (column layout so address row is full-width) ──────────────────
   orgCard: {
     borderBottomWidth: 1,
     borderLeftWidth: 4,
@@ -664,41 +543,20 @@ const styles = StyleSheet.create({
       android: { elevation: 1 },
     }),
   },
-  orgCardTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
+  orgCardTop: { flexDirection: 'row', alignItems: 'flex-start' },
   orgCardInfo: { flex: 1, marginRight: 12 },
-  siteNameSmall: {
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: 2,
-  },
+  siteNameSmall: { fontSize: 9, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 },
   orgName: { fontSize: 20, fontWeight: '800', letterSpacing: -0.3 },
   orgMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 },
   chip: { borderRadius: 6, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3 },
   chipText: { fontSize: 11, fontWeight: '600' },
 
-  // Address row — spans full card width
-  addressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap: 8,
-  },
-  addressTextWrap: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
+  addressRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
+  addressTextWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 },
   orgAddress: { fontSize: 13, fontWeight: '500', flex: 1 },
   dirBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, flexShrink: 0 },
   dirBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
 
-  // Action buttons (website, whatsapp) — stacked column on right of top row
   orgActions: { gap: 6, alignItems: 'flex-end', flexShrink: 0 },
   actionBtn: {
     borderRadius: 10,
@@ -713,17 +571,8 @@ const styles = StyleSheet.create({
   },
   actionLabel: { fontSize: 11, fontWeight: '600' },
 
-  // ── Daily/Weekly tab toggle ────────────────────────────────────────────────
-  tabBar: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-  },
-  tabTrack: {
-    flexDirection: 'row',
-    borderRadius: 10,
-    padding: 3,
-  },
+  tabBar: { paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
+  tabTrack: { flexDirection: 'row', borderRadius: 10, padding: 3 },
   tabBtn: {
     flex: 1,
     paddingVertical: 7,
@@ -736,21 +585,14 @@ const styles = StyleSheet.create({
   },
   tabText: { fontSize: 14 },
 
-  // ── Day navigator ─────────────────────────────────────────────────────────
-  dayNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    paddingVertical: 10,
-  },
+  dayNav: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, paddingVertical: 10 },
   navBtn: { paddingHorizontal: 16, minWidth: 50, alignItems: 'center' },
   navArrow: { fontSize: 30, fontWeight: '300', lineHeight: 34 },
   navCenter: { flex: 1, alignItems: 'center' },
   navDate: { fontSize: 15, fontWeight: '700' },
   todayHint: { fontSize: 11, marginTop: 2, fontWeight: '500' },
 
-  // ── List ──────────────────────────────────────────────────────────────────
-  list: { paddingTop: 8, paddingBottom: 36 },
+  list: { paddingTop: 8, paddingBottom: 100 },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -766,33 +608,4 @@ const styles = StyleSheet.create({
   emptyIcon: { fontSize: 36, marginBottom: 12 },
   emptyText: { fontSize: 15, textAlign: 'center' },
   switchHint: { fontSize: 14, fontWeight: '600' },
-
-  // ── Custom bottom tab bar ─────────────────────────────────────────────────
-  customTabBarWrap: {
-    overflow: 'hidden',
-    // height is set dynamically via inline style (TAB_BAR_HEIGHT + insets.bottom)
-  },
-  customTabBarBorder: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  customTabBarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  customTabItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
-    paddingVertical: 6,
-  },
-  customTabLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 0.2,
-  },
 });

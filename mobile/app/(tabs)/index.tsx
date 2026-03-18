@@ -25,12 +25,12 @@ import Reanimated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import { format, addDays, subDays, parseISO } from 'date-fns';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import MinyanCard from '@/components/MinyanCard';
+import ShulDaySheet from '@/components/ShulDaySheet';
 import ErrorState from '@/components/ErrorState';
 import { useSchedule, useZmanim, useOrganizations } from '@/api/hooks';
 import { toApiDate } from '@/api/client';
@@ -81,6 +81,7 @@ export default function MinyanimScreen() {
   const [selectedDate, setSelectedDate] = useState(today);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
   const [orgFilter, setOrgFilter] = useState<string | null>(null);
+  const [sheetEvent, setSheetEvent] = useState<ScheduleEvent | null>(null);
   const [orgPickerVisible, setOrgPickerVisible] = useState(false);
   const [nowTime, setNowTime] = useState(getNowTime);
   const [scrollY, setScrollY] = useState(0);
@@ -156,6 +157,9 @@ export default function MinyanimScreen() {
 
   // ── Smooth gesture: Animated.Value tracks finger in real time ────────────
   const dragX = useRef(new Animated.Value(0)).current;
+  // Stores the inX value for the deferred slide-in (set in swipe callback,
+  // consumed by useEffect after React commits the new-day render).
+  const slideInXRef = useRef<number | null>(null);
 
   // Gesture-only day changers (no Reanimated slide — the drag animation handles visuals)
   const gesturePrevDay = useCallback(() => {
@@ -188,9 +192,12 @@ export default function MinyanimScreen() {
           const outX = goNext ? -SCREEN_WIDTH : SCREEN_WIDTH;
           const inX  = goNext ?  SCREEN_WIDTH * 0.25 : -SCREEN_WIDTH * 0.25;
           Animated.timing(dragX, { toValue: outX, duration: 120, useNativeDriver: false }).start(() => {
+            // Store inX for the useEffect to consume after React commits the new render.
+            // Keep dragX fully off-screen (outX) so the old content is never visible
+            // during the state transition — the spring fires only after new content paints.
+            slideInXRef.current = inX;
             if (goNext) gestureNextDayRef.current(); else gesturePrevDayRef.current();
-            dragX.setValue(inX);
-            Animated.spring(dragX, { toValue: 0, useNativeDriver: false, stiffness: 260, damping: 28 }).start();
+            dragX.setValue(outX);
           });
         } else {
           Animated.spring(dragX, { toValue: 0, useNativeDriver: false, stiffness: 300, damping: 30 }).start();
@@ -211,6 +218,17 @@ export default function MinyanimScreen() {
   useSchedule({ date: toApiDate(subDays(parseISO(selectedDate), 2)) });
   useSchedule({ date: toApiDate(addDays(parseISO(selectedDate), 1)) });
   useSchedule({ date: toApiDate(addDays(parseISO(selectedDate), 2)) });
+
+  // Deferred slide-in: fires after React commits the new selectedDate render,
+  // ensuring the spring animation starts with the correct day's content visible.
+  useEffect(() => {
+    if (slideInXRef.current !== null) {
+      const inX = slideInXRef.current;
+      slideInXRef.current = null;
+      dragX.setValue(inX);
+      Animated.spring(dragX, { toValue: 0, useNativeDriver: false, stiffness: 260, damping: 28 }).start();
+    }
+  }, [selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Update current time every minute
   useEffect(() => {
@@ -460,16 +478,7 @@ export default function MinyanimScreen() {
                     event={event}
                     showOrg
                     isNext={false}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/shul/[id]',
-                        params: {
-                          id: event.organization?.slug ?? event.organization?.id ?? '',
-                          selectedEventId: event.id,
-                          sourceTab: 'minyanim',
-                        },
-                      } as never)
-                    }
+                    onPress={() => setSheetEvent(event)}
                   />
                 </Reanimated.View>
               );
@@ -498,6 +507,13 @@ export default function MinyanimScreen() {
         colors={colors}
         onSelect={(id) => { setOrgFilter(id); setOrgPickerVisible(false); }}
         onClose={() => setOrgPickerVisible(false)}
+      />
+
+      {/* ── Shul day sheet (tap a card to see that org's full day schedule) ── */}
+      <ShulDaySheet
+        event={sheetEvent}
+        date={selectedDate}
+        onClose={() => setSheetEvent(null)}
       />
     </SafeAreaView>
   );
