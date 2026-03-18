@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.6] - 2026-03-18
+
+### Fixed
+- **Minyan Schedule page unstyled (#94, #110)**: The admin minyan schedule page (`/admin/{orgId}/minyanim`) was using ~10 wrong CSS custom property names that don't exist in `design-system.css`, causing all custom styles to silently fall back to defaults (no border colors, no backgrounds, no spacing, no radius). Corrected: `--primary-color` → `--color-primary`, `--spacing-N` → `--space-N` (×6), `--bg-secondary` → `--color-gray-100`, `--bg-tertiary` → `--color-gray-200`, `--border-radius` → `--radius-md`.
+
 ## [1.8.5] - 2026-03-18
 
 ### Fixed
