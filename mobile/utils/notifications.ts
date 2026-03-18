@@ -85,6 +85,8 @@ export async function scheduleReminder(opts: ReminderOptions): Promise<string | 
       data: {
         eventId: opts.eventId,
         date: opts.date,
+        minyanType: opts.minyanType,
+        // originalTitle kept for backwards compat with any previously scheduled notifications
         originalTitle: `${opts.minyanType} in ${minutesBefore} minutes`,
         originalBody: `${opts.orgName} · ${formatDisplayTime(opts.startTime)}`,
       },

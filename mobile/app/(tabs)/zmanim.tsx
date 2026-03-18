@@ -17,7 +17,7 @@ import {
   runOnJS,
 } from 'react-native-reanimated';
 import Reanimated from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format, addDays, subDays, parseISO } from 'date-fns';
 import Constants from 'expo-constants';
 
@@ -43,8 +43,8 @@ const ZMANIM_ROWS: { label: string; key: keyof ZmanimTimes; section?: string; hi
   { label: 'Mincha Ketana', key: 'minchaKetana' },
   { label: 'Plag HaMincha', key: 'plagHamincha', highlight: true },
   { label: 'Shekiya', key: 'shekiya', section: 'Evening', highlight: true },
-  { label: 'Tzes HaKochavim', key: 'tzeis', highlight: true },
   { label: 'Earliest Shema', key: 'earliestShema' },
+  { label: 'Tzes HaKochavim', key: 'tzeis', highlight: true },
   { label: 'Chatzos Laila', key: 'chatzosLaila' },
 ];
 
@@ -54,6 +54,7 @@ const SUPPORT_EMAIL = 'info@teaneckminyanim.com';
 export default function ZmanimScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const insets = useSafeAreaInsets();
 
   const [selectedDate, setSelectedDate] = React.useState(toApiDate(new Date()));
   const { data: zmanim, isLoading, isError, refetch } = useZmanim(selectedDate);
@@ -156,7 +157,7 @@ export default function ZmanimScreen() {
       ) : isError ? (
         <ErrorState message="Could not load zmanim." onRetry={refetch} />
       ) : (
-        <ScrollView contentContainerStyle={styles.list}>
+        <ScrollView contentContainerStyle={[styles.list, { paddingBottom: 32 + insets.bottom }]}>
           {/* Zmanim rows */}
           {ZMANIM_ROWS.map((row) => {
             const raw = zmanim?.times?.[row.key];
@@ -210,6 +211,9 @@ export default function ZmanimScreen() {
             <Text style={[styles.footerVersion, { color: colors.textTertiary }]}>
               v{APP_VERSION}
             </Text>
+            <Text style={[styles.footerCopyright, { color: colors.textTertiary }]}>
+              © {new Date().getFullYear()} Teaneck Minyanim · TB Dev
+            </Text>
           </View>
         </ScrollView>
       )}
@@ -246,7 +250,7 @@ const styles = StyleSheet.create({
   navHebrew: { fontSize: 13, marginTop: 1 },
   todayHint: { fontSize: 11, marginTop: 2, fontWeight: '500' },
 
-  list: { paddingBottom: 32 },
+  list: { paddingBottom: 0 }, // bottom padding applied dynamically with insets
 
   sectionHeader: {
     flexDirection: 'row',
@@ -283,4 +287,5 @@ const styles = StyleSheet.create({
   footerBrand: { fontSize: 14, fontWeight: '800', letterSpacing: 0.3 },
   footerEmail: { fontSize: 13 },
   footerVersion: { fontSize: 11, marginTop: 2 },
+  footerCopyright: { fontSize: 11, marginTop: 2 },
 });
