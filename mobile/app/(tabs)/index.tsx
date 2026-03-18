@@ -36,7 +36,8 @@ import { useSchedule, useZmanim, useOrganizations } from '@/api/hooks';
 import { toApiDate } from '@/api/client';
 import type { ScheduleEvent, Organization } from '@/api/types';
 import { formatTime } from '@/utils/time';
-import { registerScrollToNow, unregisterScrollToNow, registerGoToday, unregisterGoToday } from '@/utils/tabEvents';
+import { registerScrollToNow, unregisterScrollToNow, registerGoToday, unregisterGoToday, registerOpenSheet, unregisterOpenSheet } from '@/utils/tabEvents';
+import type { SheetTarget } from '@/utils/tabEvents';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -306,6 +307,35 @@ export default function MinyanimScreen() {
     registerGoToday(goToday);
     return () => { unregisterScrollToNow(); unregisterGoToday(); };
   }, [scrollToNow, goToday]);
+
+  // Open ShulDaySheet when a notification is tapped
+  useEffect(() => {
+    registerOpenSheet((target: SheetTarget) => {
+      setSelectedDate(target.date);
+      setSheetEvent({
+        id: target.eventId,
+        date: target.date,
+        startTime: '',
+        minyanType: '',
+        minyanTypeDisplay: '',
+        locationName: null,
+        notes: null,
+        nusach: null,
+        nusachDisplay: null,
+        dynamicTimeString: null,
+        source: 'RULES',
+        whatsapp: null,
+        organization: {
+          id: target.orgSlug,
+          slug: target.orgSlug,
+          name: target.orgName,
+          color: colors.tint,
+          whatsapp: null,
+        },
+      });
+    });
+    return () => unregisterOpenSheet();
+  }, []);
 
   // Show FAB only on today, when scrolled >300px from the NOW divider
   const showJump = isToday && !isLoading && nowYRef.current >= 0 &&

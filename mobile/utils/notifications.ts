@@ -48,6 +48,7 @@ async function setupReminderCategory() {
 export interface ReminderOptions {
   eventId: string;         // used as the notification identifier for deduplication
   orgName: string;
+  orgSlug: string;
   minyanType: string;
   startTime: string;       // "HH:mm"
   date: string;            // "YYYY-MM-DD"
@@ -86,6 +87,8 @@ export async function scheduleReminder(opts: ReminderOptions): Promise<string | 
         eventId: opts.eventId,
         date: opts.date,
         minyanType: opts.minyanType,
+        orgSlug: opts.orgSlug,
+        orgName: opts.orgName,
         // originalTitle kept for backwards compat with any previously scheduled notifications
         originalTitle: `${opts.minyanType} in ${minutesBefore} minutes`,
         originalBody: `${opts.orgName} · ${formatDisplayTime(opts.startTime)}`,
