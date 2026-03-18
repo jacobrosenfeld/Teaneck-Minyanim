@@ -1,21 +1,34 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import {
   Animated,
+  Linking,
   Modal,
   PanResponder,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SymbolView } from 'expo-symbols';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import MinyanCard from '@/components/MinyanCard';
-import { useOrgSchedule } from '@/api/hooks';
+import { useOrgSchedule, useOrganization } from '@/api/hooks';
 import { toApiDate } from '@/api/client';
 import type { ScheduleEvent } from '@/api/types';
 import { format, parseISO } from 'date-fns';
+
+function openDirections(address: string) {
+  const encoded = encodeURIComponent(address);
+  const url = Platform.select({
+    ios: `maps://?q=${encoded}`,
+    android: `geo:0,0?q=${encoded}`,
+    default: `https://maps.google.com/maps?q=${encoded}`,
+  });
+  Linking.openURL(url!);
+}
 
 interface Props {
   event: ScheduleEvent | null;  // The tapped event (determines org + date + highlight)
@@ -32,6 +45,7 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
   const orgName = event?.organization?.name ?? '';
 
   const { data: events } = useOrgSchedule(orgSlug, { date });
+  const { data: org } = useOrganization(orgSlug);
 
   // Sort events by start time
   const sorted = events
@@ -57,7 +71,10 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
   }, [event?.id, sorted.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Slide-up + dismiss animation
-  const translateY = useRef(new Animated.Value(600)).current;
+  const translateY = useRef(new Animated.Value(800)).current;
+  // Keep onClose in a ref so dismissPan (created once) always calls the latest version
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (event) {
@@ -68,29 +85,37 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
         damping: 28,
       }).start();
     } else {
-      translateY.setValue(600);
+      translateY.setValue(800);
     }
   }, [!!event]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dismiss = useCallback(() => {
+    // Scale duration to remaining distance so it never drags when already near the bottom
+    const currentY = (translateY as any)._value ?? 0;
+    const duration = Math.max(80, Math.round((800 - currentY) * 0.35));
     Animated.timing(translateY, {
-      toValue: 600,
-      duration: 220,
+      toValue: 800,
+      duration,
       useNativeDriver: true,
-    }).start(onClose);
-  }, [onClose, translateY]);
+    }).start(() => onCloseRef.current());
+  }, [translateY]);
 
   const dismissPan = useRef(
     PanResponder.create({
-      // onMove (not onStart) so taps on the ✕ close button still fire
-      onMoveShouldSetPanResponder: (_, gs) =>
-        gs.dy > 5 && Math.abs(gs.dy) > Math.abs(gs.dx),
+      onStartShouldSetPanResponder: () => true,
       onPanResponderMove: (_, gs) => {
         if (gs.dy > 0) translateY.setValue(gs.dy);
       },
       onPanResponderRelease: (_, gs) => {
         if (gs.dy > 80 || gs.vy > 0.5) {
-          dismiss();
+          // Scale duration to remaining distance + user velocity for a snappy exit
+          const remaining = Math.max(0, 800 - gs.dy);
+          const duration = Math.max(60, Math.round(remaining / Math.max(gs.vy, 1.5) * 0.15));
+          Animated.timing(translateY, {
+            toValue: 800,
+            duration,
+            useNativeDriver: true,
+          }).start(() => onCloseRef.current());
         } else {
           Animated.spring(translateY, {
             toValue: 0,
@@ -119,7 +144,7 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
             styles.sheet,
             { backgroundColor: colors.card, transform: [{ translateY }] },
           ]}>
-          {/* Drag zone: handle + color bar + header row */}
+          {/* Drag zone: handle + color bar + org name/date — no tappable children so pan responder works cleanly */}
           <View {...dismissPan.panHandlers}>
             <View style={styles.handleArea}>
               <View style={[styles.handle, { backgroundColor: colors.border }]} />
@@ -142,6 +167,23 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Address + directions — outside drag zone to avoid gesture conflicts */}
+          {org?.address ? (
+            <View style={[styles.addressRow, { borderBottomColor: colors.border }]}>
+              <TouchableOpacity style={styles.addressTextWrap} onPress={() => openDirections(org.address!)}>
+                <SymbolView name="location.fill" tintColor={colors.textSecondary} size={11} />
+                <Text style={[styles.addressText, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {org.address}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.dirBtn, { backgroundColor: colors.tint }]}
+                onPress={() => openDirections(org.address!)}>
+                <Text style={styles.dirBtnText}>Directions</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
 
           {/* Events list */}
           <ScrollView
@@ -216,7 +258,12 @@ const styles = StyleSheet.create({
   headerContent: { flex: 1 },
   orgName: { fontSize: 17, fontWeight: '800', letterSpacing: -0.3 },
   dateLabel: { fontSize: 13, marginTop: 2 },
-  closeBtn: { padding: 4 },
+  addressRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, gap: 8 },
+  addressTextWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  addressText: { fontSize: 12, fontWeight: '500', flex: 1 },
+  dirBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, flexShrink: 0 },
+  dirBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
+  closeBtn: { padding: 4, alignSelf: 'flex-start' },
   closeText: { fontSize: 16 },
   list: { flexGrow: 1 },
   listContent: { paddingTop: 8, paddingBottom: 40 },

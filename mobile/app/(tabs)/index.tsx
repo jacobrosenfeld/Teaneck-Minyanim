@@ -587,12 +587,15 @@ function OrgPickerModal({
   onSelect: (id: string | null) => void;
   onClose: () => void;
 }) {
-  const translateY = useRef(new Animated.Value(600)).current;
+  const translateY = useRef(new Animated.Value(800)).current;
+  // Keep onClose in a ref so dismissPan (created once) always calls the latest version
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   // Animate in when shown, reset when hidden
   useEffect(() => {
     if (visible) {
-      translateY.setValue(600);
+      translateY.setValue(800);
       Animated.spring(translateY, {
         toValue: 0,
         useNativeDriver: true,
@@ -600,17 +603,19 @@ function OrgPickerModal({
         damping: 28,
       }).start();
     } else {
-      translateY.setValue(600);
+      translateY.setValue(800);
     }
   }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dismiss = useCallback(() => {
+    const currentY = (translateY as any)._value ?? 0;
+    const duration = Math.max(80, Math.round((800 - currentY) * 0.35));
     Animated.timing(translateY, {
-      toValue: 600,
-      duration: 220,
+      toValue: 800,
+      duration,
       useNativeDriver: true,
-    }).start(onClose);
-  }, [onClose, translateY]);
+    }).start(() => onCloseRef.current());
+  }, [translateY]);
 
   // Drag zone covers handle + "Filter by Shul" title.
   // Use onStart (not onMove) — no tappable children here, so we always claim
@@ -623,7 +628,13 @@ function OrgPickerModal({
       },
       onPanResponderRelease: (_, gs) => {
         if (gs.dy > 80 || gs.vy > 0.5) {
-          dismiss();
+          const remaining = Math.max(0, 800 - gs.dy);
+          const duration = Math.max(60, Math.round(remaining / Math.max(gs.vy, 1.5) * 0.15));
+          Animated.timing(translateY, {
+            toValue: 800,
+            duration,
+            useNativeDriver: true,
+          }).start(() => onCloseRef.current());
         } else {
           Animated.spring(translateY, {
             toValue: 0,
