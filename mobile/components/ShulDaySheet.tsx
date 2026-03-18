@@ -82,7 +82,9 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
 
   const dismissPan = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
+      // Use onMove (not onStart) so taps on the ✕ close button still fire
+      onMoveShouldSetPanResponder: (_, gs) =>
+        gs.dy > 5 && Math.abs(gs.dy) > Math.abs(gs.dx),
       onPanResponderMove: (_, gs) => {
         if (gs.dy > 0) translateY.setValue(gs.dy);
       },
@@ -117,27 +119,28 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
             styles.sheet,
             { backgroundColor: colors.card, transform: [{ translateY }] },
           ]}>
-          {/* Drag handle */}
-          <View style={styles.handleArea} {...dismissPan.panHandlers}>
-            <View style={[styles.handle, { backgroundColor: colors.border }]} />
-          </View>
-
-          {/* Header: org color bar + name + date */}
-          <View style={[styles.headerBar, { backgroundColor: orgColor }]} />
-          <View style={[styles.header, { borderBottomColor: colors.border }]}>
-            <View style={styles.headerContent}>
-              <Text style={[styles.orgName, { color: colors.text }]} numberOfLines={1}>
-                {orgName}
-              </Text>
-              {parsedDate ? (
-                <Text style={[styles.dateLabel, { color: colors.textSecondary }]}>
-                  {format(parsedDate, 'EEEE, MMMM d')}
-                </Text>
-              ) : null}
+          {/* Drag zone: handle + color bar + header row — all swipe-to-dismiss */}
+          <View {...dismissPan.panHandlers}>
+            <View style={styles.handleArea}>
+              <View style={[styles.handle, { backgroundColor: colors.border }]} />
             </View>
-            <TouchableOpacity onPress={dismiss} hitSlop={10} style={styles.closeBtn}>
-              <Text style={[styles.closeText, { color: colors.textTertiary }]}>✕</Text>
-            </TouchableOpacity>
+
+            <View style={[styles.headerBar, { backgroundColor: orgColor }]} />
+            <View style={[styles.header, { borderBottomColor: colors.border }]}>
+              <View style={styles.headerContent}>
+                <Text style={[styles.orgName, { color: colors.text }]} numberOfLines={1}>
+                  {orgName}
+                </Text>
+                {parsedDate ? (
+                  <Text style={[styles.dateLabel, { color: colors.textSecondary }]}>
+                    {format(parsedDate, 'EEEE, MMMM d')}
+                  </Text>
+                ) : null}
+              </View>
+              <TouchableOpacity onPress={dismiss} hitSlop={10} style={styles.closeBtn}>
+                <Text style={[styles.closeText, { color: colors.textTertiary }]}>✕</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Events list */}
