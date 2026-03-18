@@ -71,7 +71,10 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
   }, [event?.id, sorted.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Slide-up + dismiss animation
-  const translateY = useRef(new Animated.Value(600)).current;
+  const translateY = useRef(new Animated.Value(800)).current;
+  // Keep onClose in a ref so dismissPan (created once) always calls the latest version
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (event) {
@@ -82,17 +85,20 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
         damping: 28,
       }).start();
     } else {
-      translateY.setValue(600);
+      translateY.setValue(800);
     }
   }, [!!event]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dismiss = useCallback(() => {
+    // Scale duration to remaining distance so it never drags when already near the bottom
+    const currentY = (translateY as any)._value ?? 0;
+    const duration = Math.max(80, Math.round((800 - currentY) * 0.35));
     Animated.timing(translateY, {
-      toValue: 600,
-      duration: 220,
+      toValue: 800,
+      duration,
       useNativeDriver: true,
-    }).start(onClose);
-  }, [onClose, translateY]);
+    }).start(() => onCloseRef.current());
+  }, [translateY]);
 
   const dismissPan = useRef(
     PanResponder.create({
@@ -102,7 +108,14 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
       },
       onPanResponderRelease: (_, gs) => {
         if (gs.dy > 80 || gs.vy > 0.5) {
-          dismiss();
+          // Scale duration to remaining distance + user velocity for a snappy exit
+          const remaining = Math.max(0, 800 - gs.dy);
+          const duration = Math.max(60, Math.round(remaining / Math.max(gs.vy, 1.5) * 0.15));
+          Animated.timing(translateY, {
+            toValue: 800,
+            duration,
+            useNativeDriver: true,
+          }).start(() => onCloseRef.current());
         } else {
           Animated.spring(translateY, {
             toValue: 0,
