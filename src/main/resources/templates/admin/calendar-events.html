@@ -1,33 +1,17 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
 <head>
-    <meta charset="UTF-8">
-    <title th:text="|Calendar Events - ${organization.name} - ${siteName ?: 'Minyanim Platform'}|"></title>
-    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
-    <link rel="manifest" href="/assets/icons/site.webmanifest">
-    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
-    
-    <meta name="msapplication-TileColor" content="#275ed8">
-    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
-    
-    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.1/css/bootstrap.min.css}"/>
-    <link th:rel="stylesheet" th:href="@{/styles.css}">
-    <link th:rel="stylesheet" th:href="@{/admin/styles.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+    <title th:text="|Calendar Events - ${organization.name} - ${siteName ?: 'Minyanim Platform'}|">Calendar Events</title>
+    <th:block layout:fragment="styles">
     <style>
-        /* Stats Panel - Enhanced with Design System */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: var(--space-4);
             margin-bottom: var(--space-6);
         }
-        
+
         .stat-card-modern {
             background: var(--bg-surface);
             border: 1px solid var(--border-color-light);
@@ -36,27 +20,26 @@
             text-align: center;
             transition: all var(--transition-fast);
         }
-        
+
         .stat-card-modern:hover {
             box-shadow: var(--shadow-md);
             transform: translateY(-2px);
         }
-        
+
         .stat-number {
             font-size: 2rem;
             font-weight: var(--font-weight-bold);
             color: var(--color-primary);
             margin-bottom: var(--space-2);
         }
-        
+
         .stat-label {
             font-size: var(--font-size-sm);
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
-        /* Filter Panel - Collapsible */
+
         .filter-panel {
             background: var(--bg-surface);
             border: 1px solid var(--border-color-light);
@@ -64,7 +47,7 @@
             margin-bottom: var(--space-6);
             overflow: hidden;
         }
-        
+
         .filter-header {
             display: flex;
             align-items: center;
@@ -75,55 +58,58 @@
             cursor: pointer;
             user-select: none;
         }
-        
+
         .filter-header:hover {
             background: var(--color-gray-100);
         }
-        
+
         .filter-title {
             font-weight: var(--font-weight-semibold);
             display: flex;
             align-items: center;
             gap: var(--space-2);
         }
-        
+
         .filter-body {
             padding: var(--space-6);
         }
-        
+
+        .filter-body.collapsed {
+            display: none;
+        }
+
         .filter-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: var(--space-4);
             align-items: end;
         }
-        
-        /* Table Enhancements */
+
         .table-wrapper {
             background: var(--bg-surface);
             border: 1px solid var(--border-color-light);
             border-radius: var(--radius-lg);
             overflow: hidden;
         }
-        
+
         .table-container {
             overflow-x: auto;
         }
-        
+
         .events-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
             font-size: var(--font-size-sm);
         }
-        
+
         .events-table thead {
             position: sticky;
             top: 0;
             background: var(--color-gray-50);
             z-index: 10;
         }
-        
+
         .events-table th {
             padding: var(--space-3) var(--space-4);
             text-align: left;
@@ -132,31 +118,30 @@
             white-space: nowrap;
             color: var(--text-primary);
         }
-        
+
         .events-table td {
             padding: var(--space-3) var(--space-4);
             border-bottom: 1px solid var(--border-color-light);
             vertical-align: middle;
         }
-        
+
         .events-table tbody tr {
             transition: background-color var(--transition-fast);
         }
-        
+
         .events-table tbody tr:hover {
             background-color: var(--bg-hover);
         }
-        
+
         .events-table tbody tr.disabled {
             opacity: 0.6;
             background-color: var(--color-gray-50);
         }
-        
+
         .events-table tbody tr:last-child td {
             border-bottom: none;
         }
-        
-        /* Badge Styling with Design System */
+
         .badge-event {
             display: inline-flex;
             align-items: center;
@@ -168,53 +153,17 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
-        .badge-rules {
-            background-color: #e3f2fd;
-            color: #1976d2;
-        }
-        
-        .badge-imported {
-            background-color: #e8f5e9;
-            color: #388e3c;
-        }
-        
-        .badge-manual {
-            background-color: #fff3e0;
-            color: #f57c00;
-        }
-        
-        .badge-enabled {
-            background-color: var(--color-accent);
-            color: white;
-        }
-        
-        .badge-disabled {
-            background-color: var(--color-gray-500);
-            color: white;
-        }
-        
-        .badge-shacharis {
-            background-color: #bbdefb;
-            color: #0d47a1;
-        }
-        
-        .badge-mincha {
-            background-color: #ffe0b2;
-            color: #e65100;
-        }
-        
-        .badge-maariv {
-            background-color: #d1c4e9;
-            color: #4a148c;
-        }
-        
-        .badge-mincha-maariv {
-            background-color: #f8bbd0;
-            color: #880e4f;
-        }
-        
-        /* Action buttons */
+
+        .badge-rules    { background-color: #e3f2fd; color: #1976d2; }
+        .badge-imported { background-color: #e8f5e9; color: #388e3c; }
+        .badge-manual   { background-color: #fff3e0; color: #f57c00; }
+        .badge-enabled  { background-color: var(--color-accent); color: white; }
+        .badge-disabled { background-color: var(--color-gray-500); color: white; }
+        .badge-shacharis     { background-color: #bbdefb; color: #0d47a1; }
+        .badge-mincha        { background-color: #ffe0b2; color: #e65100; }
+        .badge-maariv        { background-color: #d1c4e9; color: #4a148c; }
+        .badge-mincha-maariv { background-color: #f8bbd0; color: #880e4f; }
+
         .action-btn {
             padding: var(--space-1) var(--space-3);
             font-size: var(--font-size-xs);
@@ -224,40 +173,14 @@
             margin-right: var(--space-2);
             transition: all var(--transition-fast);
         }
-        
-        .btn-toggle {
-            background-color: var(--color-warning);
-            border-color: var(--color-warning);
-            color: #000;
-        }
-        
-        .btn-toggle:hover {
-            background-color: #fb8c00;
-            border-color: #fb8c00;
-        }
-        
-        .btn-edit {
-            background-color: var(--color-info);
-            border-color: var(--color-info);
-            color: white;
-        }
-        
-        .btn-edit:hover {
-            background-color: #1976d2;
-            border-color: #1976d2;
-        }
-        
-        .btn-delete {
-            background-color: var(--color-danger);
-            border-color: var(--color-danger);
-            color: white;
-        }
-        
-        .btn-delete:hover {
-            background-color: #d32f2f;
-            border-color: #d32f2f;
-        }
-        
+
+        .btn-toggle { background-color: var(--color-warning); border-color: var(--color-warning); color: #000; }
+        .btn-toggle:hover { background-color: #fb8c00; border-color: #fb8c00; }
+        .btn-edit   { background-color: var(--color-info); border-color: var(--color-info); color: white; }
+        .btn-edit:hover { background-color: #1976d2; border-color: #1976d2; }
+        .btn-delete { background-color: var(--color-danger); border-color: var(--color-danger); color: white; }
+        .btn-delete:hover { background-color: #d32f2f; border-color: #d32f2f; }
+
         .manually-edited-indicator {
             display: inline-block;
             width: 8px;
@@ -266,8 +189,7 @@
             border-radius: 50%;
             margin-left: var(--space-1);
         }
-        
-        /* Form controls in table */
+
         .inline-edit-control {
             width: 100%;
             padding: var(--space-1) var(--space-2);
@@ -276,14 +198,13 @@
             font-size: var(--font-size-xs);
             transition: all var(--transition-fast);
         }
-        
+
         .inline-edit-control:focus {
             outline: none;
             border-color: var(--color-primary);
             box-shadow: 0 0 0 3px var(--color-primary-lighter);
         }
-        
-        /* Info box */
+
         .info-box {
             background: var(--color-primary-lighter);
             border: 1px solid var(--color-primary);
@@ -291,7 +212,7 @@
             padding: var(--space-5);
             margin-top: var(--space-6);
         }
-        
+
         .info-box-title {
             font-weight: var(--font-weight-semibold);
             margin-bottom: var(--space-3);
@@ -300,7 +221,7 @@
             gap: var(--space-2);
             color: var(--color-primary-dark);
         }
-        
+
         .info-box-content {
             margin: 0;
             font-size: var(--font-size-sm);
@@ -311,45 +232,31 @@
     </th:block>
 </head>
 <body>
-    <div class="horizontal-container d-flex" id="wrapper">
-        <th:block th:include="~{admin/navbar}"></th:block>
-        <div class="container-fluid" id="main">
-            <div class="row row-offcanvas row-offcanvas-left vh-100">
-                <th:block th:include="~{admin/sidebar}"></th:block>
-                <div class="col-housing main h-100 overflow-auto">
-                    <main class="col main pt-5 mt-3 overflow-auto">
-                        
-                        <!-- Success/Error Messages -->
-                        <div th:if="${successMessage}" class="alert alert-success" role="alert">
-                            <i class="fas fa-check-circle"></i> <span th:text="${successMessage}">Success</span>
-                        </div>
-                        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
-                            <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}">Error</span>
-                        </div>
+<div layout:fragment="content">
 
-                        <!-- Page Header -->
-                        <h1 class="display-4 d-none d-sm-block">
-                            Calendar Events
-                        </h1>
-                        <p class="lead">
-                            Manage materialized calendar events for <strong th:text="${organization.name}">Organization</strong>. 
-                            View and control events from rules-based schedules and imported calendars.
-                        </p>
-
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h2 th:text="${organization.name}">Organization</h2>
-                            <div>
-                                <form method="post" th:action="@{/admin/{orgId}/calendar-events/rematerialize(orgId=${organization.id})}" 
-                                      style="display: inline;" onsubmit="return confirm('Rematerialize calendar events for this organization?')">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-sync-alt"></i> Rematerialize
-                                    </button>
-                                </form>
-                                <a th:href="@{/admin/{orgId}/minyanim(orgId=${organization.id})}" class="btn btn-secondary">
-                                    <i class="fas fa-arrow-left"></i> Back to Minyanim
-                                </a>
-                            </div>
-                        </div>
+    <!-- Page Header -->
+    <div class="page-header d-flex justify-content-between align-items-start">
+        <div>
+            <h1 class="page-title">Calendar Events</h1>
+            <p class="page-description">
+                Manage materialized calendar events for <strong th:text="${organization.name}">Organization</strong>.
+                View and control events from rules-based schedules and imported calendars.
+            </p>
+        </div>
+        <div class="page-actions">
+            <form method="post" th:action="@{/admin/{orgId}/calendar-events/rematerialize(orgId=${organization.id})}"
+                  style="display: inline;" onsubmit="return confirm('Rematerialize calendar events for this organization?')">
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Rematerialize</span>
+                </button>
+            </form>
+            <a th:href="@{/admin/{orgId}/minyanim(orgId=${organization.id})}" class="btn-modern btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Minyanim</span>
+            </a>
+        </div>
+    </div>
 
     <!-- Statistics Panel -->
     <div class="stats-grid">
@@ -399,8 +306,8 @@
                         <label class="form-label-modern">Minyan Type</label>
                         <select name="minyanType" class="form-select-modern">
                             <option value="">All Types</option>
-                            <option th:each="type : ${minyanTypes}" 
-                                    th:value="${type.name()}" 
+                            <option th:each="type : ${minyanTypes}"
+                                    th:value="${type.name()}"
                                     th:text="${type.displayName()}"
                                     th:selected="${type.name() == minyanTypeFilter}">Type</option>
                         </select>
@@ -409,8 +316,8 @@
                         <label class="form-label-modern">Source</label>
                         <select name="source" class="form-select-modern">
                             <option value="">All Sources</option>
-                            <option th:each="src : ${eventSources}" 
-                                    th:value="${src.name()}" 
+                            <option th:each="src : ${eventSources}"
+                                    th:value="${src.name()}"
                                     th:text="${src.displayName()}"
                                     th:selected="${src.name() == sourceFilter}">Source</option>
                         </select>
@@ -452,73 +359,71 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="event : ${events}" 
+                    <tr th:each="event : ${events}"
                         th:classappend="${!event.enabled} ? 'disabled' : ''">
                         <td th:text="${#temporals.format(event.date, 'EEE, MMM d, yyyy')}">Date</td>
                         <td>
                             <span th:text="${#temporals.format(event.startTime, 'h:mm a')}">Time</span>
-                            <span th:if="${event.dynamicTimeString}" 
-                                  th:text="'(' + ${event.dynamicTimeString} + ')'" 
-                                  class="text-muted text-xs"></span>
+                            <span th:if="${event.dynamicTimeString}"
+                                  th:text="'(' + ${event.dynamicTimeString} + ')'"
+                                  class="text-muted" style="font-size: var(--font-size-xs);"></span>
                         </td>
                         <td>
-                            <span class="badge-event" 
-                                  th:classappend="${event.minyanType.name() == 'SHACHARIS'} ? 'badge-shacharis' : 
-                                                  (${event.minyanType.name() == 'MINCHA'} ? 'badge-mincha' : 
+                            <span class="badge-event"
+                                  th:classappend="${event.minyanType.name() == 'SHACHARIS'} ? 'badge-shacharis' :
+                                                  (${event.minyanType.name() == 'MINCHA'} ? 'badge-mincha' :
                                                   (${event.minyanType.name() == 'MAARIV'} ? 'badge-maariv' : 'badge-mincha-maariv'))"
                                   th:text="${event.minyanType.displayName()}">Type</span>
                         </td>
                         <td>
-                            <span class="badge-event" 
-                                  th:classappend="${event.source.name() == 'RULES'} ? 'badge-rules' : 
+                            <span class="badge-event"
+                                  th:classappend="${event.source.name() == 'RULES'} ? 'badge-rules' :
                                                   (${event.source.name() == 'IMPORTED'} ? 'badge-imported' : 'badge-manual')"
                                   th:text="${event.source.displayName()}">Source</span>
-                            <span th:if="${event.manuallyEdited}" 
-                                  class="manually-edited-indicator" 
+                            <span th:if="${event.manuallyEdited}"
+                                  class="manually-edited-indicator"
                                   title="Manually edited"></span>
                         </td>
                         <td>
-                            <form method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/update(orgId=${organization.id},eventId=${event.id})}" 
+                            <form method="post"
+                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/update(orgId=${organization.id},eventId=${event.id})}"
                                   style="display: inline;">
-                                <select name="locationId" class="inline-edit-control" 
+                                <select name="locationId" class="inline-edit-control"
                                         onchange="this.form.submit()">
                                     <option value="">No location</option>
-                                    <option th:each="loc : ${locations}" 
-                                            th:value="${loc.id}" 
+                                    <option th:each="loc : ${locations}"
+                                            th:value="${loc.id}"
                                             th:text="${loc.name}"
                                             th:selected="${loc.id == event.locationId}">Location</option>
                                 </select>
                             </form>
                         </td>
                         <td>
-                            <form method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/update(orgId=${organization.id},eventId=${event.id})}" 
+                            <form method="post"
+                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/update(orgId=${organization.id},eventId=${event.id})}"
                                   style="display: inline;">
-                                <input type="text" name="notes" 
-                                       th:value="${event.notes}" 
+                                <input type="text" name="notes"
+                                       th:value="${event.notes}"
                                        placeholder="Add notes..."
                                        class="inline-edit-control"
                                        onchange="this.form.submit()">
                             </form>
                         </td>
                         <td>
-                            <span class="badge-event" 
+                            <span class="badge-event"
                                   th:classappend="${event.enabled} ? 'badge-enabled' : 'badge-disabled'"
                                   th:text="${event.enabled} ? 'Enabled' : 'Disabled'">Status</span>
                         </td>
                         <td style="white-space: nowrap;">
-                            <form method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/toggle(orgId=${organization.id},eventId=${event.id})}" 
+                            <form method="post"
+                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/toggle(orgId=${organization.id},eventId=${event.id})}"
                                   style="display: inline;">
-                                <button type="submit" class="action-btn btn-toggle" 
+                                <button type="submit" class="action-btn btn-toggle"
                                         th:text="${event.enabled} ? 'Disable' : 'Enable'">Toggle</button>
                             </form>
-                            <button type="button" class="action-btn btn-edit" 
-                                    onclick="alert('Edit functionality coming soon')">Edit</button>
-                            <form th:if="${event.source.name() == 'MANUAL'}" 
-                                  method="post" 
-                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/delete(orgId=${organization.id},eventId=${event.id})}" 
+                            <form th:if="${event.source.name() == 'MANUAL'}"
+                                  method="post"
+                                  th:action="@{/admin/{orgId}/calendar-events/{eventId}/delete(orgId=${organization.id},eventId=${event.id})}"
                                   style="display: inline;"
                                   onsubmit="return confirm('Delete this manual event?')">
                                 <button type="submit" class="action-btn btn-delete">Delete</button>
@@ -527,7 +432,7 @@
                     </tr>
                     <tr th:if="${#lists.isEmpty(events)}">
                         <td colspan="8" style="text-align: center; padding: var(--space-12); color: var(--text-secondary);">
-                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3;"></i>
+                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3; display: block;"></i>
                             <p style="margin: 0; font-weight: var(--font-weight-medium);">No events found for the selected filters.</p>
                             <p style="margin-top: var(--space-2); font-size: var(--font-size-sm);">Try adjusting your filter criteria or clear filters to see all events.</p>
                         </td>
@@ -550,16 +455,26 @@
                 <strong>Manual:</strong> Created manually by admins. Can be edited and deleted.
             </p>
             <p style="margin: 0;">
-                <strong>Materialization Window:</strong> 
-                <span th:text="${windowBounds.startDate}">Start</span> to 
-                <span th:text="${windowBounds.endDate}">End</span> 
+                <strong>Materialization Window:</strong>
+                <span th:text="${windowBounds.startDate}">Start</span> to
+                <span th:text="${windowBounds.endDate}">End</span>
                 <span class="text-muted">(3 weeks past, 8 weeks future)</span>
             </p>
         </div>
-                    </main>
-                </div>
-            </div>
-        </div>
     </div>
+
+</div>
+
+<th:block layout:fragment="scripts">
+<script>
+    function toggleFilters() {
+        const body = document.getElementById('filter-body');
+        const icon = document.getElementById('filter-toggle-icon');
+        body.classList.toggle('collapsed');
+        icon.classList.toggle('fa-chevron-down');
+        icon.classList.toggle('fa-chevron-up');
+    }
+</script>
+</th:block>
 </body>
 </html>

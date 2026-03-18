@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.8] - 2026-03-18
+
+### Fixed
+- **Migrate calendar-events pages to standard admin layout (#110)**: Both `calendar-events.html` and `calendar-events-all.html` now use `layout:decorate="~{admin/layout}"`, ensuring consistent navbar, sidebar, design system CSS, and toast notifications across all admin pages.
+  - Replaced standalone full-HTML structure with proper layout fragments (`layout:fragment="content"`, `layout:fragment="styles"`, `layout:fragment="scripts"`)
+  - Upgraded `calendar-events-all.html` to use design system CSS variables (was using hardcoded pixel values)
+  - Fixed missing `toggleFilters()` JS function — filter collapse toggle now works on both pages
+  - Removed orphaned `</th:block>` tag in `calendar-events.html`
+
 ## [1.8.7] - 2026-03-18
 
 ### Changed
