@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.7] - 2026-03-18
+
+### Changed
+- **Minyan Schedule page redesigned (#94, #110)**: Complete visual overhaul of the admin minyan schedule page (`/admin/{orgId}/minyanim`) to match the project's modern design system.
+  - Stats grid cards with per-type color coding (Shacharis blue, Mincha amber, Maariv purple, Selichos green, Megila indigo)
+  - Per-minyan-type colored left-border cards and type badges
+  - Fixed 7-column weekly schedule grid and 4-column special days grid (replaces broken `auto-fit` grid)
+  - Pill-style filter tabs; Selichos/Megila tabs only shown when those types have entries
+  - Cleaner card layout with header row, schedule section, and notes area
+
+### Added
+- **Calendar sync override notice**: Amber warning banner on the minyan schedule page when `useScrapedCalendar` is active, explaining that imported calendar entries take precedence over the rule-based schedule and linking to the Calendar Entries management page.
+
 ## [1.8.6] - 2026-03-18
 
 ### Fixed
