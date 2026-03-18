@@ -424,7 +424,7 @@ export default function MinyanimScreen() {
             ]}
             onPress={() => setOrgPickerVisible(true)}>
             <Text style={[styles.chipText, { color: orgFilter ? '#fff' : colors.textSecondary }]}>
-              {selectedOrg ? selectedOrg.name : 'All Shuls'} ▾
+              {selectedOrg ? `Shul: ${selectedOrg.name}` : 'Shuls'} ▾
             </Text>
           </TouchableOpacity>
         </ScrollView>
@@ -491,10 +491,13 @@ export default function MinyanimScreen() {
               }
 
               if (item._type === 'no_more') {
+                const filterLabel = typeFilter === 'ALL'
+                  ? 'minyanim'
+                  : (TYPE_FILTERS.find((f) => f.key === typeFilter)?.label ?? 'minyanim');
                 return (
                   <View key={item.key} style={styles.noMoreBox}>
                     <Text style={[styles.noMoreText, { color: colors.textTertiary }]}>
-                      No more minyanim today
+                      No more {filterLabel} today
                     </Text>
                   </View>
                 );
