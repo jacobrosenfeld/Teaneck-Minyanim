@@ -170,7 +170,7 @@ function ShulRow({
         { backgroundColor: pressed ? colors.surfaceHover : colors.card },
       ]}
       onPress={() =>
-        router.push({ pathname: '/shul/[id]', params: { id: org.slug ?? org.id, sourceTab: 'shuls' } } as never)
+        router.push({ pathname: '/shuls/[id]', params: { id: org.slug ?? org.id } } as never)
       }>
       <View style={[styles.swatch, { backgroundColor: orgColor }]} />
 

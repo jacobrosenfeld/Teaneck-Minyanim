@@ -14,7 +14,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.teaneckminyanim.app",
-      "buildNumber": "3",
+      "buildNumber": "15",
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Teaneck Minyanim uses your location to show nearby shuls and sort by distance.",
