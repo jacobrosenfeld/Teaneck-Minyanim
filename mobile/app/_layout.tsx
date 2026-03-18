@@ -62,13 +62,16 @@ export default function RootLayout() {
     const sub = Notifications.addNotificationResponseReceivedListener(async (response) => {
       if (response.actionIdentifier !== SNOOZE_ACTION) return;
       const data = response.notification.request.content.data as {
+        minyanType?: string;
         originalTitle?: string;
         originalBody?: string;
       };
       const snoozeDate = new Date(Date.now() + 5 * 60 * 1000);
+      // Use minyanType alone as the title — no "in X minutes" countdown after a snooze
+      const snoozeTitle = data.minyanType ?? data.originalTitle ?? response.notification.request.content.title ?? '';
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: data.originalTitle ?? response.notification.request.content.title ?? '',
+          title: snoozeTitle,
           body: data.originalBody ?? response.notification.request.content.body ?? '',
           sound: true,
           data: response.notification.request.content.data,

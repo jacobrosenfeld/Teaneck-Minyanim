@@ -34,17 +34,17 @@ const ZMANIM_ROWS: { label: string; key: keyof ZmanimTimes; section?: string; hi
   { label: 'Alos HaShachar', key: 'alotHashachar', section: 'Morning' },
   { label: 'Misheyakir', key: 'misheyakir' },
   { label: 'Netz', key: 'netz', highlight: true },
-  { label: 'Sof Zman Krias Shema (GRA)', key: 'sofZmanShmaGra' },
   { label: 'Sof Zman Krias Shema (MGA)', key: 'sofZmanShmaMga' },
-  { label: 'Sof Zman Tefilla (GRA)', key: 'sofZmanTfilaGra' },
+  { label: 'Sof Zman Krias Shema (GRA)', key: 'sofZmanShmaGra' },
   { label: 'Sof Zman Tefilla (MGA)', key: 'sofZmanTfilaMga' },
+  { label: 'Sof Zman Tefilla (GRA)', key: 'sofZmanTfilaGra' },
   { label: 'Chatzos', key: 'chatzos', section: 'Afternoon', highlight: true },
   { label: 'Mincha Gedola', key: 'minchaGedola' },
   { label: 'Mincha Ketana', key: 'minchaKetana' },
   { label: 'Plag HaMincha', key: 'plagHamincha', highlight: true },
   { label: 'Shekiya', key: 'shekiya', section: 'Evening', highlight: true },
-  { label: 'Tzes HaKochavim', key: 'tzeis', highlight: true },
   { label: 'Earliest Shema', key: 'earliestShema' },
+  { label: 'Tzes HaKochavim', key: 'tzeis', highlight: true },
   { label: 'Chatzos Laila', key: 'chatzosLaila' },
 ];
 
@@ -210,6 +210,9 @@ export default function ZmanimScreen() {
             <Text style={[styles.footerVersion, { color: colors.textTertiary }]}>
               v{APP_VERSION}
             </Text>
+            <Text style={[styles.footerCopyright, { color: colors.textTertiary }]}>
+              © {new Date().getFullYear()} Teaneck Minyanim · TB Dev
+            </Text>
           </View>
         </ScrollView>
       )}
@@ -246,7 +249,7 @@ const styles = StyleSheet.create({
   navHebrew: { fontSize: 13, marginTop: 1 },
   todayHint: { fontSize: 11, marginTop: 2, fontWeight: '500' },
 
-  list: { paddingBottom: 32 },
+  list: { paddingBottom: 100 }, // clears tab bar + home indicator (tab clips screen so insets.bottom = 0)
 
   sectionHeader: {
     flexDirection: 'row',
@@ -283,4 +286,5 @@ const styles = StyleSheet.create({
   footerBrand: { fontSize: 14, fontWeight: '800', letterSpacing: 0.3 },
   footerEmail: { fontSize: 13 },
   footerVersion: { fontSize: 11, marginTop: 2 },
+  footerCopyright: { fontSize: 11, marginTop: 2 },
 });

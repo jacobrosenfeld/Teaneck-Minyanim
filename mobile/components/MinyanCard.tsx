@@ -43,8 +43,8 @@ export default function MinyanCard({
 
   const openWhatsApp = () => {
     if (!whatsappNum) return;
-    const num = whatsappNum.replace(/\D/g, '');
-    Linking.openURL(`https://wa.me/${num}`);
+    // whatsapp field stores a full group link (e.g. https://chat.whatsapp.com/...)
+    Linking.openURL(whatsappNum);
   };
 
   // ── Reminder bell ──────────────────────────────────────────────────────────
