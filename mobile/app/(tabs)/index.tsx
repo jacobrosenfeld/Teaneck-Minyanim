@@ -616,7 +616,7 @@ function OrgPickerModal({
               {selected === null && <Text style={{ color: colors.tint, fontSize: 16 }}>✓</Text>}
             </Pressable>
 
-            {orgs.map((org) => (
+            {[...orgs].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
               <Pressable
                 key={org.id}
                 style={({ pressed }) => [
