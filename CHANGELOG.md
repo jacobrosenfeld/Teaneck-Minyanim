@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.7] - 2026-03-18
+
+### Changed
+- **Minyan Schedule page redesigned (#94, #110)**: Complete visual overhaul of the admin minyan schedule page (`/admin/{orgId}/minyanim`) to match the project's modern design system.
+  - Stats grid cards with per-type color coding (Shacharis blue, Mincha amber, Maariv purple, Selichos green, Megila indigo)
+  - Per-minyan-type colored left-border cards and type badges
+  - Fixed 7-column weekly schedule grid and 4-column special days grid (replaces broken `auto-fit` grid)
+  - Pill-style filter tabs; Selichos/Megila tabs only shown when those types have entries
+  - Cleaner card layout with header row, schedule section, and notes area
+
+### Added
+- **Calendar sync override notice**: Amber warning banner on the minyan schedule page when `useScrapedCalendar` is active, explaining that imported calendar entries take precedence over the rule-based schedule and linking to the Calendar Entries management page.
+
+## [1.8.6] - 2026-03-18
+
+### Fixed
+- **Minyan Schedule page unstyled (#94, #110)**: The admin minyan schedule page (`/admin/{orgId}/minyanim`) was using ~10 wrong CSS custom property names that don't exist in `design-system.css`, causing all custom styles to silently fall back to defaults (no border colors, no backgrounds, no spacing, no radius). Corrected: `--primary-color` → `--color-primary`, `--spacing-N` → `--space-N` (×6), `--bg-secondary` → `--color-gray-100`, `--bg-tertiary` → `--color-gray-200`, `--border-radius` → `--radius-md`.
+
+## [1.8.5] - 2026-03-18
+
+### Fixed
+- **Calendar Entries page broken (#67, #110)**: Replaced the broken Tabulator.js-based client-side table with a clean server-side-rendered HTML table. The previous implementation used `new Date("HH:mm:ss")` to format `LocalTime` values (always `Invalid Date` in browsers) and timezone-shifted `LocalDate` strings causing off-by-one date display. Now uses Thymeleaf `#temporals.format()` for all date/time rendering.
+- **Filter panel was hidden**: The filter panel (`style="display:none"`) was dead code. It is now a fully functional collapsible panel wired to the existing server-side filter logic already present in the controller.
+- **Removed broken Tabulator dependency**: Dropped CDN-loaded Tabulator 6.3.1 from the Calendar Entries page and deleted the associated `calendar-entries-tabulator.js`. The page now uses the project's own `design-system.css` table styles (via `layout:decorate="~{admin/layout}"`).
+
+### Changed
+- Calendar Entries page migrated to `layout:decorate="~{admin/layout}"`, giving it the modern navbar, sidebar, design tokens, and toast system consistent with other admin pages.
+- Inline location editing now uses a server-rendered `<select>` form (matching the Calendar Events page pattern) instead of Tabulator's cell-click DOM manipulation.
+
 ## [1.8.4] - 2026-03-16
 
 ### Added
