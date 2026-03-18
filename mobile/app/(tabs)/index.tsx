@@ -420,7 +420,7 @@ export default function MinyanimScreen() {
               styles.chip,
               orgFilter
                 ? { backgroundColor: colors.tint }
-                : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+                : { backgroundColor: colors.card, borderColor: colors.tint, borderWidth: 1.5 },
             ]}
             onPress={() => setOrgPickerVisible(true)}>
             <Text style={[styles.chipText, { color: orgFilter ? '#fff' : colors.textSecondary }]}>
