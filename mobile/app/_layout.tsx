@@ -2,8 +2,9 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
+import { router } from 'expo-router';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
@@ -12,6 +13,7 @@ import * as Notifications from 'expo-notifications';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { requestNotificationPermission, SNOOZE_ACTION } from '@/utils/notifications';
+import { triggerOpenSheet } from '@/utils/tabEvents';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -55,6 +57,38 @@ export default function RootLayout() {
   // Request notification permission early so reminders work immediately
   useEffect(() => {
     requestNotificationPermission();
+  }, []);
+
+  // Handle notification tap: navigate to minyanim tab and open the ShulDaySheet
+  // Use a ref so we can call triggerOpenSheet after navigation settles
+  const pendingSheetRef = useRef<Parameters<typeof triggerOpenSheet>[0] | null>(null);
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      if (response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
+      const data = response.notification.request.content.data as {
+        eventId?: string;
+        date?: string;
+        orgSlug?: string;
+        orgName?: string;
+      };
+      if (!data.eventId || !data.date || !data.orgSlug) return;
+      pendingSheetRef.current = {
+        eventId: data.eventId,
+        date: data.date,
+        orgSlug: data.orgSlug,
+        orgName: data.orgName ?? '',
+      };
+      // Navigate to minyanim tab first; index.tsx will consume pendingSheetRef
+      router.navigate('/(tabs)/');
+      // Give the tab a frame to mount/focus before triggering the sheet
+      setTimeout(() => {
+        if (pendingSheetRef.current) {
+          triggerOpenSheet(pendingSheetRef.current);
+          pendingSheetRef.current = null;
+        }
+      }, 300);
+    });
+    return () => sub.remove();
   }, []);
 
   // Handle snooze action: reschedule the same notification 5 minutes later

@@ -53,13 +53,17 @@ export default function MinyanCard({
   const now = new Date();
   const localNow = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   const isPastEvent = `${event.date}T${event.startTime}` < localNow;
+  // Hide bell when <10 min away — we can't deliver a 10-min reminder that late
+  const minyanMs = new Date(`${event.date}T${event.startTime}:00`).getTime();
+  const tooSoonToRemind = minyanMs - now.getTime() < 10 * 60 * 1000;
+  const showBell = !isPastEvent && !tooSoonToRemind;
 
   useEffect(() => {
-    if (isPastEvent) return;
+    if (!showBell) return;
     let cancelled = false;
     isReminderSet(event.id).then((v) => { if (!cancelled) setReminderSet(v); });
     return () => { cancelled = true; };
-  }, [event.id, isPastEvent]);
+  }, [event.id, showBell]);
 
   const toggleReminder = useCallback(async () => {
     if (reminderSet) {
@@ -69,6 +73,7 @@ export default function MinyanCard({
       const id = await scheduleReminder({
         eventId: event.id,
         orgName: event.organization?.name ?? '',
+        orgSlug: event.organization?.slug ?? event.organization?.id ?? '',
         minyanType: event.minyanTypeDisplay,
         startTime: event.startTime,
         date: event.date,
@@ -112,8 +117,8 @@ export default function MinyanCard({
             <Text style={[styles.time, { color: colors.text }]}>
               {formatTime(event.startTime)}
             </Text>
-            {/* Reminder bell — hidden for past events */}
-            {!isPastEvent && (
+            {/* Reminder bell — hidden for past events or within 10 min */}
+            {showBell && (
               <TouchableOpacity onPress={toggleReminder} hitSlop={10} style={styles.bellBtn}>
                 <SymbolView
                   name={reminderSet ? 'bell.fill' : 'bell'}
