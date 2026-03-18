@@ -396,6 +396,19 @@ export default function MinyanimScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterChips}>
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              orgFilter
+                ? { backgroundColor: colors.tint }
+                : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+            ]}
+            onPress={() => setOrgPickerVisible(true)}>
+            <Text style={[styles.chipText, { color: orgFilter ? '#fff' : colors.textSecondary }]}>
+              {selectedOrg ? `Shul: ${selectedOrg.name}` : 'Shuls'} ▾
+            </Text>
+          </TouchableOpacity>
+
           {TYPE_FILTERS.map((f) => {
             const active = typeFilter === f.key;
             return (
@@ -414,19 +427,6 @@ export default function MinyanimScreen() {
               </TouchableOpacity>
             );
           })}
-
-          <TouchableOpacity
-            style={[
-              styles.chip,
-              orgFilter
-                ? { backgroundColor: colors.tint }
-                : { backgroundColor: colors.card, borderColor: colors.tint, borderWidth: 1.5, borderStyle: 'dashed' },
-            ]}
-            onPress={() => setOrgPickerVisible(true)}>
-            <Text style={[styles.chipText, { color: orgFilter ? '#fff' : colors.textSecondary }]}>
-              {selectedOrg ? `Shul: ${selectedOrg.name}` : 'Shuls'} ▾
-            </Text>
-          </TouchableOpacity>
         </ScrollView>
       </View>
 
