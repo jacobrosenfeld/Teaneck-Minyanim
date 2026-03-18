@@ -96,9 +96,7 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
 
   const dismissPan = useRef(
     PanResponder.create({
-      // onMove (not onStart) so taps on the ✕ close button still fire
-      onMoveShouldSetPanResponder: (_, gs) =>
-        gs.dy > 5 && Math.abs(gs.dy) > Math.abs(gs.dx),
+      onStartShouldSetPanResponder: () => true,
       onPanResponderMove: (_, gs) => {
         if (gs.dy > 0) translateY.setValue(gs.dy);
       },
