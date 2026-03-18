@@ -611,11 +611,12 @@ function OrgPickerModal({
     }).start(onClose);
   }, [onClose, translateY]);
 
-  // Drag zone covers handle + "Filter by Shul" title
+  // Drag zone covers handle + "Filter by Shul" title.
+  // Use onStart (not onMove) — no tappable children here, so we always claim
+  // the touch immediately for a responsive live-drag feel.
   const dismissPan = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gs) =>
-        gs.dy > 5 && Math.abs(gs.dy) > Math.abs(gs.dx),
+      onStartShouldSetPanResponder: () => true,
       onPanResponderMove: (_, gs) => {
         if (gs.dy > 0) translateY.setValue(gs.dy);
       },
