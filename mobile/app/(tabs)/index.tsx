@@ -513,13 +513,14 @@ export default function MinyanimScreen() {
               }
 
               if (item._type === 'no_more') {
-                const filterLabel = typeFilter === 'ALL'
-                  ? 'minyanim'
-                  : (TYPE_FILTERS.find((f) => f.key === typeFilter)?.label ?? 'minyanim');
+                const typeLabel = TYPE_FILTERS.find((f) => f.key === typeFilter)?.label;
+                const noMoreLabel = typeFilter === 'ALL'
+                  ? 'minyanim today'
+                  : `${typeLabel} minyanim today`;
                 return (
                   <View key={item.key} style={styles.noMoreBox}>
                     <Text style={[styles.noMoreText, { color: colors.textTertiary }]}>
-                      No more {filterLabel} today
+                      No more {noMoreLabel}
                     </Text>
                   </View>
                 );
