@@ -43,10 +43,8 @@ export default function MinyanCard({
 
   const openWhatsApp = () => {
     if (!whatsappNum) return;
-    let num = whatsappNum.replace(/\D/g, '');
-    // wa.me requires international format; prepend US country code for 10-digit local numbers
-    if (num.length === 10) num = '1' + num;
-    Linking.openURL(`https://wa.me/${num}`);
+    // whatsapp field stores a full group link (e.g. https://chat.whatsapp.com/...)
+    Linking.openURL(whatsappNum);
   };
 
   // ── Reminder bell ──────────────────────────────────────────────────────────

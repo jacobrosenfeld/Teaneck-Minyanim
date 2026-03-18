@@ -17,7 +17,7 @@ import {
   runOnJS,
 } from 'react-native-reanimated';
 import Reanimated from 'react-native-reanimated';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { format, addDays, subDays, parseISO } from 'date-fns';
 import Constants from 'expo-constants';
 
@@ -54,7 +54,6 @@ const SUPPORT_EMAIL = 'info@teaneckminyanim.com';
 export default function ZmanimScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
-  const insets = useSafeAreaInsets();
 
   const [selectedDate, setSelectedDate] = React.useState(toApiDate(new Date()));
   const { data: zmanim, isLoading, isError, refetch } = useZmanim(selectedDate);
@@ -157,7 +156,7 @@ export default function ZmanimScreen() {
       ) : isError ? (
         <ErrorState message="Could not load zmanim." onRetry={refetch} />
       ) : (
-        <ScrollView contentContainerStyle={[styles.list, { paddingBottom: 32 + insets.bottom }]}>
+        <ScrollView contentContainerStyle={styles.list}>
           {/* Zmanim rows */}
           {ZMANIM_ROWS.map((row) => {
             const raw = zmanim?.times?.[row.key];
@@ -250,7 +249,7 @@ const styles = StyleSheet.create({
   navHebrew: { fontSize: 13, marginTop: 1 },
   todayHint: { fontSize: 11, marginTop: 2, fontWeight: '500' },
 
-  list: { paddingBottom: 0 }, // bottom padding applied dynamically with insets
+  list: { paddingBottom: 100 }, // clears tab bar + home indicator (tab clips screen so insets.bottom = 0)
 
   sectionHeader: {
     flexDirection: 'row',
