@@ -133,7 +133,7 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
             styles.sheet,
             { backgroundColor: colors.card, transform: [{ translateY }] },
           ]}>
-          {/* Drag zone: handle + color bar + header row */}
+          {/* Drag zone: handle + color bar + org name/date — no tappable children so pan responder works cleanly */}
           <View {...dismissPan.panHandlers}>
             <View style={styles.handleArea}>
               <View style={[styles.handle, { backgroundColor: colors.border }]} />
@@ -150,27 +150,29 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
                     {format(parsedDate, 'EEEE, MMMM d')}
                   </Text>
                 ) : null}
-                {org?.address ? (
-                  <View style={styles.addressRow}>
-                    <TouchableOpacity style={styles.addressTextWrap} onPress={() => openDirections(org.address!)}>
-                      <SymbolView name="location.fill" tintColor={colors.textSecondary} size={11} />
-                      <Text style={[styles.addressText, { color: colors.textSecondary }]} numberOfLines={1}>
-                        {org.address}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.dirBtn, { backgroundColor: colors.tint }]}
-                      onPress={() => openDirections(org.address!)}>
-                      <Text style={styles.dirBtnText}>Directions</Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : null}
               </View>
               <TouchableOpacity onPress={dismiss} hitSlop={10} style={styles.closeBtn}>
                 <Text style={[styles.closeText, { color: colors.textTertiary }]}>✕</Text>
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Address + directions — outside drag zone to avoid gesture conflicts */}
+          {org?.address ? (
+            <View style={[styles.addressRow, { borderBottomColor: colors.border }]}>
+              <TouchableOpacity style={styles.addressTextWrap} onPress={() => openDirections(org.address!)}>
+                <SymbolView name="location.fill" tintColor={colors.textSecondary} size={11} />
+                <Text style={[styles.addressText, { color: colors.textSecondary }]} numberOfLines={1}>
+                  {org.address}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.dirBtn, { backgroundColor: colors.tint }]}
+                onPress={() => openDirections(org.address!)}>
+                <Text style={styles.dirBtnText}>Directions</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
 
           {/* Events list */}
           <ScrollView
@@ -242,10 +244,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  headerContent: { flex: 1, marginRight: 8 },
+  headerContent: { flex: 1 },
   orgName: { fontSize: 17, fontWeight: '800', letterSpacing: -0.3 },
   dateLabel: { fontSize: 13, marginTop: 2 },
-  addressRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 8 },
+  addressRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, gap: 8 },
   addressTextWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
   addressText: { fontSize: 12, fontWeight: '500', flex: 1 },
   dirBtn: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, flexShrink: 0 },
