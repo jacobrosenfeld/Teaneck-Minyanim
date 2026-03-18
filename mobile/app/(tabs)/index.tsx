@@ -396,6 +396,27 @@ export default function MinyanimScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterChips}>
+          {/* "All" type chip first */}
+          {TYPE_FILTERS.filter((f) => f.key === 'ALL').map((f) => {
+            const active = typeFilter === f.key;
+            return (
+              <TouchableOpacity
+                key={f.key}
+                style={[
+                  styles.chip,
+                  active
+                    ? { backgroundColor: colors.tint }
+                    : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+                ]}
+                onPress={() => setTypeFilter(f.key)}>
+                <Text style={[styles.chipText, { color: active ? '#fff' : colors.textSecondary }]}>
+                  {f.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+
+          {/* Shuls picker chip — between All and prayer-type chips */}
           <TouchableOpacity
             style={[
               styles.chip,
@@ -409,7 +430,8 @@ export default function MinyanimScreen() {
             </Text>
           </TouchableOpacity>
 
-          {TYPE_FILTERS.map((f) => {
+          {/* Prayer-type chips: Shacharis, Mincha, Maariv */}
+          {TYPE_FILTERS.filter((f) => f.key !== 'ALL').map((f) => {
             const active = typeFilter === f.key;
             return (
               <TouchableOpacity
