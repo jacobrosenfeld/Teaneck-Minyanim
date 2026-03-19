@@ -89,10 +89,10 @@
                              th:if="${!allminyanim.isEmpty()}"
                              th:attr="data-is-today=${isToday}">
                           <div class="filter-scroll-row" role="group" aria-label="Filter minyanim">
+                            <button class="filter-pill active" data-filter-type="all">All</button>
                             <select class="filter-shul-select" id="shul-filter-select">
                               <option value="all">All Shuls</option>
                             </select>
-                            <button class="filter-pill active" data-filter-type="all">All</button>
                             <button class="filter-pill" data-filter-type="shacharis">Shacharis</button>
                             <button class="filter-pill" data-filter-type="mincha">Mincha</button>
                             <button class="filter-pill" data-filter-type="maariv">Maariv</button>
