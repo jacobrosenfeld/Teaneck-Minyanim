@@ -78,3 +78,44 @@
    min-width: 77px;
    display: inline-block;
 }
+
+/* Minyan filter bar */
+.minyan-filter-bar {
+  margin-bottom: 0.25rem;
+}
+
+.filter-pill {
+  padding: 0.3rem 0.85rem;
+  border-radius: 50px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 2px solid var(--primary-color);
+  background: transparent;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  line-height: 1.4;
+}
+
+.filter-pill.active,
+.filter-pill:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.filter-shul-select {
+  min-width: 150px;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  font-size: 0.82rem;
+  border-radius: 6px;
+}
+
+.filter-shul-select:focus {
+  border-color: var(--focus-color);
+  box-shadow: 0 0 0 0.2rem rgba(39, 94, 216, 0.2);
+}
+
+#filter-empty-state {
+  text-align: center;
+}
