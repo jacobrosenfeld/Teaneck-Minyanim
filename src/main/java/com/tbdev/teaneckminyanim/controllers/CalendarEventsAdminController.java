@@ -81,9 +81,12 @@ public class CalendarEventsAdminController {
         LocalDate effectiveStartDate = startDate != null ? startDate : bounds.getStartDate();
         LocalDate effectiveEndDate = endDate != null ? endDate : bounds.getEndDate();
         
-        // Get all organizations for filter
+        // Get all organizations for filter dropdown and name lookup
         List<Organization> allOrganizations = organizationService.getAll();
         mv.addObject("organizations", allOrganizations);
+        java.util.Map<String, String> orgNames = allOrganizations.stream()
+                .collect(Collectors.toMap(Organization::getId, Organization::getName));
+        mv.addObject("orgNames", orgNames);
         
         // Query events across all organizations or specific one
         List<CalendarEvent> events;

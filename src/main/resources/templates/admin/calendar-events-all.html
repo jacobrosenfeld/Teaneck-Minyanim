@@ -463,8 +463,9 @@
                         th:classappend="${!event.enabled} ? 'row-disabled' : ''">
 
                         <!-- Organization -->
-                        <td data-col="org" th:attr="data-value=${event.organizationId}"
-                            th:text="${event.organizationId}">Org</td>
+                        <td data-col="org"
+                            th:attr="data-value=${orgNames[event.organizationId] ?: event.organizationId}"
+                            th:text="${orgNames[event.organizationId] ?: event.organizationId}">Org</td>
 
                         <!-- Date -->
                         <td data-col="date" th:attr="data-value=${event.date}" style="white-space: nowrap;"
