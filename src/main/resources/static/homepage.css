@@ -81,39 +81,69 @@
 
 /* Minyan filter bar */
 .minyan-filter-bar {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.filter-type-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .filter-pill {
-  padding: 0.3rem 0.85rem;
+  font-family: 'Montserrat', sans-serif;
+  padding: 5px 16px;
   border-radius: 50px;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  border: 2px solid var(--primary-color);
+  letter-spacing: 0.3px;
+  border: 2px solid #275ED8;
   background: transparent;
-  color: var(--primary-color);
+  color: #275ED8;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-  line-height: 1.4;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  line-height: 1.5;
+  white-space: nowrap;
 }
 
-.filter-pill.active,
-.filter-pill:hover {
-  background: var(--primary-color);
+.filter-pill.active {
+  background: #275ED8;
   color: #fff;
+  box-shadow: 0 2px 8px rgba(39, 94, 216, 0.3);
+}
+
+.filter-pill:hover:not(.active) {
+  background: rgba(39, 94, 216, 0.08);
+  color: #1F4BAC;
+  border-color: #1F4BAC;
+}
+
+.filter-shul-wrap {
+  display: flex;
+  align-items: center;
 }
 
 .filter-shul-select {
-  min-width: 150px;
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-  font-size: 0.82rem;
-  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  width: auto;
+  min-width: 120px;
+  max-width: 200px;
+  border: 2px solid #275ED8;
+  border-radius: 50px;
+  color: #275ED8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 32px 4px 14px;
+  background-color: transparent;
+  cursor: pointer;
+  appearance: auto;
+  -webkit-appearance: auto;
 }
 
 .filter-shul-select:focus {
-  border-color: var(--focus-color);
-  box-shadow: 0 0 0 0.2rem rgba(39, 94, 216, 0.2);
+  border-color: #1F4BAC;
+  box-shadow: 0 0 0 0.15rem rgba(39, 94, 216, 0.2);
+  outline: none;
 }
 
 #filter-empty-state {

@@ -3,9 +3,14 @@ var _minyanTableRowNum = 10;
 var _minyanTableIncrement = 5;
 var _minyanTableLoadMoreBtn = document.getElementById("load-more-button");
 
+function _getBodyRows() {
+  if (!_minyanTable) return [];
+  return Array.from(_minyanTable.querySelectorAll('tbody tr'));
+}
+
 function resetMinyanTable() {
   if (!_minyanTable) return;
-  var rows = _minyanTable.rows;
+  var rows = _getBodyRows();
   _minyanTableRowNum = 10;
   for (var i = 0; i < rows.length; i++) {
     rows[i].style.display = i < _minyanTableRowNum ? "" : "none";
@@ -20,7 +25,7 @@ function resetMinyanTable() {
 
 function loadMore() {
   if (!_minyanTable) return;
-  var rows = _minyanTable.rows;
+  var rows = _getBodyRows();
   var numRows = rows.length;
   if (_minyanTableRowNum + _minyanTableIncrement < numRows) {
     for (var i = _minyanTableRowNum; i < _minyanTableRowNum + _minyanTableIncrement; i++) {
