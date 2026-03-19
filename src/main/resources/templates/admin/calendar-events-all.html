@@ -288,6 +288,74 @@
         .empty-state .ei { font-size: 2.5rem; opacity: 0.2; margin-bottom: var(--space-3); display: block; }
         .empty-state p { margin: var(--space-1) 0; }
 
+        /* ── Pagination ──────────────────────────────────── */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-3) var(--space-5);
+            border-top: 1px solid var(--border-color-light);
+            background: var(--color-gray-50);
+            gap: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .pagination-info {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .page-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 var(--space-2);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .page-btn:hover { background: var(--bg-hover); text-decoration: none; color: var(--text-primary); }
+        .page-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+        .page-btn.disabled { opacity: 0.4; pointer-events: none; }
+
+        .page-size-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .page-size-btn {
+            padding: 2px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .page-size-btn:hover { background: var(--bg-hover); color: var(--text-primary); text-decoration: none; }
+        .page-size-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+
         /* ── Info box ────────────────────────────────────── */
         .info-box {
             background: var(--color-primary-lighter);
@@ -425,12 +493,19 @@
             <div class="table-topbar-left">
                 <i class="fas fa-calendar-alt" style="color: var(--color-primary);"></i>
                 <span>Calendar Events</span>
-                <span class="count-pill fmt-count"
-                      th:text="${#lists.size(events)} + ' shown'">0 shown</span>
+                <span class="count-pill" th:if="${totalCount > 0}"
+                      th:text="${fromIndex} + '–' + ${toIndex} + ' of ' + ${totalCount}">0</span>
+                <span class="count-pill" th:if="${totalCount == 0}">0 results</span>
             </div>
-            <small style="color: var(--text-secondary); font-size: var(--font-size-xs);">
-                Click column headers to sort
-            </small>
+            <div class="page-size-bar" style="align-items: center; gap: var(--space-3);">
+                <span>Rows per page:</span>
+                <th:block th:each="sz : ${pageSizeOptions}">
+                    <a class="page-size-btn"
+                       th:classappend="${sz == pageSize} ? ' active' : ''"
+                       th:href="@{/admin/calendar-events/all(organizationId=${organizationFilter},startDate=${startDate},endDate=${endDate},minyanType=${minyanTypeFilter},source=${sourceFilter},pageSize=${sz},page=0)}"
+                       th:text="${sz}">25</a>
+                </th:block>
+            </div>
         </div>
 
         <div class="table-scroll">
@@ -545,6 +620,40 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination bar -->
+        <div class="pagination-bar" th:if="${totalPages > 1}">
+            <div class="pagination-info"
+                 th:text="'Page ' + (${currentPage} + 1) + ' of ' + ${totalPages}">Page 1 of 1</div>
+
+            <div class="pagination-controls">
+                <a class="page-btn" th:classappend="${currentPage == 0} ? ' disabled'"
+                   th:href="@{/admin/calendar-events/all(organizationId=${organizationFilter},startDate=${startDate},endDate=${endDate},minyanType=${minyanTypeFilter},source=${sourceFilter},pageSize=${pageSize},page=0)}">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a class="page-btn" th:classappend="${currentPage == 0} ? ' disabled'"
+                   th:href="@{/admin/calendar-events/all(organizationId=${organizationFilter},startDate=${startDate},endDate=${endDate},minyanType=${minyanTypeFilter},source=${sourceFilter},pageSize=${pageSize},page=${currentPage - 1})}">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+
+                <th:block th:each="p : ${#numbers.sequence(0, totalPages - 1)}"
+                          th:if="${p >= currentPage - 2 and p &lt;= currentPage + 2}">
+                    <a class="page-btn" th:classappend="${p == currentPage} ? ' active'"
+                       th:href="@{/admin/calendar-events/all(organizationId=${organizationFilter},startDate=${startDate},endDate=${endDate},minyanType=${minyanTypeFilter},source=${sourceFilter},pageSize=${pageSize},page=${p})}"
+                       th:text="${p + 1}">1</a>
+                </th:block>
+
+                <a class="page-btn" th:classappend="${currentPage >= totalPages - 1} ? ' disabled'"
+                   th:href="@{/admin/calendar-events/all(organizationId=${organizationFilter},startDate=${startDate},endDate=${endDate},minyanType=${minyanTypeFilter},source=${sourceFilter},pageSize=${pageSize},page=${currentPage + 1})}">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                <a class="page-btn" th:classappend="${currentPage >= totalPages - 1} ? ' disabled'"
+                   th:href="@{/admin/calendar-events/all(organizationId=${organizationFilter},startDate=${startDate},endDate=${endDate},minyanType=${minyanTypeFilter},source=${sourceFilter},pageSize=${pageSize},page=${totalPages - 1})}">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </div>
+        </div>
+
     </div>
 
     <!-- Info box -->

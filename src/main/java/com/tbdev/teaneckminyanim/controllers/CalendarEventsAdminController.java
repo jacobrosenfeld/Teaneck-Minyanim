@@ -18,11 +18,10 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -47,11 +46,29 @@ public class CalendarEventsAdminController {
     public String siteName() {
         return settingsService.getSiteName();
     }
-    
+
     @ModelAttribute("supportEmail")
     public String supportEmail() {
         return settingsService.getSupportEmail();
     }
+
+    @ModelAttribute("allOrganizations")
+    public List<Organization> allOrganizations() {
+        if (!userService.isSuperAdmin()) return Collections.emptyList();
+        List<Organization> orgs = organizationService.getAll();
+        orgs.sort(Comparator.comparing(Organization::getName, String.CASE_INSENSITIVE_ORDER));
+        return orgs;
+    }
+
+    @ModelAttribute("date")
+    public String currentDate() {
+        SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy | hh:mm aa");
+        fmt.setTimeZone(settingsService.getTimeZone());
+        return fmt.format(new Date());
+    }
+
+    private static final List<Integer> PAGE_SIZE_OPTIONS = List.of(25, 50, 100);
+    private static final int DEFAULT_PAGE_SIZE = 25;
 
     /**
      * Master calendar view for super admin (all organizations)
@@ -64,46 +81,79 @@ public class CalendarEventsAdminController {
             @RequestParam(required = false) String minyanType,
             @RequestParam(required = false) String source,
             @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String sortDir) {
+            @RequestParam(required = false) String sortDir,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int pageSize) {
 
         ModelAndView mv = new ModelAndView("admin/calendar-events-all");
-        
+
         // Add current user for sidebar
         mv.addObject("user", userService.getCurrentUser());
-        
+
         // Check if super admin
         if (!userService.isSuperAdmin()) {
             throw new AccessDeniedException("Only super admins can access master calendar");
         }
-        
+
+        // Clamp pageSize to allowed options
+        if (!PAGE_SIZE_OPTIONS.contains(pageSize)) pageSize = DEFAULT_PAGE_SIZE;
+        if (page < 0) page = 0;
+
         // Default date range to materialization window
         CalendarMaterializationService.WindowBounds bounds = materializationService.getWindowBounds();
         LocalDate effectiveStartDate = startDate != null ? startDate : bounds.getStartDate();
         LocalDate effectiveEndDate = endDate != null ? endDate : bounds.getEndDate();
-        
+
         // Get all organizations for filter dropdown and name lookup
-        List<Organization> allOrganizations = organizationService.getAll();
-        mv.addObject("organizations", allOrganizations);
-        java.util.Map<String, String> orgNames = allOrganizations.stream()
+        List<Organization> allOrgs = organizationService.getAll();
+        mv.addObject("organizations", allOrgs);
+        Map<String, String> orgNames = allOrgs.stream()
                 .collect(Collectors.toMap(Organization::getId, Organization::getName));
         mv.addObject("orgNames", orgNames);
-        
-        // Query events across all organizations or specific one
-        List<CalendarEvent> events;
+
+        // Query and collect all matching events
+        List<CalendarEvent> allEvents;
         if (organizationId != null && !organizationId.isEmpty()) {
-            events = queryEventsWithFilters(organizationId, effectiveStartDate, effectiveEndDate,
+            allEvents = queryEventsWithFilters(organizationId, effectiveStartDate, effectiveEndDate,
                     minyanType, source, buildSort(sortBy, sortDir));
         } else {
-            // Get events from all organizations
-            events = new ArrayList<>();
-            for (Organization org : allOrganizations) {
-                events.addAll(queryEventsWithFilters(org.getId(), effectiveStartDate, effectiveEndDate,
+            allEvents = new ArrayList<>();
+            for (Organization org : allOrgs) {
+                allEvents.addAll(queryEventsWithFilters(org.getId(), effectiveStartDate, effectiveEndDate,
                         minyanType, source, buildSort(sortBy, sortDir)));
             }
+            allEvents.sort(getComparator(buildSort(sortBy, sortDir)));
         }
-        
-        // Add to model
-        mv.addObject("events", events);
+
+        // Statistics from the full filtered set
+        long totalEvents    = allEvents.size();
+        long rulesEvents    = allEvents.stream().filter(e -> e.getSource() == EventSource.RULES).count();
+        long importedEvents = allEvents.stream().filter(e -> e.getSource() == EventSource.IMPORTED).count();
+        long manualEvents   = allEvents.stream().filter(e -> e.getSource() == EventSource.MANUAL).count();
+
+        mv.addObject("totalEvents", totalEvents);
+        mv.addObject("rulesEvents", rulesEvents);
+        mv.addObject("importedEvents", importedEvents);
+        mv.addObject("manualEvents", manualEvents);
+
+        // Pagination
+        int totalPages = totalEvents == 0 ? 1 : (int) Math.ceil((double) totalEvents / pageSize);
+        if (page >= totalPages) page = totalPages - 1;
+        int fromIndex = page * pageSize;
+        int toIndex   = (int) Math.min(fromIndex + pageSize, totalEvents);
+        List<CalendarEvent> pageEvents = fromIndex < totalEvents
+                ? allEvents.subList(fromIndex, toIndex) : Collections.emptyList();
+
+        mv.addObject("events", pageEvents);
+        mv.addObject("currentPage", page);
+        mv.addObject("pageSize", pageSize);
+        mv.addObject("totalPages", totalPages);
+        mv.addObject("totalCount", totalEvents);
+        mv.addObject("fromIndex", totalEvents == 0 ? 0 : fromIndex + 1);
+        mv.addObject("toIndex", toIndex);
+        mv.addObject("pageSizeOptions", PAGE_SIZE_OPTIONS);
+
+        // Filter/sort state for form persistence and pagination links
         mv.addObject("startDate", effectiveStartDate);
         mv.addObject("endDate", effectiveEndDate);
         mv.addObject("organizationFilter", organizationId);
@@ -111,23 +161,11 @@ public class CalendarEventsAdminController {
         mv.addObject("sourceFilter", source);
         mv.addObject("sortBy", sortBy != null ? sortBy : "date");
         mv.addObject("sortDir", sortDir != null ? sortDir : "asc");
-        
-        // Add filter options
+
         mv.addObject("minyanTypes", MinyanType.values());
         mv.addObject("eventSources", EventSource.values());
         mv.addObject("windowBounds", bounds);
-        
-        // Statistics across all orgs (all effective — always enabled by definition)
-        long totalEvents = events.size();
-        long rulesEvents = events.stream().filter(e -> e.getSource() == EventSource.RULES).count();
-        long importedEvents = events.stream().filter(e -> e.getSource() == EventSource.IMPORTED).count();
-        long manualEvents = events.stream().filter(e -> e.getSource() == EventSource.MANUAL).count();
 
-        mv.addObject("totalEvents", totalEvents);
-        mv.addObject("rulesEvents", rulesEvents);
-        mv.addObject("importedEvents", importedEvents);
-        mv.addObject("manualEvents", manualEvents);
-        
         return mv;
     }
 
