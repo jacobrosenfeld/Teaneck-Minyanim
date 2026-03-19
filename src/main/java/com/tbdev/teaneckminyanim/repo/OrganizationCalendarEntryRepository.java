@@ -107,6 +107,18 @@ public interface OrganizationCalendarEntryRepository extends JpaRepository<Organ
             Sort sort);
 
     /**
+     * Find entries from a start date onwards with optional classification filter
+     */
+    @Query("SELECT e FROM OrganizationCalendarEntry e WHERE e.organizationId = :orgId " +
+            "AND e.date >= :startDate " +
+            "AND (:classification IS NULL OR e.classification = :classification)")
+    List<OrganizationCalendarEntry> findFromDateWithClassification(
+            @Param("orgId") String organizationId,
+            @Param("startDate") LocalDate startDate,
+            @Param("classification") MinyanType classification,
+            Sort sort);
+
+    /**
      * Delete all entries for an organization older than a specific date
      */
     void deleteByOrganizationIdAndDateBefore(String organizationId, LocalDate date);

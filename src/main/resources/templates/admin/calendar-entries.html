@@ -3,298 +3,376 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{admin/layout}">
 <head>
-    <title layout:fragment="title">Calendar Entries - [[${organization.name}]]</title>
+    <title layout:fragment="title">Calendar Entries — [[${organization.name}]]</title>
 
     <th:block layout:fragment="styles">
-        <style>
-            /* ── Stats ──────────────────────────────────────────── */
-            .stats-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-                gap: var(--space-4);
-                margin-bottom: var(--space-6);
-            }
+    <style>
+        /* ── Stats ─────────────────────────────────────── */
+        .ce-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-5);
+        }
 
-            .stat-card-modern {
-                background: var(--bg-surface);
-                border: 1px solid var(--border-color-light);
-                border-radius: var(--radius-lg);
-                padding: var(--space-5);
-                text-align: center;
-                transition: all var(--transition-fast);
-            }
+        .ce-stat {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-5);
+            text-align: center;
+        }
 
-            .stat-card-modern:hover {
-                box-shadow: var(--shadow-md);
-                transform: translateY(-2px);
-            }
+        .ce-stat-num {
+            font-size: 1.75rem;
+            font-weight: var(--font-weight-bold);
+            color: var(--color-primary);
+            line-height: 1;
+            margin-bottom: var(--space-2);
+        }
 
-            .stat-number {
-                font-size: 2rem;
-                font-weight: var(--font-weight-bold);
-                color: var(--color-primary);
-                margin-bottom: var(--space-1);
-                line-height: 1;
-            }
+        .ce-stat-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: var(--font-weight-medium);
+            white-space: nowrap;
+        }
 
-            .stat-label {
-                font-size: var(--font-size-xs);
-                color: var(--text-secondary);
-                text-transform: uppercase;
-                letter-spacing: 0.6px;
-                font-weight: var(--font-weight-medium);
-            }
+        /* ── Import bar ─────────────────────────────────── */
+        .import-bar {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-5);
+            margin-bottom: var(--space-5);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+        }
 
-            /* ── Import Controls ─────────────────────────────────── */
-            .import-panel {
-                background: var(--bg-surface);
-                border: 1px solid var(--border-color-light);
-                border-radius: var(--radius-lg);
-                padding: var(--space-5) var(--space-6);
-                margin-bottom: var(--space-6);
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: var(--space-4);
-                flex-wrap: wrap;
-            }
+        .import-bar-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            min-width: 0;
+        }
 
-            .import-status {
-                display: flex;
-                align-items: center;
-                gap: var(--space-3);
-                font-size: var(--font-size-sm);
-                color: var(--text-secondary);
-            }
+        .import-url-chip {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-xs);
+            background: var(--color-gray-100);
+            padding: 3px var(--space-2);
+            border-radius: var(--radius-sm);
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
-            .import-url {
-                font-family: monospace;
-                font-size: var(--font-size-xs);
-                background: var(--color-gray-100);
-                padding: var(--space-1) var(--space-2);
-                border-radius: var(--radius-sm);
-                max-width: 300px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
+        .import-bar-actions {
+            display: flex;
+            gap: var(--space-2);
+            flex-shrink: 0;
+        }
 
-            .import-actions {
-                display: flex;
-                gap: var(--space-3);
-                flex-wrap: wrap;
-            }
+        /* ── Filter bar ─────────────────────────────────── */
+        .filter-bar {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-5);
+            margin-bottom: var(--space-5);
+        }
 
-            /* ── Filter Panel ────────────────────────────────────── */
-            .filter-panel {
-                background: var(--bg-surface);
-                border: 1px solid var(--border-color-light);
-                border-radius: var(--radius-lg);
-                margin-bottom: var(--space-6);
-                overflow: hidden;
-            }
+        .filter-bar-title {
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-3);
+        }
 
-            .filter-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: var(--space-4) var(--space-6);
-                background: var(--color-gray-50);
-                border-bottom: 1px solid var(--border-color-light);
-                cursor: pointer;
-                user-select: none;
-            }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.2fr 1.2fr auto;
+            gap: var(--space-3);
+            align-items: end;
+        }
 
-            .filter-header:hover { background: var(--color-gray-100); }
+        @media (max-width: 1100px) {
+            .filter-grid { grid-template-columns: 1fr 1fr 1fr; }
+        }
+        @media (max-width: 680px) {
+            .filter-grid { grid-template-columns: 1fr 1fr; }
+        }
 
-            .filter-title {
-                font-weight: var(--font-weight-semibold);
-                display: flex;
-                align-items: center;
-                gap: var(--space-2);
-            }
+        .filter-bar label.field-label {
+            display: block;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
 
-            .filter-body {
-                padding: var(--space-6);
-            }
+        .filter-bar input[type="text"],
+        .filter-bar input[type="date"],
+        .filter-bar select {
+            width: 100%;
+            padding: 6px var(--space-3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            line-height: 1.5;
+            box-sizing: border-box;
+        }
 
-            .filter-row {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                gap: var(--space-4);
-                align-items: end;
-            }
+        .filter-bar input:focus,
+        .filter-bar select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px var(--color-primary-lighter);
+        }
 
-            /* ── Table ───────────────────────────────────────────── */
-            .table-wrapper {
-                background: var(--bg-surface);
-                border: 1px solid var(--border-color-light);
-                border-radius: var(--radius-lg);
-                overflow: hidden;
-            }
+        .filter-btn-col {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
 
-            .table-header-row {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: var(--space-4) var(--space-6);
-                border-bottom: 1px solid var(--border-color-light);
-                background: var(--color-gray-50);
-            }
+        .filter-btn-col .btn-modern {
+            justify-content: center;
+            padding: 6px var(--space-4);
+        }
 
-            .table-title {
-                font-weight: var(--font-weight-semibold);
-                font-size: var(--font-size-sm);
-                color: var(--text-primary);
-            }
+        .filter-footer {
+            margin-top: var(--space-3);
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--border-color-light);
+        }
 
-            .table-count {
-                font-size: var(--font-size-xs);
-                color: var(--text-secondary);
-                background: var(--color-gray-200);
-                padding: var(--space-1) var(--space-3);
-                border-radius: var(--radius-full);
-            }
+        .show-nm-label {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+        }
 
-            .table-container { overflow-x: auto; }
+        .show-nm-label input[type="checkbox"] { cursor: pointer; }
 
-            .entries-table {
-                width: 100%;
-                border-collapse: separate;
-                border-spacing: 0;
-                font-size: var(--font-size-sm);
-            }
+        /* ── Table card ─────────────────────────────────── */
+        .table-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
 
-            .entries-table thead {
-                position: sticky;
-                top: 0;
-                background: var(--color-gray-50);
-                z-index: 10;
-            }
+        .table-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-3) var(--space-5);
+            background: var(--color-gray-50);
+            border-bottom: 1px solid var(--border-color-light);
+            gap: var(--space-3);
+        }
 
-            .entries-table th {
-                padding: var(--space-3) var(--space-4);
-                text-align: left;
-                font-weight: var(--font-weight-semibold);
-                border-bottom: 2px solid var(--border-color);
-                white-space: nowrap;
-                color: var(--text-primary);
-                font-size: var(--font-size-xs);
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
+        .table-topbar-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+        }
 
-            .entries-table td {
-                padding: var(--space-3) var(--space-4);
-                border-bottom: 1px solid var(--border-color-light);
-                vertical-align: middle;
-            }
+        .count-pill {
+            background: var(--color-gray-200);
+            color: var(--text-secondary);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            padding: 2px 10px;
+            border-radius: var(--radius-full);
+            white-space: nowrap;
+        }
 
-            .entries-table tbody tr { transition: background-color var(--transition-fast); }
-            .entries-table tbody tr:hover { background-color: var(--bg-hover); }
-            .entries-table tbody tr.disabled { opacity: 0.55; background-color: var(--color-gray-50); }
-            .entries-table tbody tr:last-child td { border-bottom: none; }
+        .table-scroll { overflow-x: auto; }
 
-            /* ── Badges ──────────────────────────────────────────── */
-            .badge-entry {
-                display: inline-flex;
-                align-items: center;
-                padding: 2px 8px;
-                font-size: 11px;
-                font-weight: 600;
-                border-radius: 99px;
-                text-transform: uppercase;
-                letter-spacing: 0.4px;
-                white-space: nowrap;
-            }
+        /* ── Entries table ──────────────────────────────── */
+        .ce-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: var(--font-size-sm);
+        }
 
-            .badge-shacharis   { background: #bbdefb; color: #0d47a1; }
-            .badge-mincha      { background: #ffe0b2; color: #e65100; }
-            .badge-maariv      { background: #d1c4e9; color: #4a148c; }
-            .badge-mincha-maariv { background: #f8bbd0; color: #880e4f; }
-            .badge-selichos    { background: #c8e6c9; color: #1b5e20; }
-            .badge-non-minyan  { background: #eeeeee; color: #616161; }
-            .badge-other       { background: #fff9c4; color: #f57f17; }
-            .badge-enabled     { background: #e8f5e9; color: #2e7d32; }
-            .badge-disabled    { background: #eeeeee; color: #757575; }
-            .badge-unclassified { background: #eeeeee; color: #9e9e9e; }
+        .ce-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
 
-            /* ── Inline editing ──────────────────────────────────── */
-            .inline-select {
-                width: 100%;
-                min-width: 140px;
-                padding: 3px 6px;
-                border: 1px solid var(--border-color);
-                border-radius: var(--radius-sm);
-                font-size: var(--font-size-xs);
-                background: var(--bg-surface);
-                cursor: pointer;
-            }
+        .ce-table th {
+            padding: var(--space-3) var(--space-4);
+            text-align: left;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
+            background: var(--color-gray-50);
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
 
-            .inline-select:focus {
-                outline: none;
-                border-color: var(--color-primary);
-                box-shadow: 0 0 0 2px var(--color-primary-lighter);
-            }
+        .ce-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
 
-            .manually-edited-dot {
-                display: inline-block;
-                width: 7px;
-                height: 7px;
-                background: var(--color-info, #2196f3);
-                border-radius: 50%;
-                margin-left: 4px;
-                vertical-align: middle;
-                title: "Manually edited";
-            }
+        .ce-table th.sortable:hover { background: var(--color-gray-100); }
 
-            .notes-text {
-                font-size: var(--font-size-xs);
-                color: var(--text-secondary);
-                font-style: italic;
-                max-width: 200px;
-            }
+        .ce-table th[data-active="true"] { color: var(--color-primary); }
 
-            /* ── Action buttons ──────────────────────────────────── */
-            .action-btn {
-                padding: 3px 10px;
-                font-size: 11px;
-                border-radius: var(--radius-md);
-                border: 1px solid;
-                cursor: pointer;
-                transition: all var(--transition-fast);
-                white-space: nowrap;
-                font-weight: 500;
-            }
+        .sort-icon {
+            margin-left: 4px;
+            font-size: 10px;
+            color: var(--text-secondary);
+            opacity: 0.5;
+            vertical-align: middle;
+        }
 
-            .btn-enable  { background: #e8f5e9; border-color: #a5d6a7; color: #2e7d32; }
-            .btn-disable { background: #fbe9e7; border-color: #ffab91; color: #bf360c; }
-            .btn-enable:hover  { background: #c8e6c9; }
-            .btn-disable:hover { background: #ffccbc; }
+        .ce-table th[data-active="true"] .sort-icon {
+            opacity: 1;
+            color: var(--color-primary);
+        }
 
-            /* ── Empty state ──────────────────────────────────────── */
-            .empty-state {
-                text-align: center;
-                padding: var(--space-12) var(--space-6);
-                color: var(--text-secondary);
-            }
+        .ce-table td {
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border-color-light);
+            vertical-align: middle;
+        }
 
-            .empty-state i {
-                font-size: 3rem;
-                opacity: 0.25;
-                margin-bottom: var(--space-4);
-                display: block;
-            }
+        .ce-table tbody tr { transition: background-color var(--transition-fast); }
+        .ce-table tbody tr:hover { background: var(--bg-hover); }
+        .ce-table tbody tr.row-disabled { opacity: 0.5; background: var(--color-gray-50); }
+        .ce-table tbody tr:last-child td { border-bottom: none; }
 
-            /* ── Show-more toggle ─────────────────────────────────── */
-            .classification-reason {
-                font-size: 10px;
-                color: var(--text-secondary);
-                margin-top: 2px;
-            }
-        </style>
+        /* ── Classification badges ──────────────────────── */
+        .ce-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 9px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 99px;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .cb-shacharis     { background: #bbdefb; color: #0d47a1; }
+        .cb-mincha        { background: #ffe0b2; color: #e65100; }
+        .cb-maariv        { background: #d1c4e9; color: #4a148c; }
+        .cb-mincha-maariv { background: #f8bbd0; color: #880e4f; }
+        .cb-selichos      { background: #c8e6c9; color: #1b5e20; }
+        .cb-non-minyan    { background: #eeeeee; color: #616161; }
+        .cb-other         { background: #fff9c4; color: #f57f17; }
+        .cb-enabled       { background: #e8f5e9; color: #2e7d32; }
+        .cb-disabled      { background: #eeeeee; color: #757575; }
+
+        /* ── Location inline edit ───────────────────────── */
+        .loc-wrap {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .loc-select {
+            min-width: 120px;
+            max-width: 170px;
+            padding: 3px 6px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            background: var(--bg-surface);
+            cursor: pointer;
+        }
+
+        .loc-select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .edited-dot {
+            width: 7px;
+            height: 7px;
+            background: #2196f3;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ── Notes ──────────────────────────────────────── */
+        .notes-cell {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            font-style: italic;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+        }
+
+        /* ── Toggle action button ───────────────────────── */
+        .toggle-btn {
+            padding: 3px 10px;
+            font-size: 11px;
+            font-weight: 500;
+            border-radius: var(--radius-md);
+            border: 1px solid;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background var(--transition-fast);
+        }
+
+        .toggle-enable  { background: #e8f5e9; border-color: #a5d6a7; color: #2e7d32; }
+        .toggle-disable { background: #fbe9e7; border-color: #ffab91; color: #bf360c; }
+        .toggle-enable:hover  { background: #c8e6c9; }
+        .toggle-disable:hover { background: #ffccbc; }
+
+        /* ── Empty state ────────────────────────────────── */
+        .empty-state {
+            padding: var(--space-12) var(--space-6);
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .empty-state .ei {
+            font-size: 2.5rem;
+            opacity: 0.2;
+            margin-bottom: var(--space-3);
+            display: block;
+        }
+
+        .empty-state p { margin: var(--space-1) 0; }
+    </style>
     </th:block>
 </head>
+
 <body>
 <div layout:fragment="content">
 
@@ -302,9 +380,7 @@
     <div class="page-header d-flex justify-content-between align-items-start flex-wrap" style="gap: var(--space-4);">
         <div>
             <h1 class="page-title">Calendar Entries</h1>
-            <p class="page-description">
-                Manage imported calendar entries for <strong th:text="${organization.name}">Organization</strong>.
-            </p>
+            <p class="page-description">Imported calendar events for <strong th:text="${organization.name}">Organization</strong>.</p>
         </div>
         <a th:href="@{/admin/{orgId}/minyanim(orgId=${organization.id})}" class="btn-modern btn-secondary" style="align-self: flex-start;">
             <i class="fas fa-arrow-left"></i>
@@ -313,39 +389,34 @@
     </div>
 
     <!-- Alerts -->
-    <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center" role="alert">
+    <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center mb-4" role="alert">
         <i class="fas fa-check-circle mr-2"></i>
         <span th:text="${successMessage}">Success</span>
     </div>
-    <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center" role="alert">
+    <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center mb-4" role="alert">
         <i class="fas fa-exclamation-circle mr-2"></i>
         <span th:text="${errorMessage}">Error</span>
     </div>
 
-    <!-- Import Panel -->
-    <div class="import-panel">
-        <div class="import-status">
-            <span>
-                <strong>Calendar URL:</strong>
-            </span>
-            <span th:if="${organization.calendar}" class="import-url" th:text="${organization.calendar}">url</span>
-            <span th:unless="${organization.calendar}" class="text-muted" style="font-size: var(--font-size-sm);">Not configured</span>
-            <span>
-                <span th:if="${organization.useScrapedCalendar}" class="badge-entry badge-enabled">Import Enabled</span>
-                <span th:unless="${organization.useScrapedCalendar}" class="badge-entry badge-disabled">Import Disabled</span>
-            </span>
+    <!-- Import bar -->
+    <div class="import-bar">
+        <div class="import-bar-info">
+            <span style="font-weight: var(--font-weight-medium); font-size: var(--font-size-sm);">Calendar Source</span>
+            <span th:if="${organization.calendar}" class="import-url-chip" th:text="${organization.calendar}">url</span>
+            <span th:unless="${organization.calendar}" style="font-size: var(--font-size-sm);">Not configured</span>
+            <span th:if="${organization.useScrapedCalendar}" class="ce-badge cb-enabled">Sync Active</span>
+            <span th:unless="${organization.useScrapedCalendar}" class="ce-badge cb-disabled">Sync Off</span>
         </div>
-        <div class="import-actions">
-            <form th:action="@{/admin/{orgId}/calendar/import(orgId=${organization.id})}" method="post" style="display:inline;">
+        <div class="import-bar-actions">
+            <form th:action="@{/admin/{orgId}/calendar/import(orgId=${organization.id})}" method="post">
                 <button type="submit" class="btn-modern btn-primary btn-sm"
                         th:disabled="${organization.calendar == null or organization.calendar.isEmpty()}">
                     <i class="fas fa-sync-alt"></i>
-                    <span>Refresh Import</span>
+                    <span>Refresh</span>
                 </button>
             </form>
             <form th:action="@{/admin/{orgId}/calendar/reimport-all(orgId=${organization.id})}" method="post"
-                  style="display:inline;"
-                  onsubmit="return confirm('Delete ALL existing entries and reimport from scratch? Any manual location edits will be lost.');">
+                  onsubmit="return confirm('Delete ALL existing entries and reimport from scratch? Manual location edits will be lost.');">
                 <button type="submit" class="btn-modern btn-secondary btn-sm"
                         th:disabled="${organization.calendar == null or organization.calendar.isEmpty()}">
                     <i class="fas fa-redo"></i>
@@ -355,245 +426,309 @@
         </div>
     </div>
 
-    <!-- Statistics -->
-    <div class="stats-grid">
-        <div class="stat-card-modern">
-            <div class="stat-number" th:text="${totalEntries}">0</div>
-            <div class="stat-label">Total Entries</div>
+    <!-- Stats -->
+    <div class="ce-stats">
+        <div class="ce-stat">
+            <div class="ce-stat-num fmt-number" th:text="${totalEntries}">0</div>
+            <div class="ce-stat-label">Total in DB</div>
         </div>
-        <div class="stat-card-modern">
-            <div class="stat-number" style="color: var(--color-accent);" th:text="${minyanCount}">0</div>
-            <div class="stat-label">Minyan Events</div>
+        <div class="ce-stat">
+            <div class="ce-stat-num fmt-number" style="color: #2e7d32;" th:text="${enabledCount}">0</div>
+            <div class="ce-stat-label">Enabled</div>
         </div>
-        <div class="stat-card-modern">
-            <div class="stat-number" style="color: #2e7d32;" th:text="${enabledCount}">0</div>
-            <div class="stat-label">Enabled</div>
+        <div class="ce-stat">
+            <div class="ce-stat-num fmt-number" style="color: var(--text-secondary);" th:text="${disabledCount}">0</div>
+            <div class="ce-stat-label">Disabled</div>
         </div>
-        <div class="stat-card-modern">
-            <div class="stat-number" style="color: var(--text-secondary);" th:text="${disabledCount}">0</div>
-            <div class="stat-label">Disabled</div>
+        <div class="ce-stat">
+            <div class="ce-stat-num fmt-number" style="color: var(--color-primary);" th:text="${minyanCount}">0</div>
+            <div class="ce-stat-label">Minyan</div>
         </div>
-        <div class="stat-card-modern" th:if="${showNonMinyan or nonMinyanCount > 0}">
-            <div class="stat-number" style="color: var(--color-gray-500);" th:text="${nonMinyanCount}">0</div>
-            <div class="stat-label">Non-Minyan</div>
+        <div class="ce-stat">
+            <div class="ce-stat-num fmt-number" style="color: var(--color-gray-500);" th:text="${nonMinyanCount}">0</div>
+            <div class="ce-stat-label">Non-Minyan</div>
         </div>
     </div>
 
-    <!-- Filter Panel -->
-    <div class="filter-panel">
-        <div class="filter-header" onclick="toggleFilters(this)">
-            <div class="filter-title">
-                <i class="fas fa-filter"></i>
-                <span>Filters &amp; Search</span>
-                <span th:if="${filteredCount != totalEntries}" class="badge-entry badge-unclassified" style="margin-left: var(--space-2);">
-                    Showing <span th:text="${filteredCount}">0</span> of <span th:text="${totalEntries}">0</span>
-                </span>
-            </div>
-            <i class="fas fa-chevron-down" style="transition: transform 0.2s;"></i>
-        </div>
-        <div class="filter-body" id="filter-body" th:style="${searchText != null or startDate != null or filterClassification != null or filterEnabled != null or showNonMinyan} ? '' : 'display:none'">
-            <form method="get" th:action="@{/admin/{orgId}/calendar-entries(orgId=${organization.id})}">
-                <div class="filter-row">
-                    <div class="form-group-modern">
-                        <label class="form-label-modern">Search</label>
-                        <input type="text" name="searchText" class="form-input-modern"
-                               th:value="${searchText}" placeholder="Title, location, notes...">
-                    </div>
-                    <div class="form-group-modern">
-                        <label class="form-label-modern">Type</label>
-                        <select name="filterClassification" class="form-select-modern">
-                            <option value="">All Types</option>
-                            <option value="SHACHARIS"    th:selected="${filterClassification == 'SHACHARIS'}">Shacharis</option>
-                            <option value="MINCHA"       th:selected="${filterClassification == 'MINCHA'}">Mincha</option>
-                            <option value="MAARIV"       th:selected="${filterClassification == 'MAARIV'}">Maariv</option>
-                            <option value="MINCHA_MAARIV" th:selected="${filterClassification == 'MINCHA_MAARIV'}">Mincha/Maariv</option>
-                            <option value="SELICHOS"     th:selected="${filterClassification == 'SELICHOS'}">Selichos</option>
-                            <option value="NON_MINYAN"   th:selected="${filterClassification == 'NON_MINYAN'}">Non-Minyan</option>
-                            <option value="OTHER"        th:selected="${filterClassification == 'OTHER'}">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group-modern">
-                        <label class="form-label-modern">Status</label>
-                        <select name="filterEnabled" class="form-select-modern">
-                            <option value="">All</option>
-                            <option value="true"  th:selected="${filterEnabled == 'true'}">Enabled Only</option>
-                            <option value="false" th:selected="${filterEnabled == 'false'}">Disabled Only</option>
-                        </select>
-                    </div>
-                    <div class="form-group-modern">
-                        <label class="form-label-modern">From Date</label>
-                        <input type="date" name="startDate" class="form-input-modern" th:value="${startDate}">
-                    </div>
-                    <div class="form-group-modern">
-                        <label class="form-label-modern">To Date</label>
-                        <input type="date" name="endDate" class="form-input-modern" th:value="${endDate}">
-                    </div>
-                    <div class="form-group-modern">
-                        <label class="form-label-modern">Non-Minyan</label>
-                        <div style="padding-top: 6px;">
-                            <label style="display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-sm); cursor: pointer;">
-                                <input type="checkbox" name="showNonMinyan" value="true" th:checked="${showNonMinyan}">
-                                Show non-minyan
-                            </label>
-                        </div>
-                    </div>
-                    <div class="form-group-modern" style="display: flex; flex-direction: column; justify-content: flex-end; gap: var(--space-2);">
-                        <button type="submit" class="btn-modern btn-primary">
-                            <i class="fas fa-search"></i>
-                            <span>Apply</span>
-                        </button>
-                        <a th:href="@{/admin/{orgId}/calendar-entries(orgId=${organization.id})}" class="btn-modern btn-secondary">
-                            <i class="fas fa-times"></i>
-                            <span>Clear</span>
-                        </a>
-                    </div>
+    <!-- Filter bar -->
+    <div class="filter-bar">
+        <div class="filter-bar-title"><i class="fas fa-filter mr-1"></i> Filter &amp; Search</div>
+        <form method="get" th:action="@{/admin/{orgId}/calendar-entries(orgId=${organization.id})}">
+            <div class="filter-grid">
+                <div>
+                    <label class="field-label">Search</label>
+                    <input type="text" name="searchText" th:value="${searchText}" placeholder="Title, location, notes…">
                 </div>
-            </form>
-        </div>
+                <div>
+                    <label class="field-label">Type</label>
+                    <select name="filterClassification">
+                        <option value="">All Types</option>
+                        <option value="SHACHARIS"     th:selected="${filterClassification == 'SHACHARIS'}">Shacharis</option>
+                        <option value="MINCHA"        th:selected="${filterClassification == 'MINCHA'}">Mincha</option>
+                        <option value="MAARIV"        th:selected="${filterClassification == 'MAARIV'}">Maariv</option>
+                        <option value="MINCHA_MAARIV" th:selected="${filterClassification == 'MINCHA_MAARIV'}">Mincha/Maariv</option>
+                        <option value="SELICHOS"      th:selected="${filterClassification == 'SELICHOS'}">Selichos</option>
+                        <option value="NON_MINYAN"    th:selected="${filterClassification == 'NON_MINYAN'}">Non-Minyan</option>
+                        <option value="OTHER"         th:selected="${filterClassification == 'OTHER'}">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="field-label">Status</label>
+                    <select name="filterEnabled">
+                        <option value="">All</option>
+                        <option value="true"  th:selected="${filterEnabled == 'true'}">Enabled</option>
+                        <option value="false" th:selected="${filterEnabled == 'false'}">Disabled</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="field-label">From</label>
+                    <input type="date" name="startDate" th:value="${startDate}">
+                </div>
+                <div>
+                    <label class="field-label">To</label>
+                    <input type="date" name="endDate" th:value="${endDate}">
+                </div>
+                <div class="filter-btn-col">
+                    <button type="submit" class="btn-modern btn-primary">
+                        <i class="fas fa-search"></i>
+                        <span>Filter</span>
+                    </button>
+                    <a th:href="@{/admin/{orgId}/calendar-entries(orgId=${organization.id})}"
+                       class="btn-modern btn-secondary" style="text-align: center;">
+                        Clear
+                    </a>
+                </div>
+            </div>
+            <div class="filter-footer">
+                <label class="show-nm-label">
+                    <input type="checkbox" name="showNonMinyan" value="true" th:checked="${showNonMinyan}">
+                    Show non-minyan entries
+                </label>
+            </div>
+        </form>
     </div>
 
-    <!-- Entries Table -->
-    <div class="table-wrapper">
-        <div class="table-header-row">
-            <span class="table-title">
-                <i class="fas fa-calendar-alt mr-2"></i>Entries
-            </span>
-            <span class="table-count" th:text="|${filteredCount} entries|">0 entries</span>
+    <!-- Table -->
+    <div class="table-card">
+        <div class="table-topbar">
+            <div class="table-topbar-left">
+                <i class="fas fa-calendar-alt" style="color: var(--color-primary);"></i>
+                <span>Entries</span>
+                <span class="count-pill fmt-count" th:text="${filteredCount} + ' shown'">0 shown</span>
+            </div>
+            <small style="color: var(--text-secondary); font-size: var(--font-size-xs);">
+                Click column headers to sort
+            </small>
         </div>
-        <div class="table-container">
-            <table class="entries-table">
+
+        <div class="table-scroll">
+            <table class="ce-table" id="ce-table">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Title</th>
-                        <th>Type</th>
+                        <th class="sortable" data-col="date" onclick="sortCol(this)">
+                            Date <i class="sort-icon fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-col="time" onclick="sortCol(this)">
+                            Time <i class="sort-icon fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-col="title" onclick="sortCol(this)">
+                            Title <i class="sort-icon fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-col="type" onclick="sortCol(this)">
+                            Type <i class="sort-icon fas fa-sort"></i>
+                        </th>
                         <th>Location</th>
                         <th>Notes</th>
-                        <th>Status</th>
+                        <th class="sortable" data-col="status" onclick="sortCol(this)">
+                            Status <i class="sort-icon fas fa-sort"></i>
+                        </th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="ce-tbody">
+
                     <tr th:each="entry : ${entries}"
-                        th:classappend="${!entry.enabled} ? 'disabled' : ''">
+                        th:classappend="${!entry.enabled} ? 'row-disabled' : ''">
 
                         <!-- Date -->
-                        <td style="white-space: nowrap;">
-                            <span th:text="${#temporals.format(entry.date, 'MMM d, yyyy')}">Date</span>
-                            <br>
-                            <small style="color: var(--text-secondary); font-size: 11px;"
-                                   th:text="${#temporals.format(entry.date, 'EEEE')}">Day</small>
+                        <td data-col="date" th:attr="data-value=${entry.date}" style="white-space: nowrap;">
+                            <span th:text="${#temporals.format(entry.date, 'MMM d, yyyy')}">Date</span><br>
+                            <small style="color: var(--text-secondary);"
+                                   th:text="${#temporals.format(entry.date, 'EEE')}">Day</small>
                         </td>
 
                         <!-- Time -->
-                        <td style="white-space: nowrap;">
+                        <td data-col="time"
+                            th:attr="data-value=${entry.startTime != null ? entry.startTime.toString() : '99:99:99'}">
                             <span th:if="${entry.startTime != null}"
                                   th:text="${#temporals.format(entry.startTime, 'h:mm a')}">Time</span>
                             <span th:unless="${entry.startTime != null}" class="text-muted">—</span>
                         </td>
 
                         <!-- Title -->
-                        <td>
-                            <span style="font-weight: var(--font-weight-medium);" th:text="${entry.title}">Title</span>
-                            <div th:if="${entry.classificationReason}" class="classification-reason"
+                        <td data-col="title" th:attr="data-value=${entry.title ?: ''}">
+                            <span style="font-weight: var(--font-weight-medium);"
+                                  th:text="${entry.title}">Title</span>
+                            <div th:if="${entry.classificationReason}"
+                                 style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;"
                                  th:text="${entry.classificationReason}">reason</div>
                         </td>
 
-                        <!-- Classification badge -->
-                        <td>
+                        <!-- Type badge -->
+                        <td data-col="type"
+                            th:attr="data-value=${entry.classification != null ? entry.classification.name() : 'ZZZZ'}">
                             <th:block th:if="${entry.classification != null}">
-                                <span class="badge-entry"
-                                      th:classappend="${entry.classification.name() == 'SHACHARIS'} ? 'badge-shacharis' :
-                                                      (${entry.classification.name() == 'MINCHA'} ? 'badge-mincha' :
-                                                      (${entry.classification.name() == 'MAARIV'} ? 'badge-maariv' :
-                                                      (${entry.classification.name() == 'MINCHA_MAARIV'} ? 'badge-mincha-maariv' :
-                                                      (${entry.classification.name() == 'SELICHOS'} ? 'badge-selichos' :
-                                                      (${entry.classification.name() == 'NON_MINYAN'} ? 'badge-non-minyan' : 'badge-other')))))"
+                                <span class="ce-badge"
+                                      th:classappend="${entry.classification.name() == 'SHACHARIS'}     ? 'cb-shacharis' :
+                                                      (${entry.classification.name() == 'MINCHA'}       ? 'cb-mincha' :
+                                                      (${entry.classification.name() == 'MAARIV'}       ? 'cb-maariv' :
+                                                      (${entry.classification.name() == 'MINCHA_MAARIV'}? 'cb-mincha-maariv' :
+                                                      (${entry.classification.name() == 'SELICHOS'}     ? 'cb-selichos' :
+                                                      (${entry.classification.name() == 'NON_MINYAN'}   ? 'cb-non-minyan' : 'cb-other')))))"
                                       th:text="${entry.classification.displayName()}">Type</span>
                             </th:block>
-                            <span th:unless="${entry.classification != null}" class="badge-entry badge-unclassified">Unclassified</span>
+                            <span th:unless="${entry.classification != null}" class="ce-badge cb-other">—</span>
                         </td>
 
                         <!-- Location (inline edit) -->
                         <td>
-                            <form method="post"
-                                  th:action="@{/admin/{orgId}/calendar-entries/{entryId}/update-location(orgId=${organization.id},entryId=${entry.id})}"
-                                  style="display: inline;">
-                                <select name="locationId" class="inline-select" onchange="this.form.submit()">
-                                    <option value="">— No location —</option>
-                                    <option th:each="loc : ${locations}"
-                                            th:value="${loc.id}"
-                                            th:text="${loc.name}"
-                                            th:selected="${entry.location != null and entry.location == loc.name}">Location</option>
-                                </select>
-                            </form>
-                            <span th:if="${entry.locationManuallyEdited}"
-                                  class="manually-edited-dot"
-                                  title="Manually edited"></span>
+                            <div class="loc-wrap">
+                                <form method="post"
+                                      th:action="@{/admin/{orgId}/calendar-entries/{entryId}/update-location(orgId=${organization.id},entryId=${entry.id})}"
+                                      style="display: contents;">
+                                    <select name="locationId" class="loc-select" onchange="this.form.submit()">
+                                        <option value="">— None —</option>
+                                        <option th:each="loc : ${locations}"
+                                                th:value="${loc.id}"
+                                                th:text="${loc.name}"
+                                                th:selected="${entry.location != null and entry.location == loc.name}">Location</option>
+                                    </select>
+                                </form>
+                                <span th:if="${entry.locationManuallyEdited}"
+                                      class="edited-dot"
+                                      title="Manually edited"></span>
+                            </div>
                         </td>
 
                         <!-- Notes -->
                         <td>
-                            <span th:if="${entry.notes}" class="notes-text" th:text="${entry.notes}">notes</span>
-                            <span th:unless="${entry.notes}" style="color: var(--text-secondary); font-size: var(--font-size-xs);">—</span>
+                            <span th:if="${entry.notes}" class="notes-cell" th:text="${entry.notes}"
+                                  th:title="${entry.notes}">notes</span>
+                            <span th:unless="${entry.notes}"
+                                  style="color: var(--text-secondary); font-size: var(--font-size-xs);">—</span>
                         </td>
 
-                        <!-- Status badge -->
-                        <td>
-                            <span class="badge-entry"
-                                  th:classappend="${entry.enabled} ? 'badge-enabled' : 'badge-disabled'"
+                        <!-- Status -->
+                        <td data-col="status" th:attr="data-value=${entry.enabled ? '0' : '1'}">
+                            <span class="ce-badge"
+                                  th:classappend="${entry.enabled} ? 'cb-enabled' : 'cb-disabled'"
                                   th:text="${entry.enabled} ? 'Enabled' : 'Disabled'">Status</span>
-                            <div th:if="${entry.duplicateReason}" style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;"
+                            <div th:if="${entry.duplicateReason}"
+                                 style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;"
                                  th:text="${entry.duplicateReason}">reason</div>
                         </td>
 
                         <!-- Actions -->
                         <td style="white-space: nowrap;">
                             <form method="post"
-                                  th:action="@{/admin/{orgId}/calendar-entries/{entryId}/toggle(orgId=${organization.id},entryId=${entry.id})}"
-                                  style="display: inline;">
+                                  th:action="@{/admin/{orgId}/calendar-entries/{entryId}/toggle(orgId=${organization.id},entryId=${entry.id})}">
                                 <button type="submit"
-                                        th:class="${entry.enabled} ? 'action-btn btn-disable' : 'action-btn btn-enable'"
+                                        th:class="${entry.enabled} ? 'toggle-btn toggle-disable' : 'toggle-btn toggle-enable'"
                                         th:text="${entry.enabled} ? 'Disable' : 'Enable'">Toggle</button>
                             </form>
                         </td>
                     </tr>
 
                     <!-- Empty state -->
-                    <tr th:if="${#lists.isEmpty(entries)}">
+                    <tr th:if="${#lists.isEmpty(entries)}" class="empty-row">
                         <td colspan="8">
                             <div class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <p style="font-weight: var(--font-weight-medium); margin: 0 0 var(--space-2);">No entries found.</p>
-                                <p style="font-size: var(--font-size-sm); margin: 0;">
+                                <i class="fas fa-inbox ei"></i>
+                                <p style="font-weight: var(--font-weight-medium);">No entries found.</p>
+                                <p style="font-size: var(--font-size-sm);">
                                     <span th:if="${organization.calendar == null or organization.calendar.isEmpty()}">
                                         No calendar URL is configured for this organization.
                                     </span>
                                     <span th:unless="${organization.calendar == null or organization.calendar.isEmpty()}">
-                                        Try adjusting your filters, or use <strong>Refresh Import</strong> to pull the latest entries.
+                                        Try adjusting the filters, or use <strong>Refresh</strong> to pull the latest entries.
                                     </span>
                                 </p>
                             </div>
                         </td>
                     </tr>
+
                 </tbody>
             </table>
         </div>
     </div>
 
-</div><!-- /layout:fragment="content" -->
+</div><!-- /content -->
 
 <th:block layout:fragment="scripts">
-    <script>
-        function toggleFilters(header) {
-            const body = document.getElementById('filter-body');
-            const icon = header.querySelector('.fa-chevron-down');
-            const hidden = body.style.display === 'none';
-            body.style.display = hidden ? '' : 'none';
-            if (icon) icon.style.transform = hidden ? 'rotate(180deg)' : '';
+<script>
+(function () {
+    'use strict';
+
+    // ── Format numbers with commas ────────────────────────────
+    document.querySelectorAll('.fmt-number').forEach(function (el) {
+        var n = parseInt(el.textContent, 10);
+        if (!isNaN(n)) el.textContent = n.toLocaleString();
+    });
+
+    // Update the count pill to use formatted number
+    var countPill = document.querySelector('.fmt-count');
+    if (countPill) {
+        var raw = countPill.textContent.trim();
+        var num = parseInt(raw, 10);
+        if (!isNaN(num)) {
+            countPill.textContent = num.toLocaleString() + ' shown';
         }
-    </script>
+    }
+
+    // ── Client-side table sort ────────────────────────────────
+    var currentCol = 'date';
+    var currentDir = 'asc';
+
+    function markHeader(th, dir) {
+        document.querySelectorAll('#ce-table th.sortable').forEach(function (h) {
+            h.removeAttribute('data-active');
+            var icon = h.querySelector('.sort-icon');
+            if (icon) icon.className = 'sort-icon fas fa-sort';
+        });
+        th.setAttribute('data-active', 'true');
+        var icon = th.querySelector('.sort-icon');
+        if (icon) {
+            icon.className = dir === 'asc' ? 'sort-icon fas fa-sort-up' : 'sort-icon fas fa-sort-down';
+        }
+    }
+
+    window.sortCol = function (th) {
+        var col = th.getAttribute('data-col');
+        var dir = (currentCol === col && currentDir === 'asc') ? 'desc' : 'asc';
+        currentCol = col;
+        currentDir = dir;
+        markHeader(th, dir);
+
+        var tbody = document.getElementById('ce-tbody');
+        var rows = Array.from(tbody.querySelectorAll('tr:not(.empty-row)'));
+        rows.sort(function (a, b) {
+            var aCell = a.querySelector('td[data-col="' + col + '"]');
+            var bCell = b.querySelector('td[data-col="' + col + '"]');
+            var aVal = aCell ? (aCell.getAttribute('data-value') || '') : '';
+            var bVal = bCell ? (bCell.getAttribute('data-value') || '') : '';
+            var cmp = aVal.localeCompare(bVal, undefined, { numeric: true, sensitivity: 'base' });
+            return dir === 'asc' ? cmp : -cmp;
+        });
+        rows.forEach(function (row) { tbody.appendChild(row); });
+    };
+
+    // Initialise: mark date column sorted asc (matches server default)
+    var dateHeader = document.querySelector('#ce-table th[data-col="date"]');
+    if (dateHeader) markHeader(dateHeader, 'asc');
+
+}());
+</script>
 </th:block>
+
 </body>
 </html>

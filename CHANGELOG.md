@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.11] - 2026-03-18
+
+### Fixed
+- **Calendar entries table defaults to today onwards** (#196): Page now starts with `startDate = today` rather than showing all historical entries; supports open-ended "from date" queries via new `findFromDateWithClassification` repository method.
+- **Sortable column headers** (#196): All major columns (Date, Time, Title, Type, Status) are now clickable to sort client-side — no page reload. Active sort column highlighted with directional arrow icon.
+- **Filter bar always visible and functional** (#198): Replaced collapsible filter panel with an always-open flat filter bar; filter/clear buttons are clearly styled and reliably submit.
+- **Stat/count pill spacing** (#197): Stat cards and table count pill have consistent padding and `white-space: nowrap` to prevent overflow and layout bleed.
+- **Comma-formatted numbers**: All stat card numbers and the table count pill are formatted with locale-aware commas via JS `toLocaleString()`.
+
+### Changed
+- **Calendar entries page fully redesigned** (closes #196, #197, #198): Clean flat layout matching the rest of the admin panel — import bar, stats row, filter bar, and modern sortable table with proper badge styling.
+- **Master Calendar page redesigned** (#200): Applied same sortable table infrastructure with `data-value` attributes, collapsible filter panel with Clear button, stat cards with comma formatting, and consistent badge/pill styles.
+- **Combined enabled + date filter**: `getFilteredEntries` now correctly applies the enabled status filter in-memory when combined with a date range or classification filter.
+
 ## [1.8.10] - 2026-03-18
 
 ### Changed
