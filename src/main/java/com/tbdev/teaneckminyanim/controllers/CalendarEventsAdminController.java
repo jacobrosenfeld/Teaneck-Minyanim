@@ -41,6 +41,7 @@ public class CalendarEventsAdminController {
     private final CalendarMaterializationScheduler materializationScheduler;
     private final TNMUserService userService;
     private final ApplicationSettingsService settingsService;
+    private final EffectiveScheduleService effectiveScheduleService;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -62,10 +63,9 @@ public class CalendarEventsAdminController {
             @RequestParam(required = false) String organizationId,
             @RequestParam(required = false) String minyanType,
             @RequestParam(required = false) String source,
-            @RequestParam(required = false) String enabled,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir) {
-        
+
         ModelAndView mv = new ModelAndView("admin/calendar-events-all");
         
         // Add current user for sidebar
@@ -88,14 +88,14 @@ public class CalendarEventsAdminController {
         // Query events across all organizations or specific one
         List<CalendarEvent> events;
         if (organizationId != null && !organizationId.isEmpty()) {
-            events = queryEventsWithFilters(organizationId, effectiveStartDate, effectiveEndDate, 
-                    minyanType, source, enabled, buildSort(sortBy, sortDir));
+            events = queryEventsWithFilters(organizationId, effectiveStartDate, effectiveEndDate,
+                    minyanType, source, buildSort(sortBy, sortDir));
         } else {
             // Get events from all organizations
             events = new ArrayList<>();
             for (Organization org : allOrganizations) {
-                events.addAll(queryEventsWithFilters(org.getId(), effectiveStartDate, effectiveEndDate, 
-                        minyanType, source, enabled, buildSort(sortBy, sortDir)));
+                events.addAll(queryEventsWithFilters(org.getId(), effectiveStartDate, effectiveEndDate,
+                        minyanType, source, buildSort(sortBy, sortDir)));
             }
         }
         
@@ -106,7 +106,6 @@ public class CalendarEventsAdminController {
         mv.addObject("organizationFilter", organizationId);
         mv.addObject("minyanTypeFilter", minyanType);
         mv.addObject("sourceFilter", source);
-        mv.addObject("enabledFilter", enabled);
         mv.addObject("sortBy", sortBy != null ? sortBy : "date");
         mv.addObject("sortDir", sortDir != null ? sortDir : "asc");
         
@@ -115,15 +114,13 @@ public class CalendarEventsAdminController {
         mv.addObject("eventSources", EventSource.values());
         mv.addObject("windowBounds", bounds);
         
-        // Statistics across all orgs
+        // Statistics across all orgs (all effective — always enabled by definition)
         long totalEvents = events.size();
-        long enabledEvents = events.stream().filter(CalendarEvent::isEnabled).count();
         long rulesEvents = events.stream().filter(e -> e.getSource() == EventSource.RULES).count();
         long importedEvents = events.stream().filter(e -> e.getSource() == EventSource.IMPORTED).count();
         long manualEvents = events.stream().filter(e -> e.getSource() == EventSource.MANUAL).count();
-        
+
         mv.addObject("totalEvents", totalEvents);
-        mv.addObject("enabledEvents", enabledEvents);
         mv.addObject("rulesEvents", rulesEvents);
         mv.addObject("importedEvents", importedEvents);
         mv.addObject("manualEvents", manualEvents);
@@ -141,10 +138,9 @@ public class CalendarEventsAdminController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) String minyanType,
             @RequestParam(required = false) String source,
-            @RequestParam(required = false) String enabled,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir) {
-        
+
         ModelAndView mv = new ModelAndView("admin/calendar-events");
         
         // Add current user for sidebar
@@ -164,50 +160,48 @@ public class CalendarEventsAdminController {
         Organization org = orgOpt.get();
         mv.addObject("organization", org);
         
-        // Default date range to materialization window
-        CalendarMaterializationService.WindowBounds bounds = materializationService.getWindowBounds();
-        LocalDate effectiveStartDate = startDate != null ? startDate : bounds.getStartDate();
-        LocalDate effectiveEndDate = endDate != null ? endDate : bounds.getEndDate();
-        
-        // Build sort
-        Sort sort = buildSort(sortBy, sortDir);
-        
-        // Query events with filters
+        // Default to current date through 2 weeks ahead (compact preview window)
+        LocalDate today = LocalDate.now();
+        LocalDate effectiveStartDate = startDate != null ? startDate : today;
+        LocalDate effectiveEndDate = endDate != null ? endDate : today.plusDays(13);
+
+        // Build sort (always date+time ascending for schedule view)
+        Sort sort = buildSort(null, null);
+
+        // Query effective events
         List<CalendarEvent> events = queryEventsWithFilters(
-                orgId, effectiveStartDate, effectiveEndDate, minyanType, source, enabled, sort);
-        
-        // Add to model
-        mv.addObject("events", events);
+                orgId, effectiveStartDate, effectiveEndDate, minyanType, source, sort);
+
+        // Group by date for compact schedule view
+        java.util.LinkedHashMap<LocalDate, List<CalendarEvent>> eventsByDate = events.stream()
+                .collect(Collectors.groupingBy(CalendarEvent::getDate,
+                        java.util.LinkedHashMap::new, Collectors.toList()));
+
+        // Track which dates have imported overrides (for visual indicator)
+        java.util.Set<LocalDate> importedDates = events.stream()
+                .filter(e -> e.getSource() == EventSource.IMPORTED)
+                .map(CalendarEvent::getDate)
+                .collect(Collectors.toSet());
+
+        mv.addObject("eventsByDate", eventsByDate);
+        mv.addObject("importedDates", importedDates);
         mv.addObject("startDate", effectiveStartDate);
         mv.addObject("endDate", effectiveEndDate);
         mv.addObject("minyanTypeFilter", minyanType);
         mv.addObject("sourceFilter", source);
-        mv.addObject("enabledFilter", enabled);
-        mv.addObject("sortBy", sortBy != null ? sortBy : "date");
-        mv.addObject("sortDir", sortDir != null ? sortDir : "asc");
-        
-        // Add filter options
         mv.addObject("minyanTypes", MinyanType.values());
         mv.addObject("eventSources", EventSource.values());
-        mv.addObject("windowBounds", bounds);
-        
-        // Add locations for editing
-        List<Location> locations = locationService.findMatching(orgId);
-        mv.addObject("locations", locations);
-        
-        // Statistics
-        long totalEvents = calendarEventRepository.countEventsInRange(orgId, effectiveStartDate, effectiveEndDate);
-        long enabledEvents = events.stream().filter(CalendarEvent::isEnabled).count();
-        long rulesEvents = events.stream().filter(e -> e.getSource() == EventSource.RULES).count();
-        long importedEvents = events.stream().filter(e -> e.getSource() == EventSource.IMPORTED).count();
-        long manualEvents = events.stream().filter(e -> e.getSource() == EventSource.MANUAL).count();
-        
-        mv.addObject("totalEvents", totalEvents);
-        mv.addObject("enabledEvents", enabledEvents);
-        mv.addObject("rulesEvents", rulesEvents);
-        mv.addObject("importedEvents", importedEvents);
-        mv.addObject("manualEvents", manualEvents);
-        
+        mv.addObject("windowBounds", materializationService.getWindowBounds());
+
+        // Stats
+        long totalDays = eventsByDate.size();
+        long importedDaysCount = importedDates.size();
+        long rulesDaysCount = totalDays - importedDaysCount;
+
+        mv.addObject("totalDays", totalDays);
+        mv.addObject("importedDaysCount", importedDaysCount);
+        mv.addObject("rulesDaysCount", rulesDaysCount);
+
         return mv;
     }
 
@@ -384,17 +378,16 @@ public class CalendarEventsAdminController {
 
     private List<CalendarEvent> queryEventsWithFilters(
             String orgId, LocalDate startDate, LocalDate endDate,
-            String minyanType, String source, String enabled, Sort sort) {
-        
-        List<CalendarEvent> events = calendarEventRepository.findEventsInRange(orgId, startDate, endDate);
-        
-        // Apply filters
+            String minyanType, String source, Sort sort) {
+
+        // Use EffectiveScheduleService so only the winning events are shown
+        // (IMPORTED overrides RULES on days where imports exist)
+        List<CalendarEvent> events = effectiveScheduleService.getEffectiveEventsInRange(orgId, startDate, endDate);
+
+        // Apply optional filters
         return events.stream()
                 .filter(e -> minyanType == null || e.getMinyanType().name().equals(minyanType))
                 .filter(e -> source == null || e.getSource().name().equals(source))
-                .filter(e -> enabled == null || 
-                        (enabled.equals("true") && e.isEnabled()) || 
-                        (enabled.equals("false") && !e.isEnabled()))
                 .sorted(getComparator(sort))
                 .collect(Collectors.toList());
     }

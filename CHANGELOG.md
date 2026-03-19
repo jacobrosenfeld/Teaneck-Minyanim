@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.10] - 2026-03-18
+
+### Changed
+- **Calendar Events page redesigned as compact schedule preview**: The org-specific `/admin/{orgId}/calendar-events` page now shows a day-by-day schedule digest instead of a bloated data table.
+  - Defaults to current date + 2 weeks (instead of full materialization window)
+  - Events grouped by date; each day shows compact service pills (time + type, color-coded)
+  - Amber "Calendar Import" badge and left border on days where imports override rules
+  - "Today" label on the current date row
+  - Week headers inserted at week boundaries
+  - Read-only with action links: Manage Minyan Rules, Manage Calendar Entries, Rematerialize
+  - Stats show: total days with services, days using calendar import, days using rules
+
+## [1.8.9] - 2026-03-18
+
+### Changed
+- **Calendar Events pages now show effective schedule**: Both `/admin/{orgId}/calendar-events` and `/admin/calendar-events/all` now use `EffectiveScheduleService.getEffectiveEventsInRange()` instead of raw repository queries. The pages show only the events that the public actually sees — IMPORTED events take precedence over RULES on days where imports exist.
+  - Removed "Enabled/Disabled" status filter and stat card (effective events are always enabled by definition)
+  - Removed Status column and Enable/Disable toggle button from the table
+- **Master Calendar added to Super Admin sidebar**: `/admin/calendar-events/all` is now accessible directly from the sidebar under the Super Admin section.
+
+## [1.8.8] - 2026-03-18
+
+### Fixed
+- **Migrate calendar-events pages to standard admin layout (#110)**: Both `calendar-events.html` and `calendar-events-all.html` now use `layout:decorate="~{admin/layout}"`, ensuring consistent navbar, sidebar, design system CSS, and toast notifications across all admin pages.
+  - Replaced standalone full-HTML structure with proper layout fragments (`layout:fragment="content"`, `layout:fragment="styles"`, `layout:fragment="scripts"`)
+  - Upgraded `calendar-events-all.html` to use design system CSS variables (was using hardcoded pixel values)
+  - Fixed missing `toggleFilters()` JS function — filter collapse toggle now works on both pages
+  - Removed orphaned `</th:block>` tag in `calendar-events.html`
+
 ## [1.8.7] - 2026-03-18
 
 ### Changed
