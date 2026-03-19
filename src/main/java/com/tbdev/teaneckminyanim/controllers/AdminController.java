@@ -1984,6 +1984,11 @@ public class AdminController {
         ModelAndView mv = new ModelAndView("admin/calendar-entries");
         addStandardPageData(mv);
 
+        // Default to today if no start date provided
+        if (startDate == null || startDate.isEmpty()) {
+            startDate = java.time.LocalDate.now().toString();
+        }
+
         try {
             Organization org = getOrganization(orgId);
             if (org == null) {
@@ -1994,7 +1999,7 @@ public class AdminController {
             mv.addObject("organization", org);
 
             // Get repository bean
-            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo =
                     applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
 
             // Build sort
@@ -2105,37 +2110,43 @@ public class AdminController {
         
         List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entries;
 
+        com.tbdev.teaneckminyanim.minyan.MinyanType classification = null;
+        if (filterClassification != null && !filterClassification.isEmpty()) {
+            try {
+                classification = com.tbdev.teaneckminyanim.minyan.MinyanType.fromString(filterClassification);
+            } catch (Exception e) {
+                log.warn("Error parsing classification: {}", filterClassification, e);
+            }
+        }
+
         // Apply text search if provided
         if (searchText != null && !searchText.trim().isEmpty()) {
             entries = entryRepo.searchByText(orgId, searchText.trim(), sort);
         }
-        // Apply date range filter if provided
-        else if (startDate != null && endDate != null && !startDate.isEmpty() && !endDate.isEmpty()) {
+        // Apply full date range filter
+        else if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
             try {
                 java.time.LocalDate start = java.time.LocalDate.parse(startDate);
                 java.time.LocalDate end = java.time.LocalDate.parse(endDate);
-                
-                com.tbdev.teaneckminyanim.minyan.MinyanType classification = null;
-                if (filterClassification != null && !filterClassification.isEmpty()) {
-                    classification = com.tbdev.teaneckminyanim.minyan.MinyanType.fromString(filterClassification);
-                }
-                
                 entries = entryRepo.findInRangeWithClassification(orgId, start, end, classification, sort);
             } catch (Exception e) {
                 log.warn("Error parsing date range: {} to {}", startDate, endDate, e);
                 entries = entryRepo.findByOrganizationId(orgId, sort);
             }
         }
-        // Apply classification filter
-        else if (filterClassification != null && !filterClassification.isEmpty()) {
+        // Apply start-date-only filter (default: today onwards)
+        else if (startDate != null && !startDate.isEmpty()) {
             try {
-                com.tbdev.teaneckminyanim.minyan.MinyanType classification = 
-                        com.tbdev.teaneckminyanim.minyan.MinyanType.fromString(filterClassification);
-                entries = entryRepo.findByOrganizationIdAndClassification(orgId, classification, sort);
+                java.time.LocalDate start = java.time.LocalDate.parse(startDate);
+                entries = entryRepo.findFromDateWithClassification(orgId, start, classification, sort);
             } catch (Exception e) {
-                log.warn("Error parsing classification: {}", filterClassification, e);
+                log.warn("Error parsing start date: {}", startDate, e);
                 entries = entryRepo.findByOrganizationId(orgId, sort);
             }
+        }
+        // Apply classification-only filter
+        else if (classification != null) {
+            entries = entryRepo.findByOrganizationIdAndClassification(orgId, classification, sort);
         }
         // Apply enabled filter
         else if (filterEnabled != null && !filterEnabled.isEmpty()) {
@@ -2147,10 +2158,19 @@ public class AdminController {
             entries = entryRepo.findByOrganizationId(orgId, sort);
         }
 
+        // Apply enabled filter in-memory when combined with date or classification filters
+        if (filterEnabled != null && !filterEnabled.isEmpty()
+                && (startDate != null && !startDate.isEmpty() || classification != null)) {
+            boolean enabled = "true".equalsIgnoreCase(filterEnabled);
+            entries = entries.stream()
+                    .filter(e -> e.isEnabled() == enabled)
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
         // Filter out non-minyan entries by default unless showNonMinyan is true
         if (!showNonMinyan) {
             entries = entries.stream()
-                    .filter(e -> e.getClassification() == null || 
+                    .filter(e -> e.getClassification() == null ||
                                 !e.getClassification().isNonMinyan())
                     .collect(java.util.stream.Collectors.toList());
         }
