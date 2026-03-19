@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="/assets/css/owl.theme.css">
     <link rel="stylesheet" href="/assets/css/ionicons.min.css"> <!-- Resource style -->
     <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
+    <link rel="stylesheet" href="/homepage.css">
     <script src="https://unpkg.com/counterup2@2.0.2/dist/index.js">	</script>
     <script type="text/javascript" src="/assets/js/plugins.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6026762329140546"
@@ -83,10 +84,28 @@
                           <h3 th:if="${isToday}">Upcoming Minyanim</h3>
                           <h3 th:if="${!isToday}">Daily Minyanim</h3>
                         </div>
+                        <!-- Filter Bar -->
+                        <div class="minyan-filter-bar" id="minyan-filter-bar"
+                             th:if="${!allminyanim.isEmpty()}"
+                             th:attr="data-is-today=${isToday}">
+                          <div class="filter-scroll-row" role="group" aria-label="Filter minyanim">
+                            <button class="filter-pill active" data-filter-type="all">All</button>
+                            <select class="filter-shul-select" id="shul-filter-select">
+                              <option value="all">All Shuls</option>
+                            </select>
+                            <button class="filter-pill" data-filter-type="shacharis">Shacharis</button>
+                            <button class="filter-pill" data-filter-type="mincha">Mincha</button>
+                            <button class="filter-pill" data-filter-type="maariv">Maariv</button>
+                          </div>
+                        </div>
+                        <!-- Filter Empty State -->
+                        <div id="filter-empty-state" class="alert alert-secondary" th:if="${!allminyanim.isEmpty()}" style="display:none;">
+                          <p id="filter-empty-message" class="mb-0 text-center"></p>
+                        </div>
                         <div class="tab-content" id="pills-tabContent">
                           <div class="tab-pane fade active show text-center">
                             <!-- Desktop Table -->
-                            <table class="table mobile-hide" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
+                            <table class="table mobile-hide minyan-data-table" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
                               <thead>
                                <tr>
                                 <th scope="col" class="th-sm">Shul</th>
@@ -98,7 +117,8 @@
                               </tr>
                               </thead>
                               <tbody>
-                                <tr th:each="minyan: ${allminyanim}">
+                                <tr th:each="minyan: ${allminyanim}"
+                                    th:attr="data-type=${minyan.getType().name()},data-org=${minyan.getOrganizationName()}">
                                   <td class="align-middle">
                                     <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3" th:href="@{|/org/${minyan.getOrganizationSlug()}|}" th:text="${minyan.getOrganizationName()}" th:style="'background: '+${minyan.getOrgColor()}"></a>
                                   </td>
@@ -125,9 +145,10 @@
                               </tbody>
                             </table>
                             <!-- Mobile Table -->
-                            <table class="table desktop-hide" th:if="${!allminyanim.isEmpty()}" id="minyan-table">
+                            <table class="table desktop-hide minyan-data-table" th:if="${!allminyanim.isEmpty()}" id="minyan-table-mobile">
                               <tbody>
-                                <tr th:each="minyan: ${allminyanim}">
+                                <tr th:each="minyan: ${allminyanim}"
+                                    th:attr="data-type=${minyan.getType().name()},data-org=${minyan.getOrganizationName()}">
                                   <td class="middle">
                                     <a role="button" class="btn-shul js-scroll-trigger px-3 px-sm-3" th:href="@{|/org/${minyan.getOrganizationSlug()}|}" th:text="${minyan.getOrganizationName()}" th:style="'background: '+${minyan.getOrgColor()}"></a>
                                     <table class="table table-org table-nested" th:if="${!allminyanim.isEmpty()}">
@@ -461,6 +482,7 @@
       </script>
 
       <script type="text/javascript" src="/minyan-table.js"></script>
+      <script type="text/javascript" src="/minyan-filter.js"></script>
       <script type="text/javascript" src="/assets/js/custom.js"></script>
       <script type="text/javascript" src="/edot.js"></script>
       <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>

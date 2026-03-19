@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-03-19
+
+### Added
+- **Homepage minyan filter bar** (#144): Type pills (All / Shacharis / Mincha / Maariv) and a shul dropdown let users instantly narrow the minyanim list without a page reload. Mincha/Maariv combined services (`MINCHA_MAARIV`) group under the Mincha pill, matching the mobile app behaviour. Both desktop and mobile tables filter in sync.
+- **Context-aware empty states**: When the active filter produces no results, a friendly message is shown — e.g. "No more Shacharis minyanim today." or "There are no more minyanim at [Shul] today." — with alternate phrasing for non-today dates.
+- **Shul dropdown auto-populated**: Options are generated client-side from the rendered rows, so no server-side changes are needed as shuls are added or removed.
+
+### Changed
+- **`minyan-table.js` refactored**: Pagination state exposed via `resetMinyanTable()` so the filter can restore the 10-row load-more view when all filters are cleared.
+- **Desktop table ID unchanged** (`minyan-table`); mobile table given distinct ID `minyan-table-mobile` (fixes duplicate-ID bug); both share class `minyan-data-table` for filter targeting.
+
 ## [1.8.11] - 2026-03-18
 
 ### Fixed

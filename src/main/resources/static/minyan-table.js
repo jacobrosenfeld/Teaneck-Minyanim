@@ -1,36 +1,47 @@
-let table = document.getElementById("minyan-table");
-let rows = table.rows;
-let rowNum = 10; // the number of rows to display initially
-let increment = 5; // the number of rows to add each time the load more button is clicked
-let loadMoreButton = document.getElementById("load-more-button");
+var _minyanTable = document.getElementById("minyan-table");
+var _minyanTableRowNum = 10;
+var _minyanTableIncrement = 5;
+var _minyanTableLoadMoreBtn = document.getElementById("load-more-button");
 
-function loadMore() {
-  let numRows = rows.length;
+function _getBodyRows() {
+  if (!_minyanTable) return [];
+  return Array.from(_minyanTable.querySelectorAll('tbody tr'));
+}
 
-  // add 5 more rows if there are still rows left to display
-  if (rowNum + increment < numRows) {
-    for (let i = rowNum; i < rowNum + increment; i++) {
-      rows[i].style.display = "";
-    }
-    rowNum += increment;
+function resetMinyanTable() {
+  if (!_minyanTable) return;
+  var rows = _getBodyRows();
+  _minyanTableRowNum = 10;
+  for (var i = 0; i < rows.length; i++) {
+    rows[i].style.display = i < _minyanTableRowNum ? "" : "none";
+  }
+  if (!_minyanTableLoadMoreBtn) return;
+  if (rows.length <= _minyanTableRowNum) {
+    _minyanTableLoadMoreBtn.style.display = "none";
   } else {
-    // if there are no more rows left to display, hide the load more button
-    for (let i = rowNum; i < numRows; i++) {
-      rows[i].style.display = "";
-    }
-    loadMoreButton.style.display = "none";
+    _minyanTableLoadMoreBtn.style.display = "";
   }
 }
 
-// hide all rows except for the first 10
-for (let i = rowNum; i < rows.length; i++) {
-  rows[i].style.display = "none";
+function loadMore() {
+  if (!_minyanTable) return;
+  var rows = _getBodyRows();
+  var numRows = rows.length;
+  if (_minyanTableRowNum + _minyanTableIncrement < numRows) {
+    for (var i = _minyanTableRowNum; i < _minyanTableRowNum + _minyanTableIncrement; i++) {
+      rows[i].style.display = "";
+    }
+    _minyanTableRowNum += _minyanTableIncrement;
+  } else {
+    for (var i = _minyanTableRowNum; i < numRows; i++) {
+      rows[i].style.display = "";
+    }
+    if (_minyanTableLoadMoreBtn) _minyanTableLoadMoreBtn.style.display = "none";
+  }
 }
 
-// hide load more button if there are 5 or fewer rows
-if (rows.length <= 10) {
-  loadMoreButton.style.display = "none";
-} else {
-  // add event listener to the load more button
-  loadMoreButton.addEventListener("click", loadMore);
+// Initial setup
+resetMinyanTable();
+if (_minyanTableLoadMoreBtn) {
+  _minyanTableLoadMoreBtn.addEventListener("click", loadMore);
 }
