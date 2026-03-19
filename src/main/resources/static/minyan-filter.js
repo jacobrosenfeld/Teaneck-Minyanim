@@ -17,7 +17,7 @@
     var orgNames = [];
     var seen = {};
     tables.forEach(function (table) {
-      Array.from(table.querySelectorAll('tbody tr')).forEach(function (row) {
+      Array.from(table.querySelectorAll('tbody tr[data-type]')).forEach(function (row) {
         var org = row.getAttribute('data-org');
         if (org && !seen[org]) {
           seen[org] = true;
@@ -65,7 +65,7 @@
     var visibleCount = 0;
 
     tables.forEach(function (table) {
-      Array.from(table.querySelectorAll('tbody tr')).forEach(function (row) {
+      Array.from(table.querySelectorAll('tbody tr[data-type]')).forEach(function (row) {
         var rowType = row.getAttribute('data-type') || '';
         var rowOrg = row.getAttribute('data-org') || '';
         var matches =
