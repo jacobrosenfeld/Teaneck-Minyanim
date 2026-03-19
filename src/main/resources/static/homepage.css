@@ -138,3 +138,19 @@
 #filter-empty-state {
   text-align: center;
 }
+
+/* Lock desktop table column widths so filtering doesn't cause reflow */
+#minyan-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+#minyan-table th:nth-child(1) { width: 38%; } /* Shul */
+#minyan-table th:nth-child(2) { width: 24%; } /* Type */
+#minyan-table th:nth-child(3) { width: 20%; } /* Time */
+#minyan-table th:nth-child(4) { width: 18%; } /* Room */
+
+#minyan-table td {
+  overflow: hidden;
+  word-wrap: break-word;
+}
