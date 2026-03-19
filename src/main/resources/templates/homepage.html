@@ -88,18 +88,14 @@
                         <div class="minyan-filter-bar" id="minyan-filter-bar"
                              th:if="${!allminyanim.isEmpty()}"
                              th:attr="data-is-today=${isToday}">
-                          <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                            <div class="filter-type-pills d-flex flex-wrap gap-1" role="group" aria-label="Filter by prayer type">
-                              <button class="filter-pill active" data-filter-type="all">All</button>
-                              <button class="filter-pill" data-filter-type="shacharis">Shacharis</button>
-                              <button class="filter-pill" data-filter-type="mincha">Mincha</button>
-                              <button class="filter-pill" data-filter-type="maariv">Maariv</button>
-                            </div>
-                            <div class="filter-shul-wrap">
-                              <select class="form-select form-select-sm filter-shul-select" id="shul-filter-select">
-                                <option value="all">All Shuls</option>
-                              </select>
-                            </div>
+                          <div class="filter-scroll-row" role="group" aria-label="Filter minyanim">
+                            <select class="filter-shul-select" id="shul-filter-select">
+                              <option value="all">All Shuls</option>
+                            </select>
+                            <button class="filter-pill active" data-filter-type="all">All</button>
+                            <button class="filter-pill" data-filter-type="shacharis">Shacharis</button>
+                            <button class="filter-pill" data-filter-type="mincha">Mincha</button>
+                            <button class="filter-pill" data-filter-type="maariv">Maariv</button>
                           </div>
                         </div>
                         <!-- Filter Empty State -->
