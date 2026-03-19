@@ -384,10 +384,13 @@ public class CalendarEventsAdminController {
         // (IMPORTED overrides RULES on days where imports exist)
         List<CalendarEvent> events = effectiveScheduleService.getEffectiveEventsInRange(orgId, startDate, endDate);
 
-        // Apply optional filters
+        // Apply optional filters (treat empty string same as null — means "no filter")
+        String effectiveType = (minyanType != null && !minyanType.isEmpty()) ? minyanType : null;
+        String effectiveSource = (source != null && !source.isEmpty()) ? source : null;
+
         return events.stream()
-                .filter(e -> minyanType == null || e.getMinyanType().name().equals(minyanType))
-                .filter(e -> source == null || e.getSource().name().equals(source))
+                .filter(e -> effectiveType == null || e.getMinyanType().name().equals(effectiveType))
+                .filter(e -> effectiveSource == null || e.getSource().name().equals(effectiveSource))
                 .sorted(getComparator(sort))
                 .collect(Collectors.toList());
     }
