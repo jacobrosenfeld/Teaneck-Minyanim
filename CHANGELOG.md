@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.2] - 2026-03-20
+
+### Fixed
+- **Org page 200 error for orgs with null nusach**: `org.getNusach()` returned null for organizations with no nusach set in the DB, causing a NullPointerException in the Thymeleaf template (`getNusach().displayName()`). Added a null-safe custom getter on `Organization` that falls back to `Nusach.UNSPECIFIED`.
+- **Error page returning HTTP 200**: `CustomErrorController` rendered the error view without setting the HTTP status code, so all error pages (404, 500, etc.) were served as 200. Now injects `HttpServletResponse` and calls `response.setStatus(statusCode)`.
+- **JS crash on pages without counterUp library**: `custom.js` accessed `window.counterUp.default` unconditionally; guarded with `if (window.counterUp)` to prevent crash on pages that don't load the library.
+- **JS crash calling jQuery `.tooltip()` on Bootstrap 5 pages**: Guarded the `$('#back-top').tooltip('hide')` call with `typeof $.fn.tooltip === 'function'` check.
+
 ## [1.9.1] - 2026-03-20
 
 ### Fixed
