@@ -20,6 +20,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Apply dev favicon
+        run: cp src/main/resources/static/assets/icons/favicon-dev.svg src/main/resources/static/assets/icons/favicon.svg
+
       - name: Build JAR
         run: mvn clean package -DskipTests
 
