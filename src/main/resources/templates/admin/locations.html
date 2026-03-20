@@ -11,13 +11,14 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
     <link rel="manifest" href="/assets/icons/site.webmanifest">
     <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
-    
+
     <meta name="msapplication-TileColor" content="#275ed8">
     <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
 </head>
 <body>
 <div layout:fragment="content">
+
     <!-- Page Header -->
     <div class="page-header flex justify-between items-center">
         <div>
@@ -66,7 +67,7 @@
                                 <i class="fas fa-edit"></i>
                                 <span>Edit</span>
                             </button>
-                            <button class="btn-modern btn-sm btn-outline" style="border-color: var(--color-danger); color: var(--color-danger);" 
+                            <button class="btn-modern btn-sm btn-outline" style="border-color: var(--color-danger); color: var(--color-danger);"
                                     data-toggle="modal" th:data-target="${'#delete-location-modal-' + location.id}">
                                 <i class="fas fa-trash"></i>
                                 <span>Delete</span>
@@ -75,7 +76,7 @@
                     </tr>
                     <tr th:if="${#lists.isEmpty(locations)}">
                         <td colspan="3" style="text-align: center; padding: var(--space-12); color: var(--text-secondary);">
-                            <i class="fas fa-map-marker-alt" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3;"></i>
+                            <i class="fas fa-map-marker-alt" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3; display: block;"></i>
                             <p style="margin: 0; font-weight: var(--font-weight-medium);">No locations found.</p>
                             <p style="margin-top: var(--space-2); font-size: var(--font-size-sm);">Create a new location to get started.</p>
                         </td>
@@ -84,6 +85,97 @@
             </table>
         </div>
     </div>
+
+    <!-- Add Location Modal -->
+    <div class="modal fade" id="add-location-modal" tabindex="-1" aria-labelledby="add-location-modal-label" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title h4" id="add-location-modal-label">Add a Location</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>This location will be associated with <span th:text="${organization.name}"></span>.</p>
+                    <form method="post" th:action="@{/admin/create-location}">
+                        <input hidden name="oid" th:value="${organization.id}">
+                        <div class="form-group">
+                            <label for="new-name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="new-name" name="name" aria-describedby="new-name-help" required>
+                            <small id="new-name-help" class="form-text text-muted">This is the public display name.</small>
+                        </div>
+                        <div class="login-msg-box" th:if="${addlocationerror}" style="padding-bottom: 8px">
+                            <div class="form-msg-fatal" th:text="${addlocationerror}"></div>
+                        </div>
+                        <hr>
+                        <button type="submit" class="btn-modern btn-primary">
+                            <i class="fas fa-plus"></i> Add Location
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update & Delete Location Modals -->
+    <div th:each="location: ${locations}">
+        <div class="modal fade" th:id="${'update-location-modal-' + location.id}" tabindex="-1"
+             th:aria-labelledby="${'update-location-modal-label-' + location.id}" style="display: none;" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title h4" th:id="${'update-location-modal-label-' + location.id}">Edit Location</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" th:action="@{/admin/update-location}">
+                            <input hidden name="id" th:value="${location.id}">
+                            <div class="form-group">
+                                <label class="form-label" th:for="${'new-name-' + location.id}">Name</label>
+                                <input type="text" class="form-control"
+                                       th:id="${'new-name-' + location.id}"
+                                       name="name"
+                                       th:aria-describedby="${'new-name-help-' + location.id}"
+                                       required
+                                       th:value="${location.name}">
+                                <small th:id="${'new-name-help-' + location.id}" class="form-text text-muted">This is the public display name.</small>
+                            </div>
+                            <hr>
+                            <button type="submit" class="btn-modern btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" th:id="${'delete-location-modal-' + location.id}" tabindex="-1"
+             th:aria-labelledby="${'delete-location-modal-label-' + location.id}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" th:id="${'delete-location-modal-label-' + location.id}"
+                            th:text="|Delete '${location.name}'?|"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Do you want to permanently delete this location? This action cannot be undone.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+                        <a th:href="@{/admin/delete-location(id=${location.id})}" class="btn btn-danger">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <th:block layout:fragment="scripts">
@@ -91,13 +183,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             const successAlert = document.querySelector('.alert-modern.alert-success');
             const errorAlert = document.querySelector('.alert-modern.alert-danger');
-            
+
             if (successAlert) {
                 const message = successAlert.textContent.trim();
                 window.showToast(message, 'success');
                 successAlert.remove();
             }
-            
+
             if (errorAlert) {
                 const message = errorAlert.textContent.trim();
                 window.showToast(message, 'error');
@@ -107,82 +199,4 @@
     </script>
 </th:block>
 </body>
-
-<!-- Add Location Modal -->
-<div class="modal fade" id="add-location-modal" tabindex="-1" aria-labelledby="add-location-modal-label" style="display: none;" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title h4" id="add-location-modal-label">Add a Location</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>This location will be associated with [(${organization.name})].</p>
-                <form method="post" th:action="@{/admin/create-location}">
-                    <input hidden name="oid" th:value="${organization.id}">
-                    <div class="form-group">
-                        <label for="new-name">Name</label>
-                        <input type="text" class="form-control" id="new-name" name="name" aria-describedby="new-name-help" required>
-                        <small id="new-name-help" class="form-text text-muted">This is the public display name.</small>
-                    </div>
-                    <div class="login-msg-box" th:if="${addlocationerror}" style="padding-bottom: 8px">
-                        <div class="form-msg-fatal" th:text="${addlocationerror}"></div>
-                    </div>
-                    <hr>
-                    <button type="submit" class="btn btn-primary">Add</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Update Location Modals -->
-<div th:each="location: ${locations}">
-    <div class="modal fade" th:id="${'update-location-modal-' + location.id}" tabindex="-1" th:aria-labelledby="${'update-location-modal-label-' + location.id}" style="display: none;" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title h4" th:id="${'update-location-modal-label-' + location.id}">Change a Location</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" th:action="@{/admin/update-location}">
-                        <input hidden name="id" th:value="${location.id}">
-                        <div class="form-group">
-                            <label for="new-name">Name</label>
-                            <input type="text" class="form-control" th:id="${'new-name-' + location.id}" name="name" th:aria-describedby="${'new-name-help-' + location.id}" required th:value="${location.name}">
-                            <small th:id="${'new-name-help-' + location.id}" class="form-text text-muted">This is the public display name.</small>
-                        </div>
-                        <hr>
-                        <button type="submit" class="btn btn-primary">Change</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" th:id="${'delete-location-modal-' + location.id}" tabindex="-1" th:aria-labelledby="${'delete-location-modal-label-' + location.id}" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" th:id="${'delete-location-modal-label-' + location.id}" th:text="${'Permanently delete ''' + location.name + '''?'}"></h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    Do you want to permanently delete this location? This action cannot be undone.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
-                    <a th:href="@{/admin/delete-location(id=${location.id})}" class="btn btn-danger">Delete</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 </html>
