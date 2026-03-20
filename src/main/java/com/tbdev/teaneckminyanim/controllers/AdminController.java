@@ -1434,6 +1434,14 @@ public class AdminController {
             megilaTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
+        int totalMinyanCount = shacharisMinyanim.size()
+                + minchaMinyanim.size()
+                + maarivMinyanim.size()
+                + selichosMinyanim.size()
+                + megilaMinyanim.size();
+        mv.addObject("totalMinyanCount", totalMinyanCount);
+        mv.addObject("hasMinyanim", totalMinyanCount > 0);
+
         mv.addObject("shacharistimes", shacharisTimes);
         mv.addObject("minchatimes", minchaTimes);
         mv.addObject("maarivtimes", maarivTimes);

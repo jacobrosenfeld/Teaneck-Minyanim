@@ -372,10 +372,9 @@
     </div>
 
     <!-- Statistics -->
-    <div class="stats-grid">
+    <div class="stats-grid" th:if="${hasMinyanim}">
         <div class="stat-card">
-            <div class="stat-number"
-                 th:text="${shacharisminyanim.size() + minchaminyanim.size() + maarivminyanim.size() + selichosminyanim.size() + megilaminyanim.size()}">0</div>
+            <div class="stat-number" th:text="${totalMinyanCount}">0</div>
             <div class="stat-label">Total</div>
         </div>
         <div class="stat-card">
@@ -401,7 +400,7 @@
     </div>
 
     <!-- Filter -->
-    <div class="filter-section">
+    <div class="filter-section" th:if="${hasMinyanim}">
         <div class="search-box">
             <i class="fas fa-search"></i>
             <input type="text" id="searchInput" placeholder="Search by location, nusach, or notes…">
@@ -431,7 +430,7 @@
     </div>
 
     <!-- Minyanim -->
-    <div id="minyanim-container">
+    <div id="minyanim-container" th:if="${hasMinyanim}">
 
         <!-- ── Shacharis ── -->
         <th:block th:each="minyan : ${shacharisminyanim}"
@@ -892,20 +891,22 @@
         </th:block>
 
         <!-- Empty state: shown immediately when org has no minyanim, or via JS when filter/search yields nothing -->
-        <div id="emptyState" class="empty-state"
-             th:style="${(shacharisminyanim.size() + minchaminyanim.size() + maarivminyanim.size() + selichosminyanim.size() + megilaminyanim.size()) == 0 ? '' : 'display:none;'}">
+        <div id="emptyState" class="empty-state" style="display:none;">
             <i class="fas fa-calendar-times"></i>
             <h3>No minyanim found</h3>
-            <p th:if="${(shacharisminyanim.size() + minchaminyanim.size() + maarivminyanim.size() + selichosminyanim.size() + megilaminyanim.size()) == 0}">
-                No rule-based minyanim have been added yet.
-                <a th:href="@{|/admin/${organization.id}/minyanim/new|}">Add the first minyan</a> to get started.
-            </p>
-            <p th:unless="${(shacharisminyanim.size() + minchaminyanim.size() + maarivminyanim.size() + selichosminyanim.size() + megilaminyanim.size()) == 0}">
-                Try adjusting your search or filter criteria.
-            </p>
+            <p>Try adjusting your search or filter criteria.</p>
         </div>
 
     </div><!-- /minyanim-container -->
+
+    <div class="empty-state" th:unless="${hasMinyanim}">
+        <i class="fas fa-calendar-times"></i>
+        <h3>No minyanim found</h3>
+        <p>
+            No rule-based minyanim have been added yet.
+            <a th:href="@{|/admin/${organization.id}/minyanim/new|}">Add the first minyan</a> to get started.
+        </p>
+    </div>
 
 </div><!-- /content -->
 
@@ -921,10 +922,15 @@
                 card.style.display = show ? '' : 'none';
                 if (show) visible++;
             });
-            document.getElementById('emptyState').style.display = visible === 0 ? '' : 'none';
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                emptyState.style.display = visible === 0 ? '' : 'none';
+            }
         }
 
-        document.getElementById('searchInput').addEventListener('input', function () {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
             const q = this.value.toLowerCase();
             let visible = 0;
             document.querySelectorAll('.minyan-card').forEach(card => {
@@ -935,8 +941,12 @@
                 card.style.display = match ? '' : 'none';
                 if (match) visible++;
             });
-            document.getElementById('emptyState').style.display = visible === 0 ? '' : 'none';
-        });
+                const emptyState = document.getElementById('emptyState');
+                if (emptyState) {
+                    emptyState.style.display = visible === 0 ? '' : 'none';
+                }
+            });
+        }
 
         // Toast on redirect messages
         /*[- th:if="${successmessage}" -]*/
