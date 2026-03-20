@@ -357,7 +357,8 @@
     </div>
 
     <!-- Calendar sync override banner -->
-    <div class="sync-banner" th:if="${organization.useScrapedCalendar and organization.calendar != null and !organization.calendar.isEmpty()}">
+    <div class="sync-banner"
+         th:if="${organization != null and organization.useScrapedCalendar != null and organization.useScrapedCalendar and organization.calendar != null and !organization.calendar.isEmpty()}">
         <i class="fas fa-exclamation-triangle sync-banner-icon"></i>
         <div class="sync-banner-body">
             <div class="sync-banner-title">Calendar Import Active — Rules May Be Overridden</div>

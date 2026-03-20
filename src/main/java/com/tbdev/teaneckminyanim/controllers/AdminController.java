@@ -1458,7 +1458,11 @@ public class AdminController {
         }
         mv.addObject("locationnames", locationNames);
 
-        mv.addObject("organization", organizationService.findById(oidToUse).orElse(null));
+        Optional<Organization> organization = organizationService.findById(oidToUse);
+        if (organization.isEmpty()) {
+            throw new AccessDeniedException("Organization not found.");
+        }
+        mv.addObject("organization", organization.get());
 
         mv.addObject("successmessage", successMessage);
         mv.addObject("errormessage", errorMessage);
