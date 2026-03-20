@@ -357,7 +357,8 @@
     </div>
 
     <!-- Calendar sync override banner -->
-    <div class="sync-banner" th:if="${organization.useScrapedCalendar and organization.calendar != null and !organization.calendar.isEmpty()}">
+    <div class="sync-banner"
+         th:if="${organization != null and organization.useScrapedCalendar != null and organization.useScrapedCalendar and organization.calendar != null and !organization.calendar.isEmpty()}">
         <i class="fas fa-exclamation-triangle sync-banner-icon"></i>
         <div class="sync-banner-body">
             <div class="sync-banner-title">Calendar Import Active — Rules May Be Overridden</div>
@@ -372,10 +373,9 @@
     </div>
 
     <!-- Statistics -->
-    <div class="stats-grid">
+    <div class="stats-grid" th:if="${hasMinyanim}">
         <div class="stat-card">
-            <div class="stat-number"
-                 th:text="${shacharisminyanim.size() + minchaminyanim.size() + maarivminyanim.size() + selichosminyanim.size() + megilaminyanim.size()}">0</div>
+            <div class="stat-number" th:text="${totalMinyanCount}">0</div>
             <div class="stat-label">Total</div>
         </div>
         <div class="stat-card">
@@ -401,7 +401,7 @@
     </div>
 
     <!-- Filter -->
-    <div class="filter-section">
+    <div class="filter-section" th:if="${hasMinyanim}">
         <div class="search-box">
             <i class="fas fa-search"></i>
             <input type="text" id="searchInput" placeholder="Search by location, nusach, or notes…">
@@ -431,7 +431,7 @@
     </div>
 
     <!-- Minyanim -->
-    <div id="minyanim-container">
+    <div id="minyanim-container" th:if="${hasMinyanim}">
 
         <!-- ── Shacharis ── -->
         <th:block th:each="minyan : ${shacharisminyanim}"
@@ -473,31 +473,31 @@
                         </th:block>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SUNDAY)}">
                             <div class="schedule-day-name">Sun</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).MONDAY)}">
                             <div class="schedule-day-name">Mon</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).TUESDAY)}">
                             <div class="schedule-day-name">Tue</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).WEDNESDAY)}">
                             <div class="schedule-day-name">Wed</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).THURSDAY)}">
                             <div class="schedule-day-name">Thu</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).FRIDAY)}">
                             <div class="schedule-day-name">Fri</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SHABBOS)}">
                             <div class="schedule-day-name">Shabbos</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                     </div>
 
@@ -505,19 +505,19 @@
                     <div class="special-grid">
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).ROSH_CHODESH)}">
                             <div class="schedule-day-name">Rosh Chodesh</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).YOM_TOV)}">
                             <div class="schedule-day-name">Yom Tov</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).CHANUKA)}">
                             <div class="schedule-day-name">Chanuka</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).ROSH_CHODESH_CHANUKA)}">
                             <div class="schedule-day-name">R.C. Chanuka</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                     </div>
                 </div>
@@ -565,50 +565,50 @@
                     <div class="schedule-grid">
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SUNDAY)}">
                             <div class="schedule-day-name">Sun</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).MONDAY)}">
                             <div class="schedule-day-name">Mon</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).TUESDAY)}">
                             <div class="schedule-day-name">Tue</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).WEDNESDAY)}">
                             <div class="schedule-day-name">Wed</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).THURSDAY)}">
                             <div class="schedule-day-name">Thu</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).FRIDAY)}">
                             <div class="schedule-day-name">Fri</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SHABBOS)}">
                             <div class="schedule-day-name">Shabbos</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                     </div>
                     <div class="special-days-label">Special Days</div>
                     <div class="special-grid">
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).ROSH_CHODESH)}">
                             <div class="schedule-day-name">Rosh Chodesh</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).YOM_TOV)}">
                             <div class="schedule-day-name">Yom Tov</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).CHANUKA)}">
                             <div class="schedule-day-name">Chanuka</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).ROSH_CHODESH_CHANUKA)}">
                             <div class="schedule-day-name">R.C. Chanuka</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                     </div>
                 </div>
@@ -656,50 +656,50 @@
                     <div class="schedule-grid">
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SUNDAY)}">
                             <div class="schedule-day-name">Sun</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).MONDAY)}">
                             <div class="schedule-day-name">Mon</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).TUESDAY)}">
                             <div class="schedule-day-name">Tue</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).WEDNESDAY)}">
                             <div class="schedule-day-name">Wed</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).THURSDAY)}">
                             <div class="schedule-day-name">Thu</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).FRIDAY)}">
                             <div class="schedule-day-name">Fri</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SHABBOS)}">
                             <div class="schedule-day-name">Shabbos</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                     </div>
                     <div class="special-days-label">Special Days</div>
                     <div class="special-grid">
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).ROSH_CHODESH)}">
                             <div class="schedule-day-name">Rosh Chodesh</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).YOM_TOV)}">
                             <div class="schedule-day-name">Yom Tov</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).CHANUKA)}">
                             <div class="schedule-day-name">Chanuka</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).ROSH_CHODESH_CHANUKA)}">
                             <div class="schedule-day-name">R.C. Chanuka</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                     </div>
                 </div>
@@ -747,50 +747,50 @@
                     <div class="schedule-grid">
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SUNDAY)}">
                             <div class="schedule-day-name">Sun</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).MONDAY)}">
                             <div class="schedule-day-name">Mon</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).TUESDAY)}">
                             <div class="schedule-day-name">Tue</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).WEDNESDAY)}">
                             <div class="schedule-day-name">Wed</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).THURSDAY)}">
                             <div class="schedule-day-name">Thu</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).FRIDAY)}">
                             <div class="schedule-day-name">Fri</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SHABBOS)}">
                             <div class="schedule-day-name">Shabbos</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                     </div>
                     <div class="special-days-label">Special Days</div>
                     <div class="special-grid">
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).ROSH_CHODESH)}">
                             <div class="schedule-day-name">Rosh Chodesh</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).YOM_TOV)}">
                             <div class="schedule-day-name">Yom Tov</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).CHANUKA)}">
                             <div class="schedule-day-name">Chanuka</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).ROSH_CHODESH_CHANUKA)}">
                             <div class="schedule-day-name">R.C. Chanuka</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                     </div>
                 </div>
@@ -838,50 +838,50 @@
                     <div class="schedule-grid">
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SUNDAY)}">
                             <div class="schedule-day-name">Sun</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).MONDAY)}">
                             <div class="schedule-day-name">Mon</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).TUESDAY)}">
                             <div class="schedule-day-name">Tue</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).WEDNESDAY)}">
                             <div class="schedule-day-name">Wed</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).THURSDAY)}">
                             <div class="schedule-day-name">Thu</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).FRIDAY)}">
                             <div class="schedule-day-name">Fri</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).SHABBOS)}">
                             <div class="schedule-day-name">Shabbos</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                     </div>
                     <div class="special-days-label">Special Days</div>
                     <div class="special-grid">
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).ROSH_CHODESH)}">
                             <div class="schedule-day-name">Rosh Chodesh</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).YOM_TOV)}">
                             <div class="schedule-day-name">Yom Tov</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).CHANUKA)}">
                             <div class="schedule-day-name">Chanuka</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                         <div class="schedule-day" th:with="t=${minyantimes.get(T(com.tbdev.teaneckminyanim.minyan.MinyanDay).ROSH_CHODESH_CHANUKA)}">
                             <div class="schedule-day-name">R.C. Chanuka</div>
-                            <div class="schedule-time" th:classappend="${t.displayTime()=='No Minyan'}?'no-minyan':''" th:text="${t.displayTime()}">—</div>
+                            <div class="schedule-time" th:classappend="${t.isNone()}?'no-minyan':''" th:text="${t.isNone() ? '—' : t.displayTime()}">—</div>
                         </div>
                     </div>
                 </div>
@@ -891,7 +891,7 @@
             </div>
         </th:block>
 
-        <!-- Empty state -->
+        <!-- Empty state: shown immediately when org has no minyanim, or via JS when filter/search yields nothing -->
         <div id="emptyState" class="empty-state" style="display:none;">
             <i class="fas fa-calendar-times"></i>
             <h3>No minyanim found</h3>
@@ -899,6 +899,15 @@
         </div>
 
     </div><!-- /minyanim-container -->
+
+    <div class="empty-state" th:unless="${hasMinyanim}">
+        <i class="fas fa-calendar-times"></i>
+        <h3>No minyanim found</h3>
+        <p>
+            No rule-based minyanim have been added yet.
+            <a th:href="@{|/admin/${organization.id}/minyanim/new|}">Add the first minyan</a> to get started.
+        </p>
+    </div>
 
 </div><!-- /content -->
 
@@ -914,10 +923,15 @@
                 card.style.display = show ? '' : 'none';
                 if (show) visible++;
             });
-            document.getElementById('emptyState').style.display = visible === 0 ? '' : 'none';
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                emptyState.style.display = visible === 0 ? '' : 'none';
+            }
         }
 
-        document.getElementById('searchInput').addEventListener('input', function () {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
             const q = this.value.toLowerCase();
             let visible = 0;
             document.querySelectorAll('.minyan-card').forEach(card => {
@@ -928,8 +942,12 @@
                 card.style.display = match ? '' : 'none';
                 if (match) visible++;
             });
-            document.getElementById('emptyState').style.display = visible === 0 ? '' : 'none';
-        });
+                const emptyState = document.getElementById('emptyState');
+                if (emptyState) {
+                    emptyState.style.display = visible === 0 ? '' : 'none';
+                }
+            });
+        }
 
         // Toast on redirect messages
         /*[- th:if="${successmessage}" -]*/

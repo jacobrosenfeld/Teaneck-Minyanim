@@ -576,7 +576,7 @@ public class AdminController {
 //                    TODO: HANDLE ERROR CORRECTLY
                     throw new Exception("Organization not found.");
                 } else {
-                    mv.getModel().put("organization", organization);
+                    mv.getModel().put("organization", organization.get());
                 }
 
                 List<TNMUser> associatedUsers = this.organizationService.getUsersForOrganization(organization.get());
@@ -621,18 +621,21 @@ public class AdminController {
             return organization(id, null, null, "Invalid nusach type.", null);
         }
 
-        Organization organization = Organization.builder()
-                .id(id)
-                .name(name)
-                .address(address)
-                .websiteURIStr(siteURI != null ? siteURI.toString() : null)
-                .nusach(nusach)
-                .orgColor(orgColor)
-                .urlSlug(urlSlug)
-                .calendar(calendar)
-                .useScrapedCalendar(useScrapedCalendar != null ? useScrapedCalendar : false)
-                .whatsapp(whatsapp != null && !whatsapp.isEmpty() ? whatsapp : null)
-                .build();
+        // Fetch the existing org to preserve fields not in the form (enabled, coordinates, etc.)
+        Optional<Organization> existingOrgOpt = organizationService.findById(id);
+        if (existingOrgOpt.isEmpty()) {
+            return organization(id, null, null, "Organization not found.", null);
+        }
+        Organization organization = existingOrgOpt.get();
+        organization.setName(name);
+        organization.setAddress(address);
+        organization.setWebsiteURIStr(siteURI != null ? siteURI.toString() : null);
+        organization.setNusach(nusach);
+        organization.setOrgColor(orgColor);
+        organization.setUrlSlug(urlSlug);
+        organization.setCalendar(calendar);
+        organization.setUseScrapedCalendar(useScrapedCalendar != null ? useScrapedCalendar : false);
+        organization.setWhatsapp(whatsapp != null && !whatsapp.isEmpty() ? whatsapp : null);
 
         // Ensure organization has a slug (generate from name if not provided)
         organizationService.ensureSlug(organization);
@@ -1431,6 +1434,14 @@ public class AdminController {
             megilaTimes.put(m.getId(), m.getSchedule().getMappedSchedule());
         }
 
+        int totalMinyanCount = shacharisMinyanim.size()
+                + minchaMinyanim.size()
+                + maarivMinyanim.size()
+                + selichosMinyanim.size()
+                + megilaMinyanim.size();
+        mv.addObject("totalMinyanCount", totalMinyanCount);
+        mv.addObject("hasMinyanim", totalMinyanCount > 0);
+
         mv.addObject("shacharistimes", shacharisTimes);
         mv.addObject("minchatimes", minchaTimes);
         mv.addObject("maarivtimes", maarivTimes);
@@ -1447,7 +1458,11 @@ public class AdminController {
         }
         mv.addObject("locationnames", locationNames);
 
-        mv.addObject("organization", organizationService.findById(oidToUse).orElse(null));
+        Optional<Organization> organization = organizationService.findById(oidToUse);
+        if (organization.isEmpty()) {
+            throw new AccessDeniedException("Organization not found.");
+        }
+        mv.addObject("organization", organization.get());
 
         mv.addObject("successmessage", successMessage);
         mv.addObject("errormessage", errorMessage);

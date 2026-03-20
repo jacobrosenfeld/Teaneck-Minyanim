@@ -4,6 +4,7 @@ import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.VersionService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
@@ -19,11 +20,12 @@ public class CustomErrorController implements ErrorController {
     private final VersionService versionService;
 
     @RequestMapping("/error")
-    public ModelAndView handleError(HttpServletRequest request) {
+    public ModelAndView handleError(HttpServletRequest request, HttpServletResponse response) {
         ModelAndView mv = new ModelAndView("error");
 
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
         int statusCode = status != null ? Integer.parseInt(status.toString()) : 500;
+        response.setStatus(statusCode);
 
         if (statusCode == HttpStatus.NOT_FOUND.value()) {
             mv.addObject("errorTitle", "Page Not Found");

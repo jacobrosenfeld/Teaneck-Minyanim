@@ -43,7 +43,7 @@ jQuery(function($) {
     });
     // scroll body to 0px on click
     $('#back-top').on('click', function () {
-      $('#back-top').tooltip('hide');
+      if (typeof $.fn.tooltip === 'function') $('#back-top').tooltip('hide');
       $('body,html').animate({
           scrollTop: 0
       }, 1500);
@@ -103,25 +103,27 @@ jQuery(function($) {
 
   /* ----- Counter Up ----- */
 
-  const counterUp = window.counterUp.default;
+  if (window.counterUp) {
+    const counterUp = window.counterUp.default;
 
-  const callback = entries => {
-    entries.forEach(entry => {
-      const el = entry.target;
-      if (entry.isIntersecting && !el.classList.contains('is-visible')) {
-        counterUp(el, {
-          duration: 2000,
-          delay: 16,
-        });
-        el.classList.add('is-visible');
-      }
-    });
-  };
-  
-  const IO = new IntersectionObserver(callback, { threshold: 1 });
-  
-  const counters = document.querySelectorAll('.counter');
-  counters.forEach(counter => IO.observe(counter));
+    const callback = entries => {
+      entries.forEach(entry => {
+        const el = entry.target;
+        if (entry.isIntersecting && !el.classList.contains('is-visible')) {
+          counterUp(el, {
+            duration: 2000,
+            delay: 16,
+          });
+          el.classList.add('is-visible');
+        }
+      });
+    };
+
+    const IO = new IntersectionObserver(callback, { threshold: 1 });
+
+    const counters = document.querySelectorAll('.counter');
+    counters.forEach(counter => IO.observe(counter));
+  }
   
 
 /*----- Preloader ----- */

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" 
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.w3.org/1999/xhtml"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{admin/layout}">
@@ -8,301 +8,339 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <script th:if="${successmessage}" th:inline="javascript">
-        showToast('success', /*[[${successmessage}]]*/ 'Success');
-    </script>
-    <script th:if="${errormessage}" th:inline="javascript">
-        showToast('error', /*[[${errormessage}]]*/ 'Error');
-    </script>
-    <h1 class="display-4 d-sm-block mobile-hide">
-        New Minyan
-    </h1>
 
-                    <p th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')" class="lead d-none d-sm-block" th:text="${'Add a new minyan for ' + organization.name + ' with a set location, times for every occasion, and other important information.'}"></p>
-                    <p th:if="${!user.isSuperAdmin()}" class="lead d-none d-sm-block">Add a new minyan with a set location, times for every occasion, and other important information.</p>
+    <!-- Page Header -->
+    <div class="page-header d-flex justify-content-between align-items-start flex-wrap" style="gap: var(--space-4); margin-bottom: var(--space-6);">
+        <div>
+            <h1 class="page-title">New Minyan</h1>
+            <p class="page-description"
+               th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')"
+               th:text="|Add a new minyan for ${organization.name} with a set location, times for every occasion, and other details.|"></p>
+            <p class="page-description" th:unless="${user.isSuperAdmin()}">Add a new minyan with a set location, times for every occasion, and other important information.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{|/admin/${organization.id}/minyanim|}" class="btn-modern btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Schedule</span>
+            </a>
+            <button type="button" class="btn-modern btn-outline" data-toggle="modal" data-target="#dynamic-time-help-modal">
+                <i class="fas fa-question-circle"></i>
+                <span>Help</span>
+            </button>
+        </div>
+    </div>
 
-                    <hr class="mobile-hide">
+    <!-- Alert messages -->
+    <div th:if="${inputerrormessage}" class="alert-modern alert-danger mb-4">
+        <i class="fas fa-exclamation-circle alert-modern-icon"></i>
+        <div class="alert-modern-content" th:text="${inputerrormessage}">Error</div>
+    </div>
 
-                    <p class="lead d-none">
-                        <span th:text="|The minyan defined below will be created, automatically enabled, and shown on the public ${siteName ?: 'Minyanim Platform'} site.|">The minyan defined below will be created with automatically be enabled and show on the public site.</span>
-                    </p>
+    <!-- Main Form Card -->
+    <div class="card-modern">
+        <div class="card-modern-body">
+            <form onsubmit="validateData()" th:action="@{|/admin/${organization.id}/minyanim/create|}" method="post">
 
-                    <div class="row my-4 footer-pusher">
-                        <div class="col-lg-9 col-md-8">
-                            <div class="table-responsive">
-                                <form onsubmit="validateData()" th:action="@{|/admin/${organization.id}/minyanim/create|}" method="post" style="overflow-x: hidden;">
-                                    <div class="form-group">
-                                        <label for="type">Minyan Type</label>
-                                        <select class="custom-select" name="type" id="type" required>
-                                            <option value="" selected disabled>Choose a type</option>
-                                            <option value="shacharis">Shacharis</option>
-                                            <option value="mincha">Mincha</option>
-                                            <option value="maariv">Maariv</option>
-                                            <option value="selichos">Selichos</option>
-                                            <option value="megilareading">Megila Reading</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="location">Location</label>
-                                        <select class="custom-select" name="location" id="location" required>
-                                            <option value="" selected disabled>Choose a location</option>
-                                            <div th:each="location: ${locations}">
-                                                <option th:value="${location.id}" th:text="${location.name}"></option>
-                                            </div>
-                                        </select>
-                                        <small id="location-help" class="form-text text-muted">Choose the place inside the shul that the minyan will take place. To add more options, jump to <a th:href="@{|/admin/${organization.id}/locations|}">manage locations</a>.</small>
-                                    </div>
-                                    <!-- <div class="custom-control custom-switch" style="z-index: auto;">
-                                        <input type="checkbox" class="custom-control-input" name="rounded" id="rounded">
-                                        <label class="custom-control-label" for="rounded">Round Dynamic Times</label>
-                                    </div> -->
-                                    <div class="form-group">
-                                        <label for="sunday-box">Sunday</label>
-                                        <div class="form-row" id="sunday-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="sunday-time-type" id="sunday-time-type" onchange="update('sunday')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-sunday"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="monday-box">Monday</label>
-                                        <div class="form-row" id="monday-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="monday-time-type" id="monday-time-type" onchange="update('monday')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-monday"></div>
-                                        </div>
-                                        <small id="monday-friday-apply" class="form-text text-muted"><a onclick="applyMondayThroughFriday()" href="#">Apply this time for Monday through Friday</a></small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="tuesday-box">Tuesday</label>
-                                        <div class="form-row" id="tuesday-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="tuesday-time-type" id="tuesday-time-type" onchange="update('tuesday')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-tuesday"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="wednesday-box">Wednesday</label>
-                                        <div class="form-row" id="wednesday-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="wednesday-time-type" id="wednesday-time-type" onchange="update('wednesday')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-wednesday"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="thursday-box">Thursday</label>
-                                        <div class="form-row" id="thursday-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="thursday-time-type" id="thursday-time-type" onchange="update('thursday')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-thursday"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="friday-box">Friday</label>
-                                        <div class="form-row" id="friday-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="friday-time-type" id="friday-time-type" onchange="update('friday')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-friday"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="shabbos-box">Shabbos</label>
-                                        <div class="form-row" id="shabbos-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="shabbos-time-type" id="shabbos-time-type" onchange="update('shabbos')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-shabbos"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="rc-box">Rosh Chodesh</label>
-                                        <div class="form-row" id="rc-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="rc-time-type" id="rc-time-type" onchange="update('rc')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-rc"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="yt-box">Yom Tov</label>
-                                        <div class="form-row" id="yt-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="yt-time-type" id="yt-time-type" onchange="update('yt')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-yt"></div>
-                                        </div>
-                                        <small id="yom-tov-help" class="form-text text-muted">This will override times for Yomim Tovim with an issur melacha (excluding chol hamoed).</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="chanuka-box">Chanuka</label>
-                                        <div class="form-row" id="chanuka-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="chanuka-time-type" id="chanuka-time-type" onchange="update('chanuka')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-chanuka"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="rcc-box">Rosh Chodesh Chanuka</label>
-                                        <div class="form-row" id="rcc-box">
-                                            <div class="col">
-                                                <select class="custom-select" name="rcc-time-type" id="rcc-time-type" onchange="update('rcc')" required>
-                                                    <option value="nm" selected>No Minyan</option>
-                                                    <option value="fixed">Fixed</option>
-                                                    <option value="dynamic">Dynamic</option>
-                                                    <option value="rounded">Rounded</option>
-                                                </select>
-                                            </div>
-                                            <div class="col" id="dynamic-time-box-rcc"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="nusach">Nusach</label>
-                                        <select class="custom-select" name="nusach" id="nusach">
-                                            <option value="unspecified">None specified</option>
-                                            <option value="arizal">Arizal</option>
-                                            <option value="edot_hamizrach">Edot HaMizrach</option>
-                                            <option value="sefard">Sefard</option>
-                                            <option value="ashkenaz" selected>Ashkenaz</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="notes">Notes</label>
-                                        <input type="text" class="form-control" name="notes" id="notes" aria-describedby="notes-help">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="whatsapp">WhatsApp Group</label>
-                                        <input type="text" class="form-control" name="whatsapp" id="whatsapp" aria-describedby="whatsapp">
-                                        <small id="whatsapp-help" class="form-text text-muted">Optional: If the minyan utilizes a WhatsApp Group this link will be displayed publically. Make sure  to include https://</small>
-                                    </div>
-                                    <div class="custom-control custom-switch" style="z-index: auto;">
-                                        <input type="checkbox" class="custom-control-input" name="enabled" id="enabled" checked>
-                                        <label class="custom-control-label" for="enabled">Display this minyan immediately</label>
-                                    </div>
-                                    <div class="login-msg-box" th:if="${inputerrormessage}">
-                                        <div class="form-msg-fatal" th:text="${inputerrormessage}"></div>
-                                    </div>
-                                    <hr>
-                                    <button type="submit" class="btn btn-primary">Create</button>
-                                </form>
+                <!-- Section: Basic Info -->
+                <div class="form-section mb-4">
+                    <h5 class="form-section-title" style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: var(--space-4); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border-color-light);">Basic Info</h5>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="type" class="form-label">Minyan Type</label>
+                                <select class="form-control" name="type" id="type" required>
+                                    <option value="" selected disabled>Choose a type</option>
+                                    <option value="shacharis">Shacharis</option>
+                                    <option value="mincha">Mincha</option>
+                                    <option value="maariv">Maariv</option>
+                                    <option value="selichos">Selichos</option>
+                                    <option value="megilareading">Megila Reading</option>
+                                </select>
                             </div>
                         </div>
-
-                        <div class="col-lg-3 col-md-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title">Minyanim</h4>
-                                    <p class="card-text" th:text="${'View and manage all minyanim for ' + organization.name + '.'}"></p>
-                                    <a th:href="@{|/admin/${organization.id}/minyanim|}" class="btn btn-primary">Go</a>
-                                </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="location" class="form-label">Location</label>
+                                <select class="form-control" name="location" id="location" required>
+                                    <option value="" selected disabled>Choose a location</option>
+                                    <option th:each="location: ${locations}" th:value="${location.id}" th:text="${location.name}"></option>
+                                </select>
+                                <small class="form-text">
+                                    To add more options, go to <a th:href="@{|/admin/${organization.id}/locations|}">manage locations</a>.
+                                </small>
                             </div>
-                            <div class="card card-inverse bg-inverse mt-3">
-                                <div class="card-body">
-                                    <h4 class="card-title">Need help?</h4>
-                                    <p class="card-text">Click <a href="#" data-toggle="modal" data-target="#dynamic-time-help-modal">here</a> for an explanation of how to use the minyan time settings.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="nusach" class="form-label">Nusach</label>
+                                <select class="form-control" name="nusach" id="nusach">
+                                    <option value="unspecified">None specified</option>
+                                    <option value="arizal">Arizal</option>
+                                    <option value="edot_hamizrach">Edot HaMizrach</option>
+                                    <option value="sefard">Sefard</option>
+                                    <option value="ashkenaz" selected>Ashkenaz</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="custom-control custom-switch mt-4" style="z-index: auto;">
+                                    <input type="checkbox" class="custom-control-input" name="enabled" id="enabled" checked>
+                                    <label class="custom-control-label" for="enabled">Display this minyan immediately</label>
                                 </div>
                             </div>
                         </div>
                     </div>
-    <!--/row-->
 
-<!-- Help Modal -->
-<div class="modal fade" id="dynamic-time-help-modal" tabindex="-1" aria-labelledby="dynamic-time-help-modal-label" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="dynamic-time-help-modal-label">Minyan Times</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>
-                    Static times are simply fixed start times that don't change on their own from week to week.
-                </p>
-                <p>
-                    Dynamic times will change from day to day based on the zman. Choose the zman to base the minyan time on, as well as the number of minutes before or after the zman to schedule the minyan. For example, to schedule a minyan 20 minutes before Netz, choose 'Netz' and -20 minutes.
-                </p>
-                <p>
-                    Rounded times will change from week to week based on the zman and round down to the nearest five (ie. 5:23pm will become 5:20pm). Choose the zman to base the minyan time on and the system will determine the latest time of the week and base the calculation off of that. This is most useful for Mincha b'zman where you can set the minyan to be 10 minutes before shkia rounded down at the same time for the entire week.
-                </p>
-                <p>
-                    To specify when in davening the minyan will officially begin, such as Yishtabach, add a note to the minyan.
-                </p>
-                <p>
-                    To indicate no minyan on a certain day, just leave the field blank.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <div class="form-group">
+                        <label for="notes" class="form-label">Notes</label>
+                        <input type="text" class="form-control" name="notes" id="notes" placeholder="Optional notes displayed publicly">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="whatsapp" class="form-label">WhatsApp Group</label>
+                        <input type="text" class="form-control" name="whatsapp" id="whatsapp" placeholder="https://chat.whatsapp.com/...">
+                        <small class="form-text">Optional: If the minyan has a WhatsApp group, this link will be displayed publicly. Include <code>https://</code>.</small>
+                    </div>
+                </div>
+
+                <!-- Section: Weekly Schedule -->
+                <div class="form-section mb-4">
+                    <h5 class="form-section-title" style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: var(--space-4); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border-color-light);">Weekly Schedule</h5>
+
+                    <div th:each="dayDef : ${ { {'sunday','Sunday'}, {'monday','Monday'}, {'tuesday','Tuesday'}, {'wednesday','Wednesday'}, {'thursday','Thursday'}, {'friday','Friday'}, {'shabbos','Shabbos'} } }">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Sunday</label>
+                        <div class="form-row" id="sunday-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="sunday-time-type" id="sunday-time-type" onchange="update('sunday')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-sunday"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Monday</label>
+                        <div class="form-row" id="monday-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="monday-time-type" id="monday-time-type" onchange="update('monday')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-monday"></div>
+                        </div>
+                        <small class="form-text"><a href="#" onclick="applyMondayThroughFriday(); return false;">Apply this time for Monday through Friday</a></small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tuesday</label>
+                        <div class="form-row" id="tuesday-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="tuesday-time-type" id="tuesday-time-type" onchange="update('tuesday')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-tuesday"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Wednesday</label>
+                        <div class="form-row" id="wednesday-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="wednesday-time-type" id="wednesday-time-type" onchange="update('wednesday')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-wednesday"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Thursday</label>
+                        <div class="form-row" id="thursday-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="thursday-time-type" id="thursday-time-type" onchange="update('thursday')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-thursday"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Friday</label>
+                        <div class="form-row" id="friday-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="friday-time-type" id="friday-time-type" onchange="update('friday')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-friday"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Shabbos</label>
+                        <div class="form-row" id="shabbos-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="shabbos-time-type" id="shabbos-time-type" onchange="update('shabbos')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-shabbos"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Special Days -->
+                <div class="form-section mb-4">
+                    <h5 class="form-section-title" style="font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: var(--space-4); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border-color-light);">Special Day Overrides</h5>
+                    <p class="text-muted small mb-3">These override the weekly schedule for special occasions.</p>
+
+                    <div class="form-group">
+                        <label class="form-label">Rosh Chodesh</label>
+                        <div class="form-row" id="rc-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="rc-time-type" id="rc-time-type" onchange="update('rc')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-rc"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Yom Tov</label>
+                        <div class="form-row" id="yt-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="yt-time-type" id="yt-time-type" onchange="update('yt')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-yt"></div>
+                        </div>
+                        <small class="form-text">Overrides times for Yomim Tovim with an issur melacha (excluding chol hamoed).</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Chanuka</label>
+                        <div class="form-row" id="chanuka-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="chanuka-time-type" id="chanuka-time-type" onchange="update('chanuka')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-chanuka"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Rosh Chodesh Chanuka</label>
+                        <div class="form-row" id="rcc-box">
+                            <div class="col-auto" style="min-width: 160px;">
+                                <select class="form-control" name="rcc-time-type" id="rcc-time-type" onchange="update('rcc')" required>
+                                    <option value="nm" selected>No Minyan</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="rounded">Rounded</option>
+                                </select>
+                            </div>
+                            <div class="col" id="dynamic-time-box-rcc"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <div class="d-flex" style="gap: var(--space-3);">
+                    <button type="submit" class="btn-modern btn-primary">
+                        <i class="fas fa-plus"></i>
+                        <span>Create Minyan</span>
+                    </button>
+                    <a th:href="@{|/admin/${organization.id}/minyanim|}" class="btn-modern btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal fade" id="dynamic-time-help-modal" tabindex="-1" aria-labelledby="dynamic-time-help-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dynamic-time-help-modal-label">Minyan Times</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Fixed</strong> — A specific time that doesn't change from week to week (e.g., 7:00 AM).</p>
+                    <p><strong>Dynamic</strong> — Calculated relative to a halachic time (zman). Choose the zman and an offset in minutes. For example, Netz −20 min sets the minyan 20 minutes before sunrise.</p>
+                    <p><strong>Rounded</strong> — Like Dynamic, but the result is rounded down to the nearest 5-minute interval. Useful for Mincha b'zman so the time stays consistent across the week.</p>
+                    <p><strong>No Minyan</strong> — No service on this day or occasion.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
 </div>
 
 <div layout:fragment="scripts">
-<script th:inline="javascript">
-var BRANCH_MINYAN = /*[[${branchMinyan}]]*/ "";
-</script>
-<script th:src="@{/admin/new-minyan.js}"></script>
-<script>updateAll()</script>
+    <script th:inline="javascript">
+        var BRANCH_MINYAN = /*[[${branchMinyan}]]*/ "";
+    </script>
+    <script th:src="@{/admin/new-minyan.js}"></script>
+    <script>updateAll()</script>
+
+    <script th:if="${successmessage}" th:inline="javascript">
+        showToast(/*[[${successmessage}]]*/ 'Success', 'success');
+    </script>
+    <script th:if="${errormessage}" th:inline="javascript">
+        showToast(/*[[${errormessage}]]*/ 'Error', 'error');
+    </script>
 </div>
 
 </body>

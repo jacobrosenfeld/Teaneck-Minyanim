@@ -33,9 +33,14 @@ public class Organization {
     @Column(name = "SITE_URI")
     private String websiteURIStr;
 
+    @Getter(AccessLevel.NONE)
     @Enumerated(EnumType.STRING)
     @Column(name="NUSACH")
     private Nusach nusach;
+
+    public Nusach getNusach() {
+        return nusach != null ? nusach : Nusach.UNSPECIFIED;
+    }
 
     @Column(name = "CALENDAR")
     private String calendar;

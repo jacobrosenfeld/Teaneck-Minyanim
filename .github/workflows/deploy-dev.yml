@@ -10,6 +10,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -18,6 +19,9 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
+
+      - name: Apply dev favicon
+        run: cp src/main/resources/static/assets/icons/favicon-dev.svg src/main/resources/static/assets/icons/favicon.svg
 
       - name: Build JAR
         run: mvn clean package -DskipTests
@@ -40,5 +44,5 @@ jobs:
           HOST: ${{ secrets.SERVER_HOST }}
         run: |
           sleep 20
-          curl --fail --retry 5 --retry-delay 5 \
-            http://$HOST:8081/actuator/health
+          ssh -i /tmp/key -o StrictHostKeyChecking=no deploy@$HOST \
+            "curl --fail --retry 5 --retry-delay 5 http://localhost:8081/actuator/health"

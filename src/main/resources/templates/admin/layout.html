@@ -204,30 +204,72 @@
             window.showToast = function(message, type = 'info', duration = 5000) {
                 const container = document.getElementById('toast-container');
                 if (!container) return;
-                
+
+                const allowedTypes = new Set(['success', 'error', 'warning', 'info']);
+                const resolvedType = allowedTypes.has(type) ? type : 'info';
+                const iconClassByType = {
+                    success: 'fas fa-check-circle',
+                    error: 'fas fa-exclamation-circle',
+                    warning: 'fas fa-exclamation-triangle',
+                    info: 'fas fa-info-circle'
+                };
+                const iconColorByType = {
+                    success: 'var(--color-accent)',
+                    error: 'var(--color-danger)',
+                    warning: 'var(--color-warning)',
+                    info: 'var(--color-info)'
+                };
+
                 const toast = document.createElement('div');
-                toast.className = `toast-notification ${type}`;
-                toast.innerHTML = `
-                    <div style="padding: var(--space-4, 1rem);">
-                        <div style="display: flex; align-items: flex-start; gap: var(--space-3, 0.75rem);">
-                            <div style="flex-shrink: 0;">
-                                ${type === 'success' ? '<i class="fas fa-check-circle" style="color: var(--color-accent);"></i>' : ''}
-                                ${type === 'error' ? '<i class="fas fa-exclamation-circle" style="color: var(--color-danger);"></i>' : ''}
-                                ${type === 'warning' ? '<i class="fas fa-exclamation-triangle" style="color: var(--color-warning);"></i>' : ''}
-                                ${type === 'info' ? '<i class="fas fa-info-circle" style="color: var(--color-info);"></i>' : ''}
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: var(--font-weight-medium, 500);">${message}</div>
-                            </div>
-                            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--text-secondary);">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
+                toast.className = `toast-notification ${resolvedType}`;
+
+                const outer = document.createElement('div');
+                outer.style.padding = 'var(--space-4, 1rem)';
+
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.alignItems = 'flex-start';
+                row.style.gap = 'var(--space-3, 0.75rem)';
+
+                const iconWrapper = document.createElement('div');
+                iconWrapper.style.flexShrink = '0';
+
+                const icon = document.createElement('i');
+                icon.className = iconClassByType[resolvedType];
+                icon.style.color = iconColorByType[resolvedType];
+                iconWrapper.appendChild(icon);
+
+                const body = document.createElement('div');
+                body.style.flex = '1';
+
+                const bodyText = document.createElement('div');
+                bodyText.style.fontWeight = 'var(--font-weight-medium, 500)';
+                bodyText.textContent = String(message ?? '');
+                body.appendChild(bodyText);
+
+                const closeButton = document.createElement('button');
+                closeButton.type = 'button';
+                closeButton.style.background = 'none';
+                closeButton.style.border = 'none';
+                closeButton.style.cursor = 'pointer';
+                closeButton.style.padding = '0';
+                closeButton.style.color = 'var(--text-secondary)';
+                closeButton.addEventListener('click', function () {
+                    toast.remove();
+                });
+
+                const closeIcon = document.createElement('i');
+                closeIcon.className = 'fas fa-times';
+                closeButton.appendChild(closeIcon);
+
+                row.appendChild(iconWrapper);
+                row.appendChild(body);
+                row.appendChild(closeButton);
+                outer.appendChild(row);
+                toast.appendChild(outer);
+
                 container.appendChild(toast);
-                
+
                 if (duration > 0) {
                     setTimeout(() => {
                         toast.style.animation = 'slideInRight 0.3s ease reverse';

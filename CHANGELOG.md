@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.2] - 2026-03-20
+
+### Fixed
+- **Org page 200 error for orgs with null nusach**: `org.getNusach()` returned null for organizations with no nusach set in the DB, causing a NullPointerException in the Thymeleaf template (`getNusach().displayName()`). Added a null-safe custom getter on `Organization` that falls back to `Nusach.UNSPECIFIED`.
+- **Error page returning HTTP 200**: `CustomErrorController` rendered the error view without setting the HTTP status code, so all error pages (404, 500, etc.) were served as 200. Now injects `HttpServletResponse` and calls `response.setStatus(statusCode)`.
+- **JS crash on pages without counterUp library**: `custom.js` accessed `window.counterUp.default` unconditionally; guarded with `if (window.counterUp)` to prevent crash on pages that don't load the library.
+- **JS crash calling jQuery `.tooltip()` on Bootstrap 5 pages**: Guarded the `$('#back-top').tooltip('hide')` call with `typeof $.fn.tooltip === 'function'` check.
+
+## [1.9.1] - 2026-03-20
+
+### Fixed
+- **Locations modal not opening (#214)**: Add/Edit/Delete modals were placed outside `</body>`, making Bootstrap unable to find them. Moved all modals inside the Thymeleaf content fragment.
+- **Update organization silently wiping data (#215)**: `updateOrganization` built a fresh entity via `Organization.builder()`, losing `enabled`, `latitude`, `longitude`, and other DB fields not in the form. Now fetches the existing org and mutates only the editable fields. Also fixed a secondary bug in the USER-role branch of `organization()` that put an `Optional<Organization>` (instead of `.get()`) into the model, causing a Thymeleaf rendering failure when the error path was hit.
+- **Minyan schedule page blank on empty org (#213)**: The empty-state element was always hidden (`display:none`) and only shown by JS filter/search actions, so a brand-new org with no minyanim showed a blank page. Now uses Thymeleaf to determine initial visibility. Also fixed `no-minyan` CSS class never being applied (was checking `displayTime()=='No Minyan'` but the method returns `""` for NONE type; fixed to use `t.isNone()`), and blank cells now show `—` instead of empty text.
+
+### Changed
+- **Add Minyan page modernized**: Replaced legacy Bootstrap layout with the current admin design system — `page-header`, `card-modern`, `btn-modern`, form sections with labels, and the help modal now accessible from a header button. All form field IDs/names and JavaScript hooks are unchanged.
+- **Organization page modernized**: Switched outer and accounts cards from `card`/`card-body` to `card-modern`/`card-modern-body`; unified page header to the standard `page-header` pattern; success/error toasts now use `showToast()` instead of a raw inline Bootstrap toast element.
+
 ## [1.9.0] - 2026-03-19
 
 ### Added

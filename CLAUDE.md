@@ -174,6 +174,15 @@ mvn test
 
 **Note**: Development requires MariaDB running locally with database `minyanim` initialized.
 
+## Branch & Deployment Strategy
+
+| Branch | Auto-deploy | Purpose |
+|--------|-------------|---------|
+| `main` | Yes → production | Stable releases only. Merge PRs here when ready to ship. |
+| `dev`  | Yes → dev site | Live testing environment. Merge feature branches here to verify changes against a real server before promoting to `main`. |
+
+**Not every commit needs to go through `dev`.** Most work can stay on feature branches and be reviewed/tested locally. Only merge to `dev` when you want to verify something live (e.g., server-specific behavior, deploy pipeline, or integration testing). When satisfied, open a PR from the feature branch directly to `main` (or promote `dev` → `main`).
+
 ## Important Context
 - **Deprecated Code**: `TimeRule` contains TODOs about deprecated Java Date methods
 - **Hebrew Calendar Logic**: Heavy reliance on Kosherjava library; Teaneck coordinates are hardcoded (not configurable)
