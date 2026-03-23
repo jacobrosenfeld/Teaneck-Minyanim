@@ -501,6 +501,14 @@ public class CalendarEventsAdminController {
         return deleteManualEventInternal(orgId, eventId, redirectAttributes, "/admin/" + orgId + "/overrides");
     }
 
+    @PostMapping("/admin/{orgId}/overrides/{eventId}/toggle")
+    public RedirectView toggleOverrideEvent(
+            @PathVariable String orgId,
+            @PathVariable Long eventId,
+            RedirectAttributes redirectAttributes) {
+        return toggleEventInternal(orgId, eventId, redirectAttributes, "/admin/" + orgId + "/overrides", true);
+    }
+
     /**
      * Toggle enabled status of a calendar event
      */
@@ -509,33 +517,7 @@ public class CalendarEventsAdminController {
             @PathVariable String orgId,
             @PathVariable Long eventId,
             RedirectAttributes redirectAttributes) {
-        
-        try {
-            // Check authorization
-            if (!userService.canAccessOrganization(orgId)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
-                return new RedirectView("/admin/" + orgId + "/calendar-events");
-            }
-            
-            Optional<CalendarEvent> eventOpt = calendarEventRepository.findById(eventId);
-            if (eventOpt.isEmpty() || !eventOpt.get().getOrganizationId().equals(orgId)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Event not found");
-                return new RedirectView("/admin/" + orgId + "/calendar-events");
-            }
-            
-            CalendarEvent event = eventOpt.get();
-            event.setEnabled(!event.isEnabled());
-            calendarEventRepository.save(event);
-            
-            redirectAttributes.addFlashAttribute("successMessage", 
-                    "Event " + (event.isEnabled() ? "enabled" : "disabled") + " successfully");
-            
-        } catch (Exception e) {
-            log.error("Error toggling event", e);
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
-        }
-        
-        return new RedirectView("/admin/" + orgId + "/calendar-events");
+        return toggleEventInternal(orgId, eventId, redirectAttributes, "/admin/" + orgId + "/calendar-events", false);
     }
 
     /**
@@ -674,6 +656,44 @@ public class CalendarEventsAdminController {
             redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
         }
         
+        return new RedirectView(redirectPath);
+    }
+
+    private RedirectView toggleEventInternal(
+            String orgId,
+            Long eventId,
+            RedirectAttributes redirectAttributes,
+            String redirectPath,
+            boolean manualOnly) {
+        try {
+            if (!userService.canAccessOrganization(orgId)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
+                return new RedirectView(redirectPath);
+            }
+
+            Optional<CalendarEvent> eventOpt = calendarEventRepository.findById(eventId);
+            if (eventOpt.isEmpty() || !eventOpt.get().getOrganizationId().equals(orgId)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Event not found");
+                return new RedirectView(redirectPath);
+            }
+
+            CalendarEvent event = eventOpt.get();
+            if (manualOnly && event.getSource() != EventSource.MANUAL) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Only manual overrides can be toggled here.");
+                return new RedirectView(redirectPath);
+            }
+
+            event.setEnabled(!event.isEnabled());
+            calendarEventRepository.save(event);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Event " + (event.isEnabled() ? "enabled" : "disabled") + " successfully");
+        } catch (Exception e) {
+            log.error("Error toggling event", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
+        }
+
         return new RedirectView(redirectPath);
     }
 

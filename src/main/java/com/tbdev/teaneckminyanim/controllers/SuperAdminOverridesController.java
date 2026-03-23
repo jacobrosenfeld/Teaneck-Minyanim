@@ -304,6 +304,37 @@ public class SuperAdminOverridesController {
         return new RedirectView("/admin/super/overrides");
     }
 
+    @PostMapping("/admin/super/overrides/{eventId}/toggle")
+    public RedirectView toggleManualOverride(
+            @PathVariable Long eventId,
+            RedirectAttributes redirectAttributes) {
+        requireSuperAdmin();
+
+        try {
+            Optional<CalendarEvent> eventOpt = calendarEventRepository.findById(eventId);
+            if (eventOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Manual override not found.");
+                return new RedirectView("/admin/super/overrides");
+            }
+            CalendarEvent event = eventOpt.get();
+            if (event.getSource() != EventSource.MANUAL) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Only MANUAL overrides can be toggled here.");
+                return new RedirectView("/admin/super/overrides");
+            }
+
+            event.setEnabled(!event.isEnabled());
+            calendarEventRepository.save(event);
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Manual override " + (event.isEnabled() ? "enabled." : "disabled."));
+        } catch (Exception e) {
+            log.error("Error toggling manual override {}", eventId, e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Toggle failed: " + e.getMessage());
+        }
+
+        return new RedirectView("/admin/super/overrides");
+    }
+
     private String trimToNull(String value) {
         if (value == null) return null;
         String trimmed = value.trim();

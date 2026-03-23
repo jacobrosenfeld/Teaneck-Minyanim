@@ -92,6 +92,12 @@
             text-align: center;
             color: var(--text-secondary);
         }
+
+        .row-actions {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
     </style>
     </th:block>
 </head>
@@ -283,12 +289,20 @@
                 <td th:text="${event.notes != null and !#strings.isEmpty(event.notes) ? event.notes : '—'}">Notes</td>
                 <td th:text="${event.enabled ? 'Yes' : 'No'}">Yes</td>
                 <td>
-                    <form method="post" th:action="@{/admin/super/overrides/{eventId}/delete(eventId=${event.id})}"
-                          onsubmit="return confirm('Delete this manual override?')">
-                        <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);">
-                            Delete
-                        </button>
-                    </form>
+                    <div class="row-actions">
+                        <form method="post" th:action="@{/admin/super/overrides/{eventId}/toggle(eventId=${event.id})}">
+                            <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);"
+                                    th:text="${event.enabled ? 'Disable' : 'Enable'}">
+                                Disable
+                            </button>
+                        </form>
+                        <form method="post" th:action="@{/admin/super/overrides/{eventId}/delete(eventId=${event.id})}"
+                              onsubmit="return confirm('Delete this manual override?')">
+                            <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             </tbody>

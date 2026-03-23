@@ -46,13 +46,14 @@ public class SuperAdminOverrideXlsxService {
 
     // Org template (same fields, no organization column)
     private static final int ORG_COL_DATE = 0;
-    private static final int ORG_COL_TIME = 1;
-    private static final int ORG_COL_MINYAN_TYPE = 2;
-    private static final int ORG_COL_OVERRIDE_MODE = 3;
-    private static final int ORG_COL_LOCATION = 4;
-    private static final int ORG_COL_NOTES = 5;
-    private static final int ORG_COL_NUSACH = 6;
-    private static final int ORG_COL_ENABLED = 7;
+    private static final int ORG_COL_END_DATE = 1;
+    private static final int ORG_COL_TIME = 2;
+    private static final int ORG_COL_MINYAN_TYPE = 3;
+    private static final int ORG_COL_OVERRIDE_MODE = 4;
+    private static final int ORG_COL_LOCATION = 5;
+    private static final int ORG_COL_NOTES = 6;
+    private static final int ORG_COL_NUSACH = 7;
+    private static final int ORG_COL_ENABLED = 8;
 
     private static final String MODE_ADDITIVE = "ADDITIVE";
     private static final String MODE_FULL_DAY_REPLACE = "FULL_DAY_REPLACE";
@@ -103,7 +104,13 @@ public class SuperAdminOverrideXlsxService {
             createSuperHeaderRow(workbook, sheet);
             createSuperListSheet(lists, organizations);
             createSuperDataValidations(workbook, sheet, organizations.size());
-            formatColumns(sheet, workbook, new int[]{5200, 4200, 3400, 4800, 5000, 7000, 10000, 4500, 3200});
+            formatColumns(
+                    sheet,
+                    workbook,
+                    new int[]{5200, 4200, 3400, 4800, 5000, 7000, 10000, 4500, 3200},
+                    SUPER_COL_DATE,
+                    SUPER_COL_TIME
+            );
             seedSuperExampleRows(sheet, workbook, organizations);
 
             workbook.setSheetHidden(workbook.getSheetIndex(lists), true);
@@ -120,7 +127,13 @@ public class SuperAdminOverrideXlsxService {
             createOrgHeaderRow(workbook, sheet);
             createOrgListSheet(lists, locations == null ? List.of() : locations);
             createOrgDataValidations(workbook, sheet, locations == null ? 0 : locations.size());
-            formatColumns(sheet, workbook, new int[]{4200, 3400, 4800, 5000, 7000, 10000, 4500, 3200});
+            formatColumns(
+                    sheet,
+                    workbook,
+                    new int[]{4200, 4200, 3400, 4800, 5000, 7000, 10000, 4500, 3200},
+                    ORG_COL_DATE,
+                    ORG_COL_TIME
+            );
             seedOrgExampleRows(sheet, workbook, organization);
 
             workbook.setSheetHidden(workbook.getSheetIndex(lists), true);
@@ -237,8 +250,22 @@ public class SuperAdminOverrideXlsxService {
 
                 result.incrementRowsRead();
                 try {
-                    ParsedRow parsedRow = parseOrgRow(row, formatter, organization, orgLocationsByLowerName);
-                    parsedRows.add(parsedRow);
+                    ParsedOrgRow parsedRow = parseOrgRow(row, formatter, organization, orgLocationsByLowerName);
+                    for (LocalDate d = parsedRow.startDate(); !d.isAfter(parsedRow.endDate()); d = d.plusDays(1)) {
+                        parsedRows.add(new ParsedRow(
+                                parsedRow.rowNumber(),
+                                parsedRow.organizationId(),
+                                d,
+                                parsedRow.startTime(),
+                                parsedRow.minyanType(),
+                                parsedRow.overrideMode(),
+                                parsedRow.locationId(),
+                                parsedRow.locationName(),
+                                parsedRow.notes(),
+                                parsedRow.nusach(),
+                                parsedRow.enabled()
+                        ));
+                    }
                 } catch (RowParseException e) {
                     result.addError("Row " + (i + 1) + ": " + e.getMessage());
                 }
@@ -401,7 +428,7 @@ public class SuperAdminOverrideXlsxService {
         );
     }
 
-    private ParsedRow parseOrgRow(
+    private ParsedOrgRow parseOrgRow(
             Row row,
             DataFormatter formatter,
             Organization org,
@@ -422,10 +449,16 @@ public class SuperAdminOverrideXlsxService {
                 ORG_COL_ENABLED
         );
 
-        return new ParsedRow(
+        LocalDate endDate = parseOptionalDateCell(row.getCell(ORG_COL_END_DATE), formatter, fields.date());
+        if (endDate.isBefore(fields.date())) {
+            throw new RowParseException("end_date cannot be before date.");
+        }
+
+        return new ParsedOrgRow(
                 row.getRowNum() + 1L,
                 org.getId(),
                 fields.date(),
+                endDate,
                 fields.startTime(),
                 fields.minyanType(),
                 fields.overrideMode(),
@@ -498,7 +531,7 @@ public class SuperAdminOverrideXlsxService {
 
     private void createOrgHeaderRow(Workbook workbook, Sheet sheet) {
         createHeaderRow(workbook, sheet, new String[]{
-                "date", "start_time", "minyan_type", "override_mode",
+                "date", "end_date", "start_time", "minyan_type", "override_mode",
                 "location", "notes", "nusach", "enabled"
         });
     }
@@ -675,6 +708,9 @@ public class SuperAdminOverrideXlsxService {
         Cell dateCell1 = row1.createCell(ORG_COL_DATE);
         dateCell1.setCellValue(java.sql.Date.valueOf(LocalDate.now().plusDays(1)));
         dateCell1.setCellStyle(dateStyle);
+        Cell endDateCell1 = row1.createCell(ORG_COL_END_DATE);
+        endDateCell1.setCellValue(java.sql.Date.valueOf(LocalDate.now().plusDays(1)));
+        endDateCell1.setCellStyle(dateStyle);
         Cell timeCell1 = row1.createCell(ORG_COL_TIME);
         timeCell1.setCellValue(java.sql.Time.valueOf(LocalTime.of(7, 0)));
         timeCell1.setCellStyle(timeStyle);
@@ -690,6 +726,9 @@ public class SuperAdminOverrideXlsxService {
         Cell dateCell2 = row2.createCell(ORG_COL_DATE);
         dateCell2.setCellValue(java.sql.Date.valueOf(LocalDate.now().plusDays(2)));
         dateCell2.setCellStyle(dateStyle);
+        Cell endDateCell2 = row2.createCell(ORG_COL_END_DATE);
+        endDateCell2.setCellValue(java.sql.Date.valueOf(LocalDate.now().plusDays(4)));
+        endDateCell2.setCellStyle(dateStyle);
         Cell timeCell2 = row2.createCell(ORG_COL_TIME);
         timeCell2.setCellValue(java.sql.Time.valueOf(LocalTime.of(13, 30)));
         timeCell2.setCellStyle(timeStyle);
@@ -716,7 +755,7 @@ public class SuperAdminOverrideXlsxService {
         sheet.addValidationData(validation);
     }
 
-    private void formatColumns(Sheet sheet, Workbook workbook, int[] widths) {
+    private void formatColumns(Sheet sheet, Workbook workbook, int[] widths, int dateCol, int timeCol) {
         for (int i = 0; i < widths.length; i++) {
             sheet.setColumnWidth(i, widths[i]);
         }
@@ -727,14 +766,11 @@ public class SuperAdminOverrideXlsxService {
         CellStyle timeStyle = workbook.createCellStyle();
         timeStyle.setDataFormat(creationHelper.createDataFormat().getFormat("hh:mm"));
 
-        // date and time columns for both schemas
-        if (widths.length == 9) {
-            sheet.setDefaultColumnStyle(SUPER_COL_DATE, dateStyle);
-            sheet.setDefaultColumnStyle(SUPER_COL_TIME, timeStyle);
-        } else {
-            sheet.setDefaultColumnStyle(ORG_COL_DATE, dateStyle);
-            sheet.setDefaultColumnStyle(ORG_COL_TIME, timeStyle);
+        sheet.setDefaultColumnStyle(dateCol, dateStyle);
+        if (dateCol == ORG_COL_DATE && widths.length > ORG_COL_END_DATE) {
+            sheet.setDefaultColumnStyle(ORG_COL_END_DATE, dateStyle);
         }
+        sheet.setDefaultColumnStyle(timeCol, timeStyle);
 
         sheet.createFreezePane(0, 1);
     }
@@ -802,6 +838,13 @@ public class SuperAdminOverrideXlsxService {
             }
         }
         throw new RowParseException("Invalid date: " + raw + ". Use YYYY-MM-DD.");
+    }
+
+    private LocalDate parseOptionalDateCell(Cell cell, DataFormatter formatter, LocalDate defaultValue) {
+        if (cell == null) return defaultValue;
+        String raw = trimToNull(formatter.formatCellValue(cell));
+        if (raw == null) return defaultValue;
+        return parseDateCell(cell, formatter);
     }
 
     private LocalTime parseTimeCell(Cell cell, DataFormatter formatter) {
@@ -908,6 +951,21 @@ public class SuperAdminOverrideXlsxService {
             long rowNumber,
             String organizationId,
             LocalDate date,
+            LocalTime startTime,
+            MinyanType minyanType,
+            String overrideMode,
+            String locationId,
+            String locationName,
+            String notes,
+            Nusach nusach,
+            boolean enabled
+    ) {}
+
+    private record ParsedOrgRow(
+            long rowNumber,
+            String organizationId,
+            LocalDate startDate,
+            LocalDate endDate,
             LocalTime startTime,
             MinyanType minyanType,
             String overrideMode,
