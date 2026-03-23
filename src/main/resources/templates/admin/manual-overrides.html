@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+<head>
+    <title th:text="|Manual Overrides - ${organization.name} - ${siteName ?: 'Minyanim Platform'}|">Manual Overrides</title>
+    <th:block layout:fragment="styles">
+    <style>
+        .override-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .override-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            margin-bottom: var(--space-5);
+        }
+
+        .override-card h3 {
+            font-size: var(--font-size-lg);
+            margin-bottom: var(--space-3);
+        }
+
+        .override-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .override-field label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .override-field input,
+        .override-field select {
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background: var(--bg-surface);
+        }
+
+        .override-note {
+            margin-top: var(--space-2);
+            color: var(--text-secondary);
+            font-size: var(--font-size-xs);
+        }
+
+        .override-actions {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+            margin-top: var(--space-4);
+        }
+
+        .overrides-table-wrap {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            overflow: auto;
+        }
+
+        .overrides-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        .overrides-table th,
+        .overrides-table td {
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border-color-light);
+            text-align: left;
+            vertical-align: middle;
+            font-size: var(--font-size-sm);
+        }
+
+        .overrides-table th {
+            background: var(--color-gray-50);
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffcc80;
+        }
+
+        .empty-state {
+            padding: var(--space-10);
+            text-align: center;
+            color: var(--text-secondary);
+        }
+    </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="page-header d-flex justify-content-between align-items-start">
+        <div>
+            <h1 class="page-title" th:text="|Manual Overrides — ${organization.name}|">Manual Overrides</h1>
+            <p class="page-description">Create one-off schedule overrides and import bulk CSV overrides.</p>
+        </div>
+    </div>
+
+    <div class="override-card">
+        <form method="get" th:action="@{/admin/{orgId}/overrides(orgId=${organization.id})}" class="override-grid">
+            <div class="override-field">
+                <label for="startDate">From</label>
+                <input id="startDate" type="date" name="startDate" th:value="${startDate}">
+            </div>
+            <div class="override-field">
+                <label for="endDate">To</label>
+                <input id="endDate" type="date" name="endDate" th:value="${endDate}">
+            </div>
+            <div class="override-field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-search"></i> Apply
+                </button>
+            </div>
+            <div class="override-field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <a th:href="@{/admin/{orgId}/overrides(orgId=${organization.id})}" class="btn-modern btn-secondary" style="text-decoration: none;">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="override-card">
+        <h3>Add Manual Override</h3>
+        <form method="post"
+              th:action="@{/admin/{orgId}/overrides/manual(orgId=${organization.id})}"
+              class="override-grid">
+            <div class="override-field">
+                <label for="overrideDate">Date</label>
+                <input id="overrideDate" type="date" name="date" th:value="${startDate}" required>
+            </div>
+            <div class="override-field">
+                <label for="overrideTime">Time</label>
+                <input id="overrideTime" type="time" name="startTime" required>
+            </div>
+            <div class="override-field">
+                <label for="overrideType">Type</label>
+                <select id="overrideType" name="minyanType" required>
+                    <option value="SHACHARIS">Shacharis</option>
+                    <option value="MINCHA">Mincha</option>
+                    <option value="MAARIV">Maariv</option>
+                    <option value="MINCHA_MAARIV">Mincha/Maariv</option>
+                    <option value="SELICHOS">Selichos</option>
+                    <option value="MEGILA_READING">Megila Reading</option>
+                </select>
+            </div>
+            <div class="override-field">
+                <label for="overrideMode">Mode</label>
+                <select id="overrideMode" name="overrideMode">
+                    <option value="ADDITIVE">Additive (keep base schedule)</option>
+                    <option value="FULL_DAY_REPLACE">Full day replace</option>
+                </select>
+            </div>
+            <div class="override-field">
+                <label for="overrideLocation">Location (optional)</label>
+                <select id="overrideLocation" name="locationId">
+                    <option value="">No location</option>
+                    <option th:each="location : ${locations}" th:value="${location.id}" th:text="${location.name}">Location</option>
+                </select>
+            </div>
+            <div class="override-field">
+                <label for="overrideCustomLocation">Custom Location (optional)</label>
+                <input id="overrideCustomLocation" type="text" name="locationName" placeholder="Custom text">
+            </div>
+            <div class="override-field">
+                <label for="overrideNusach">Nusach</label>
+                <select id="overrideNusach" name="nusach">
+                    <option value="">Use shul default</option>
+                    <option th:each="nusachOption : ${nusachOptions}" th:value="${nusachOption.name()}" th:text="${nusachOption.displayName()}">Nusach</option>
+                </select>
+            </div>
+            <div class="override-field">
+                <label for="overrideNotes">Notes (optional)</label>
+                <input id="overrideNotes" type="text" name="notes" placeholder="Optional notes">
+            </div>
+            <div class="override-field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-plus"></i> Add Override
+                </button>
+            </div>
+        </form>
+        <div class="override-note">
+            Manual overrides do not require a location. Leave location fields blank if not needed.
+        </div>
+    </div>
+
+    <div class="override-card">
+        <h3>Bulk CSV Import</h3>
+        <form method="post"
+              enctype="multipart/form-data"
+              th:action="@{/admin/{orgId}/overrides/import(orgId=${organization.id})}"
+              class="override-grid">
+            <div class="override-field">
+                <label for="overrideCsvFile">Import Overrides CSV</label>
+                <input id="overrideCsvFile" type="file" name="file" accept=".csv,text/csv" required>
+            </div>
+            <div class="override-field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <a class="btn-modern btn-secondary"
+                   th:href="@{/admin/{orgId}/overrides/template(orgId=${organization.id})}"
+                   style="text-decoration: none;">
+                    <i class="fas fa-download"></i> Download Template
+                </a>
+            </div>
+            <div class="override-field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-file-upload"></i> Upload CSV
+                </button>
+            </div>
+        </form>
+        <div class="override-note">
+            Required columns: date, minyan_type, start_time. Optional columns: override_mode, location, notes, nusach, enabled.
+        </div>
+    </div>
+
+    <div class="override-actions">
+        <a th:href="@{/admin/{orgId}/calendar-events(orgId=${organization.id})}" class="btn-modern btn-secondary" style="text-decoration: none;">
+            <i class="fas fa-eye"></i> Back to Schedule Preview
+        </a>
+    </div>
+
+    <div class="override-card">
+        <h3 th:text="'Manual Overrides in Range: ' + ${totalManualEvents}">Manual Overrides</h3>
+
+        <div class="overrides-table-wrap" th:if="${!#lists.isEmpty(manualEvents)}">
+            <table class="overrides-table">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Mode</th>
+                    <th>Location</th>
+                    <th>Notes</th>
+                    <th>Enabled</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="event : ${manualEvents}">
+                    <td th:text="${#temporals.format(event.date, 'EEE, MMM d, yyyy')}">Date</td>
+                    <td th:text="${#temporals.format(event.startTime, 'h:mm a')}">Time</td>
+                    <td th:text="${event.minyanType.displayName()}">Type</td>
+                    <td>
+                        <span class="mode-badge"
+                              th:text="${event.sourceRef != null and #strings.startsWith(event.sourceRef, 'manual:FULL_DAY_REPLACE') ? 'Full Day Replace' : 'Additive'}">
+                            Mode
+                        </span>
+                    </td>
+                    <td th:text="${event.locationName != null and !#strings.isEmpty(event.locationName) ? event.locationName : '—'}">Location</td>
+                    <td th:text="${event.notes != null and !#strings.isEmpty(event.notes) ? event.notes : '—'}">Notes</td>
+                    <td th:text="${event.enabled ? 'Yes' : 'No'}">Yes</td>
+                    <td>
+                        <form method="post"
+                              th:action="@{/admin/{orgId}/overrides/{eventId}/delete(orgId=${organization.id},eventId=${event.id})}"
+                              onsubmit="return confirm('Delete this manual override?')">
+                            <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(manualEvents)}">
+            No manual overrides found in the selected range.
+        </div>
+    </div>
+</div>
+</body>
+</html>

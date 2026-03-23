@@ -180,6 +180,19 @@
             font-weight: var(--font-weight-semibold);
         }
 
+        .manual-pill-tag {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 4px;
+            padding: 1px 6px;
+            border-radius: var(--radius-full);
+            font-size: 10px;
+            font-weight: var(--font-weight-semibold);
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffcc80;
+        }
+
         /* Import badge */
         .day-meta-col {
             min-width: 110px;
@@ -305,6 +318,7 @@
                                           (${event.minyanType.name() == 'SELICHOS'} ? 'event-pill-selichos' : 'event-pill-other'))))">
                         <span class="event-pill-time" th:text="${#temporals.format(event.startTime, 'h:mm a')}">7:00 AM</span>
                         <span th:text="${event.minyanType.displayName()}">Shacharis</span>
+                        <span class="manual-pill-tag" th:if="${event.source.name() == 'MANUAL'}">Manual</span>
                     </span>
                 </div>
 
@@ -328,6 +342,10 @@
 
     <!-- Manage links -->
     <div class="manage-links">
+        <a th:href="@{/admin/{orgId}/overrides(orgId=${organization.id})}" class="btn-modern btn-secondary">
+            <i class="fas fa-edit"></i>
+            <span>Manage Overrides</span>
+        </a>
         <a th:href="@{/admin/{orgId}/minyanim(orgId=${organization.id})}" class="btn-modern btn-secondary">
             <i class="fas fa-list-alt"></i>
             <span>Manage Minyan Rules</span>

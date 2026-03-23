@@ -5,12 +5,12 @@ package com.tbdev.teaneckminyanim.enums;
  * 
  * IMPORTED: Event imported from external calendar (CSV/ICS)
  * RULES: Event generated from rule-based minyan schedule
- * MANUAL: Event manually created/overridden by admin (future feature)
+ * MANUAL: Event manually created/overridden by admin
  */
 public enum EventSource {
     IMPORTED("IMPORTED"),
     RULES("RULES"),
-    MANUAL("MANUAL");  // Future feature - not yet implemented
+    MANUAL("MANUAL");
 
     private final String text;
 

@@ -1,6 +1,7 @@
 package com.tbdev.teaneckminyanim.controllers;
 
 import com.tbdev.teaneckminyanim.enums.EventSource;
+import com.tbdev.teaneckminyanim.enums.Nusach;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.model.CalendarEvent;
 import com.tbdev.teaneckminyanim.model.Location;
@@ -11,16 +12,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.text.SimpleDateFormat;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,6 +48,7 @@ public class CalendarEventsAdminController {
     private final TNMUserService userService;
     private final ApplicationSettingsService settingsService;
     private final EffectiveScheduleService effectiveScheduleService;
+    private final ManualOverrideCsvImportService manualOverrideCsvImportService;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -247,6 +255,231 @@ public class CalendarEventsAdminController {
     }
 
     /**
+     * Dedicated manual overrides page.
+     */
+    @GetMapping("/admin/{orgId}/overrides")
+    public ModelAndView viewManualOverrides(
+            @PathVariable String orgId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        ModelAndView mv = new ModelAndView("admin/manual-overrides");
+        mv.addObject("user", userService.getCurrentUser());
+
+        if (!userService.canAccessOrganization(orgId)) {
+            throw new AccessDeniedException("Not authorized to access this organization");
+        }
+
+        Optional<Organization> orgOpt = organizationService.findById(orgId);
+        if (orgOpt.isEmpty()) {
+            mv.setViewName("error/404");
+            return mv;
+        }
+        Organization org = orgOpt.get();
+        mv.addObject("organization", org);
+
+        LocalDate today = LocalDate.now();
+        LocalDate effectiveStartDate = startDate != null ? startDate : today.minusDays(7);
+        LocalDate effectiveEndDate = endDate != null ? endDate : today.plusDays(60);
+
+        List<CalendarEvent> manualEvents = calendarEventRepository
+                .findByOrganizationIdAndSource(orgId, EventSource.MANUAL, Sort.by(Sort.Direction.ASC, "date", "startTime"))
+                .stream()
+                .filter(e -> !e.getDate().isBefore(effectiveStartDate) && !e.getDate().isAfter(effectiveEndDate))
+                .collect(Collectors.toList());
+
+        mv.addObject("manualEvents", manualEvents);
+        mv.addObject("startDate", effectiveStartDate);
+        mv.addObject("endDate", effectiveEndDate);
+        mv.addObject("locations", locationService.findMatching(orgId));
+        mv.addObject("minyanTypes", MinyanType.values());
+        mv.addObject("nusachOptions", Nusach.values());
+        mv.addObject("totalManualEvents", manualEvents.size());
+        mv.addObject("windowBounds", materializationService.getWindowBounds());
+
+        return mv;
+    }
+
+    /**
+     * Create a manual override event.
+     * Supports two modes:
+     * - ADDITIVE: append manual event to winning day source (IMPORTED or RULES)
+     * - FULL_DAY_REPLACE: use only MANUAL events for that day
+     */
+    @PostMapping({"/admin/{orgId}/calendar-events/manual", "/admin/{orgId}/overrides/manual"})
+    public RedirectView createManualOverride(
+            @PathVariable String orgId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime startTime,
+            @RequestParam String minyanType,
+            @RequestParam(defaultValue = "ADDITIVE") String overrideMode,
+            @RequestParam(required = false) String notes,
+            @RequestParam(required = false) String locationId,
+            @RequestParam(required = false) String locationName,
+            @RequestParam(required = false) String nusach,
+            RedirectAttributes redirectAttributes) {
+
+        String redirectPath = "/admin/" + orgId + "/overrides";
+        try {
+            // Check authorization
+            if (!userService.canAccessOrganization(orgId)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
+                return new RedirectView(redirectPath);
+            }
+
+            Optional<Organization> orgOpt = organizationService.findById(orgId);
+            if (orgOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Organization not found");
+                return new RedirectView(redirectPath);
+            }
+            Organization org = orgOpt.get();
+
+            MinyanType parsedType;
+            try {
+                parsedType = MinyanType.valueOf(minyanType);
+            } catch (IllegalArgumentException ex) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Invalid minyan type");
+                return new RedirectView(redirectPath);
+            }
+
+            String resolvedLocationId = null;
+            String resolvedLocationName = trimToNull(locationName);
+            if (locationId != null && !locationId.isBlank()) {
+                Location selectedLocation = locationService.findById(locationId);
+                if (selectedLocation == null || !orgId.equals(selectedLocation.getOrganizationId())) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "Invalid location for this organization");
+                    return new RedirectView(redirectPath);
+                }
+                resolvedLocationId = selectedLocation.getId();
+                if (resolvedLocationName == null) {
+                    resolvedLocationName = selectedLocation.getName();
+                }
+            }
+
+            Nusach resolvedNusach = org.getNusach();
+            if (nusach != null && !nusach.isBlank()) {
+                try {
+                    resolvedNusach = Nusach.valueOf(nusach);
+                } catch (IllegalArgumentException ex) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "Invalid nusach");
+                    return new RedirectView(redirectPath);
+                }
+            }
+
+            String normalizedMode = "FULL_DAY_REPLACE".equalsIgnoreCase(overrideMode)
+                    ? "FULL_DAY_REPLACE"
+                    : "ADDITIVE";
+
+            String sourceRefPrefix = "FULL_DAY_REPLACE".equals(normalizedMode)
+                    ? EffectiveScheduleService.MANUAL_FULL_DAY_SOURCE_REF_PREFIX
+                    : "manual:ADDITIVE";
+
+            CalendarEvent newEvent = CalendarEvent.builder()
+                    .organizationId(orgId)
+                    .date(date)
+                    .minyanType(parsedType)
+                    .startTime(startTime)
+                    .notes(trimToNull(notes))
+                    .locationId(resolvedLocationId)
+                    .locationName(resolvedLocationName)
+                    .enabled(true)
+                    .source(EventSource.MANUAL)
+                    .sourceRef(sourceRefPrefix + ":" + UUID.randomUUID())
+                    .nusach(resolvedNusach)
+                    .manuallyEdited(true)
+                    .editedBy(userService.getCurrentUser().getUsername())
+                    .editedAt(LocalDateTime.now())
+                    .build();
+
+            calendarEventRepository.save(newEvent);
+
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Manual override added (" + ("FULL_DAY_REPLACE".equals(normalizedMode) ? "full-day replace" : "additive") + ").");
+        } catch (Exception e) {
+            log.error("Error creating manual override", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
+        }
+
+        return new RedirectView(redirectPath);
+    }
+
+    /**
+     * Download CSV template for manual override import.
+     */
+    @GetMapping(value = {"/admin/{orgId}/calendar-events/manual/template", "/admin/{orgId}/overrides/template"}, produces = "text/csv")
+    public ResponseEntity<byte[]> downloadManualOverrideTemplate(@PathVariable String orgId) {
+        if (!userService.canAccessOrganization(orgId)) {
+            throw new AccessDeniedException("Not authorized to access this organization");
+        }
+
+        String csvTemplate = String.join("\n",
+                "date,minyan_type,start_time,override_mode,location,notes,nusach,enabled",
+                "2026-03-22,SHACHARIS,07:00,ADDITIVE,,Fast day extra minyan,ASHKENAZ,true",
+                "2026-03-23,MINCHA,13:30,FULL_DAY_REPLACE,Main Sanctuary,Special schedule,UNSPECIFIED,true"
+        ) + "\n";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"manual-overrides-template.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csvTemplate.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Import manual overrides from CSV.
+     */
+    @PostMapping({"/admin/{orgId}/calendar-events/manual/import", "/admin/{orgId}/overrides/import"})
+    public RedirectView importManualOverrides(
+            @PathVariable String orgId,
+            @RequestParam("file") MultipartFile file,
+            RedirectAttributes redirectAttributes) {
+
+        String redirectPath = "/admin/" + orgId + "/overrides";
+        try {
+            if (!userService.canAccessOrganization(orgId)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
+                return new RedirectView(redirectPath);
+            }
+
+            String username = userService.getCurrentUser() != null
+                    ? userService.getCurrentUser().getUsername()
+                    : "system";
+
+            ManualOverrideCsvImportService.ImportResult result =
+                    manualOverrideCsvImportService.importCsv(orgId, file, username);
+
+            if (result.hasErrors()) {
+                String topErrors = result.getErrors().stream().limit(3).collect(Collectors.joining(" | "));
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Imported with issues. Created: " + result.getCreatedCount()
+                                + ", Updated: " + result.getUpdatedCount()
+                                + ", Errors: " + result.getErrors().size()
+                                + ". " + topErrors);
+            } else {
+                redirectAttributes.addFlashAttribute("successMessage",
+                        "CSV import complete. Created: " + result.getCreatedCount()
+                                + ", Updated: " + result.getUpdatedCount()
+                                + ", Replaced manual rows: " + result.getDeletedManualCount() + ".");
+            }
+        } catch (Exception e) {
+            log.error("Error importing manual overrides CSV", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
+        }
+
+        return new RedirectView(redirectPath);
+    }
+
+    /**
+     * Delete manual override event from dedicated overrides page.
+     */
+    @PostMapping("/admin/{orgId}/overrides/{eventId}/delete")
+    public RedirectView deleteOverrideEvent(
+            @PathVariable String orgId,
+            @PathVariable Long eventId,
+            RedirectAttributes redirectAttributes) {
+        return deleteManualEventInternal(orgId, eventId, redirectAttributes, "/admin/" + orgId + "/overrides");
+    }
+
+    /**
      * Toggle enabled status of a calendar event
      */
     @PostMapping("/admin/{orgId}/calendar-events/{eventId}/toggle")
@@ -380,18 +613,25 @@ public class CalendarEventsAdminController {
             @PathVariable String orgId,
             @PathVariable Long eventId,
             RedirectAttributes redirectAttributes) {
-        
+        return deleteManualEventInternal(orgId, eventId, redirectAttributes, "/admin/" + orgId + "/calendar-events");
+    }
+
+    private RedirectView deleteManualEventInternal(
+            String orgId,
+            Long eventId,
+            RedirectAttributes redirectAttributes,
+            String redirectPath) {
         try {
             // Check authorization
             if (!userService.canAccessOrganization(orgId)) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
-                return new RedirectView("/admin/" + orgId + "/calendar-events");
+                return new RedirectView(redirectPath);
             }
             
             Optional<CalendarEvent> eventOpt = calendarEventRepository.findById(eventId);
             if (eventOpt.isEmpty() || !eventOpt.get().getOrganizationId().equals(orgId)) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Event not found");
-                return new RedirectView("/admin/" + orgId + "/calendar-events");
+                return new RedirectView(redirectPath);
             }
             
             CalendarEvent event = eventOpt.get();
@@ -400,7 +640,7 @@ public class CalendarEventsAdminController {
             if (event.getSource() != EventSource.MANUAL) {
                 redirectAttributes.addFlashAttribute("errorMessage", 
                         "Can only delete manual events. Use disable for other event types.");
-                return new RedirectView("/admin/" + orgId + "/calendar-events");
+                return new RedirectView(redirectPath);
             }
             
             calendarEventRepository.delete(event);
@@ -412,7 +652,7 @@ public class CalendarEventsAdminController {
             redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
         }
         
-        return new RedirectView("/admin/" + orgId + "/calendar-events");
+        return new RedirectView(redirectPath);
     }
 
     // Helper methods
@@ -450,5 +690,11 @@ public class CalendarEventsAdminController {
             if (dateCompare != 0) return dateCompare;
             return e1.getStartTime().compareTo(e2.getStartTime());
         };
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

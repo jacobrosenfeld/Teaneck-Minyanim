@@ -11,7 +11,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Long> {
@@ -21,6 +23,17 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
      */
     List<CalendarEvent> findByOrganizationIdAndDateAndEnabledTrue(
             String organizationId, LocalDate date);
+
+    /**
+     * Find a specific event by org/date/type/time/source.
+     * Used for manual override upsert flows.
+     */
+    Optional<CalendarEvent> findFirstByOrganizationIdAndDateAndMinyanTypeAndStartTimeAndSource(
+            String organizationId,
+            LocalDate date,
+            MinyanType minyanType,
+            LocalTime startTime,
+            EventSource source);
 
     /**
      * Find all events (enabled and disabled) for an organization on a specific date
@@ -104,6 +117,15 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
             @Param("orgId") String organizationId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    /**
+     * Delete events for a single org/date/source combination.
+     * Used by full-day MANUAL override imports.
+     */
+    long deleteByOrganizationIdAndDateAndSource(
+            String organizationId,
+            LocalDate date,
+            EventSource source);
 
     /**
      * Delete all events older than a specific date (cleanup)
