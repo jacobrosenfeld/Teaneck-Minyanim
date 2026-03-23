@@ -153,32 +153,88 @@
             color: var(--text-secondary);
         }
 
-        .table-wrap {
+        .table-card {
             background: var(--bg-surface);
             border: 1px solid var(--border-color-light);
             border-radius: var(--radius-lg);
-            overflow: auto;
+            overflow: hidden;
+        }
+
+        .table-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-5);
+            background: var(--color-gray-50);
+            border-bottom: 1px solid var(--border-color-light);
+        }
+
+        .table-topbar-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+        }
+
+        .count-pill {
+            background: var(--color-gray-200);
+            color: var(--text-secondary);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            padding: 2px 10px;
+            border-radius: var(--radius-full);
+            white-space: nowrap;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
         }
 
         .table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             min-width: 980px;
-        }
-
-        .table th,
-        .table td {
-            padding: var(--space-3) var(--space-4);
-            border-bottom: 1px solid var(--border-color-light);
-            text-align: left;
-            vertical-align: middle;
             font-size: var(--font-size-sm);
         }
 
         .table th {
-            background: var(--color-gray-50);
-            color: var(--text-secondary);
+            padding: var(--space-3) var(--space-4);
+            text-align: left;
+            font-size: var(--font-size-xs);
             font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
+            background: var(--color-gray-50);
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border-color-light);
+            vertical-align: middle;
+        }
+
+        .table tbody tr {
+            transition: background-color var(--transition-fast);
+        }
+
+        .table tbody tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .row-disabled {
+            opacity: 0.62;
+            background: var(--color-gray-50);
         }
 
         .mode-badge {
@@ -191,6 +247,62 @@
             background: #fff3e0;
             color: #e65100;
             border: 1px solid #ffcc80;
+        }
+
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 9px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 99px;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+
+        .tb-shacharis {
+            background: #bbdefb;
+            color: #0d47a1;
+        }
+
+        .tb-mincha {
+            background: #ffe0b2;
+            color: #e65100;
+        }
+
+        .tb-maariv {
+            background: #d1c4e9;
+            color: #4a148c;
+        }
+
+        .tb-mincha-maariv {
+            background: #f8bbd0;
+            color: #880e4f;
+        }
+
+        .tb-other {
+            background: #eeeeee;
+            color: #616161;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 9px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+
+        .status-enabled {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-disabled {
+            background: #eeeeee;
+            color: #757575;
         }
 
         .empty {
@@ -374,63 +486,89 @@
         </div>
     </div>
 
-    <div class="panel">
-        <h3 th:text="'Manual Overrides in Range: ' + ${totalManualEvents}">Manual Overrides</h3>
-    </div>
+    <div class="table-card">
+        <div class="table-topbar">
+            <div class="table-topbar-left">
+                <i class="fas fa-calendar-alt" style="color: var(--color-primary);"></i>
+                <span>Manual Overrides</span>
+                <span class="count-pill" th:text="${totalManualEvents} + ' shown'">0 shown</span>
+            </div>
+            <small style="color: var(--text-secondary); font-size: var(--font-size-xs);">
+                Range: <span th:text="${#temporals.format(startDate, 'MMM d, yyyy')}">Start</span>
+                -
+                <span th:text="${#temporals.format(endDate, 'MMM d, yyyy')}">End</span>
+            </small>
+        </div>
 
-    <div class="table-wrap" th:if="${!#lists.isEmpty(manualEvents)}">
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Shul</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Type</th>
-                <th>Mode</th>
-                <th>Location</th>
-                <th>Notes</th>
-                <th>Enabled</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="event : ${manualEvents}">
-                <td th:text="${orgNames[event.organizationId] ?: event.organizationId}">Org</td>
-                <td th:text="${#temporals.format(event.date, 'EEE, MMM d, yyyy')}">Date</td>
-                <td th:text="${#temporals.format(event.startTime, 'h:mm a')}">Time</td>
-                <td th:text="${event.minyanType.displayName()}">Type</td>
-                <td>
-                    <span class="mode-badge"
-                          th:text="${event.sourceRef != null and #strings.startsWith(event.sourceRef, 'manual:FULL_DAY_REPLACE') ? 'Full Day Replace' : 'Additive'}">
-                        Mode
-                    </span>
-                </td>
-                <td th:text="${event.locationName != null and !#strings.isEmpty(event.locationName) ? event.locationName : '—'}">Location</td>
-                <td th:text="${event.notes != null and !#strings.isEmpty(event.notes) ? event.notes : '—'}">Notes</td>
-                <td th:text="${event.enabled ? 'Yes' : 'No'}">Yes</td>
-                <td>
-                    <div class="row-actions">
-                        <form method="post" th:action="@{/admin/super/overrides/{eventId}/toggle(eventId=${event.id})}">
-                            <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);"
-                                    th:text="${event.enabled ? 'Disable' : 'Enable'}">
-                                Disable
-                            </button>
-                        </form>
-                        <form method="post" th:action="@{/admin/super/overrides/{eventId}/delete(eventId=${event.id})}"
-                              onsubmit="return confirm('Delete this manual override?')">
-                            <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);">
-                                Delete
-                            </button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(manualEvents)}">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Shul</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Mode</th>
+                    <th>Location</th>
+                    <th>Notes</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="event : ${manualEvents}" th:classappend="${!event.enabled} ? 'row-disabled' : ''">
+                    <td th:text="${orgNames[event.organizationId] ?: event.organizationId}">Org</td>
+                    <td th:text="${#temporals.format(event.date, 'EEE, MMM d, yyyy')}">Date</td>
+                    <td th:text="${#temporals.format(event.startTime, 'h:mm a')}">Time</td>
+                    <td>
+                        <span class="type-badge"
+                              th:classappend="${event.minyanType.name() == 'SHACHARIS'} ? 'tb-shacharis' :
+                                              (${event.minyanType.name() == 'MINCHA'} ? 'tb-mincha' :
+                                              (${event.minyanType.name() == 'MAARIV'} ? 'tb-maariv' :
+                                              (${event.minyanType.name() == 'MINCHA_MAARIV'} ? 'tb-mincha-maariv' : 'tb-other')))"
+                              th:text="${event.minyanType.displayName()}">
+                            Type
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mode-badge"
+                              th:text="${event.sourceRef != null and #strings.startsWith(event.sourceRef, 'manual:FULL_DAY_REPLACE') ? 'Full Day Replace' : 'Additive'}">
+                            Mode
+                        </span>
+                    </td>
+                    <td th:text="${event.locationName != null and !#strings.isEmpty(event.locationName) ? event.locationName : '—'}">Location</td>
+                    <td th:text="${event.notes != null and !#strings.isEmpty(event.notes) ? event.notes : '—'}">Notes</td>
+                    <td>
+                        <span class="status-badge"
+                              th:classappend="${event.enabled} ? 'status-enabled' : 'status-disabled'"
+                              th:text="${event.enabled ? 'Enabled' : 'Disabled'}">
+                            Status
+                        </span>
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <form method="post" th:action="@{/admin/super/overrides/{eventId}/toggle(eventId=${event.id})}">
+                                <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);"
+                                        th:text="${event.enabled ? 'Disable' : 'Enable'}">
+                                    Disable
+                                </button>
+                            </form>
+                            <form method="post" th:action="@{/admin/super/overrides/{eventId}/delete(eventId=${event.id})}"
+                                  onsubmit="return confirm('Delete this manual override?')">
+                                <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <div class="panel empty" th:if="${#lists.isEmpty(manualEvents)}">
-        No manual overrides found in the selected range.
+        <div class="empty" th:if="${#lists.isEmpty(manualEvents)}">
+            No manual overrides found in the selected range.
+        </div>
     </div>
 </div>
 
