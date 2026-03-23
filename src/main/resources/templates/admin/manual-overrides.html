@@ -112,7 +112,7 @@
     <div class="page-header d-flex justify-content-between align-items-start">
         <div>
             <h1 class="page-title" th:text="|Manual Overrides — ${organization.name}|">Manual Overrides</h1>
-            <p class="page-description">Create one-off schedule overrides and import bulk CSV overrides.</p>
+            <p class="page-description">Create one-off schedule overrides and import bulk XLSX overrides.</p>
         </div>
     </div>
 
@@ -147,8 +147,12 @@
               th:action="@{/admin/{orgId}/overrides/manual(orgId=${organization.id})}"
               class="override-grid">
             <div class="override-field">
-                <label for="overrideDate">Date</label>
-                <input id="overrideDate" type="date" name="date" th:value="${startDate}" required>
+                <label for="overrideStartDate">Start Date</label>
+                <input id="overrideStartDate" type="date" name="startDate" th:value="${newOverrideStartDate}" required>
+            </div>
+            <div class="override-field">
+                <label for="overrideEndDate">End Date</label>
+                <input id="overrideEndDate" type="date" name="endDate" th:value="${newOverrideEndDate}" required>
             </div>
             <div class="override-field">
                 <label for="overrideTime">Time</label>
@@ -207,14 +211,15 @@
     </div>
 
     <div class="override-card">
-        <h3>Bulk CSV Import</h3>
+        <h3>Bulk XLSX Import</h3>
         <form method="post"
               enctype="multipart/form-data"
               th:action="@{/admin/{orgId}/overrides/import(orgId=${organization.id})}"
               class="override-grid">
             <div class="override-field">
-                <label for="overrideCsvFile">Import Overrides CSV</label>
-                <input id="overrideCsvFile" type="file" name="file" accept=".csv,text/csv" required>
+                <label for="overrideXlsxFile">Import Overrides XLSX</label>
+                <input id="overrideXlsxFile" type="file" name="file"
+                       accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
             </div>
             <div class="override-field" style="justify-content: flex-end;">
                 <label>&nbsp;</label>
@@ -227,12 +232,12 @@
             <div class="override-field" style="justify-content: flex-end;">
                 <label>&nbsp;</label>
                 <button type="submit" class="btn-modern btn-secondary">
-                    <i class="fas fa-file-upload"></i> Upload CSV
+                    <i class="fas fa-file-upload"></i> Upload XLSX
                 </button>
             </div>
         </form>
         <div class="override-note">
-            Required columns: date, minyan_type, start_time. Optional columns: override_mode, location, notes, nusach, enabled.
+            Required columns: date, start_time, minyan_type. Optional columns: override_mode, location, notes, nusach, enabled.
         </div>
     </div>
 

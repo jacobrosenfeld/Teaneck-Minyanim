@@ -43,7 +43,7 @@
             </a>
             <a class="admin-sidebar-link" th:href="@{|/admin/${organization.id}/overrides|}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/overrides')} ? 'active' : ''">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2m-1 0v14m7-7H5"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
                 </svg>
                 <span>Overrides</span>
             </a>
@@ -116,7 +116,7 @@
             </a>
             <a class="admin-sidebar-link" th:href="@{|/admin/${user.getOrganizationId()}/overrides|}">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2m-1 0v14m7-7H5"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
                 </svg>
                 <span>Overrides</span>
             </a>
@@ -145,7 +145,7 @@
             <a class="admin-sidebar-link" th:href="@{/admin/super/overrides}"
                th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/super/overrides')} ? 'active' : ''">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
                 </svg>
                 <span>Overrides</span>
             </a>

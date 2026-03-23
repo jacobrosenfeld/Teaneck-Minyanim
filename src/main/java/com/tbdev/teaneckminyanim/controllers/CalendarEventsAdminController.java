@@ -24,7 +24,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.text.SimpleDateFormat;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -48,7 +47,7 @@ public class CalendarEventsAdminController {
     private final TNMUserService userService;
     private final ApplicationSettingsService settingsService;
     private final EffectiveScheduleService effectiveScheduleService;
-    private final ManualOverrideCsvImportService manualOverrideCsvImportService;
+    private final SuperAdminOverrideXlsxService overrideXlsxService;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -296,6 +295,8 @@ public class CalendarEventsAdminController {
         mv.addObject("nusachOptions", Nusach.values());
         mv.addObject("totalManualEvents", manualEvents.size());
         mv.addObject("windowBounds", materializationService.getWindowBounds());
+        mv.addObject("newOverrideStartDate", today);
+        mv.addObject("newOverrideEndDate", today);
 
         return mv;
     }
@@ -309,7 +310,9 @@ public class CalendarEventsAdminController {
     @PostMapping({"/admin/{orgId}/calendar-events/manual", "/admin/{orgId}/overrides/manual"})
     public RedirectView createManualOverride(
             @PathVariable String orgId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime startTime,
             @RequestParam String minyanType,
             @RequestParam(defaultValue = "ADDITIVE") String overrideMode,
@@ -333,6 +336,16 @@ public class CalendarEventsAdminController {
                 return new RedirectView(redirectPath);
             }
             Organization org = orgOpt.get();
+
+            LocalDate rangeStart = startDate != null ? startDate : date;
+            if (rangeStart == null) {
+                rangeStart = LocalDate.now();
+            }
+            LocalDate rangeEnd = endDate != null ? endDate : rangeStart;
+            if (rangeEnd.isBefore(rangeStart)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "End date cannot be before start date");
+                return new RedirectView(redirectPath);
+            }
 
             MinyanType parsedType;
             try {
@@ -370,31 +383,36 @@ public class CalendarEventsAdminController {
                     ? "FULL_DAY_REPLACE"
                     : "ADDITIVE";
 
-            String sourceRefPrefix = "FULL_DAY_REPLACE".equals(normalizedMode)
-                    ? EffectiveScheduleService.MANUAL_FULL_DAY_SOURCE_REF_PREFIX
-                    : "manual:ADDITIVE";
+            String username = userService.getCurrentUser() != null
+                    ? userService.getCurrentUser().getUsername()
+                    : "system";
 
-            CalendarEvent newEvent = CalendarEvent.builder()
-                    .organizationId(orgId)
-                    .date(date)
-                    .minyanType(parsedType)
-                    .startTime(startTime)
-                    .notes(trimToNull(notes))
-                    .locationId(resolvedLocationId)
-                    .locationName(resolvedLocationName)
-                    .enabled(true)
-                    .source(EventSource.MANUAL)
-                    .sourceRef(sourceRefPrefix + ":" + UUID.randomUUID())
-                    .nusach(resolvedNusach)
-                    .manuallyEdited(true)
-                    .editedBy(userService.getCurrentUser().getUsername())
-                    .editedAt(LocalDateTime.now())
-                    .build();
-
-            calendarEventRepository.save(newEvent);
+            int createdCount = 0;
+            int updatedCount = 0;
+            for (LocalDate d = rangeStart; !d.isAfter(rangeEnd); d = d.plusDays(1)) {
+                boolean updated = overrideXlsxService.upsertManualEvent(
+                        orgId,
+                        d,
+                        startTime,
+                        parsedType,
+                        normalizedMode,
+                        resolvedLocationId,
+                        resolvedLocationName,
+                        trimToNull(notes),
+                        resolvedNusach,
+                        true,
+                        username
+                );
+                if (updated) {
+                    updatedCount++;
+                } else {
+                    createdCount++;
+                }
+            }
 
             redirectAttributes.addFlashAttribute("successMessage",
-                    "Manual override added (" + ("FULL_DAY_REPLACE".equals(normalizedMode) ? "full-day replace" : "additive") + ").");
+                    "Manual overrides saved (" + ("FULL_DAY_REPLACE".equals(normalizedMode) ? "full-day replace" : "additive")
+                            + "). Created: " + createdCount + ", Updated: " + updatedCount + ".");
         } catch (Exception e) {
             log.error("Error creating manual override", e);
             redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
@@ -404,28 +422,32 @@ public class CalendarEventsAdminController {
     }
 
     /**
-     * Download CSV template for manual override import.
+     * Download XLSX template for manual override import.
      */
-    @GetMapping(value = {"/admin/{orgId}/calendar-events/manual/template", "/admin/{orgId}/overrides/template"}, produces = "text/csv")
+    @GetMapping(value = {"/admin/{orgId}/calendar-events/manual/template", "/admin/{orgId}/overrides/template"})
     public ResponseEntity<byte[]> downloadManualOverrideTemplate(@PathVariable String orgId) {
         if (!userService.canAccessOrganization(orgId)) {
             throw new AccessDeniedException("Not authorized to access this organization");
         }
 
-        String csvTemplate = String.join("\n",
-                "date,minyan_type,start_time,override_mode,location,notes,nusach,enabled",
-                "2026-03-22,SHACHARIS,07:00,ADDITIVE,,Fast day extra minyan,ASHKENAZ,true",
-                "2026-03-23,MINCHA,13:30,FULL_DAY_REPLACE,Main Sanctuary,Special schedule,UNSPECIFIED,true"
-        ) + "\n";
+        Optional<Organization> orgOpt = organizationService.findById(orgId);
+        if (orgOpt.isEmpty()) {
+            throw new AccessDeniedException("Organization not found");
+        }
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"manual-overrides-template.csv\"")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(csvTemplate.getBytes(StandardCharsets.UTF_8));
+        try {
+            byte[] bytes = overrideXlsxService.buildOrganizationTemplate(orgOpt.get(), locationService.findMatching(orgId));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"manual-overrides-template.xlsx\"")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(bytes);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed generating template", e);
+        }
     }
 
     /**
-     * Import manual overrides from CSV.
+     * Import manual overrides from XLSX.
      */
     @PostMapping({"/admin/{orgId}/calendar-events/manual/import", "/admin/{orgId}/overrides/import"})
     public RedirectView importManualOverrides(
@@ -444,8 +466,8 @@ public class CalendarEventsAdminController {
                     ? userService.getCurrentUser().getUsername()
                     : "system";
 
-            ManualOverrideCsvImportService.ImportResult result =
-                    manualOverrideCsvImportService.importCsv(orgId, file, username);
+            SuperAdminOverrideXlsxService.ImportResult result =
+                    overrideXlsxService.importOrganizationWorkbook(orgId, file, username);
 
             if (result.hasErrors()) {
                 String topErrors = result.getErrors().stream().limit(3).collect(Collectors.joining(" | "));
@@ -456,12 +478,12 @@ public class CalendarEventsAdminController {
                                 + ". " + topErrors);
             } else {
                 redirectAttributes.addFlashAttribute("successMessage",
-                        "CSV import complete. Created: " + result.getCreatedCount()
+                        "XLSX import complete. Created: " + result.getCreatedCount()
                                 + ", Updated: " + result.getUpdatedCount()
                                 + ", Replaced manual rows: " + result.getDeletedManualCount() + ".");
             }
         } catch (Exception e) {
-            log.error("Error importing manual overrides CSV", e);
+            log.error("Error importing manual overrides XLSX", e);
             redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
         }
 

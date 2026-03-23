@@ -128,6 +128,99 @@
     </div>
 
     <div class="panel">
+        <h3 style="margin-bottom: var(--space-3);">Add Manual Override</h3>
+        <form method="post" th:action="@{/admin/super/overrides/manual}" class="grid">
+            <div class="field">
+                <label for="superOrgSearch">Shul Search</label>
+                <input id="superOrgSearch" type="text" placeholder="Search shul name...">
+            </div>
+            <div class="field">
+                <label for="superOrgId">Shul Name</label>
+                <select id="superOrgId" name="organizationId" required>
+                    <option value="">Select a shul</option>
+                    <option th:each="organization : ${organizations}"
+                            th:value="${organization.id}"
+                            th:text="${organization.name}">
+                        Shul
+                    </option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="superOverrideStartDate">Start Date</label>
+                <input id="superOverrideStartDate" type="date" name="startDate" th:value="${newOverrideStartDate}" required>
+            </div>
+            <div class="field">
+                <label for="superOverrideEndDate">End Date</label>
+                <input id="superOverrideEndDate" type="date" name="endDate" th:value="${newOverrideEndDate}" required>
+            </div>
+            <div class="field">
+                <label for="superOverrideTime">Time</label>
+                <input id="superOverrideTime" type="time" name="startTime" required>
+            </div>
+            <div class="field">
+                <label for="superOverrideType">Type</label>
+                <select id="superOverrideType" name="minyanType" required>
+                    <option value="SHACHARIS">Shacharis</option>
+                    <option value="MINCHA">Mincha</option>
+                    <option value="MAARIV">Maariv</option>
+                    <option value="MINCHA_MAARIV">Mincha/Maariv</option>
+                    <option value="SELICHOS">Selichos</option>
+                    <option value="MEGILA_READING">Megila Reading</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="superOverrideMode">Mode</label>
+                <select id="superOverrideMode" name="overrideMode">
+                    <option value="ADDITIVE">Additive (keep base schedule)</option>
+                    <option value="FULL_DAY_REPLACE">Full day replace</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="superOverrideLocation">Location (optional)</label>
+                <select id="superOverrideLocation" name="locationId">
+                    <option value="">No location</option>
+                    <th:block th:each="entry : ${locationsByOrgId}">
+                        <option th:each="location : ${entry.value}"
+                                th:value="${location.id}"
+                                th:text="${location.name}"
+                                th:attr="data-org-id=${entry.key}">
+                            Location
+                        </option>
+                    </th:block>
+                </select>
+            </div>
+            <div class="field">
+                <label for="superOverrideCustomLocation">Custom Location (optional)</label>
+                <input id="superOverrideCustomLocation" type="text" name="locationName" placeholder="Custom text">
+            </div>
+            <div class="field">
+                <label for="superOverrideNusach">Nusach</label>
+                <select id="superOverrideNusach" name="nusach">
+                    <option value="">Use shul default</option>
+                    <option th:each="nusachOption : ${nusachOptions}"
+                            th:value="${nusachOption.name()}"
+                            th:text="${nusachOption.displayName()}">
+                        Nusach
+                    </option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="superOverrideNotes">Notes (optional)</label>
+                <input id="superOverrideNotes" type="text" name="notes" placeholder="Optional notes">
+            </div>
+            <div class="field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-plus"></i> Add Override
+                </button>
+            </div>
+        </form>
+        <div class="note">
+            Manual overrides do not require a location. Leave location fields blank if not needed.
+        </div>
+    </div>
+
+    <div class="panel">
         <h3 style="margin-bottom: var(--space-3);">Bulk XLSX Import</h3>
         <form method="post" enctype="multipart/form-data" action="/admin/super/overrides/import" class="grid">
             <div class="field" style="min-width: 320px;">
@@ -151,7 +244,7 @@
             </div>
         </form>
         <div class="note">
-            Template includes dropdowns for existing shuls (org ID/name), validated minyan types (SHACHARIS, MINCHA, MAARIV, MINCHA/MAARIV), and formatted date/time cells.
+            Template uses shul name only (no org ID), with Excel dropdown validation, plus validated minyan types and formatted date/time cells.
         </div>
     </div>
 
@@ -206,5 +299,54 @@
         No manual overrides found in the selected range.
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const orgSearchInput = document.getElementById('superOrgSearch');
+        const orgSelect = document.getElementById('superOrgId');
+        const locationSelect = document.getElementById('superOverrideLocation');
+
+        function applyOrgFilter() {
+            if (!orgSearchInput || !orgSelect) return;
+            const query = orgSearchInput.value.trim().toLowerCase();
+            Array.from(orgSelect.options).forEach((option, idx) => {
+                if (idx === 0) {
+                    option.hidden = false;
+                    return;
+                }
+                option.hidden = query.length > 0 && !option.text.toLowerCase().includes(query);
+            });
+        }
+
+        function applyLocationFilter() {
+            if (!orgSelect || !locationSelect) return;
+            const selectedOrgId = orgSelect.value;
+            Array.from(locationSelect.options).forEach((option, idx) => {
+                if (idx === 0) {
+                    option.hidden = false;
+                    return;
+                }
+                const optionOrgId = option.getAttribute('data-org-id');
+                option.hidden = !selectedOrgId || optionOrgId !== selectedOrgId;
+            });
+
+            const selectedOption = locationSelect.options[locationSelect.selectedIndex];
+            if (selectedOption && selectedOption.hidden) {
+                locationSelect.value = '';
+            }
+        }
+
+        if (orgSearchInput) {
+            orgSearchInput.addEventListener('input', applyOrgFilter);
+        }
+
+        if (orgSelect) {
+            orgSelect.addEventListener('change', applyLocationFilter);
+        }
+
+        applyOrgFilter();
+        applyLocationFilter();
+    });
+</script>
 </body>
 </html>
