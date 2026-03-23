@@ -16,7 +16,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
@@ -2195,60 +2194,31 @@ public class AdminController {
     }
 
     /**
-     * Toggle enabled/disabled status for a calendar entry.
-     * Returns JSON when called with X-Requested-With: XMLHttpRequest (AJAX),
-     * otherwise redirects back to the calendar entries page (non-JS fallback).
+     * Toggle enabled/disabled status for a calendar entry
      */
     @PostMapping("/admin/{orgId}/calendar-entries/{entryId}/toggle")
-    @ResponseBody
-    public ResponseEntity<?> toggleCalendarEntry(
-            @PathVariable String orgId,
-            @PathVariable Long entryId,
-            @RequestHeader(value = "X-Requested-With", required = false) String requestedWith) {
-
-        boolean isAjax = "XMLHttpRequest".equals(requestedWith);
-
+    public RedirectView toggleCalendarEntry(@PathVariable String orgId, @PathVariable Long entryId) {
         if (!isAdmin()) {
-            if (isAjax) {
-                Map<String, Object> body = new HashMap<>();
-                body.put("success", false);
-                body.put("message", "You do not have permission to perform this action.");
-                return ResponseEntity.status(403).body(body);
-            }
             throw new AccessDeniedException("You do not have permission to perform this action.");
         }
 
         try {
             Organization org = getOrganization(orgId);
             if (org == null) {
-                if (isAjax) {
-                    Map<String, Object> body = new HashMap<>();
-                    body.put("success", false);
-                    body.put("message", "Organization not found");
-                    return ResponseEntity.status(404).body(body);
-                }
-                return ResponseEntity.status(302)
-                        .header("Location", "/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found")
-                        .build();
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
             }
 
-            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo =
+            com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
                     applicationContext.getBean(com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository.class);
 
-            Optional<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entryOpt =
+            Optional<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entryOpt = 
                     entryRepo.findById(entryId);
 
             if (entryOpt.isPresent()) {
                 com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry entry = entryOpt.get();
-
+                
                 // Verify entry belongs to this organization
                 if (!entry.getOrganizationId().equals(orgId)) {
-                    if (isAjax) {
-                        Map<String, Object> body = new HashMap<>();
-                        body.put("success", false);
-                        body.put("message", "Entry does not belong to this organization");
-                        return ResponseEntity.status(403).body(body);
-                    }
                     throw new AccessDeniedException("Entry does not belong to this organization");
                 }
 
@@ -2256,39 +2226,13 @@ public class AdminController {
                 entry.setEnabled(!entry.isEnabled());
                 entryRepo.save(entry);
 
-                if (isAjax) {
-                    Map<String, Object> body = new HashMap<>();
-                    body.put("success", true);
-                    body.put("enabled", entry.isEnabled());
-                    return ResponseEntity.ok(body);
-                }
-                return ResponseEntity.status(302)
-                        .header("Location", "/admin/" + orgId + "/calendar-entries?successMessage=Entry+status+updated")
-                        .build();
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Entry+status+updated");
             } else {
-                if (isAjax) {
-                    Map<String, Object> body = new HashMap<>();
-                    body.put("success", false);
-                    body.put("message", "Entry not found");
-                    return ResponseEntity.status(404).body(body);
-                }
-                return ResponseEntity.status(302)
-                        .header("Location", "/admin/" + orgId + "/calendar-entries?errorMessage=Entry+not+found")
-                        .build();
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Entry+not+found");
             }
 
-        } catch (AccessDeniedException e) {
-            throw e;
         } catch (Exception e) {
-            if (isAjax) {
-                Map<String, Object> body = new HashMap<>();
-                body.put("success", false);
-                body.put("message", e.getMessage());
-                return ResponseEntity.status(500).body(body);
-            }
-            return ResponseEntity.status(302)
-                    .header("Location", "/admin/" + orgId + "/calendar-entries?errorMessage=" + e.getMessage())
-                    .build();
+            return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=" + e.getMessage());
         }
     }
 
