@@ -573,8 +573,13 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    function initSuperOverridesPage() {
         const manualOverrideForm = document.getElementById('superManualOverrideForm');
+        if (!manualOverrideForm || manualOverrideForm.dataset.superOverridesInitialized === 'true') {
+            return;
+        }
+        manualOverrideForm.dataset.superOverridesInitialized = 'true';
+
         const orgPicker = document.getElementById('superOrgPicker');
         const orgPickerToggle = document.getElementById('superOrgPickerToggle');
         const orgPickerLabel = document.getElementById('superOrgPickerLabel');
@@ -583,6 +588,24 @@
         const orgItems = Array.from(document.querySelectorAll('.shul-picker-item'));
         const orgIdInput = document.getElementById('superOrgId');
         const locationSelect = document.getElementById('superOverrideLocation');
+        const allLocationOptions = locationSelect
+                ? Array.from(locationSelect.querySelectorAll('option[data-org-id]')).map(function (option) {
+                    return {
+                        orgId: option.getAttribute('data-org-id') || '',
+                        value: option.value,
+                        label: option.textContent ? option.textContent.trim() : ''
+                    };
+                })
+                : [];
+
+        function escapeHtml(value) {
+            return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+        }
 
         function openOrgPicker() {
             if (!orgPicker || !orgPickerToggle) return;
@@ -630,17 +653,26 @@
         function applyLocationFilter() {
             if (!orgIdInput || !locationSelect) return;
             const selectedOrgId = orgIdInput.value;
-            Array.from(locationSelect.options).forEach((option, idx) => {
-                if (idx === 0) {
-                    option.hidden = false;
-                    return;
-                }
-                const optionOrgId = option.getAttribute('data-org-id');
-                option.hidden = !selectedOrgId || optionOrgId !== selectedOrgId;
-            });
+            const previousValue = locationSelect.value;
 
-            const selectedOption = locationSelect.options[locationSelect.selectedIndex];
-            if (selectedOption && selectedOption.hidden) {
+            let optionsHtml = '<option value="">No location</option>';
+            if (selectedOrgId) {
+                allLocationOptions
+                        .filter(function (option) {
+                            return option.orgId === selectedOrgId;
+                        })
+                        .forEach(function (option) {
+                            optionsHtml += '<option value="' + escapeHtml(option.value) + '">' + escapeHtml(option.label) + '</option>';
+                        });
+            }
+
+            locationSelect.innerHTML = optionsHtml;
+            const stillExists = Array.from(locationSelect.options).some(function (option) {
+                return option.value === previousValue;
+            });
+            if (stillExists) {
+                locationSelect.value = previousValue;
+            } else {
                 locationSelect.value = '';
             }
         }
@@ -688,22 +720,23 @@
             }
         });
 
-        if (manualOverrideForm) {
-            manualOverrideForm.addEventListener('submit', function (event) {
-                if (orgIdInput && orgIdInput.value) return;
-                event.preventDefault();
-                if (window.showToast) {
-                    window.showToast('Please select a shul before saving.', 'warning');
-                } else {
-                    alert('Please select a shul before saving.');
-                }
-                openOrgPicker();
-            });
-        }
+        manualOverrideForm.addEventListener('submit', function (event) {
+            if (orgIdInput && orgIdInput.value) return;
+            event.preventDefault();
+            if (window.showToast) {
+                window.showToast('Please select a shul before saving.', 'warning');
+            } else {
+                alert('Please select a shul before saving.');
+            }
+            openOrgPicker();
+        });
 
         applyOrgFilter();
         applyLocationFilter();
-    });
+    }
+
+    document.addEventListener('DOMContentLoaded', initSuperOverridesPage);
+    document.addEventListener('turbolinks:load', initSuperOverridesPage);
 </script>
 </body>
 </html>
