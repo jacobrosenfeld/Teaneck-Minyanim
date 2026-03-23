@@ -365,7 +365,12 @@
                     </button>
                     <div class="shul-picker-menu" id="superOrgPickerMenu">
                         <div class="shul-picker-header">
-                            <input id="superOrgSearch" class="shul-picker-search" type="text" placeholder="Search shuls...">
+                            <input id="superOrgSearch"
+                                   class="shul-picker-search"
+                                   type="text"
+                                   placeholder="Search shuls..."
+                                   autocomplete="off"
+                                   spellcheck="false">
                         </div>
                         <div class="shul-picker-list" id="superOrgPickerList">
                             <button type="button"
@@ -572,6 +577,7 @@
     </div>
 </div>
 
+<th:block layout:fragment="scripts">
 <script>
     function initSuperOverridesPage() {
         const manualOverrideForm = document.getElementById('superManualOverrideForm');
@@ -585,9 +591,14 @@
         const orgPickerLabel = document.getElementById('superOrgPickerLabel');
         const orgPickerEmpty = document.getElementById('superOrgPickerEmpty');
         const orgSearchInput = document.getElementById('superOrgSearch');
-        const orgItems = Array.from(document.querySelectorAll('.shul-picker-item'));
+        const orgItems = orgPicker
+                ? Array.from(orgPicker.querySelectorAll('.shul-picker-item'))
+                : [];
         const orgIdInput = document.getElementById('superOrgId');
         const locationSelect = document.getElementById('superOverrideLocation');
+        if (!orgPicker || !orgPickerToggle || !orgPickerLabel || !orgSearchInput || !orgIdInput) {
+            return;
+        }
         const allLocationOptions = locationSelect
                 ? Array.from(locationSelect.querySelectorAll('option[data-org-id]')).map(function (option) {
                     return {
@@ -608,33 +619,29 @@
         }
 
         function openOrgPicker() {
-            if (!orgPicker || !orgPickerToggle) return;
             orgPicker.classList.add('show');
             orgPickerToggle.setAttribute('aria-expanded', 'true');
-            if (orgSearchInput) {
-                setTimeout(function () {
-                    orgSearchInput.focus();
-                }, 0);
-            }
+            setTimeout(function () {
+                orgSearchInput.focus();
+            }, 0);
         }
 
         function closeOrgPicker() {
-            if (!orgPicker || !orgPickerToggle) return;
             orgPicker.classList.remove('show');
             orgPickerToggle.setAttribute('aria-expanded', 'false');
         }
 
         function selectOrganization(orgId, orgName) {
-            if (!orgIdInput || !orgPickerLabel) return;
             orgIdInput.value = orgId;
             orgPickerLabel.textContent = orgName;
             orgPickerLabel.classList.remove('placeholder');
+            orgSearchInput.value = '';
+            applyOrgFilter();
             applyLocationFilter();
             closeOrgPicker();
         }
 
         function applyOrgFilter() {
-            if (!orgSearchInput || orgItems.length === 0) return;
             const query = orgSearchInput.value.trim().toLowerCase();
             let visibleCount = 0;
             orgItems.forEach(function (item) {
@@ -645,9 +652,7 @@
                     visibleCount++;
                 }
             });
-            if (orgPickerEmpty) {
-                orgPickerEmpty.classList.toggle('show', visibleCount === 0);
-            }
+            orgPickerEmpty.classList.toggle('show', visibleCount === 0);
         }
 
         function applyLocationFilter() {
@@ -677,33 +682,29 @@
             }
         }
 
-        if (orgPickerToggle) {
-            orgPickerToggle.addEventListener('click', function (event) {
-                event.stopPropagation();
-                if (orgPicker && orgPicker.classList.contains('show')) {
-                    closeOrgPicker();
-                } else {
-                    openOrgPicker();
-                }
-            });
-        }
+        orgPickerToggle.addEventListener('click', function (event) {
+            event.stopPropagation();
+            if (orgPicker.classList.contains('show')) {
+                closeOrgPicker();
+            } else {
+                openOrgPicker();
+            }
+        });
 
-        if (orgSearchInput) {
-            orgSearchInput.addEventListener('input', applyOrgFilter);
-            orgSearchInput.addEventListener('keydown', function (event) {
-                if (event.key !== 'Enter') return;
-                event.preventDefault();
-                const firstVisibleItem = orgItems.find(function (item) {
-                    return !item.hidden;
-                });
-                if (firstVisibleItem) {
-                    selectOrganization(
-                            firstVisibleItem.getAttribute('data-org-id') || '',
-                            firstVisibleItem.textContent.trim()
-                    );
-                }
+        orgSearchInput.addEventListener('input', applyOrgFilter);
+        orgSearchInput.addEventListener('keydown', function (event) {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            const firstVisibleItem = orgItems.find(function (item) {
+                return !item.hidden;
             });
-        }
+            if (firstVisibleItem) {
+                selectOrganization(
+                        firstVisibleItem.getAttribute('data-org-id') || '',
+                        firstVisibleItem.textContent.trim()
+                );
+            }
+        });
 
         orgItems.forEach(function (item) {
             item.addEventListener('click', function () {
@@ -735,8 +736,13 @@
         applyLocationFilter();
     }
 
-    document.addEventListener('DOMContentLoaded', initSuperOverridesPage);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSuperOverridesPage);
+    } else {
+        initSuperOverridesPage();
+    }
     document.addEventListener('turbolinks:load', initSuperOverridesPage);
 </script>
+</th:block>
 </body>
 </html>
