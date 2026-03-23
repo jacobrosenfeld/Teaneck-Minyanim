@@ -41,6 +41,112 @@
             background: var(--bg-surface);
         }
 
+        .shul-picker {
+            position: relative;
+        }
+
+        .shul-picker-toggle {
+            width: 100%;
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background: var(--bg-surface);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-2);
+            cursor: pointer;
+            min-height: 42px;
+        }
+
+        .shul-picker-toggle .placeholder {
+            color: var(--text-secondary);
+        }
+
+        .shul-picker-toggle svg {
+            width: 16px;
+            height: 16px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            transition: transform var(--transition-fast);
+        }
+
+        .shul-picker.show .shul-picker-toggle svg {
+            transform: rotate(180deg);
+        }
+
+        .shul-picker-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 50;
+            display: none;
+            overflow: hidden;
+        }
+
+        .shul-picker.show .shul-picker-menu {
+            display: block;
+        }
+
+        .shul-picker-header {
+            padding: var(--space-3);
+            border-bottom: 1px solid var(--border-color-light);
+        }
+
+        .shul-picker-search {
+            width: 100%;
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+        }
+
+        .shul-picker-search:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px var(--color-primary-lighter);
+        }
+
+        .shul-picker-list {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .shul-picker-item {
+            width: 100%;
+            border: 0;
+            background: transparent;
+            text-align: left;
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .shul-picker-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .shul-picker-empty {
+            display: none;
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .shul-picker-empty.show {
+            display: block;
+        }
+
         .note {
             margin-top: var(--space-2);
             font-size: var(--font-size-xs);
@@ -135,21 +241,35 @@
 
     <div class="panel">
         <h3 style="margin-bottom: var(--space-3);">Add Manual Override</h3>
-        <form method="post" th:action="@{/admin/super/overrides/manual}" class="grid">
+        <form method="post" th:action="@{/admin/super/overrides/manual}" class="grid" id="superManualOverrideForm">
             <div class="field">
-                <label for="superOrgSearch">Shul Search</label>
-                <input id="superOrgSearch" type="text" placeholder="Search shul name...">
-            </div>
-            <div class="field">
-                <label for="superOrgId">Shul Name</label>
-                <select id="superOrgId" name="organizationId" required>
-                    <option value="">Select a shul</option>
-                    <option th:each="organization : ${organizations}"
-                            th:value="${organization.id}"
-                            th:text="${organization.name}">
-                        Shul
-                    </option>
-                </select>
+                <label for="superOrgPickerToggle">Shul Name</label>
+                <div class="shul-picker" id="superOrgPicker">
+                    <button type="button" id="superOrgPickerToggle" class="shul-picker-toggle" aria-expanded="false">
+                        <span id="superOrgPickerLabel" class="placeholder">Select a shul</span>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div class="shul-picker-menu" id="superOrgPickerMenu">
+                        <div class="shul-picker-header">
+                            <input id="superOrgSearch" class="shul-picker-search" type="text" placeholder="Search shuls...">
+                        </div>
+                        <div class="shul-picker-list" id="superOrgPickerList">
+                            <button type="button"
+                                    class="shul-picker-item"
+                                    th:each="organization : ${organizations}"
+                                    th:attr="data-org-id=${organization.id},data-org-name-lower=${#strings.toLowerCase(organization.name)}"
+                                    th:text="${organization.name}">
+                                Shul
+                            </button>
+                        </div>
+                        <div class="shul-picker-empty" id="superOrgPickerEmpty">
+                            No matching shuls found.
+                        </div>
+                    </div>
+                </div>
+                <input id="superOrgId" type="hidden" name="organizationId">
             </div>
             <div class="field">
                 <label for="superOverrideStartDate">Start Date</label>
@@ -316,25 +436,62 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const manualOverrideForm = document.getElementById('superManualOverrideForm');
+        const orgPicker = document.getElementById('superOrgPicker');
+        const orgPickerToggle = document.getElementById('superOrgPickerToggle');
+        const orgPickerLabel = document.getElementById('superOrgPickerLabel');
+        const orgPickerEmpty = document.getElementById('superOrgPickerEmpty');
         const orgSearchInput = document.getElementById('superOrgSearch');
-        const orgSelect = document.getElementById('superOrgId');
+        const orgItems = Array.from(document.querySelectorAll('.shul-picker-item'));
+        const orgIdInput = document.getElementById('superOrgId');
         const locationSelect = document.getElementById('superOverrideLocation');
 
+        function openOrgPicker() {
+            if (!orgPicker || !orgPickerToggle) return;
+            orgPicker.classList.add('show');
+            orgPickerToggle.setAttribute('aria-expanded', 'true');
+            if (orgSearchInput) {
+                setTimeout(function () {
+                    orgSearchInput.focus();
+                }, 0);
+            }
+        }
+
+        function closeOrgPicker() {
+            if (!orgPicker || !orgPickerToggle) return;
+            orgPicker.classList.remove('show');
+            orgPickerToggle.setAttribute('aria-expanded', 'false');
+        }
+
+        function selectOrganization(orgId, orgName) {
+            if (!orgIdInput || !orgPickerLabel) return;
+            orgIdInput.value = orgId;
+            orgPickerLabel.textContent = orgName;
+            orgPickerLabel.classList.remove('placeholder');
+            applyLocationFilter();
+            closeOrgPicker();
+        }
+
         function applyOrgFilter() {
-            if (!orgSearchInput || !orgSelect) return;
+            if (!orgSearchInput || orgItems.length === 0) return;
             const query = orgSearchInput.value.trim().toLowerCase();
-            Array.from(orgSelect.options).forEach((option, idx) => {
-                if (idx === 0) {
-                    option.hidden = false;
-                    return;
+            let visibleCount = 0;
+            orgItems.forEach(function (item) {
+                const orgName = item.getAttribute('data-org-name-lower') || '';
+                const isVisible = query.length === 0 || orgName.includes(query);
+                item.hidden = !isVisible;
+                if (isVisible) {
+                    visibleCount++;
                 }
-                option.hidden = query.length > 0 && !option.text.toLowerCase().includes(query);
             });
+            if (orgPickerEmpty) {
+                orgPickerEmpty.classList.toggle('show', visibleCount === 0);
+            }
         }
 
         function applyLocationFilter() {
-            if (!orgSelect || !locationSelect) return;
-            const selectedOrgId = orgSelect.value;
+            if (!orgIdInput || !locationSelect) return;
+            const selectedOrgId = orgIdInput.value;
             Array.from(locationSelect.options).forEach((option, idx) => {
                 if (idx === 0) {
                     option.hidden = false;
@@ -350,12 +507,60 @@
             }
         }
 
-        if (orgSearchInput) {
-            orgSearchInput.addEventListener('input', applyOrgFilter);
+        if (orgPickerToggle) {
+            orgPickerToggle.addEventListener('click', function (event) {
+                event.stopPropagation();
+                if (orgPicker && orgPicker.classList.contains('show')) {
+                    closeOrgPicker();
+                } else {
+                    openOrgPicker();
+                }
+            });
         }
 
-        if (orgSelect) {
-            orgSelect.addEventListener('change', applyLocationFilter);
+        if (orgSearchInput) {
+            orgSearchInput.addEventListener('input', applyOrgFilter);
+            orgSearchInput.addEventListener('keydown', function (event) {
+                if (event.key !== 'Enter') return;
+                event.preventDefault();
+                const firstVisibleItem = orgItems.find(function (item) {
+                    return !item.hidden;
+                });
+                if (firstVisibleItem) {
+                    selectOrganization(
+                            firstVisibleItem.getAttribute('data-org-id') || '',
+                            firstVisibleItem.textContent.trim()
+                    );
+                }
+            });
+        }
+
+        orgItems.forEach(function (item) {
+            item.addEventListener('click', function () {
+                selectOrganization(
+                        item.getAttribute('data-org-id') || '',
+                        item.textContent.trim()
+                );
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!orgPicker || !orgPicker.contains(event.target)) {
+                closeOrgPicker();
+            }
+        });
+
+        if (manualOverrideForm) {
+            manualOverrideForm.addEventListener('submit', function (event) {
+                if (orgIdInput && orgIdInput.value) return;
+                event.preventDefault();
+                if (window.showToast) {
+                    window.showToast('Please select a shul before saving.', 'warning');
+                } else {
+                    alert('Please select a shul before saving.');
+                }
+                openOrgPicker();
+            });
         }
 
         applyOrgFilter();
