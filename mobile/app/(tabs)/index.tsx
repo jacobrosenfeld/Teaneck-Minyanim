@@ -27,6 +27,7 @@ import Reanimated, {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format, addDays, subDays, parseISO } from 'date-fns';
 
+import { capture } from '@/analytics';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import MinyanCard from '@/components/MinyanCard';
@@ -370,6 +371,24 @@ export default function MinyanimScreen() {
   const selectedOrg = orgs?.find((o) => o.id === orgFilter);
   const activeFilters = typeFilter !== 'ALL' || orgFilter !== null;
   const hasEvents = listItems.some((i) => i._type === 'event');
+  const handleTypeFilterPress = useCallback((nextFilter: TypeFilter) => {
+    setTypeFilter(nextFilter);
+    capture('filter_chip_selected', {
+      screen: 'minyanim',
+      filter_kind: 'minyan_type',
+      selected_filter: nextFilter,
+    });
+  }, []);
+
+  const handleOrgFilterSelect = useCallback((id: string | null) => {
+    setOrgFilter(id);
+    setOrgPickerVisible(false);
+    capture('filter_chip_selected', {
+      screen: 'minyanim',
+      filter_kind: 'organization',
+      selected_filter: id ?? 'ALL',
+    });
+  }, []);
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
@@ -425,7 +444,7 @@ export default function MinyanimScreen() {
                     ? { backgroundColor: colors.tint }
                     : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
                 ]}
-                onPress={() => setTypeFilter(f.key)}>
+                onPress={() => handleTypeFilterPress(f.key)}>
                 <Text style={[styles.chipText, { color: active ? '#fff' : colors.textSecondary }]}>
                   {f.label}
                 </Text>
@@ -459,7 +478,7 @@ export default function MinyanimScreen() {
                     ? { backgroundColor: colors.tint }
                     : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
                 ]}
-                onPress={() => setTypeFilter(f.key)}>
+                onPress={() => handleTypeFilterPress(f.key)}>
                 <Text style={[styles.chipText, { color: active ? '#fff' : colors.textSecondary }]}>
                   {f.label}
                 </Text>
@@ -509,6 +528,9 @@ export default function MinyanimScreen() {
               <RefreshControl
                 refreshing={isFetching && !isLoading}
                 onRefresh={() => {
+                  capture('pull_to_refresh', {
+                    screen: 'minyanim',
+                  });
                   hasAutoScrolled.current = false;
                   nowYRef.current = -1;
                   refetch();
@@ -553,7 +575,15 @@ export default function MinyanimScreen() {
                     event={event}
                     showOrg
                     isNext={false}
-                    onPress={() => setSheetEvent(event)}
+                    onPress={() => {
+                      capture('minyan_card_tap', {
+                        screen: 'minyanim',
+                        event_id: event.id,
+                        minyan_type: event.minyanType,
+                        org_slug: event.organization?.slug ?? event.organization?.id ?? '',
+                      });
+                      setSheetEvent(event);
+                    }}
                   />
                 </Reanimated.View>
               );
@@ -580,7 +610,7 @@ export default function MinyanimScreen() {
         orgs={orgs ?? []}
         selected={orgFilter}
         colors={colors}
-        onSelect={(id) => { setOrgFilter(id); setOrgPickerVisible(false); }}
+        onSelect={handleOrgFilterSelect}
         onClose={() => setOrgPickerVisible(false)}
       />
 

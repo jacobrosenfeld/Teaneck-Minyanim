@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Manual override workflows (org + super admin)**: Added dedicated override pages for shul admins and super admins, including manual add/delete/toggle flows, start/end date range entry, and guidance that manual overrides do not require a location.
 - **Bulk XLSX override import + downloadable templates**: Added XLSX import on override pages with templates tailored for org admins and super admins (including shul-name-based mapping and validated minyan types).
+- **Mobile analytics compliance foundation (#146)**: Added first-launch in-app analytics disclosure with persisted consent state (`accepted|declined|unknown`) and platform tracking permission state, with runtime gating that keeps analytics disabled until policy requirements are met.
+- **Free mobile analytics stack (#146)**: Integrated PostHog React Native for mobile event telemetry with kill-switch config, consent-gated advertising ID registration, and sanitized event payload handling.
+- **Mobile store privacy checklist docs (#146)**: Added `docs/features/mobile-analytics-tracking-compliance.md` to align shipped behavior with App Store Connect and Play Console disclosures.
 
 ### Changed
 - **Override page UI modernization**: Updated override tables and actions to match the admin design system styling used by calendar-entry management views.
@@ -17,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Calendar entries enable/disable is now live (window-scoped)**: Toggling imported calendar entries now syncs immediately to `calendar_events` (rolling window only), so the live schedule/API updates without rematerialization.
 - **Calendar entries toggle UX now preserves filters**: Enable/Disable actions on `/admin/{orgId}/calendar-entries` now update in place via AJAX, keeping active search/date/type/sort state.
 - **Calendar entries location updates now preserve filters**: Location changes on `/admin/{orgId}/calendar-entries` now apply in place via AJAX (no full-page reload), with the same toast feedback pattern as enable/disable.
+- **Mobile privacy policy disclosure text updated**: The public privacy policy now documents consent-gated mobile analytics, ATT behavior on iOS, and Android disclosure expectations.
 
 ### Fixed
 - **Dependabot alerts #100 and #103 (CVE-2026-22731, CVE-2026-22733)**: Upgraded Spring Boot parent to `3.5.12` to pick up patched Actuator behavior and close both authentication-bypass advisories.

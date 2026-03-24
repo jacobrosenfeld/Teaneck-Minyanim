@@ -25,6 +25,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { SymbolView } from 'expo-symbols';
 import { addDays, subDays, addWeeks, subWeeks, format, parseISO, startOfWeek, endOfWeek } from 'date-fns';
 
+import { capture } from '@/analytics';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import MinyanCard from '@/components/MinyanCard';
@@ -65,7 +66,11 @@ function ensureHttps(url: string): string {
   return `https://${url}`;
 }
 
-function openDirections(address: string) {
+function openDirections(address: string, properties: Record<string, unknown>) {
+  capture('directions_tap', {
+    source: 'shul_detail',
+    ...properties,
+  });
   const encoded = encodeURIComponent(address);
   const url = Platform.select({
     ios: `maps://?q=${encoded}`,
@@ -267,6 +272,7 @@ export default function ShulDetailScreen() {
 
   const weeklySections = buildSections(weeklyEvents ?? []);
   const orgColor = org?.color ?? colors.tint;
+  const orgSlug = org?.slug ?? org?.id ?? id ?? '';
   const dailySorted = [...(dailyEvents ?? [])].sort((a, b) => {
     const td = sortKey(a.minyanType) - sortKey(b.minyanType);
     return td !== 0 ? td : a.startTime.localeCompare(b.startTime);
@@ -282,6 +288,10 @@ export default function ShulDetailScreen() {
 
   const openWhatsApp = () => {
     if (!org?.whatsapp) return;
+    capture('whatsapp_tap', {
+      source: 'shul_detail',
+      org_slug: orgSlug,
+    });
     Linking.openURL(org.whatsapp);
   };
 
@@ -342,7 +352,11 @@ export default function ShulDetailScreen() {
             <View style={styles.addressRow}>
               <TouchableOpacity
                 style={styles.addressTextWrap}
-                onPress={() => openDirections(org.address!)}>
+                onPress={() =>
+                  openDirections(org.address!, {
+                    org_slug: orgSlug,
+                  })
+                }>
                 <SymbolView name="location.fill" tintColor={colors.textSecondary} size={12} />
                 <Text style={[styles.orgAddress, { color: colors.textSecondary }]} numberOfLines={1}>
                   {org.address}
@@ -350,7 +364,11 @@ export default function ShulDetailScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.dirBtn, { backgroundColor: colors.tint }]}
-                onPress={() => openDirections(org.address!)}>
+                onPress={() =>
+                  openDirections(org.address!, {
+                    org_slug: orgSlug,
+                  })
+                }>
                 <Text style={styles.dirBtnText}>Directions</Text>
               </TouchableOpacity>
             </View>
@@ -435,7 +453,13 @@ export default function ShulDetailScreen() {
                     refreshControl={
                       <RefreshControl
                         refreshing={dailyFetching && !dailyLoading}
-                        onRefresh={refetchDaily}
+                        onRefresh={() => {
+                          capture('pull_to_refresh', {
+                            screen: 'shul_detail_daily',
+                            org_slug: orgSlug,
+                          });
+                          refetchDaily();
+                        }}
                         tintColor={orgColor}
                       />
                     }>
@@ -514,7 +538,13 @@ export default function ShulDetailScreen() {
                     refreshControl={
                       <RefreshControl
                         refreshing={weeklyFetching && !weeklyLoading}
-                        onRefresh={refetchWeekly}
+                        onRefresh={() => {
+                          capture('pull_to_refresh', {
+                            screen: 'shul_detail_weekly',
+                            org_slug: orgSlug,
+                          });
+                          refetchWeekly();
+                        }}
                         tintColor={orgColor}
                       />
                     }

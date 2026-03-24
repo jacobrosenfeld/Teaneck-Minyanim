@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Linking, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import Colors from '@/constants/Colors';
+import { capture } from '@/analytics';
 import { useColorScheme } from '@/components/useColorScheme';
 import { formatTime } from '@/utils/time';
 import { scheduleReminder, cancelReminder, isReminderSet } from '@/utils/notifications';
@@ -43,6 +44,12 @@ export default function MinyanCard({
 
   const openWhatsApp = () => {
     if (!whatsappNum) return;
+    capture('whatsapp_tap', {
+      source: 'minyan_card',
+      event_id: event.id,
+      minyan_type: event.minyanType,
+      org_slug: event.organization?.slug ?? event.organization?.id ?? '',
+    });
     // whatsapp field stores a full group link (e.g. https://chat.whatsapp.com/...)
     Linking.openURL(whatsappNum);
   };

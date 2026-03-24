@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SymbolView } from 'expo-symbols';
+import { capture } from '@/analytics';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import MinyanCard from '@/components/MinyanCard';
@@ -20,7 +21,11 @@ import { toApiDate } from '@/api/client';
 import type { ScheduleEvent } from '@/api/types';
 import { format, parseISO } from 'date-fns';
 
-function openDirections(address: string) {
+function openDirections(address: string, properties: Record<string, unknown>) {
+  capture('directions_tap', {
+    source: 'shul_day_sheet',
+    ...properties,
+  });
   const encoded = encodeURIComponent(address);
   const url = Platform.select({
     ios: `maps://?q=${encoded}`,
@@ -171,7 +176,13 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
           {/* Address + directions — outside drag zone to avoid gesture conflicts */}
           {org?.address ? (
             <View style={[styles.addressRow, { borderBottomColor: colors.border }]}>
-              <TouchableOpacity style={styles.addressTextWrap} onPress={() => openDirections(org.address!)}>
+              <TouchableOpacity
+                style={styles.addressTextWrap}
+                onPress={() =>
+                  openDirections(org.address!, {
+                    org_slug: orgSlug,
+                  })
+                }>
                 <SymbolView name="location.fill" tintColor={colors.textSecondary} size={11} />
                 <Text style={[styles.addressText, { color: colors.textSecondary }]} numberOfLines={1}>
                   {org.address}
@@ -179,7 +190,11 @@ export default function ShulDaySheet({ event, date, onClose }: Props) {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.dirBtn, { backgroundColor: colors.tint }]}
-                onPress={() => openDirections(org.address!)}>
+                onPress={() =>
+                  openDirections(org.address!, {
+                    org_slug: orgSlug,
+                  })
+                }>
                 <Text style={styles.dirBtnText}>Directions</Text>
               </TouchableOpacity>
             </View>
