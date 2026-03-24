@@ -77,6 +77,8 @@ public class WebSecurityConfiguration {
                                 "/admin/create-location", "/admin/update-location", "/admin/delete-location", 
                                 "/admin/*/minyanim", "/admin/*/minyanim/**", 
                                 "/admin/*/calendar-entries", "/admin/*/calendar-entries/**",
+                                "/admin/*/calendar-events", "/admin/*/calendar-events/**",
+                                "/admin/*/overrides", "/admin/*/overrides/**",
                                 "/admin/settings", "/admin/update-settings").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN")
                 .requestMatchers("/{slug:[a-z0-9-]+}", "/{slug:[a-z0-9-]+}/next", "/{slug:[a-z0-9-]+}/last").permitAll()

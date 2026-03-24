@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Manual override workflows (org + super admin)**: Added dedicated override pages for shul admins and super admins, including manual add/delete/toggle flows, start/end date range entry, and guidance that manual overrides do not require a location.
+- **Bulk XLSX override import + downloadable templates**: Added XLSX import on override pages with templates tailored for org admins and super admins (including shul-name-based mapping and validated minyan types).
+
+### Changed
+- **Override page UI modernization**: Updated override tables and actions to match the admin design system styling used by calendar-entry management views.
+- **Build tooling baseline moved to Java 21**: Added Java 21 enforcement/toolchain setup for local and CI consistency.
+
+### Fixed
+- **Super admin shul picker reliability**: Fixed dropdown/search initialization issues on override pages (including Turbolinks navigation handling) and improved search input behavior.
+- **Super admin location scoping**: Location options now correctly scope to the selected shul instead of mixing locations across organizations.
+
 ## [1.9.2] - 2026-03-20
 
 ### Fixed

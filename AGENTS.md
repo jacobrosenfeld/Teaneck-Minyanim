@@ -25,3 +25,12 @@ Backend tests use JUnit 5 and Mockito. Add tests beside the code they cover, usi
 
 ## Commit & Pull Request Guidelines
 Recent history favors short, imperative subjects with optional prefixes: `fix:`, `docs:`, `ci:`. Keep the first line under about 72 characters and describe the user-visible change, for example `fix: guard null nusach on org page`. PRs should target `dev`, summarize behavior changes, note config or schema impacts, and include screenshots for UI/admin/mobile work. Update `CHANGELOG.md` for user-facing or operational changes; skip changelog-only edits for agent-instruction files and tooling-only tweaks.
+
+## Version & Changelog Rules
+- Always bump the project version in `pom.xml` for changes that require a PR.
+- Use semantic versioning:
+  - Patch (`x.y.z`) for fixes/UI updates.
+  - Minor (`x.y.0`) for new features.
+  - Major (`x.0.0`) for breaking changes.
+- Add corresponding changelog notes in `CHANGELOG.md` under `## [Unreleased]` using Keep a Changelog sections (`Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`) as applicable.
+- Exception: do **not** bump version or changelog for agent-instruction-only updates (for example `AGENTS.md`, `CLAUDE.md`, or similar AI context files) and non-runtime tooling-only adjustments.

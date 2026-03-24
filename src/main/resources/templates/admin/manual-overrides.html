@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+<head>
+    <title th:text="|Manual Overrides - ${organization.name} - ${siteName ?: 'Minyanim Platform'}|">Manual Overrides</title>
+    <th:block layout:fragment="styles">
+    <style>
+        .override-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .override-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            margin-bottom: var(--space-5);
+        }
+
+        .override-card h3 {
+            font-size: var(--font-size-lg);
+            margin-bottom: var(--space-3);
+        }
+
+        .override-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .override-field label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .override-field input,
+        .override-field select {
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background: var(--bg-surface);
+        }
+
+        .override-note {
+            margin-top: var(--space-2);
+            color: var(--text-secondary);
+            font-size: var(--font-size-xs);
+        }
+
+        .override-actions {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+            margin-top: var(--space-4);
+        }
+
+        .override-import-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .override-import-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        .override-import-actions .btn-modern {
+            min-width: 210px;
+            text-align: center;
+        }
+
+        .override-row-actions {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+
+        .table-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .table-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-5);
+            background: var(--color-gray-50);
+            border-bottom: 1px solid var(--border-color-light);
+        }
+
+        .table-topbar-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+        }
+
+        .count-pill {
+            background: var(--color-gray-200);
+            color: var(--text-secondary);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            padding: 2px 10px;
+            border-radius: var(--radius-full);
+            white-space: nowrap;
+        }
+
+        .overrides-table-wrap {
+            overflow-x: auto;
+        }
+
+        .overrides-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 900px;
+            font-size: var(--font-size-sm);
+        }
+
+        .overrides-table th {
+            padding: var(--space-3) var(--space-4);
+            text-align: left;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
+            background: var(--color-gray-50);
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .overrides-table td {
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border-color-light);
+            vertical-align: middle;
+        }
+
+        .overrides-table tbody tr {
+            transition: background-color var(--transition-fast);
+        }
+
+        .overrides-table tbody tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .overrides-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .row-disabled {
+            opacity: 0.62;
+            background: var(--color-gray-50);
+        }
+
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffcc80;
+        }
+
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 9px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 99px;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+
+        .tb-shacharis {
+            background: #bbdefb;
+            color: #0d47a1;
+        }
+
+        .tb-mincha {
+            background: #ffe0b2;
+            color: #e65100;
+        }
+
+        .tb-maariv {
+            background: #d1c4e9;
+            color: #4a148c;
+        }
+
+        .tb-mincha-maariv {
+            background: #f8bbd0;
+            color: #880e4f;
+        }
+
+        .tb-other {
+            background: #eeeeee;
+            color: #616161;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 9px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+
+        .status-enabled {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-disabled {
+            background: #eeeeee;
+            color: #757575;
+        }
+
+        .empty-state {
+            padding: var(--space-10);
+            text-align: center;
+            color: var(--text-secondary);
+        }
+    </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="page-header d-flex justify-content-between align-items-start">
+        <div>
+            <h1 class="page-title" th:text="|Manual Overrides — ${organization.name}|">Manual Overrides</h1>
+            <p class="page-description">Create one-off schedule overrides and import bulk XLSX overrides.</p>
+        </div>
+    </div>
+
+    <div class="override-card">
+        <form method="get" th:action="@{/admin/{orgId}/overrides(orgId=${organization.id})}" class="override-grid">
+            <div class="override-field">
+                <label for="startDate">From</label>
+                <input id="startDate" type="date" name="startDate" th:value="${startDate}">
+            </div>
+            <div class="override-field">
+                <label for="endDate">To</label>
+                <input id="endDate" type="date" name="endDate" th:value="${endDate}">
+            </div>
+            <div class="override-field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-search"></i> Apply
+                </button>
+            </div>
+            <div class="override-field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <a th:href="@{/admin/{orgId}/overrides(orgId=${organization.id})}" class="btn-modern btn-secondary" style="text-decoration: none;">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="override-card">
+        <h3>Add Manual Override</h3>
+        <form method="post"
+              th:action="@{/admin/{orgId}/overrides/manual(orgId=${organization.id})}"
+              class="override-grid">
+            <div class="override-field">
+                <label for="overrideStartDate">Start Date</label>
+                <input id="overrideStartDate" type="date" name="startDate" th:value="${newOverrideStartDate}" required>
+            </div>
+            <div class="override-field">
+                <label for="overrideEndDate">End Date</label>
+                <input id="overrideEndDate" type="date" name="endDate" th:value="${newOverrideEndDate}" required>
+            </div>
+            <div class="override-field">
+                <label for="overrideTime">Time</label>
+                <input id="overrideTime" type="time" name="startTime" required>
+            </div>
+            <div class="override-field">
+                <label for="overrideType">Type</label>
+                <select id="overrideType" name="minyanType" required>
+                    <option value="SHACHARIS">Shacharis</option>
+                    <option value="MINCHA">Mincha</option>
+                    <option value="MAARIV">Maariv</option>
+                    <option value="MINCHA_MAARIV">Mincha/Maariv</option>
+                    <option value="SELICHOS">Selichos</option>
+                    <option value="MEGILA_READING">Megila Reading</option>
+                </select>
+            </div>
+            <div class="override-field">
+                <label for="overrideMode">Mode</label>
+                <select id="overrideMode" name="overrideMode">
+                    <option value="ADDITIVE">Additive (keep base schedule)</option>
+                    <option value="FULL_DAY_REPLACE">Full day replace</option>
+                </select>
+            </div>
+            <div class="override-field">
+                <label for="overrideLocation">Location (optional)</label>
+                <select id="overrideLocation" name="locationId">
+                    <option value="">No location</option>
+                    <option th:each="location : ${locations}" th:value="${location.id}" th:text="${location.name}">Location</option>
+                </select>
+            </div>
+            <div class="override-field">
+                <label for="overrideCustomLocation">Custom Location (optional)</label>
+                <input id="overrideCustomLocation" type="text" name="locationName" placeholder="Custom text">
+            </div>
+            <div class="override-field">
+                <label for="overrideNusach">Nusach</label>
+                <select id="overrideNusach" name="nusach">
+                    <option value="">Use shul default</option>
+                    <option th:each="nusachOption : ${nusachOptions}" th:value="${nusachOption.name()}" th:text="${nusachOption.displayName()}">Nusach</option>
+                </select>
+            </div>
+            <div class="override-field">
+                <label for="overrideNotes">Notes (optional)</label>
+                <input id="overrideNotes" type="text" name="notes" placeholder="Optional notes">
+            </div>
+            <div class="override-field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-plus"></i> Add Override
+                </button>
+            </div>
+        </form>
+        <div class="override-note">
+            Manual overrides do not require a location. Leave location fields blank if not needed.
+        </div>
+    </div>
+
+    <div class="override-card">
+        <h3>Bulk XLSX Import</h3>
+        <form method="post"
+              enctype="multipart/form-data"
+              th:action="@{/admin/{orgId}/overrides/import(orgId=${organization.id})}"
+              class="override-import-form">
+            <div class="override-field">
+                <label for="overrideXlsxFile">Import Overrides XLSX</label>
+                <input id="overrideXlsxFile" type="file" name="file"
+                       accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+            </div>
+            <div class="override-import-actions">
+                <a class="btn-modern btn-secondary"
+                   th:href="@{/admin/{orgId}/overrides/template(orgId=${organization.id})}"
+                   style="text-decoration: none;">
+                    <i class="fas fa-download"></i> Download Template
+                </a>
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-file-upload"></i> Upload XLSX
+                </button>
+            </div>
+        </form>
+        <div class="override-note">
+            Required columns: date, start_time, minyan_type. Optional columns: end_date, override_mode, location, notes, nusach, enabled.
+        </div>
+    </div>
+
+    <div class="override-actions">
+        <a th:href="@{/admin/{orgId}/calendar-events(orgId=${organization.id})}" class="btn-modern btn-secondary" style="text-decoration: none;">
+            <i class="fas fa-eye"></i> Back to Schedule Preview
+        </a>
+    </div>
+
+    <div class="table-card">
+        <div class="table-topbar">
+            <div class="table-topbar-left">
+                <i class="fas fa-calendar-alt" style="color: var(--color-primary);"></i>
+                <span>Manual Overrides</span>
+                <span class="count-pill" th:text="${totalManualEvents} + ' shown'">0 shown</span>
+            </div>
+            <small style="color: var(--text-secondary); font-size: var(--font-size-xs);">
+                Range: <span th:text="${#temporals.format(startDate, 'MMM d, yyyy')}">Start</span>
+                -
+                <span th:text="${#temporals.format(endDate, 'MMM d, yyyy')}">End</span>
+            </small>
+        </div>
+
+        <div class="overrides-table-wrap" th:if="${!#lists.isEmpty(manualEvents)}">
+            <table class="overrides-table">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Mode</th>
+                    <th>Location</th>
+                    <th>Notes</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="event : ${manualEvents}" th:classappend="${!event.enabled} ? 'row-disabled' : ''">
+                    <td th:text="${#temporals.format(event.date, 'EEE, MMM d, yyyy')}">Date</td>
+                    <td th:text="${#temporals.format(event.startTime, 'h:mm a')}">Time</td>
+                    <td>
+                        <span class="type-badge"
+                              th:classappend="${event.minyanType.name() == 'SHACHARIS'} ? 'tb-shacharis' :
+                                              (${event.minyanType.name() == 'MINCHA'} ? 'tb-mincha' :
+                                              (${event.minyanType.name() == 'MAARIV'} ? 'tb-maariv' :
+                                              (${event.minyanType.name() == 'MINCHA_MAARIV'} ? 'tb-mincha-maariv' : 'tb-other')))"
+                              th:text="${event.minyanType.displayName()}">
+                            Type
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mode-badge"
+                              th:text="${event.sourceRef != null and #strings.startsWith(event.sourceRef, 'manual:FULL_DAY_REPLACE') ? 'Full Day Replace' : 'Additive'}">
+                            Mode
+                        </span>
+                    </td>
+                    <td th:text="${event.locationName != null and !#strings.isEmpty(event.locationName) ? event.locationName : '—'}">Location</td>
+                    <td th:text="${event.notes != null and !#strings.isEmpty(event.notes) ? event.notes : '—'}">Notes</td>
+                    <td>
+                        <span class="status-badge"
+                              th:classappend="${event.enabled} ? 'status-enabled' : 'status-disabled'"
+                              th:text="${event.enabled ? 'Enabled' : 'Disabled'}">
+                            Status
+                        </span>
+                    </td>
+                    <td>
+                        <div class="override-row-actions">
+                            <form method="post"
+                                  th:action="@{/admin/{orgId}/overrides/{eventId}/toggle(orgId=${organization.id},eventId=${event.id})}">
+                                <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);"
+                                        th:text="${event.enabled ? 'Disable' : 'Enable'}">
+                                    Disable
+                                </button>
+                            </form>
+                            <form method="post"
+                                  th:action="@{/admin/{orgId}/overrides/{eventId}/delete(orgId=${organization.id},eventId=${event.id})}"
+                                  onsubmit="return confirm('Delete this manual override?')">
+                                <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(manualEvents)}">
+            No manual overrides found in the selected range.
+        </div>
+    </div>
+</div>
+</body>
+</html>

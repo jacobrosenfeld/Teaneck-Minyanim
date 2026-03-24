@@ -10,7 +10,7 @@
   </parent>  
   <groupId>com.tbdev</groupId>  
   <artifactId>Teaneck-Minyanim</artifactId>  
-  <version>1.9.2</version>
+  <version>1.9.3</version>
   <name>Teaneck-Minyanim</name>
   <description>Teaneck-Minyanim</description>
   <properties>
@@ -123,6 +123,13 @@
           <version>1.10.0</version>
       </dependency>
 
+      <!-- Apache POI for XLSX template generation/import -->
+      <dependency>
+          <groupId>org.apache.poi</groupId>
+          <artifactId>poi-ooxml</artifactId>
+          <version>5.4.1</version>
+      </dependency>
+
       <!-- OpenAPI spec generation (no Swagger UI — Scalar is used instead via CDN) -->
       <dependency>
           <groupId>org.springdoc</groupId>
@@ -147,6 +154,29 @@
         <groupId>org.springframework.boot</groupId>  
         <artifactId>spring-boot-maven-plugin</artifactId> 
       </plugin>  
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>enforce-java-version</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[21,)</version>
+                  <message>
+                    Java 21+ is required for this project. Set JAVA_HOME to a JDK 21 installation, or use the optional Maven toolchain profile documented in README.md.
+                  </message>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin> 
         <groupId>org.apache.maven.plugins</groupId>  
         <artifactId>maven-resources-plugin</artifactId>  
@@ -154,4 +184,51 @@
       </plugin>
     </plugins> 
   </build> 
+  <profiles>
+    <profile>
+      <id>java21-toolchain</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-toolchains-plugin</artifactId>
+            <version>3.2.0</version>
+            <executions>
+              <execution>
+                <id>select-jdk-toolchain</id>
+                <goals>
+                  <goal>toolchain</goal>
+                </goals>
+                <configuration>
+                  <toolchains>
+                    <jdk>
+                      <version>${java.version}</version>
+                    </jdk>
+                  </toolchains>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <jdkToolchain>
+                <version>${java.version}</version>
+              </jdkToolchain>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <jdkToolchain>
+                <version>${java.version}</version>
+              </jdkToolchain>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+<head>
+    <title th:text="|Super Admin Overrides - ${siteName ?: 'Minyanim Platform'}|">Super Admin Overrides</title>
+    <th:block layout:fragment="styles">
+    <style>
+        .panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            margin-bottom: var(--space-5);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field label {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-secondary);
+        }
+
+        .field input,
+        .field select {
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background: var(--bg-surface);
+        }
+
+        .shul-picker {
+            position: relative;
+        }
+
+        .shul-picker-toggle {
+            width: 100%;
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            background: var(--bg-surface);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-2);
+            cursor: pointer;
+            min-height: 42px;
+        }
+
+        .shul-picker-toggle .placeholder {
+            color: var(--text-secondary);
+        }
+
+        .shul-picker-toggle svg {
+            width: 16px;
+            height: 16px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            transition: transform var(--transition-fast);
+        }
+
+        .shul-picker.show .shul-picker-toggle svg {
+            transform: rotate(180deg);
+        }
+
+        .shul-picker-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 50;
+            display: none;
+            overflow: hidden;
+        }
+
+        .shul-picker.show .shul-picker-menu {
+            display: block;
+        }
+
+        .shul-picker-header {
+            padding: var(--space-3);
+            border-bottom: 1px solid var(--border-color-light);
+        }
+
+        .shul-picker-search {
+            width: 100%;
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+        }
+
+        .shul-picker-search:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px var(--color-primary-lighter);
+        }
+
+        .shul-picker-list {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .shul-picker-item {
+            width: 100%;
+            border: 0;
+            background: transparent;
+            text-align: left;
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .shul-picker-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .shul-picker-empty {
+            display: none;
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .shul-picker-empty.show {
+            display: block;
+        }
+
+        .note {
+            margin-top: var(--space-2);
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        .table-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .table-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-5);
+            background: var(--color-gray-50);
+            border-bottom: 1px solid var(--border-color-light);
+        }
+
+        .table-topbar-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+        }
+
+        .count-pill {
+            background: var(--color-gray-200);
+            color: var(--text-secondary);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            padding: 2px 10px;
+            border-radius: var(--radius-full);
+            white-space: nowrap;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 980px;
+            font-size: var(--font-size-sm);
+        }
+
+        .table th {
+            padding: var(--space-3) var(--space-4);
+            text-align: left;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
+            background: var(--color-gray-50);
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border-color-light);
+            vertical-align: middle;
+        }
+
+        .table tbody tr {
+            transition: background-color var(--transition-fast);
+        }
+
+        .table tbody tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .row-disabled {
+            opacity: 0.62;
+            background: var(--color-gray-50);
+        }
+
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffcc80;
+        }
+
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 9px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 99px;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+
+        .tb-shacharis {
+            background: #bbdefb;
+            color: #0d47a1;
+        }
+
+        .tb-mincha {
+            background: #ffe0b2;
+            color: #e65100;
+        }
+
+        .tb-maariv {
+            background: #d1c4e9;
+            color: #4a148c;
+        }
+
+        .tb-mincha-maariv {
+            background: #f8bbd0;
+            color: #880e4f;
+        }
+
+        .tb-other {
+            background: #eeeeee;
+            color: #616161;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 9px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+
+        .status-enabled {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-disabled {
+            background: #eeeeee;
+            color: #757575;
+        }
+
+        .empty {
+            padding: var(--space-10);
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .row-actions {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+    </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="page-header d-flex justify-content-between align-items-start">
+        <div>
+            <h1 class="page-title">Super Admin Overrides</h1>
+            <p class="page-description">Manage and bulk import manual overrides across all shuls from one place.</p>
+        </div>
+    </div>
+
+    <div class="panel">
+        <form method="get" th:action="@{/admin/super/overrides}" class="grid">
+            <div class="field">
+                <label for="startDate">From</label>
+                <input id="startDate" type="date" name="startDate" th:value="${startDate}">
+            </div>
+            <div class="field">
+                <label for="endDate">To</label>
+                <input id="endDate" type="date" name="endDate" th:value="${endDate}">
+            </div>
+            <div class="field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-search"></i> Apply
+                </button>
+            </div>
+            <div class="field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <a href="/admin/super/overrides" class="btn-modern btn-secondary" style="text-decoration: none;">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="panel">
+        <h3 style="margin-bottom: var(--space-3);">Add Manual Override</h3>
+        <form method="post" th:action="@{/admin/super/overrides/manual}" class="grid" id="superManualOverrideForm">
+            <div class="field">
+                <label for="superOrgPickerToggle">Shul Name</label>
+                <div class="shul-picker" id="superOrgPicker">
+                    <button type="button" id="superOrgPickerToggle" class="shul-picker-toggle" aria-expanded="false">
+                        <span id="superOrgPickerLabel" class="placeholder">Select a shul</span>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div class="shul-picker-menu" id="superOrgPickerMenu">
+                        <div class="shul-picker-header">
+                            <input id="superOrgSearch"
+                                   class="shul-picker-search"
+                                   type="text"
+                                   placeholder="Search shuls..."
+                                   autocomplete="off"
+                                   spellcheck="false">
+                        </div>
+                        <div class="shul-picker-list" id="superOrgPickerList">
+                            <button type="button"
+                                    class="shul-picker-item"
+                                    th:each="organization : ${organizations}"
+                                    th:attr="data-org-id=${organization.id},data-org-name-lower=${#strings.toLowerCase(organization.name)}"
+                                    th:text="${organization.name}">
+                                Shul
+                            </button>
+                        </div>
+                        <div class="shul-picker-empty" id="superOrgPickerEmpty">
+                            No matching shuls found.
+                        </div>
+                    </div>
+                </div>
+                <input id="superOrgId" type="hidden" name="organizationId">
+            </div>
+            <div class="field">
+                <label for="superOverrideStartDate">Start Date</label>
+                <input id="superOverrideStartDate" type="date" name="startDate" th:value="${newOverrideStartDate}" required>
+            </div>
+            <div class="field">
+                <label for="superOverrideEndDate">End Date</label>
+                <input id="superOverrideEndDate" type="date" name="endDate" th:value="${newOverrideEndDate}" required>
+            </div>
+            <div class="field">
+                <label for="superOverrideTime">Time</label>
+                <input id="superOverrideTime" type="time" name="startTime" required>
+            </div>
+            <div class="field">
+                <label for="superOverrideType">Type</label>
+                <select id="superOverrideType" name="minyanType" required>
+                    <option value="SHACHARIS">Shacharis</option>
+                    <option value="MINCHA">Mincha</option>
+                    <option value="MAARIV">Maariv</option>
+                    <option value="MINCHA_MAARIV">Mincha/Maariv</option>
+                    <option value="SELICHOS">Selichos</option>
+                    <option value="MEGILA_READING">Megila Reading</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="superOverrideMode">Mode</label>
+                <select id="superOverrideMode" name="overrideMode">
+                    <option value="ADDITIVE">Additive (keep base schedule)</option>
+                    <option value="FULL_DAY_REPLACE">Full day replace</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="superOverrideLocation">Location (optional)</label>
+                <select id="superOverrideLocation" name="locationId">
+                    <option value="">No location</option>
+                    <th:block th:each="entry : ${locationsByOrgId}">
+                        <option th:each="location : ${entry.value}"
+                                th:value="${location.id}"
+                                th:text="${location.name}"
+                                th:attr="data-org-id=${entry.key}">
+                            Location
+                        </option>
+                    </th:block>
+                </select>
+            </div>
+            <div class="field">
+                <label for="superOverrideCustomLocation">Custom Location (optional)</label>
+                <input id="superOverrideCustomLocation" type="text" name="locationName" placeholder="Custom text">
+            </div>
+            <div class="field">
+                <label for="superOverrideNusach">Nusach</label>
+                <select id="superOverrideNusach" name="nusach">
+                    <option value="">Use shul default</option>
+                    <option th:each="nusachOption : ${nusachOptions}"
+                            th:value="${nusachOption.name()}"
+                            th:text="${nusachOption.displayName()}">
+                        Nusach
+                    </option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="superOverrideNotes">Notes (optional)</label>
+                <input id="superOverrideNotes" type="text" name="notes" placeholder="Optional notes">
+            </div>
+            <div class="field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-plus"></i> Add Override
+                </button>
+            </div>
+        </form>
+        <div class="note">
+            Manual overrides do not require a location. Leave location fields blank if not needed.
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3 style="margin-bottom: var(--space-3);">Bulk XLSX Import</h3>
+        <form method="post" enctype="multipart/form-data" action="/admin/super/overrides/import" class="grid">
+            <div class="field" style="min-width: 320px;">
+                <label for="superOverrideFile">Upload XLSX</label>
+                <input id="superOverrideFile" type="file"
+                       name="file"
+                       accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                       required>
+            </div>
+            <div class="field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <a href="/admin/super/overrides/template.xlsx" class="btn-modern btn-secondary" style="text-decoration: none;">
+                    <i class="fas fa-download"></i> Download XLSX Template
+                </a>
+            </div>
+            <div class="field" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn-modern btn-secondary">
+                    <i class="fas fa-file-upload"></i> Upload Workbook
+                </button>
+            </div>
+        </form>
+        <div class="note">
+            Template uses shul name only (no org ID), with Excel dropdown validation, plus validated minyan types and formatted date/time cells.
+        </div>
+    </div>
+
+    <div class="table-card">
+        <div class="table-topbar">
+            <div class="table-topbar-left">
+                <i class="fas fa-calendar-alt" style="color: var(--color-primary);"></i>
+                <span>Manual Overrides</span>
+                <span class="count-pill" th:text="${totalManualEvents} + ' shown'">0 shown</span>
+            </div>
+            <small style="color: var(--text-secondary); font-size: var(--font-size-xs);">
+                Range: <span th:text="${#temporals.format(startDate, 'MMM d, yyyy')}">Start</span>
+                -
+                <span th:text="${#temporals.format(endDate, 'MMM d, yyyy')}">End</span>
+            </small>
+        </div>
+
+        <div class="table-wrap" th:if="${!#lists.isEmpty(manualEvents)}">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Shul</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Mode</th>
+                    <th>Location</th>
+                    <th>Notes</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="event : ${manualEvents}" th:classappend="${!event.enabled} ? 'row-disabled' : ''">
+                    <td th:text="${orgNames[event.organizationId] ?: event.organizationId}">Org</td>
+                    <td th:text="${#temporals.format(event.date, 'EEE, MMM d, yyyy')}">Date</td>
+                    <td th:text="${#temporals.format(event.startTime, 'h:mm a')}">Time</td>
+                    <td>
+                        <span class="type-badge"
+                              th:classappend="${event.minyanType.name() == 'SHACHARIS'} ? 'tb-shacharis' :
+                                              (${event.minyanType.name() == 'MINCHA'} ? 'tb-mincha' :
+                                              (${event.minyanType.name() == 'MAARIV'} ? 'tb-maariv' :
+                                              (${event.minyanType.name() == 'MINCHA_MAARIV'} ? 'tb-mincha-maariv' : 'tb-other')))"
+                              th:text="${event.minyanType.displayName()}">
+                            Type
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mode-badge"
+                              th:text="${event.sourceRef != null and #strings.startsWith(event.sourceRef, 'manual:FULL_DAY_REPLACE') ? 'Full Day Replace' : 'Additive'}">
+                            Mode
+                        </span>
+                    </td>
+                    <td th:text="${event.locationName != null and !#strings.isEmpty(event.locationName) ? event.locationName : '—'}">Location</td>
+                    <td th:text="${event.notes != null and !#strings.isEmpty(event.notes) ? event.notes : '—'}">Notes</td>
+                    <td>
+                        <span class="status-badge"
+                              th:classappend="${event.enabled} ? 'status-enabled' : 'status-disabled'"
+                              th:text="${event.enabled ? 'Enabled' : 'Disabled'}">
+                            Status
+                        </span>
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <form method="post" th:action="@{/admin/super/overrides/{eventId}/toggle(eventId=${event.id})}">
+                                <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);"
+                                        th:text="${event.enabled ? 'Disable' : 'Enable'}">
+                                    Disable
+                                </button>
+                            </form>
+                            <form method="post" th:action="@{/admin/super/overrides/{eventId}/delete(eventId=${event.id})}"
+                                  onsubmit="return confirm('Delete this manual override?')">
+                                <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty" th:if="${#lists.isEmpty(manualEvents)}">
+            No manual overrides found in the selected range.
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+<script>
+    function initSuperOverridesPage() {
+        const manualOverrideForm = document.getElementById('superManualOverrideForm');
+        if (!manualOverrideForm || manualOverrideForm.dataset.superOverridesInitialized === 'true') {
+            return;
+        }
+        manualOverrideForm.dataset.superOverridesInitialized = 'true';
+
+        const orgPicker = document.getElementById('superOrgPicker');
+        const orgPickerToggle = document.getElementById('superOrgPickerToggle');
+        const orgPickerLabel = document.getElementById('superOrgPickerLabel');
+        const orgPickerEmpty = document.getElementById('superOrgPickerEmpty');
+        const orgSearchInput = document.getElementById('superOrgSearch');
+        const orgItems = orgPicker
+                ? Array.from(orgPicker.querySelectorAll('.shul-picker-item'))
+                : [];
+        const orgIdInput = document.getElementById('superOrgId');
+        const locationSelect = document.getElementById('superOverrideLocation');
+        if (!orgPicker || !orgPickerToggle || !orgPickerLabel || !orgSearchInput || !orgIdInput) {
+            return;
+        }
+        const allLocationOptions = locationSelect
+                ? Array.from(locationSelect.querySelectorAll('option[data-org-id]')).map(function (option) {
+                    return {
+                        orgId: option.getAttribute('data-org-id') || '',
+                        value: option.value,
+                        label: option.textContent ? option.textContent.trim() : ''
+                    };
+                })
+                : [];
+
+        function escapeHtml(value) {
+            return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+        }
+
+        function openOrgPicker() {
+            orgPicker.classList.add('show');
+            orgPickerToggle.setAttribute('aria-expanded', 'true');
+            setTimeout(function () {
+                orgSearchInput.focus();
+            }, 0);
+        }
+
+        function closeOrgPicker() {
+            orgPicker.classList.remove('show');
+            orgPickerToggle.setAttribute('aria-expanded', 'false');
+        }
+
+        function selectOrganization(orgId, orgName) {
+            orgIdInput.value = orgId;
+            orgPickerLabel.textContent = orgName;
+            orgPickerLabel.classList.remove('placeholder');
+            orgSearchInput.value = '';
+            applyOrgFilter();
+            applyLocationFilter();
+            closeOrgPicker();
+        }
+
+        function applyOrgFilter() {
+            const query = orgSearchInput.value.trim().toLowerCase();
+            let visibleCount = 0;
+            orgItems.forEach(function (item) {
+                const orgName = item.getAttribute('data-org-name-lower') || '';
+                const isVisible = query.length === 0 || orgName.includes(query);
+                item.hidden = !isVisible;
+                if (isVisible) {
+                    visibleCount++;
+                }
+            });
+            orgPickerEmpty.classList.toggle('show', visibleCount === 0);
+        }
+
+        function applyLocationFilter() {
+            if (!orgIdInput || !locationSelect) return;
+            const selectedOrgId = orgIdInput.value;
+            const previousValue = locationSelect.value;
+
+            let optionsHtml = '<option value="">No location</option>';
+            if (selectedOrgId) {
+                allLocationOptions
+                        .filter(function (option) {
+                            return option.orgId === selectedOrgId;
+                        })
+                        .forEach(function (option) {
+                            optionsHtml += '<option value="' + escapeHtml(option.value) + '">' + escapeHtml(option.label) + '</option>';
+                        });
+            }
+
+            locationSelect.innerHTML = optionsHtml;
+            const stillExists = Array.from(locationSelect.options).some(function (option) {
+                return option.value === previousValue;
+            });
+            if (stillExists) {
+                locationSelect.value = previousValue;
+            } else {
+                locationSelect.value = '';
+            }
+        }
+
+        orgPickerToggle.addEventListener('click', function (event) {
+            event.stopPropagation();
+            if (orgPicker.classList.contains('show')) {
+                closeOrgPicker();
+            } else {
+                openOrgPicker();
+            }
+        });
+
+        orgSearchInput.addEventListener('input', applyOrgFilter);
+        orgSearchInput.addEventListener('keydown', function (event) {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            const firstVisibleItem = orgItems.find(function (item) {
+                return !item.hidden;
+            });
+            if (firstVisibleItem) {
+                selectOrganization(
+                        firstVisibleItem.getAttribute('data-org-id') || '',
+                        firstVisibleItem.textContent.trim()
+                );
+            }
+        });
+
+        orgItems.forEach(function (item) {
+            item.addEventListener('click', function () {
+                selectOrganization(
+                        item.getAttribute('data-org-id') || '',
+                        item.textContent.trim()
+                );
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!orgPicker || !orgPicker.contains(event.target)) {
+                closeOrgPicker();
+            }
+        });
+
+        manualOverrideForm.addEventListener('submit', function (event) {
+            if (orgIdInput && orgIdInput.value) return;
+            event.preventDefault();
+            if (window.showToast) {
+                window.showToast('Please select a shul before saving.', 'warning');
+            } else {
+                alert('Please select a shul before saving.');
+            }
+            openOrgPicker();
+        });
+
+        applyOrgFilter();
+        applyLocationFilter();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSuperOverridesPage);
+    } else {
+        initSuperOverridesPage();
+    }
+    document.addEventListener('turbolinks:load', initSuperOverridesPage);
+</script>
+</th:block>
+</body>
+</html>

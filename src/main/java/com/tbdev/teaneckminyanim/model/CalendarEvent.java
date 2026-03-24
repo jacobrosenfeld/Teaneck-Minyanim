@@ -15,12 +15,12 @@ import java.time.LocalTime;
  * Events can come from three sources:
  * - IMPORTED: From external calendar imports (OrganizationCalendarEntry)
  * - RULES: Generated from rule-based minyan schedules (Minyan entity)
- * - MANUAL: Manually created/overridden by admin (future feature)
+ * - MANUAL: Manually created/overridden by admin
  * 
  * Precedence (day-level override):
- * - If any IMPORTED events exist for org+date, only IMPORTED events are shown
- * - Otherwise, RULES events are shown
- * - MANUAL events (future) will override both
+ * - MANUAL full-day override events (if present) replace all other sources for that day
+ * - Otherwise, IMPORTED events override RULES events
+ * - MANUAL additive events are appended to the winning source for the day
  */
 @Entity
 @Getter
@@ -82,7 +82,7 @@ public class CalendarEvent {
      * Reference to source entity:
      * - For IMPORTED: OrganizationCalendarEntry ID
      * - For RULES: Minyan ID
-     * - For MANUAL: override record ID (future)
+     * - For MANUAL: override metadata key (mode + unique id)
      */
     @Column(name = "source_ref")
     private String sourceRef;

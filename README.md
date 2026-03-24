@@ -48,6 +48,29 @@ This is the code behind [Teaneck Minyanim](https://teaneckminyanim.com), a compr
 - Maven 3.6+
 - MariaDB 10.3+
 
+### Java 21 Setup (SDKMAN)
+If you use SDKMAN, this repo includes `.sdkmanrc` pinned to Java 21.
+
+```bash
+sdk env
+./mvnw -q -DskipTests compile
+```
+
+If `sdk env` reports Java is missing, install it:
+
+```bash
+sdk install java 21.0.5-tem
+sdk default java 21.0.5-tem
+```
+
+Optional Maven toolchain mode is available via profile:
+
+```bash
+cp .mvn/toolchains.xml.example ~/.m2/toolchains.xml
+# edit jdkHome in ~/.m2/toolchains.xml
+./mvnw -Pjava21-toolchain -q -DskipTests compile
+```
+
 ### Database Setup
 ```sql
 CREATE DATABASE minyanim CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

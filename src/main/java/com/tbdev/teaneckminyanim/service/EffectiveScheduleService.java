@@ -10,27 +10,31 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Service for retrieving effective schedule from materialized calendar events.
  * 
  * Applies precedence rules:
- * - Day-level override: If any IMPORTED events exist for org+date, only IMPORTED events are shown
- * - Otherwise, RULES events are shown
- * - MANUAL events (future) will override both
+ * - If any MANUAL full-day overrides exist for org+date, only MANUAL events are shown
+ * - Otherwise, IMPORTED events override RULES events for that day
+ * - MANUAL additive overrides are appended to the winning source for that day
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EffectiveScheduleService {
 
+    public static final String MANUAL_FULL_DAY_SOURCE_REF_PREFIX = "manual:FULL_DAY_REPLACE";
+
     private final CalendarEventRepository calendarEventRepository;
     private final CalendarMaterializationService materializationService;
 
     /**
      * Get effective events for an organization on a specific date.
-     * Applies day-level precedence: imported overrides rules.
+     * Applies MANUAL/IMPORTED/RULES precedence rules.
      * 
      * @param organizationId Organization ID
      * @param date Date to get events for
@@ -43,27 +47,9 @@ public class EffectiveScheduleService {
             return List.of();
         }
 
-        // Check if any imported events exist for this day
-        boolean hasImported = calendarEventRepository.existsByOrganizationIdAndDateAndSourceAndEnabledTrue(
-                organizationId, date, EventSource.IMPORTED);
-
-        if (hasImported) {
-            // Return only imported events (day-level override)
-            log.debug("Using IMPORTED events for org {} on {} (day-level override)", organizationId, date);
-            List<CalendarEvent> events = calendarEventRepository
-                    .findByOrganizationIdAndDateAndEnabledTrue(organizationId, date);
-            return events.stream()
-                    .filter(e -> e.getSource() == EventSource.IMPORTED)
-                    .collect(Collectors.toList());
-        } else {
-            // Return rules events
-            log.debug("Using RULES events for org {} on {}", organizationId, date);
-            List<CalendarEvent> events = calendarEventRepository
-                    .findByOrganizationIdAndDateAndEnabledTrue(organizationId, date);
-            return events.stream()
-                    .filter(e -> e.getSource() == EventSource.RULES)
-                    .collect(Collectors.toList());
-        }
+        List<CalendarEvent> dayEvents = calendarEventRepository
+                .findByOrganizationIdAndDateAndEnabledTrue(organizationId, date);
+        return applyDayPrecedence(dayEvents);
     }
 
     /**
@@ -83,31 +69,16 @@ public class EffectiveScheduleService {
         return allEvents.stream()
                 .collect(Collectors.groupingBy(CalendarEvent::getDate))
                 .entrySet().stream()
-                .flatMap(entry -> {
-                    LocalDate date = entry.getKey();
-                    List<CalendarEvent> dayEvents = entry.getValue();
-
-                    // Check if any imported events exist for this day
-                    boolean hasImported = dayEvents.stream()
-                            .anyMatch(e -> e.getSource() == EventSource.IMPORTED);
-
-                    if (hasImported) {
-                        // Return only imported events for this day
-                        return dayEvents.stream()
-                                .filter(e -> e.getSource() == EventSource.IMPORTED);
-                    } else {
-                        // Return rules events for this day
-                        return dayEvents.stream()
-                                .filter(e -> e.getSource() == EventSource.RULES);
-                    }
-                })
+                .sorted(Map.Entry.comparingByKey())
+                .flatMap(entry -> applyDayPrecedence(entry.getValue()).stream())
+                .sorted(Comparator.comparing(CalendarEvent::getDate).thenComparing(CalendarEvent::getStartTime))
                 .collect(Collectors.toList());
     }
 
     /**
      * Get effective events across ALL organizations for a date range.
      * Used by the combined /api/v1/schedule endpoint.
-     * Applies day-level per-org precedence: if any IMPORTED events exist for org+date, only those are returned.
+     * Applies day-level per-org MANUAL/IMPORTED/RULES precedence.
      *
      * @param startDate Start of range (inclusive)
      * @param endDate   End of range (inclusive)
@@ -120,13 +91,7 @@ public class EffectiveScheduleService {
         return allEvents.stream()
                 .collect(Collectors.groupingBy(e -> e.getOrganizationId() + "|" + e.getDate()))
                 .values().stream()
-                .flatMap(dayOrgEvents -> {
-                    boolean hasImported = dayOrgEvents.stream()
-                            .anyMatch(e -> e.getSource() == EventSource.IMPORTED);
-                    return hasImported
-                            ? dayOrgEvents.stream().filter(e -> e.getSource() == EventSource.IMPORTED)
-                            : dayOrgEvents.stream().filter(e -> e.getSource() == EventSource.RULES);
-                })
+                .flatMap(dayOrgEvents -> applyDayPrecedence(dayOrgEvents).stream())
                 .sorted(Comparator.comparing(CalendarEvent::getDate).thenComparing(CalendarEvent::getStartTime))
                 .collect(Collectors.toList());
     }
@@ -168,5 +133,51 @@ public class EffectiveScheduleService {
      */
     public CalendarMaterializationService.WindowBounds getWindowBounds() {
         return materializationService.getWindowBounds();
+    }
+
+    private List<CalendarEvent> applyDayPrecedence(List<CalendarEvent> dayEvents) {
+        if (dayEvents == null || dayEvents.isEmpty()) {
+            return List.of();
+        }
+
+        List<CalendarEvent> manualEvents = dayEvents.stream()
+                .filter(e -> e.getSource() == EventSource.MANUAL)
+                .collect(Collectors.toList());
+
+        boolean hasFullDayManualOverride = manualEvents.stream()
+                .anyMatch(this::isFullDayManualOverride);
+
+        if (hasFullDayManualOverride) {
+            CalendarEvent sample = dayEvents.get(0);
+            log.debug("Using MANUAL full-day override events for org {} on {}", sample.getOrganizationId(), sample.getDate());
+            return sortByTime(manualEvents);
+        }
+
+        boolean hasImported = dayEvents.stream()
+                .anyMatch(e -> e.getSource() == EventSource.IMPORTED);
+
+        Stream<CalendarEvent> baseEvents = hasImported
+                ? dayEvents.stream().filter(e -> e.getSource() == EventSource.IMPORTED)
+                : dayEvents.stream().filter(e -> e.getSource() == EventSource.RULES);
+
+        Stream<CalendarEvent> effectiveEvents = manualEvents.isEmpty()
+                ? baseEvents
+                : Stream.concat(baseEvents, manualEvents.stream());
+
+        return effectiveEvents
+                .sorted(Comparator.comparing(CalendarEvent::getStartTime))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isFullDayManualOverride(CalendarEvent event) {
+        return event.getSource() == EventSource.MANUAL
+                && event.getSourceRef() != null
+                && event.getSourceRef().startsWith(MANUAL_FULL_DAY_SOURCE_REF_PREFIX);
+    }
+
+    private List<CalendarEvent> sortByTime(List<CalendarEvent> events) {
+        return events.stream()
+                .sorted(Comparator.comparing(CalendarEvent::getStartTime))
+                .collect(Collectors.toList());
     }
 }
