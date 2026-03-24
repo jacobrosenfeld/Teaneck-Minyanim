@@ -14,10 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Override page UI modernization**: Updated override tables and actions to match the admin design system styling used by calendar-entry management views.
 - **Build tooling baseline moved to Java 21**: Added Java 21 enforcement/toolchain setup for local and CI consistency.
+- **Calendar entries enable/disable is now live (window-scoped)**: Toggling imported calendar entries now syncs immediately to `calendar_events` (rolling window only), so the live schedule/API updates without rematerialization.
+- **Calendar entries toggle UX now preserves filters**: Enable/Disable actions on `/admin/{orgId}/calendar-entries` now update in place via AJAX, keeping active search/date/type/sort state.
+- **Calendar entries location updates now preserve filters**: Location changes on `/admin/{orgId}/calendar-entries` now apply in place via AJAX (no full-page reload), with the same toast feedback pattern as enable/disable.
 
 ### Fixed
 - **Super admin shul picker reliability**: Fixed dropdown/search initialization issues on override pages (including Turbolinks navigation handling) and improved search input behavior.
 - **Super admin location scoping**: Location options now correctly scope to the selected shul instead of mixing locations across organizations.
+- **Scheduled imports no longer undo manual disabled choices**: Added persistent manual-enable flag on imported entries so weekly sync honors admin enable/disable decisions until a full reimport.
+- **Imported materialization drift correction**: Materialization now syncs existing imported `calendar_events` rows (including `enabled`) instead of skipping already-materialized entries.
+- **Calendar Entries admin render regression**: Removed fragile per-row `#httpServletRequest` expression from toggle form and switched redirect-state fallback to `Referer`, preventing mixed partial admin render/error-template bleed-through.
 
 ## [1.9.2] - 2026-03-20
 

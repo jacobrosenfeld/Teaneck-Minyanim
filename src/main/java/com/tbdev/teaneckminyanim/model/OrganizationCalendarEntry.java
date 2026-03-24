@@ -84,6 +84,13 @@ public class OrganizationCalendarEntry {
     @Column(name = "enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean enabled = true;
 
+    /**
+     * Flag indicating an admin explicitly set enabled/disabled.
+     * Scheduled imports must preserve this manual choice.
+     */
+    @Column(name = "enabled_manually_set", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean enabledManuallySet = false;
+
     @Column(name = "duplicate_reason")
     private String duplicateReason;
 

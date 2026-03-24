@@ -3,6 +3,7 @@ package com.tbdev.teaneckminyanim.service.calendar;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry;
 import com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository;
+import com.tbdev.teaneckminyanim.service.CalendarMaterializationService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,7 @@ public class CalendarImportService {
     private final OrganizationCalendarEntryRepository entryRepository;
     private final OrganizationService organizationService;
     private final MinyanClassifier minyanClassifier;
+    private final CalendarMaterializationService materializationService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -127,6 +129,22 @@ public class CalendarImportService {
 
             // Process and save entries
             processEntries(organizationId, parsedEntries, csvUrl, result);
+
+            if (!parsedEntries.isEmpty()) {
+                LocalDate minDate = parsedEntries.stream()
+                        .map(CalendarCsvParser.ParsedEntry::getDate)
+                        .filter(Objects::nonNull)
+                        .min(LocalDate::compareTo)
+                        .orElse(null);
+                LocalDate maxDate = parsedEntries.stream()
+                        .map(CalendarCsvParser.ParsedEntry::getDate)
+                        .filter(Objects::nonNull)
+                        .max(LocalDate::compareTo)
+                        .orElse(null);
+                if (minDate != null && maxDate != null) {
+                    materializationService.syncImportedEntriesInRangeLive(organizationId, minDate, maxDate);
+                }
+            }
 
             result.success = true;
             log.info("Import completed for {}: {} new, {} updated, {} duplicates skipped",
@@ -372,6 +390,7 @@ public class CalendarImportService {
                 .classificationReason(classificationResult.reason)
                 .notes(classificationResult.notes)
                 .enabled(shouldEnable)
+                .enabledManuallySet(false)
                 .importedAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -395,15 +414,15 @@ public class CalendarImportService {
         String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
         
         // Core Rule: Apply NON_MINYAN auto-disable during updates
-        // UNLESS the entry was manually edited by an admin (has location_manually_edited flag)
-        boolean wasManuallyEdited = entry.isLocationManuallyEdited();
+        // UNLESS an admin manually set enabled/disabled for this entry.
+        boolean enabledWasManuallySet = entry.isEnabledManuallySet();
         boolean isNonMinyan = classificationResult.classification == com.tbdev.teaneckminyanim.minyan.MinyanType.NON_MINYAN;
         
-        if (isNonMinyan && !wasManuallyEdited && entry.isEnabled()) {
+        if (isNonMinyan && !enabledWasManuallySet && entry.isEnabled()) {
             // Newly classified as NON_MINYAN (or re-classified) - disable it
             entry.setEnabled(false);
             log.debug("Auto-disabling NON_MINYAN entry during update: {} ({})", parsed.getTitle(), classificationResult.reason);
-        } else if (!isNonMinyan && !wasManuallyEdited && !entry.isEnabled() && entry.getDuplicateReason() == null) {
+        } else if (!isNonMinyan && !enabledWasManuallySet && !entry.isEnabled() && entry.getDuplicateReason() == null) {
             // Entry is no longer NON_MINYAN and wasn't manually disabled or marked as duplicate - re-enable it
             entry.setEnabled(true);
             log.debug("Re-enabling entry that is no longer NON_MINYAN: {}", parsed.getTitle());

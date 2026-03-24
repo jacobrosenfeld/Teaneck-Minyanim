@@ -12,6 +12,8 @@ import com.tbdev.teaneckminyanim.minyan.Schedule;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +24,8 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -56,6 +60,9 @@ public class AdminController {
 
     @Autowired
     private GeocodingService geocodingService;
+
+    @Autowired
+    private CalendarMaterializationService calendarMaterializationService;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -2197,15 +2204,32 @@ public class AdminController {
      * Toggle enabled/disabled status for a calendar entry
      */
     @PostMapping("/admin/{orgId}/calendar-entries/{entryId}/toggle")
-    public RedirectView toggleCalendarEntry(@PathVariable String orgId, @PathVariable Long entryId) {
+    public Object toggleCalendarEntry(@PathVariable String orgId,
+                                      @PathVariable Long entryId,
+                                      @RequestParam(required = false) String returnTo,
+                                      @RequestHeader(value = "Referer", required = false) String referer,
+                                      @RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
+                                      @RequestHeader(value = "Accept", required = false) String acceptHeader) {
+        boolean ajaxRequest = "XMLHttpRequest".equalsIgnoreCase(requestedWith)
+                || (acceptHeader != null && acceptHeader.contains("application/json"));
+
         if (!isAdmin()) {
+            if (ajaxRequest) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("success", false, "message", "You do not have permission to perform this action."));
+            }
             throw new AccessDeniedException("You do not have permission to perform this action.");
         }
 
         try {
             Organization org = getOrganization(orgId);
             if (org == null) {
-                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
+                String message = "Organization not found";
+                if (ajaxRequest) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(Map.of("success", false, "message", message));
+                }
+                return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
             }
 
             com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
@@ -2224,15 +2248,38 @@ public class AdminController {
 
                 // Toggle enabled status
                 entry.setEnabled(!entry.isEnabled());
+                entry.setEnabledManuallySet(true);
                 entryRepo.save(entry);
+                calendarMaterializationService.syncImportedEntryLive(entry);
 
-                return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Entry+status+updated");
+                String message = "Entry " + (entry.isEnabled() ? "enabled" : "disabled");
+                if (ajaxRequest) {
+                    Map<String, Object> body = new LinkedHashMap<>();
+                    body.put("success", true);
+                    body.put("message", message);
+                    body.put("entryId", entry.getId());
+                    body.put("enabled", entry.isEnabled());
+                    return ResponseEntity.ok(body);
+                }
+                return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "successMessage", message);
             } else {
-                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Entry+not+found");
+                String message = "Entry not found";
+                if (ajaxRequest) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(Map.of("success", false, "message", message));
+                }
+                return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
             }
 
         } catch (Exception e) {
-            return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=" + e.getMessage());
+            String message = (e.getMessage() != null && !e.getMessage().isBlank())
+                    ? e.getMessage()
+                    : "Entry update failed";
+            if (ajaxRequest) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("success", false, "message", message));
+            }
+            return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
         }
     }
 
@@ -2240,17 +2287,33 @@ public class AdminController {
      * Update location for a calendar entry
      */
     @PostMapping("/admin/{orgId}/calendar-entries/{entryId}/update-location")
-    public RedirectView updateEntryLocation(@PathVariable String orgId, 
-                                           @PathVariable Long entryId,
-                                           @RequestParam(required = false) String locationId) {
+    public Object updateEntryLocation(@PathVariable String orgId,
+                                      @PathVariable Long entryId,
+                                      @RequestParam(required = false) String locationId,
+                                      @RequestParam(required = false) String returnTo,
+                                      @RequestHeader(value = "Referer", required = false) String referer,
+                                      @RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
+                                      @RequestHeader(value = "Accept", required = false) String acceptHeader) {
+        boolean ajaxRequest = "XMLHttpRequest".equalsIgnoreCase(requestedWith)
+                || (acceptHeader != null && acceptHeader.contains("application/json"));
+
         if (!isAdmin()) {
+            if (ajaxRequest) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("success", false, "message", "You do not have permission to perform this action."));
+            }
             throw new AccessDeniedException("You do not have permission to perform this action.");
         }
 
         try {
             Organization org = getOrganization(orgId);
             if (org == null) {
-                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
+                String message = "Organization not found";
+                if (ajaxRequest) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(Map.of("success", false, "message", message));
+                }
+                return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
             }
 
             com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
@@ -2259,46 +2322,67 @@ public class AdminController {
             Optional<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> entryOpt = 
                     entryRepo.findById(entryId);
 
-            if (entryOpt.isPresent()) {
-                com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry entry = entryOpt.get();
-                
-                // Verify entry belongs to this organization
-                if (!entry.getOrganizationId().equals(orgId)) {
-                    throw new AccessDeniedException("Entry does not belong to this organization");
+            if (entryOpt.isEmpty()) {
+                String message = "Entry not found";
+                if (ajaxRequest) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(Map.of("success", false, "message", message));
                 }
+                return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
+            }
+            com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry entry = entryOpt.get();
 
-                // Update location
-                if (locationId != null && !locationId.isEmpty()) {
-                    LocationService locationService = applicationContext.getBean(LocationService.class);
-                    Location location = locationService.findById(locationId);
-                    if (location != null) {
-                        entry.setLocation(location.getName());
-                        entry.setLocationManuallyEdited(true);
-                        entry.setManuallyEditedBy(getCurrentUser().getUsername());
-                        entry.setManuallyEditedAt(java.time.LocalDateTime.now());
-                        entryRepo.save(entry);
-                        
-                        return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Location+updated");
-                    } else {
-                        return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Location+not+found");
-                    }
-                } else {
-                    // Clear location
-                    entry.setLocation(null);
-                    entry.setLocationManuallyEdited(true);
-                    entry.setManuallyEditedBy(getCurrentUser().getUsername());
-                    entry.setManuallyEditedAt(java.time.LocalDateTime.now());
-                    entryRepo.save(entry);
-                    
-                    return new RedirectView("/admin/" + orgId + "/calendar-entries?successMessage=Location+cleared");
-                }
-            } else {
-                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Entry+not+found");
+            // Verify entry belongs to this organization
+            if (!entry.getOrganizationId().equals(orgId)) {
+                throw new AccessDeniedException("Entry does not belong to this organization");
             }
 
+            String successMessage;
+            if (locationId != null && !locationId.isEmpty()) {
+                LocationService locationService = applicationContext.getBean(LocationService.class);
+                Location location = locationService.findById(locationId);
+                if (location == null || !orgId.equals(location.getOrganizationId())) {
+                    String message = "Location not found";
+                    if (ajaxRequest) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of("success", false, "message", message));
+                    }
+                    return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
+                }
+                entry.setLocation(location.getName());
+                successMessage = "Location updated";
+            } else {
+                entry.setLocation(null);
+                successMessage = "Location cleared";
+            }
+
+            entry.setLocationManuallyEdited(true);
+            entry.setManuallyEditedBy(getCurrentUser().getUsername());
+            entry.setManuallyEditedAt(java.time.LocalDateTime.now());
+            entryRepo.save(entry);
+            calendarMaterializationService.syncImportedEntryLive(entry);
+
+            if (ajaxRequest) {
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("success", true);
+                body.put("message", successMessage);
+                body.put("entryId", entry.getId());
+                body.put("locationName", entry.getLocation());
+                body.put("locationManuallyEdited", entry.isLocationManuallyEdited());
+                return ResponseEntity.ok(body);
+            }
+            return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "successMessage", successMessage);
+
         } catch (Exception e) {
-            log.error("Error updating location for entry {}: {}", entryId, e.getMessage(), e);
-            return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=" + e.getMessage());
+            String message = (e.getMessage() != null && !e.getMessage().isBlank())
+                    ? e.getMessage()
+                    : "Location update failed";
+            log.error("Error updating location for entry {}: {}", entryId, message, e);
+            if (ajaxRequest) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("success", false, "message", message));
+            }
+            return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
         }
     }
 
@@ -2350,4 +2434,38 @@ public class AdminController {
 
     @Autowired
     private org.springframework.context.ApplicationContext applicationContext;
+
+    private RedirectView buildCalendarEntriesRedirect(
+            String orgId,
+            String returnTo,
+            String messageParam,
+            String message) {
+        String basePath = "/admin/" + orgId + "/calendar-entries";
+        String target = (returnTo != null && returnTo.startsWith(basePath)) ? returnTo : basePath;
+        String separator = target.contains("?") ? "&" : "?";
+        String encodedMessage = URLEncoder.encode(message != null ? message : "", StandardCharsets.UTF_8);
+        return new RedirectView(target + separator + messageParam + "=" + encodedMessage);
+    }
+
+    private String resolveReturnTo(String returnTo, String referer) {
+        if (returnTo != null && !returnTo.isBlank()) {
+            return returnTo;
+        }
+        if (referer == null || referer.isBlank()) {
+            return null;
+        }
+        try {
+            URI uri = URI.create(referer);
+            String path = uri.getPath();
+            if (path == null || path.isBlank()) {
+                return null;
+            }
+            if (uri.getQuery() != null && !uri.getQuery().isBlank()) {
+                return path + "?" + uri.getQuery();
+            }
+            return path;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
 }
