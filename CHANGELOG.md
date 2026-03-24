@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Calendar entries location updates now preserve filters**: Location changes on `/admin/{orgId}/calendar-entries` now apply in place via AJAX (no full-page reload), with the same toast feedback pattern as enable/disable.
 
 ### Fixed
+- **Dependabot alerts #100 and #103 (CVE-2026-22731, CVE-2026-22733)**: Upgraded Spring Boot parent to `3.5.12` to pick up patched Actuator behavior and close both authentication-bypass advisories.
+- **Dependabot alert #98 (CVE-2026-24734)**: Spring Boot upgrade also lifts embedded Tomcat to a patched 10.1.x release outside the vulnerable range.
+- **Dependabot alert #102 (CVE-2026-22732)**: Pinned Spring Security to `6.5.9` via Maven property override so transitive `spring-security-web` is upgraded out of the vulnerable range.
 - **Super admin shul picker reliability**: Fixed dropdown/search initialization issues on override pages (including Turbolinks navigation handling) and improved search input behavior.
 - **Super admin location scoping**: Location options now correctly scope to the selected shul instead of mixing locations across organizations.
 - **Scheduled imports no longer undo manual disabled choices**: Added persistent manual-enable flag on imported entries so weekly sync honors admin enable/disable decisions until a full reimport.
