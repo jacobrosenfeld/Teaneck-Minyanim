@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Super admin location scoping**: Location options now correctly scope to the selected shul instead of mixing locations across organizations.
 - **Scheduled imports no longer undo manual disabled choices**: Added persistent manual-enable flag on imported entries so weekly sync honors admin enable/disable decisions until a full reimport.
 - **Imported materialization drift correction**: Materialization now syncs existing imported `calendar_events` rows (including `enabled`) instead of skipping already-materialized entries.
+- **Calendar Entries admin render regression**: Removed fragile per-row `#httpServletRequest` expression from toggle form and switched redirect-state fallback to `Referer`, preventing mixed partial admin render/error-template bleed-through.
 
 ## [1.9.2] - 2026-03-20
 

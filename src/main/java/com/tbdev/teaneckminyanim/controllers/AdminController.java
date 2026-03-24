@@ -2207,6 +2207,7 @@ public class AdminController {
     public Object toggleCalendarEntry(@PathVariable String orgId,
                                       @PathVariable Long entryId,
                                       @RequestParam(required = false) String returnTo,
+                                      @RequestHeader(value = "Referer", required = false) String referer,
                                       @RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
                                       @RequestHeader(value = "Accept", required = false) String acceptHeader) {
         boolean ajaxRequest = "XMLHttpRequest".equalsIgnoreCase(requestedWith)
@@ -2228,7 +2229,7 @@ public class AdminController {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(Map.of("success", false, "message", message));
                 }
-                return buildCalendarEntriesRedirect(orgId, returnTo, "errorMessage", message);
+                return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
             }
 
             com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository entryRepo = 
@@ -2260,14 +2261,14 @@ public class AdminController {
                     body.put("enabled", entry.isEnabled());
                     return ResponseEntity.ok(body);
                 }
-                return buildCalendarEntriesRedirect(orgId, returnTo, "successMessage", message);
+                return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "successMessage", message);
             } else {
                 String message = "Entry not found";
                 if (ajaxRequest) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(Map.of("success", false, "message", message));
                 }
-                return buildCalendarEntriesRedirect(orgId, returnTo, "errorMessage", message);
+                return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
             }
 
         } catch (Exception e) {
@@ -2278,7 +2279,7 @@ public class AdminController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("success", false, "message", message));
             }
-            return buildCalendarEntriesRedirect(orgId, returnTo, "errorMessage", message);
+            return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
         }
     }
 
@@ -2409,5 +2410,27 @@ public class AdminController {
         String separator = target.contains("?") ? "&" : "?";
         String encodedMessage = URLEncoder.encode(message != null ? message : "", StandardCharsets.UTF_8);
         return new RedirectView(target + separator + messageParam + "=" + encodedMessage);
+    }
+
+    private String resolveReturnTo(String returnTo, String referer) {
+        if (returnTo != null && !returnTo.isBlank()) {
+            return returnTo;
+        }
+        if (referer == null || referer.isBlank()) {
+            return null;
+        }
+        try {
+            URI uri = URI.create(referer);
+            String path = uri.getPath();
+            if (path == null || path.isBlank()) {
+                return null;
+            }
+            if (uri.getQuery() != null && !uri.getQuery().isBlank()) {
+                return path + "?" + uri.getQuery();
+            }
+            return path;
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

@@ -634,8 +634,6 @@
                             <form method="post"
                                   class="ce-toggle-form"
                                   th:action="@{/admin/{orgId}/calendar-entries/{entryId}/toggle(orgId=${organization.id},entryId=${entry.id})}">
-                                <input type="hidden" name="returnTo"
-                                       th:value="${#httpServletRequest.requestURI + (#httpServletRequest.queryString != null ? '?' + #httpServletRequest.queryString : '')}">
                                 <button type="submit"
                                         class="toggle-btn ce-toggle-btn"
                                         th:classappend="${entry.enabled} ? ' toggle-disable' : ' toggle-enable'"
