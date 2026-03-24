@@ -812,9 +812,8 @@
         if (!select || select.disabled) return;
 
         var previousValue = select.getAttribute('data-last-value') || '';
-        select.disabled = true;
-
         var body = new URLSearchParams(new FormData(form));
+        select.disabled = true;
         fetch(form.action, {
             method: 'POST',
             headers: {
