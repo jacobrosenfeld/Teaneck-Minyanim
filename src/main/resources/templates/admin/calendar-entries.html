@@ -595,9 +595,10 @@
                         <td>
                             <div class="loc-wrap">
                                 <form method="post"
+                                      class="ce-location-form"
                                       th:action="@{/admin/{orgId}/calendar-entries/{entryId}/update-location(orgId=${organization.id},entryId=${entry.id})}"
                                       style="display: contents;">
-                                    <select name="locationId" class="loc-select" onchange="this.form.submit()">
+                                    <select name="locationId" class="loc-select ce-location-select" onchange="this.form.submit()">
                                         <option value="">— None —</option>
                                         <option th:each="loc : ${locations}"
                                                 th:value="${loc.id}"
@@ -728,6 +729,9 @@
     // Initialise: mark date column sorted asc (matches server default)
     var dateHeader = document.querySelector('#ce-table th[data-col="date"]');
     if (dateHeader) markHeader(dateHeader, 'asc');
+    document.querySelectorAll('.ce-location-select').forEach(function (select) {
+        select.setAttribute('data-last-value', select.value || '');
+    });
 
     // ── AJAX toggle (preserve filters/url state) ──────────────
     document.addEventListener('submit', function (event) {
@@ -793,6 +797,70 @@
         })
         .finally(function () {
             button.disabled = false;
+        });
+    });
+
+    // ── AJAX location update (preserve filters/url state) ─────
+    document.addEventListener('submit', function (event) {
+        var form = event.target.closest('.ce-location-form');
+        if (!form) return;
+
+        event.preventDefault();
+
+        var select = form.querySelector('.ce-location-select');
+        if (!select || select.disabled) return;
+
+        var previousValue = select.getAttribute('data-last-value') || '';
+        select.disabled = true;
+
+        var body = new URLSearchParams(new FormData(form));
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: body.toString()
+        })
+        .then(function (response) {
+            return response.json().then(function (payload) {
+                return { ok: response.ok, body: payload || {} };
+            }).catch(function () {
+                return { ok: response.ok, body: {} };
+            });
+        })
+        .then(function (result) {
+            if (!result.ok || !result.body.success) {
+                select.value = previousValue;
+                var errorMessage = result.body.message || 'Failed to update location.';
+                if (window.showToast) window.showToast(errorMessage, 'error');
+                return;
+            }
+
+            select.setAttribute('data-last-value', select.value || '');
+
+            var row = form.closest('tr');
+            if (row && result.body.locationManuallyEdited) {
+                var locWrap = row.querySelector('.loc-wrap');
+                if (locWrap && !locWrap.querySelector('.edited-dot')) {
+                    var dot = document.createElement('span');
+                    dot.className = 'edited-dot';
+                    dot.title = 'Manually edited';
+                    locWrap.appendChild(dot);
+                }
+            }
+
+            if (window.showToast) {
+                window.showToast(result.body.message || 'Location updated.', 'success');
+            }
+        })
+        .catch(function () {
+            select.value = previousValue;
+            if (window.showToast) window.showToast('Network error while updating location.', 'error');
+        })
+        .finally(function () {
+            select.disabled = false;
         });
     });
 
