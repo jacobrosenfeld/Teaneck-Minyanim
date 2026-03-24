@@ -598,7 +598,8 @@
                                       class="ce-location-form"
                                       th:action="@{/admin/{orgId}/calendar-entries/{entryId}/update-location(orgId=${organization.id},entryId=${entry.id})}"
                                       style="display: contents;">
-                                    <select name="locationId" class="loc-select ce-location-select" onchange="this.form.submit()">
+                                    <select name="locationId" class="loc-select ce-location-select"
+                                            onchange="if (this.form.requestSubmit) { this.form.requestSubmit(); } else { this.form.submit(); }">
                                         <option value="">— None —</option>
                                         <option th:each="loc : ${locations}"
                                                 th:value="${loc.id}"
