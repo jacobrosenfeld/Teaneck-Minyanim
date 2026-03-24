@@ -36,6 +36,15 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
             EventSource source);
 
     /**
+     * Find an event by org/source/sourceRef.
+     * Used to live-sync imported entries to materialized events.
+     */
+    Optional<CalendarEvent> findFirstByOrganizationIdAndSourceAndSourceRef(
+            String organizationId,
+            EventSource source,
+            String sourceRef);
+
+    /**
      * Find all events (enabled and disabled) for an organization on a specific date
      */
     List<CalendarEvent> findByOrganizationIdAndDate(

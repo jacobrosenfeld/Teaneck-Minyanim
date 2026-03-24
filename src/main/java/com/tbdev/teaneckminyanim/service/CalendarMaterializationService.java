@@ -15,7 +15,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -184,93 +186,162 @@ public class CalendarMaterializationService {
 
     /**
      * Materialize imported calendar entries into calendar events.
-     * Only creates events for entries that don't already exist.
+     * Creates missing rows and syncs existing rows (including enabled drift).
      */
     private List<CalendarEvent> materializeImportedEvents(String organizationId, LocalDate startDate, LocalDate endDate) {
-        List<CalendarEvent> events = new ArrayList<>();
-        
-        // Get all imported entries in the range
-        List<OrganizationCalendarEntry> entries = 
+        List<OrganizationCalendarEntry> entries =
                 importedEntryRepository.findEntriesInRange(organizationId, startDate, endDate);
-        
+
         Optional<Organization> orgOpt = organizationService.findById(organizationId);
         if (orgOpt.isEmpty()) {
             log.warn("Organization not found: {}", organizationId);
-            return events;
+            return List.of();
         }
         Organization org = orgOpt.get();
-        
-        ZoneId zoneId = settingsService.getZoneId();
-        
-        // Get existing imported events to avoid duplicates
-        List<CalendarEvent> existingImported = 
+
+        List<CalendarEvent> existingImported =
                 calendarEventRepository.findByOrganizationIdAndSourceAndDateBetween(
                         organizationId, EventSource.IMPORTED, startDate, endDate);
-        
-        // Create a set of source refs for quick lookup
-        java.util.Set<String> existingSourceRefs = new java.util.HashSet<>();
+
+        Map<String, CalendarEvent> bySourceRef = new HashMap<>();
         for (CalendarEvent existing : existingImported) {
             if (existing.getSourceRef() != null) {
-                existingSourceRefs.add(existing.getSourceRef());
+                bySourceRef.put(existing.getSourceRef(), existing);
             }
         }
-        
+
+        List<CalendarEvent> eventsToSave = new ArrayList<>();
         for (OrganizationCalendarEntry entry : entries) {
-            String sourceRef = "import-" + entry.getId();
-            
-            // Skip if already materialized
-            if (existingSourceRefs.contains(sourceRef)) {
-                continue;
-            }
-            
-            try {
-                // Determine start time
-                LocalTime startTime = null;
-                if (entry.getStartTime() != null) {
-                    startTime = entry.getStartTime();
-                } else if (entry.getStartDatetime() != null) {
-                    startTime = entry.getStartDatetime().toLocalTime();
-                }
-                
-                if (startTime == null) {
-                    log.warn("No start time for imported entry {}, skipping", entry.getId());
-                    continue;
-                }
-                
-                // Determine minyan type from classification
-                MinyanType minyanType = entry.getClassification() != null 
-                        ? entry.getClassification() 
-                        : MinyanType.OTHER;
-                
-                // Only materialize minyan events (not NON_MINYAN)
-                if (minyanType == MinyanType.NON_MINYAN) {
-                    continue;
-                }
-                
-                CalendarEvent event = CalendarEvent.builder()
-                        .organizationId(organizationId)
-                        .date(entry.getDate())
-                        .minyanType(minyanType)
-                        .startTime(startTime)
-                        .notes(entry.getNotes())
-                        .locationId(null)  // Imported events may not have location ID
-                        .locationName(entry.getLocation())
-                        .enabled(entry.isEnabled())
-                        .source(EventSource.IMPORTED)
-                        .sourceRef(sourceRef)
-                        .nusach(org.getNusach())  // Default to org nusach
-                        .whatsapp(null)
-                        .dynamicTimeString(null)
-                        .manuallyEdited(false)
-                        .build();
-                
-                events.add(event);
-            } catch (Exception e) {
-                log.warn("Failed to materialize imported entry {}: {}", entry.getId(), e.getMessage());
+            upsertImportedEventFromEntry(entry, org, bySourceRef, eventsToSave);
+        }
+
+        return eventsToSave;
+    }
+
+    /**
+     * Live-sync a single imported entry into materialized events (window-only).
+     * Used by admin toggle/edit actions so updates are visible immediately.
+     */
+    @Transactional
+    public void syncImportedEntryLive(OrganizationCalendarEntry entry) {
+        if (entry == null || entry.getId() == null) {
+            return;
+        }
+        if (!isDateInWindow(entry.getDate())) {
+            return;
+        }
+        syncImportedEntriesInRangeLive(entry.getOrganizationId(), entry.getDate(), entry.getDate());
+    }
+
+    /**
+     * Live-sync imported entries in a date range into materialized events (window-only).
+     * This keeps schedule/API behavior current without requiring rematerialization.
+     */
+    @Transactional
+    public void syncImportedEntriesInRangeLive(String organizationId, LocalDate startDate, LocalDate endDate) {
+        if (organizationId == null || startDate == null || endDate == null || endDate.isBefore(startDate)) {
+            return;
+        }
+
+        WindowBounds bounds = getWindowBounds();
+        LocalDate effectiveStart = startDate.isBefore(bounds.getStartDate()) ? bounds.getStartDate() : startDate;
+        LocalDate effectiveEnd = endDate.isAfter(bounds.getEndDate()) ? bounds.getEndDate() : endDate;
+        if (effectiveEnd.isBefore(effectiveStart)) {
+            return;
+        }
+
+        Optional<Organization> orgOpt = organizationService.findById(organizationId);
+        if (orgOpt.isEmpty()) {
+            log.warn("Organization not found while live-syncing imported entries: {}", organizationId);
+            return;
+        }
+        Organization org = orgOpt.get();
+
+        List<OrganizationCalendarEntry> entries =
+                importedEntryRepository.findEntriesInRange(organizationId, effectiveStart, effectiveEnd);
+        List<CalendarEvent> existingImported =
+                calendarEventRepository.findByOrganizationIdAndSourceAndDateBetween(
+                        organizationId, EventSource.IMPORTED, effectiveStart, effectiveEnd);
+
+        Map<String, CalendarEvent> bySourceRef = new HashMap<>();
+        for (CalendarEvent existing : existingImported) {
+            if (existing.getSourceRef() != null) {
+                bySourceRef.put(existing.getSourceRef(), existing);
             }
         }
-        
-        return events;
+
+        List<CalendarEvent> eventsToSave = new ArrayList<>();
+        for (OrganizationCalendarEntry entry : entries) {
+            upsertImportedEventFromEntry(entry, org, bySourceRef, eventsToSave);
+        }
+
+        if (!eventsToSave.isEmpty()) {
+            calendarEventRepository.saveAll(eventsToSave);
+            log.debug("Live-synced {} imported materialized events for {}", eventsToSave.size(), organizationId);
+        }
+    }
+
+    private void upsertImportedEventFromEntry(
+            OrganizationCalendarEntry entry,
+            Organization org,
+            Map<String, CalendarEvent> existingBySourceRef,
+            List<CalendarEvent> eventsToSave) {
+        if (entry == null || entry.getId() == null) {
+            return;
+        }
+
+        String sourceRef = importedSourceRef(entry.getId());
+        CalendarEvent existingEvent = existingBySourceRef.get(sourceRef);
+
+        LocalTime resolvedStartTime = resolveStartTime(entry);
+        MinyanType minyanType = entry.getClassification() != null
+                ? entry.getClassification()
+                : MinyanType.OTHER;
+        boolean materializable = resolvedStartTime != null && minyanType != MinyanType.NON_MINYAN;
+
+        if (!materializable) {
+            if (existingEvent != null && existingEvent.isEnabled()) {
+                existingEvent.setEnabled(false);
+                eventsToSave.add(existingEvent);
+            }
+            return;
+        }
+
+        CalendarEvent target = existingEvent != null
+                ? existingEvent
+                : CalendarEvent.builder()
+                .organizationId(entry.getOrganizationId())
+                .source(EventSource.IMPORTED)
+                .sourceRef(sourceRef)
+                .whatsapp(null)
+                .dynamicTimeString(null)
+                .manuallyEdited(false)
+                .build();
+
+        target.setDate(entry.getDate());
+        target.setMinyanType(minyanType);
+        target.setStartTime(resolvedStartTime);
+        target.setNotes(entry.getNotes());
+        target.setLocationId(null);
+        target.setLocationName(entry.getLocation());
+        target.setEnabled(entry.isEnabled());
+        target.setNusach(org.getNusach());
+
+        eventsToSave.add(target);
+    }
+
+    private LocalTime resolveStartTime(OrganizationCalendarEntry entry) {
+        if (entry.getStartTime() != null) {
+            return entry.getStartTime();
+        }
+        if (entry.getStartDatetime() != null) {
+            return entry.getStartDatetime().toLocalTime();
+        }
+        return null;
+    }
+
+    private String importedSourceRef(Long entryId) {
+        return "import-" + entryId;
     }
 
     /**

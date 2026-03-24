@@ -548,7 +548,8 @@
                 <tbody id="ce-tbody">
 
                     <tr th:each="entry : ${entries}"
-                        th:classappend="${!entry.enabled} ? 'row-disabled' : ''">
+                        th:classappend="${!entry.enabled} ? 'row-disabled' : ''"
+                        th:attr="data-entry-id=${entry.id}">
 
                         <!-- Date -->
                         <td data-col="date" th:attr="data-value=${entry.date}" style="white-space: nowrap;">
@@ -620,7 +621,7 @@
 
                         <!-- Status -->
                         <td data-col="status" th:attr="data-value=${entry.enabled ? '0' : '1'}">
-                            <span class="ce-badge"
+                            <span class="ce-badge ce-status-badge"
                                   th:classappend="${entry.enabled} ? 'cb-enabled' : 'cb-disabled'"
                                   th:text="${entry.enabled} ? 'Enabled' : 'Disabled'">Status</span>
                             <div th:if="${entry.duplicateReason}"
@@ -631,9 +632,13 @@
                         <!-- Actions -->
                         <td style="white-space: nowrap;">
                             <form method="post"
+                                  class="ce-toggle-form"
                                   th:action="@{/admin/{orgId}/calendar-entries/{entryId}/toggle(orgId=${organization.id},entryId=${entry.id})}">
+                                <input type="hidden" name="returnTo"
+                                       th:value="${#httpServletRequest.requestURI + (#httpServletRequest.queryString != null ? '?' + #httpServletRequest.queryString : '')}">
                                 <button type="submit"
-                                        th:class="${entry.enabled} ? 'toggle-btn toggle-disable' : 'toggle-btn toggle-enable'"
+                                        class="toggle-btn ce-toggle-btn"
+                                        th:classappend="${entry.enabled} ? ' toggle-disable' : ' toggle-enable'"
                                         th:text="${entry.enabled} ? 'Disable' : 'Enable'">Toggle</button>
                             </form>
                         </td>
@@ -725,6 +730,73 @@
     // Initialise: mark date column sorted asc (matches server default)
     var dateHeader = document.querySelector('#ce-table th[data-col="date"]');
     if (dateHeader) markHeader(dateHeader, 'asc');
+
+    // ── AJAX toggle (preserve filters/url state) ──────────────
+    document.addEventListener('submit', function (event) {
+        var form = event.target.closest('.ce-toggle-form');
+        if (!form) return;
+
+        event.preventDefault();
+
+        var button = form.querySelector('.ce-toggle-btn');
+        if (!button || button.disabled) return;
+
+        button.disabled = true;
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function (response) {
+            return response.json().then(function (body) {
+                return { ok: response.ok, body: body || {} };
+            }).catch(function () {
+                return { ok: response.ok, body: {} };
+            });
+        })
+        .then(function (result) {
+            if (!result.ok || !result.body.success) {
+                var errorMessage = result.body.message || 'Failed to update entry status.';
+                if (window.showToast) window.showToast(errorMessage, 'error');
+                return;
+            }
+
+            var enabled = !!result.body.enabled;
+            var row = form.closest('tr');
+            if (row) {
+                row.classList.toggle('row-disabled', !enabled);
+
+                var statusCell = row.querySelector('td[data-col="status"]');
+                if (statusCell) {
+                    statusCell.setAttribute('data-value', enabled ? '0' : '1');
+                }
+
+                var badge = row.querySelector('.ce-status-badge');
+                if (badge) {
+                    badge.textContent = enabled ? 'Enabled' : 'Disabled';
+                    badge.classList.remove('cb-enabled', 'cb-disabled');
+                    badge.classList.add(enabled ? 'cb-enabled' : 'cb-disabled');
+                }
+            }
+
+            button.textContent = enabled ? 'Disable' : 'Enable';
+            button.classList.remove('toggle-enable', 'toggle-disable');
+            button.classList.add(enabled ? 'toggle-disable' : 'toggle-enable');
+
+            if (window.showToast) {
+                window.showToast(result.body.message || 'Entry status updated.', 'success');
+            }
+        })
+        .catch(function () {
+            if (window.showToast) window.showToast('Network error while updating entry.', 'error');
+        })
+        .finally(function () {
+            button.disabled = false;
+        });
+    });
 
 }());
 </script>
