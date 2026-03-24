@@ -211,13 +211,15 @@ The privacy policy lives at `src/main/resources/templates/privacy.html` and is s
 **What to update:** Edit the relevant section(s) in `privacy.html` (plain language, matching the existing style) and update the "last updated" date at the bottom of the page. No version bump or CHANGELOG entry is needed for privacy policy text-only edits.
 
 ## Version Management
-- **ALWAYS increment the version number for changes that necessitate a PR**
+- **Increment the version number once per release-intent change set**
   - Use semantic versioning: patch (`x.x.1`) for UI updates/fixes, minor (`x.1.0`) for new features, major (`1.x.0`) for breaking changes
   - Update the `pom.xml` version field (located at line 13: `<version>1.1.0-SNAPSHOT</version>`)
   - Add a corresponding entry to `CHANGELOG.md`:
     - **Patch versions (`x.x.1`)**: Short, 2-line summary of changes under appropriate subsections (Added/Changed/Fixed/Removed)
     - **Minor versions (`x.1.0`)**: Longer entries with detailed feature descriptions, organized by subsections (Added/Changed/Fixed/Deprecated/Removed/Security)
     - **Major versions (`1.x.0`)**: Comprehensive entries documenting breaking changes and migration paths, with detailed explanations of impacts
+- **Do not bump again for immediate regression fixes to unreleased work**
+  - If a bug-fix commit only corrects behavior introduced by the current unreleased change set, keep the existing version and continue updating `[Unreleased]`.
 - **EXCEPTIONS — do NOT bump the version or add a CHANGELOG entry for:**
   - Changes to AI agent instruction files (`.github/copilot-instructions.md`, `CLAUDE.md`, or any other agent/AI context files)
   - Developer tooling configuration that does not affect runtime behavior
