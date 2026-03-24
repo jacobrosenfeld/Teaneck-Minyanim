@@ -1,16 +1,18 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { router, Stack, useGlobalSearchParams, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'react-native-reanimated';
-import { router } from 'expo-router';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
+import { PostHogProvider } from 'posthog-react-native';
 
+import { capture, getAnalyticsClient, initAnalytics, setConsent } from '@/analytics';
+import TrackingConsentModal from '@/components/TrackingConsentModal';
 import { useColorScheme } from '@/components/useColorScheme';
 import { requestNotificationPermission, SNOOZE_ACTION } from '@/utils/notifications';
 import { triggerOpenSheet } from '@/utils/tabEvents';
@@ -49,6 +51,11 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+  const [consentModalVisible, setConsentModalVisible] = useState(false);
+  const [consentActionLoading, setConsentActionLoading] = useState(false);
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
 
   useEffect(() => {
     if (error) throw error;
@@ -58,6 +65,44 @@ export default function RootLayout() {
   useEffect(() => {
     requestNotificationPermission();
   }, []);
+
+  // Initialize consent state and analytics gating before any analytics calls
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const snapshot = await initAnalytics();
+        if (!cancelled) {
+          setAnalyticsEnabled(snapshot.analyticsEnabled);
+          setConsentModalVisible(snapshot.consent === 'unknown');
+        }
+      } catch {
+        if (!cancelled) {
+          setAnalyticsEnabled(false);
+          setConsentModalVisible(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Track screen views via Expo Router pathname changes
+  useEffect(() => {
+    const routeParams: Record<string, string> = {};
+    for (const [key, value] of Object.entries(params)) {
+      if (typeof value === 'string' && value.length > 0) {
+        routeParams[key] = value;
+      } else if (Array.isArray(value) && value.length > 0) {
+        routeParams[key] = value.join(',');
+      }
+    }
+    capture('screen_view', {
+      pathname,
+      ...routeParams,
+    });
+  }, [pathname, params]);
 
   // Handle notification tap: navigate to minyanim tab and open the ShulDaySheet
   // Use a ref so we can call triggerOpenSheet after navigation settles
@@ -79,7 +124,7 @@ export default function RootLayout() {
         orgName: data.orgName ?? '',
       };
       // Navigate to minyanim tab first; index.tsx will consume pendingSheetRef
-      router.navigate('/(tabs)/');
+      router.navigate('/(tabs)');
       // Give the tab a frame to mount/focus before triggering the sheet
       setTimeout(() => {
         if (pendingSheetRef.current) {
@@ -126,11 +171,52 @@ export default function RootLayout() {
     return null;
   }
 
+  const handleAcceptTracking = async () => {
+    setConsentActionLoading(true);
+    try {
+      const snapshot = await setConsent('accept');
+      setAnalyticsEnabled(snapshot.analyticsEnabled);
+      setConsentModalVisible(snapshot.consent === 'unknown');
+    } finally {
+      setConsentActionLoading(false);
+    }
+  };
+
+  const handleDeclineTracking = async () => {
+    setConsentActionLoading(true);
+    try {
+      const snapshot = await setConsent('decline');
+      setAnalyticsEnabled(snapshot.analyticsEnabled);
+      setConsentModalVisible(snapshot.consent === 'unknown');
+    } finally {
+      setConsentActionLoading(false);
+    }
+  };
+
+  const appTree = (
+    <>
+      <RootLayoutNav />
+      <TrackingConsentModal
+        visible={consentModalVisible}
+        loading={consentActionLoading}
+        onAccept={handleAcceptTracking}
+        onDecline={handleDeclineTracking}
+      />
+    </>
+  );
+
+  const posthogClient = getAnalyticsClient();
+  const analyticsWrappedTree = analyticsEnabled && posthogClient ? (
+    <PostHogProvider client={posthogClient} autocapture>
+      {appTree}
+    </PostHogProvider>
+  ) : appTree;
+
   return (
     <PersistQueryClientProvider
       client={queryClient}
       persistOptions={{ persister: asyncStoragePersister, maxAge: 7 * 24 * 60 * 60 * 1000 }}>
-      <RootLayoutNav />
+      {analyticsWrappedTree}
     </PersistQueryClientProvider>
   );
 }

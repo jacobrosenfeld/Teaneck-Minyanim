@@ -2,7 +2,7 @@
   "expo": {
     "name": "Teaneck Minyanim",
     "slug": "teaneck-minyanim",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "teaneckminyanim",
@@ -14,11 +14,12 @@
     },
     "ios": {
       "bundleIdentifier": "com.teaneckminyanim.app",
-      "buildNumber": "16",
+      "buildNumber": "19",
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Teaneck Minyanim uses your location to show nearby shuls and sort by distance.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Teaneck Minyanim uses your location to show nearby shuls and sort by distance.",
+        "NSUserTrackingUsageDescription": "We request permission to measure app usage and improve the app experience while respecting your privacy choices.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -32,6 +33,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [
+        "com.google.android.gms.permission.AD_ID",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.RECEIVE_BOOT_COMPLETED",
@@ -57,6 +59,12 @@
           "icon": "./assets/images/icon.png",
           "color": "#275ed8",
           "sounds": []
+        }
+      ],
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "We request permission to measure app usage and improve the app experience while respecting your privacy choices."
         }
       ]
     ],

@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 
+import { capture } from '@/analytics';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import ErrorState from '@/components/ErrorState';
@@ -142,7 +143,13 @@ export default function ShulsScreen() {
           refreshControl={
             <RefreshControl
               refreshing={isFetching && !isLoading}
-              onRefresh={() => { refetch(); fetchLocation(); }}
+              onRefresh={() => {
+                capture('pull_to_refresh', {
+                  screen: 'shuls_list',
+                });
+                refetch();
+                fetchLocation();
+              }}
               tintColor={colors.tint}
             />
           }
