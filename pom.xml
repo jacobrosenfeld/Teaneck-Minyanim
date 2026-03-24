@@ -10,7 +10,7 @@
   </parent>  
   <groupId>com.tbdev</groupId>  
   <artifactId>Teaneck-Minyanim</artifactId>  
-  <version>1.9.5</version>
+  <version>1.9.6</version>
   <name>Teaneck-Minyanim</name>
   <description>Teaneck-Minyanim</description>
   <properties>
@@ -19,6 +19,7 @@
     <!-- Security overrides for Dependabot alerts -->
     <jackson-bom.version>2.21.1</jackson-bom.version>
     <logback.version>1.5.25</logback.version>
+    <spring-security.version>6.5.9</spring-security.version>
   </properties>  
   <dependencies> 
     <dependency> 

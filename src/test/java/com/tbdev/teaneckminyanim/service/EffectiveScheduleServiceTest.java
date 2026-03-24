@@ -4,7 +4,6 @@ import com.tbdev.teaneckminyanim.enums.EventSource;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.model.CalendarEvent;
 import com.tbdev.teaneckminyanim.repo.CalendarEventRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,7 +16,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,13 +33,10 @@ class EffectiveScheduleServiceTest {
     private static final String ORG_ID = "org-1";
     private static final LocalDate DATE = LocalDate.of(2026, 3, 22);
 
-    @BeforeEach
-    void setUp() {
-        when(materializationService.isDateInWindow(any())).thenReturn(true);
-    }
-
     @Test
     void getEffectiveEventsForDate_fullDayManualOverrideWins() {
+        when(materializationService.isDateInWindow(DATE)).thenReturn(true);
+
         CalendarEvent fullDayManual = event(1L, ORG_ID, DATE, LocalTime.of(7, 0), EventSource.MANUAL,
                 EffectiveScheduleService.MANUAL_FULL_DAY_SOURCE_REF_PREFIX + ":abc");
         CalendarEvent imported = event(2L, ORG_ID, DATE, LocalTime.of(7, 30), EventSource.IMPORTED, "imp-1");
@@ -58,6 +53,8 @@ class EffectiveScheduleServiceTest {
 
     @Test
     void getEffectiveEventsForDate_additiveManualAppendsToImportedDay() {
+        when(materializationService.isDateInWindow(DATE)).thenReturn(true);
+
         CalendarEvent additiveManual = event(1L, ORG_ID, DATE, LocalTime.of(6, 45), EventSource.MANUAL,
                 "manual:ADDITIVE:1");
         CalendarEvent imported = event(2L, ORG_ID, DATE, LocalTime.of(7, 0), EventSource.IMPORTED, "imp-1");
