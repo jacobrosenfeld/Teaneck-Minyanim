@@ -83,6 +83,11 @@ public class ZmanimController {
         return applicationSettingsService.getSupportEmail();
     }
 
+    @ModelAttribute("appleSmartAppBannerContent")
+    public String appleSmartAppBannerContent() {
+        return applicationSettingsService.getAppleSmartAppBannerContent();
+    }
+
     @ModelAttribute("appVersion")
     public String appVersion() {
         return versionService.getVersion();

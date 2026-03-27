@@ -10,6 +10,8 @@ public enum SettingKey {
     SITE_APP_COLOR("site.app.color", SettingType.STRING, "#275ed8"),
     SITE_ROOT_URL("site.root.url", SettingType.STRING, "http://localhost:8080"),
     SITE_SUPPORT_EMAIL("site.support.email", SettingType.STRING, "info@teaneckminyanim.com"),
+    MOBILE_IOS_APP_URL("mobile.ios.app.url", SettingType.STRING, ""),
+    MOBILE_GOOGLE_PLAY_URL("mobile.google.play.url", SettingType.STRING, ""),
     
     // Location & Geographic Settings
     LOCATION_NAME("location.name", SettingType.STRING, "Jerusalem, Israel"),
@@ -71,6 +73,10 @@ public enum SettingKey {
                 return "Site Root URL";
             case SITE_SUPPORT_EMAIL:
                 return "Support Email Address";
+            case MOBILE_IOS_APP_URL:
+                return "iOS App Store URL";
+            case MOBILE_GOOGLE_PLAY_URL:
+                return "Google Play Store URL";
             case LOCATION_NAME:
                 return "Location Name";
             case LOCATION_LATITUDE:
@@ -105,6 +111,10 @@ public enum SettingKey {
                 return "Root URL of the website (e.g., https://www.teaneckminyanim.com)";
             case SITE_SUPPORT_EMAIL:
                 return "Support email address for contact and help inquiries";
+            case MOBILE_IOS_APP_URL:
+                return "Full iOS App Store URL used to configure Safari Smart App Banner (e.g., https://apps.apple.com/us/app/your-app/id1234567890)";
+            case MOBILE_GOOGLE_PLAY_URL:
+                return "Full Google Play Store URL for the Android app (e.g., https://play.google.com/store/apps/details?id=com.example.app)";
             case LOCATION_NAME:
                 return "Display name for the location used in Zmanim calculations";
             case LOCATION_LATITUDE:
@@ -136,6 +146,8 @@ public enum SettingKey {
             return "Location & Coordinates";
         } else if (key.equals("timezone")) {
             return "Timezone";
+        } else if (key.startsWith("mobile.")) {
+            return "Mobile Apps";
         } else if (key.startsWith("mapbox.")) {
             return "External Services";
         } else if (key.startsWith("calendar.")) {

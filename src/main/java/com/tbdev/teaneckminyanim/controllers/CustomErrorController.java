@@ -43,6 +43,7 @@ public class CustomErrorController implements ErrorController {
 
         mv.addObject("siteName", settingsService.getSiteName());
         mv.addObject("supportEmail", settingsService.getSupportEmail());
+        mv.addObject("appleSmartAppBannerContent", settingsService.getAppleSmartAppBannerContent());
         mv.addObject("appVersion", versionService.getVersion());
 
         return mv;

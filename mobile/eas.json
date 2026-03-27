@@ -32,6 +32,12 @@
   },
   "submit": {
     "production": {
+      "android": {
+        "serviceAccountKeyPath": "./.secrets/google-play-service-account.json",
+        "track": "production",
+        "releaseStatus": "inProgress",
+        "rollout": 0.2
+      },
       "ios": {
         "appleId": "admin@josephjacobsadvertising.com",
         "ascAppId": "6760630633",
