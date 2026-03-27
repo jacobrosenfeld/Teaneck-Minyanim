@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Public error preview routes**: Added `/test/errors/{code}` endpoints for `400`, `403`, `404`, `429`, `500`, and `503` so themed error pages can be validated on live environments without ad-hoc URL tricks.
 - **Manual override workflows (org + super admin)**: Added dedicated override pages for shul admins and super admins, including manual add/delete/toggle flows, start/end date range entry, and guidance that manual overrides do not require a location.
 - **Bulk XLSX override import + downloadable templates**: Added XLSX import on override pages with templates tailored for org admins and super admins (including shul-name-based mapping and validated minyan types).
 - **Mobile analytics compliance foundation (#146)**: Added first-launch in-app analytics disclosure with persisted consent state (`accepted|declined|unknown`) and platform tracking permission state, with runtime gating that keeps analytics disabled until policy requirements are met.
@@ -16,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configurable Smart App Banner settings**: Added `mobile.ios.app.url` and `mobile.google.play.url` to `APPLICATION_SETTINGS`, with iOS app id parsing from the configured App Store URL and dynamic Safari Smart App Banner meta-tag rendering on all public (non-admin) pages.
 
 ### Changed
+- **Error page UX refreshed with themed copy and graphics**: Browser error handling now renders status-specific themed messages, guidance, CTAs, and dedicated SVG icons for `400`, `403`, `404`, `429`, `500`, and `503` while keeping the shared template/navigation shell.
 - **Override page UI modernization**: Updated override tables and actions to match the admin design system styling used by calendar-entry management views.
 - **Build tooling baseline moved to Java 21**: Added Java 21 enforcement/toolchain setup for local and CI consistency.
 - **Calendar entries enable/disable is now live (window-scoped)**: Toggling imported calendar entries now syncs immediately to `calendar_events` (rolling window only), so the live schedule/API updates without rematerialization.
@@ -25,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Android release pipeline wiring (Issue #132)**: Mobile Expo config now injects `GOOGLE_MAPS_API_KEY` into the `react-native-maps` Android config plugin at build time, production builds load analytics values from `.env.production` (with fail-fast if analytics is enabled but PostHog key is missing), Android map screen explicitly uses Google provider, `eas submit` production profile now includes Android staged rollout defaults, and release runbook was added at `docs/mobile/android-release-checklist.md`.
 
 ### Fixed
+- **404 -> 500 regression path in admin calendar events**: Replaced references to missing `error/404` view with proper `404 Not Found` status exceptions when organizations are missing, preventing template-resolution failures that surfaced as server errors.
+- **API error content negotiation on `/error`**: Requests under `/api/**` now return JSON error payloads (including `Retry-After` on `429`) instead of HTML error pages.
 - **Dependabot alerts #100 and #103 (CVE-2026-22731, CVE-2026-22733)**: Upgraded Spring Boot parent to `3.5.12` to pick up patched Actuator behavior and close both authentication-bypass advisories.
 - **Dependabot alert #98 (CVE-2026-24734)**: Spring Boot upgrade also lifts embedded Tomcat to a patched 10.1.x release outside the vulnerable range.
 - **Dependabot alert #102 (CVE-2026-22732)**: Pinned Spring Security to `6.5.9` via Maven property override so transitive `spring-security-web` is upgraded out of the vulnerable range.

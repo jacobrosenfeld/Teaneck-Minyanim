@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Bad request checklist icon</title>
+  <desc id="desc">A checklist form with missing fields representing a bad request.</desc>
+  <g fill="none" stroke="#275ed8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="28" y="14" width="72" height="100" rx="8"/>
+    <path d="M46 14v12"/>
+    <path d="M82 14v12"/>
+    <path d="M42 38h12"/>
+    <path d="M42 58h12"/>
+    <path d="M42 78h12"/>
+    <path d="M62 38h24"/>
+    <path d="M62 58h24"/>
+    <path d="M62 78h24"/>
+    <path d="M44 98l8 8"/>
+    <path d="M52 98l-8 8"/>
+    <circle cx="90" cy="96" r="10"/>
+    <path d="M90 90v8"/>
+    <path d="M90 102h.01"/>
+  </g>
+</svg>

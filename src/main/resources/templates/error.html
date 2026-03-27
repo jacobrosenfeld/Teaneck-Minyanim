@@ -39,15 +39,25 @@
                         <div class="container">
                             <div class="row justify-content-center">
                                 <div class="col-md-8 col-xl-6 text-center" style="padding: 5rem 1rem;">
+                                    <div th:if="${errorIconPath != null and !#strings.isEmpty(errorIconPath)}" style="margin-bottom: 1rem;">
+                                        <img th:src="${errorIconPath}" th:alt="${errorIconAlt}" style="width: 96px; height: 96px; opacity: 0.95;" />
+                                    </div>
                                     <div style="font-size: 6rem; font-weight: 700; color: #dee2e6; line-height: 1;" th:text="${errorCode}">404</div>
                                     <h1 style="font-weight: 700; margin: 1rem 0 0.75rem;" th:text="${errorTitle}">Page Not Found</h1>
                                     <p style="font-size: 1.1rem; color: #6c757d; margin-bottom: 2rem;" th:text="${errorMessage}">
                                         The page you're looking for doesn't exist.
                                     </p>
+                                    <p th:if="${errorHint != null and !#strings.isEmpty(errorHint)}" style="font-size: 0.98rem; color: #6c757d; margin-top: -1.1rem; margin-bottom: 1.75rem;" th:text="${errorHint}">
+                                        Try one of the links below to get back on track.
+                                    </p>
                                     <div style="display: flex; gap: 0; justify-content: center; flex-wrap: wrap;">
-                                        <a class="btn-shuls" role="button" href="/">Go to Homepage</a>
-                                        <a class="btn-shuls" role="button" th:href="@{|mailto:${supportEmail ?: ''}|}">Contact Support</a>
+                                        <a class="btn-shuls" role="button" th:if="${primaryCtaHref != null and primaryCtaLabel != null}" th:href="${primaryCtaHref}" th:text="${primaryCtaLabel}">Back to Home</a>
+                                        <a class="btn-shuls" role="button" th:if="${secondaryCtaHref != null and secondaryCtaLabel != null}" th:href="${secondaryCtaHref}" th:text="${secondaryCtaLabel}">Contact Support</a>
                                     </div>
+                                    <p th:if="${supportEmail != null and !#strings.isEmpty(supportEmail)}" style="margin-top: 1.15rem; font-size: 0.92rem; color: #6c757d;">
+                                        Need help?
+                                        <a th:href="@{|mailto:${supportEmail}|}" style="text-decoration: underline;" th:text="${supportEmail}">support@example.com</a>
+                                    </p>
                                 </div>
                             </div>
                         </div>

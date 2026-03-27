@@ -13,12 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
@@ -202,8 +204,7 @@ public class CalendarEventsAdminController {
         // Load organization
         Optional<Organization> orgOpt = organizationService.findById(orgId);
         if (orgOpt.isEmpty()) {
-            mv.setViewName("error/404");
-            return mv;
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Organization not found: " + orgId);
         }
         Organization org = orgOpt.get();
         mv.addObject("organization", org);
@@ -271,8 +272,7 @@ public class CalendarEventsAdminController {
 
         Optional<Organization> orgOpt = organizationService.findById(orgId);
         if (orgOpt.isEmpty()) {
-            mv.setViewName("error/404");
-            return mv;
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Organization not found: " + orgId);
         }
         Organization org = orgOpt.get();
         mv.addObject("organization", org);

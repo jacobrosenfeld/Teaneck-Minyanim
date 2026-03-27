@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Restricted access doorway icon</title>
+  <desc id="desc">A locked doorway indicating forbidden access.</desc>
+  <g fill="none" stroke="#275ed8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="22" y="18" width="84" height="92" rx="8"/>
+    <path d="M40 110V40a12 12 0 0 1 12-12h24a12 12 0 0 1 12 12v70"/>
+    <circle cx="68" cy="67" r="4"/>
+    <path d="M68 71v10"/>
+    <rect x="46" y="84" width="44" height="18" rx="4"/>
+    <path d="M54 84v-6a14 14 0 0 1 28 0v6"/>
+  </g>
+</svg>

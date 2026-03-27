@@ -70,7 +70,7 @@ public class WebSecurityConfiguration {
                                  "/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/", "/zmanim/**", "/orgs/**", "/org/**", "/admin/login", "/admin/logout",
                                 "/webjars/**", "/**/*.css", "/**/*.js", "/static/**", "/db/**",
-                                "/assets/**", "/favicon.ico").permitAll()
+                                "/assets/**", "/favicon.ico", "/test/errors/**").permitAll()
                 .requestMatchers("/admin", "/admin/dashboard", "/admin/organization", "/admin/account", 
                                 "/admin/update-organization", "/admin/update-account", 
                                 "/admin/*/locations", "/admin/*/locations/**",

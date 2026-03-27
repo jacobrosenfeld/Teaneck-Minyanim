@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Rate limited drasha icon</title>
+  <desc id="desc">A pause sign and clock indicating users should wait before retrying.</desc>
+  <g fill="none" stroke="#275ed8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="18" y="20" width="54" height="44" rx="6"/>
+    <path d="M34 32v20"/>
+    <path d="M56 32v20"/>
+    <path d="M18 72h54"/>
+    <path d="M24 84h42"/>
+    <circle cx="90" cy="76" r="20"/>
+    <path d="M90 64v12l8 5"/>
+    <path d="M84 20h12"/>
+    <path d="M90 20v8"/>
+    <path d="M36 102h56"/>
+  </g>
+</svg>
