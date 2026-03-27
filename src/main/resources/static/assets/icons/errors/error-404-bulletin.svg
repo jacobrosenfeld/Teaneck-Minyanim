@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Missing page bulletin icon</title>
+  <desc id="desc">A bulletin board with a crossed-out room number representing not found.</desc>
+  <g fill="none" stroke="#275ed8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="18" y="18" width="92" height="92" rx="10"/>
+    <rect x="34" y="36" width="60" height="38" rx="6"/>
+    <circle cx="36" cy="32" r="3" fill="#275ed8"/>
+    <circle cx="92" cy="32" r="3" fill="#275ed8"/>
+    <path d="M44 84h40"/>
+    <path d="M49 47h30"/>
+    <path d="M49 56h30"/>
+    <path d="M49 65h20"/>
+    <path d="M83 82l12 12"/>
+    <path d="M95 82l-12 12"/>
+  </g>
+</svg>

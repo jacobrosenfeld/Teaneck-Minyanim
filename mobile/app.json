@@ -38,7 +38,8 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE"
-      ]
+      ],
+      "versionCode": 16
     },
     "web": {
       "bundler": "metro",

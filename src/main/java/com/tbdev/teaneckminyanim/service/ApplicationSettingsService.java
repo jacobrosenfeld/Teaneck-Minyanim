@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +33,9 @@ public class ApplicationSettingsService {
     
     // Cache for performance
     private final Map<String, String> settingsCache = new ConcurrentHashMap<>();
+    private static final Pattern IOS_APP_ID_PATH_PATTERN = Pattern.compile("/id(\\d+)(?:[/?#]|$)");
+    private static final Pattern IOS_APP_ID_QUERY_PATTERN = Pattern.compile("[?&]id=(\\d+)(?:[&#]|$)");
+    private static final Pattern NUMERIC_ID_PATTERN = Pattern.compile("^\\d+$");
     
     /**
      * Initialize default settings on application startup if they don't exist.
@@ -177,6 +182,73 @@ public class ApplicationSettingsService {
     public String getMapboxAccessToken() {
         return getString(SettingKey.MAPBOX_ACCESS_TOKEN);
     }
+
+    /**
+     * Get iOS App Store URL.
+     */
+    public String getIosAppUrl() {
+        return getString(SettingKey.MOBILE_IOS_APP_URL);
+    }
+
+    /**
+     * Get Google Play Store URL.
+     */
+    public String getGooglePlayUrl() {
+        return getString(SettingKey.MOBILE_GOOGLE_PLAY_URL);
+    }
+
+    /**
+     * Build Smart App Banner meta content from the configured iOS App Store URL.
+     * Returns null when no valid app id can be extracted.
+     */
+    public String getAppleSmartAppBannerContent() {
+        return buildAppleSmartAppBannerContent(getIosAppUrl());
+    }
+
+    /**
+     * Extract numeric app id from an iOS App Store URL.
+     * Supported formats include:
+     * - https://apps.apple.com/us/app/app-name/id1234567890
+     * - https://apps.apple.com/app/id1234567890
+     * - 1234567890
+     */
+    public static String extractIosAppId(String iosAppUrl) {
+        if (iosAppUrl == null) {
+            return null;
+        }
+
+        String normalized = iosAppUrl.trim();
+        if (normalized.isEmpty()) {
+            return null;
+        }
+
+        if (NUMERIC_ID_PATTERN.matcher(normalized).matches()) {
+            return normalized;
+        }
+
+        Matcher pathMatcher = IOS_APP_ID_PATH_PATTERN.matcher(normalized);
+        if (pathMatcher.find()) {
+            return pathMatcher.group(1);
+        }
+
+        Matcher queryMatcher = IOS_APP_ID_QUERY_PATTERN.matcher(normalized);
+        if (queryMatcher.find()) {
+            return queryMatcher.group(1);
+        }
+
+        return null;
+    }
+
+    /**
+     * Builds the `apple-itunes-app` content attribute value from an App Store URL.
+     */
+    public static String buildAppleSmartAppBannerContent(String iosAppUrl) {
+        String appId = extractIosAppId(iosAppUrl);
+        if (appId == null) {
+            return null;
+        }
+        return "app-id=" + appId;
+    }
     
     /**
      * Get GeoLocation object for Zmanim calculations.
@@ -195,19 +267,21 @@ public class ApplicationSettingsService {
      * Update a setting value with validation.
      */
     public void updateSetting(SettingKey key, String value) throws ValidationException {
+        String normalizedValue = value == null ? null : value.trim();
+
         // Validate the value
-        validateSettingValue(key, value);
+        validateSettingValue(key, normalizedValue);
         
         ApplicationSettings setting = repository.findBySettingKey(key.getKey())
             .orElseThrow(() -> new IllegalStateException("Setting not found: " + key.getKey()));
         
-        setting.setSettingValue(value);
+        setting.setSettingValue(normalizedValue);
         repository.save(setting);
         
         // Update cache
-        settingsCache.put(key.getKey(), value);
+        settingsCache.put(key.getKey(), normalizedValue);
         
-        log.info("Updated setting: {} = {}", key.getKey(), value);
+        log.info("Updated setting: {} = {}", key.getKey(), normalizedValue);
     }
     
     /**
@@ -250,10 +324,17 @@ public class ApplicationSettingsService {
      * Validate a setting value before saving.
      */
     private void validateSettingValue(SettingKey key, String value) throws ValidationException {
-        if (value == null || value.trim().isEmpty()) {
+        if (value == null) {
             throw new ValidationException("Setting value cannot be empty");
         }
-        
+
+        if (value.isEmpty()) {
+            if (isOptionalSetting(key)) {
+                return;
+            }
+            throw new ValidationException("Setting value cannot be empty");
+        }
+
         switch (key) {
             case SITE_APP_COLOR:
                 validateHexColor(value);
@@ -262,7 +343,16 @@ public class ApplicationSettingsService {
                 validateEmail(value);
                 break;
             case SITE_ROOT_URL:
-                validateUrl(value);
+                validateUrl(value, "Root URL");
+                break;
+            case MOBILE_IOS_APP_URL:
+                validateUrl(value, "iOS App Store URL");
+                if (extractIosAppId(value) == null) {
+                    throw new ValidationException("iOS App Store URL must include a valid App Store app id (e.g., .../id1234567890)");
+                }
+                break;
+            case MOBILE_GOOGLE_PLAY_URL:
+                validateUrl(value, "Google Play URL");
                 break;
             case LOCATION_LATITUDE:
                 validateLatitude(value);
@@ -285,6 +375,17 @@ public class ApplicationSettingsService {
             // SITE_NAME and MAPBOX_ACCESS_TOKEN - no special validation needed
         }
     }
+
+    private boolean isOptionalSetting(SettingKey key) {
+        switch (key) {
+            case MAPBOX_ACCESS_TOKEN:
+            case MOBILE_IOS_APP_URL:
+            case MOBILE_GOOGLE_PLAY_URL:
+                return true;
+            default:
+                return false;
+        }
+    }
     
     private void validateHexColor(String value) throws ValidationException {
         if (!value.matches("^#[0-9A-Fa-f]{6}$")) {
@@ -299,9 +400,9 @@ public class ApplicationSettingsService {
         }
     }
     
-    private void validateUrl(String value) throws ValidationException {
+    private void validateUrl(String value, String fieldName) throws ValidationException {
         if (!value.matches("^https?://[^\\s/$.?#].[^\\s]*$")) {
-            throw new ValidationException("Root URL must be a valid URL (e.g., https://www.example.com)");
+            throw new ValidationException(fieldName + " must be a valid URL (e.g., https://www.example.com)");
         }
     }
     

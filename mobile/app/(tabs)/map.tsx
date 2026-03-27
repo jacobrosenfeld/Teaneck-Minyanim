@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { Callout, Marker, Region } from 'react-native-maps';
+import MapView, { Callout, Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -95,6 +95,7 @@ export default function MapScreen() {
         ref={mapRef}
         style={StyleSheet.absoluteFill}
         initialRegion={TEANECK}
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         showsUserLocation={locationGranted === true}
         showsMyLocationButton={false}
         mapType="standard"

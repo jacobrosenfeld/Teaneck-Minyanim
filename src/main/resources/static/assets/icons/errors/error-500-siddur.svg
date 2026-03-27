@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Server error siddur icon</title>
+  <desc id="desc">A prayer book and dropped pages representing an internal server error.</desc>
+  <g fill="none" stroke="#275ed8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 94h88"/>
+    <path d="M36 94V40c0-4.4 3.6-8 8-8h40c4.4 0 8 3.6 8 8v54"/>
+    <path d="M64 32v62"/>
+    <path d="M45 48h14"/>
+    <path d="M45 58h14"/>
+    <path d="M69 48h14"/>
+    <path d="M69 58h14"/>
+    <rect x="18" y="66" width="16" height="22" rx="2" transform="rotate(-16 26 77)"/>
+    <path d="M24 74h7"/>
+    <rect x="95" y="63" width="16" height="22" rx="2" transform="rotate(14 103 74)"/>
+    <path d="M101 71h7"/>
+    <path d="M104 108l8 8"/>
+    <path d="M112 108l-8 8"/>
+  </g>
+</svg>

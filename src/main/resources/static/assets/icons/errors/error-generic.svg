@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Generic error icon</title>
+  <desc id="desc">A warning triangle representing a generic error.</desc>
+  <g fill="none" stroke="#275ed8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M64 18l46 82H18z"/>
+    <path d="M64 48v26"/>
+    <path d="M64 86h.01"/>
+  </g>
+</svg>

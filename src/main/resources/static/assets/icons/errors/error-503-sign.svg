@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Service unavailable sign icon</title>
+  <desc id="desc">A hanging sign on a doorway representing temporary unavailability.</desc>
+  <g fill="none" stroke="#275ed8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M28 108V24"/>
+    <path d="M100 108V24"/>
+    <path d="M28 24h72"/>
+    <path d="M44 24v14"/>
+    <path d="M84 24v14"/>
+    <rect x="34" y="38" width="60" height="36" rx="6"/>
+    <path d="M46 54h36"/>
+    <path d="M46 64h26"/>
+    <circle cx="64" cy="92" r="12"/>
+    <path d="M64 86v7"/>
+    <path d="M64 98h.01"/>
+  </g>
+</svg>
