@@ -89,10 +89,23 @@ function ensureClient(): PostHog | null {
   return posthogClient;
 }
 
-async function syncAdvertisingId(analyticsEnabled: boolean): Promise<void> {
+function canAttachAdvertisingId(): boolean {
+  if (!runtime.analyticsEnabled) return false;
+
+  const platform = currentPlatform();
+  if (platform === 'ios') {
+    return runtime.platformTrackingPermission === 'authorized';
+  }
+  if (platform === 'android') {
+    return true;
+  }
+  return false;
+}
+
+async function syncAdvertisingId(shouldAttachAdvertisingId: boolean): Promise<void> {
   if (!posthogClient) return;
 
-  if (!analyticsEnabled) {
+  if (!shouldAttachAdvertisingId) {
     posthogClient.unregister('advertising_id');
     return;
   }
@@ -141,7 +154,7 @@ async function applyAnalyticsState(captureAppOpen: boolean): Promise<void> {
   if (!client) return;
 
   client.optIn();
-  await syncAdvertisingId(true);
+  await syncAdvertisingId(canAttachAdvertisingId());
 
   if (captureAppOpen && !runtime.appOpenCaptured) {
     runtime.appOpenCaptured = true;

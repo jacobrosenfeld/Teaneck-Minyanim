@@ -1,6 +1,6 @@
 # Mobile Analytics + Tracking Compliance (Issue #146)
 
-Last updated: March 24, 2026
+Last updated: March 26, 2026
 
 ## Scope
 
@@ -10,7 +10,7 @@ This document defines the shipped behavior for mobile analytics and tracking com
 - Platforms: iOS and Android
 - Consent model:
   - In-app disclosure is required before analytics starts.
-  - iOS requires both in-app acceptance and ATT authorization.
+  - iOS requires in-app acceptance for analytics capture; ATT authorization controls advertising ID usage only.
   - Android requires in-app acceptance.
 - App functionality must remain available if tracking is declined.
 
@@ -24,7 +24,7 @@ Persisted flags:
 
 Gating:
 
-- iOS: analytics enabled only when `consent=accepted` AND `platform_tracking_permission=authorized`.
+- iOS: analytics enabled when `consent=accepted`; advertising ID is attached only when `platform_tracking_permission=authorized`.
 - Android: analytics enabled only when `consent=accepted`.
 - Global kill switch: `EXPO_PUBLIC_ANALYTICS_ENABLED=false` disables all analytics regardless of consent.
 
@@ -76,7 +76,7 @@ Data hygiene rules:
 Before submission, verify all of the following:
 
 1. Fresh install iOS: disclosure appears before analytics traffic.
-2. iOS decline ATT: analytics disabled, app still functional.
-3. iOS allow ATT: events visible in PostHog without PII fields.
+2. iOS decline ATT: analytics still flows after in-app acceptance, but advertising ID is not attached.
+3. iOS allow ATT: events visible in PostHog without PII fields; advertising ID may be attached.
 4. Fresh install Android: disclosure accept/decline correctly gates analytics.
 5. Kill switch (`EXPO_PUBLIC_ANALYTICS_ENABLED=false`) disables capture immediately.

@@ -47,18 +47,14 @@ export function mapTrackingPermissionStatus(
 
 export function computeAnalyticsEnabled(
   consent: ConsentState,
-  platformTrackingPermission: PlatformTrackingPermission,
+  _platformTrackingPermission: PlatformTrackingPermission,
   platform: 'ios' | 'android' | 'web',
   analyticsGloballyEnabled: boolean,
 ): boolean {
   if (!analyticsGloballyEnabled) return false;
   if (consent !== 'accepted') return false;
 
-  if (platform === 'ios') {
-    return platformTrackingPermission === 'authorized';
-  }
-
-  if (platform === 'android') {
+  if (platform === 'ios' || platform === 'android') {
     return true;
   }
 

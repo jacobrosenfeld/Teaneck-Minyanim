@@ -35,9 +35,10 @@ describe('mapTrackingPermissionStatus', () => {
 });
 
 describe('computeAnalyticsEnabled', () => {
-  it('enables iOS only with accepted + authorized', () => {
+  it('enables iOS when consent is accepted, regardless of ATT status', () => {
     expect(computeAnalyticsEnabled('accepted', 'authorized', 'ios', true)).toBe(true);
-    expect(computeAnalyticsEnabled('accepted', 'denied', 'ios', true)).toBe(false);
+    expect(computeAnalyticsEnabled('accepted', 'denied', 'ios', true)).toBe(true);
+    expect(computeAnalyticsEnabled('accepted', 'unknown', 'ios', true)).toBe(true);
   });
 
   it('enables Android when consent accepted', () => {
