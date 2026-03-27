@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dependabot alerts #100 and #103 (CVE-2026-22731, CVE-2026-22733)**: Upgraded Spring Boot parent to `3.5.12` to pick up patched Actuator behavior and close both authentication-bypass advisories.
 - **Dependabot alert #98 (CVE-2026-24734)**: Spring Boot upgrade also lifts embedded Tomcat to a patched 10.1.x release outside the vulnerable range.
 - **Dependabot alert #102 (CVE-2026-22732)**: Pinned Spring Security to `6.5.9` via Maven property override so transitive `spring-security-web` is upgraded out of the vulnerable range.
-- **iOS PostHog release telemetry under ATT denial**: iOS analytics now enables after in-app consent even when ATT is denied/unavailable; advertising ID registration remains restricted to ATT-authorized sessions only.
+- **iOS PostHog release telemetry under ATT denial**: iOS analytics now enables after in-app consent even when ATT is denied/unavailable, advertising ID registration remains restricted to ATT-authorized sessions only, and SDK opt-in/opt-out transitions are now awaited to prevent startup race conditions that could leave capture disabled.
 - **Super admin shul picker reliability**: Fixed dropdown/search initialization issues on override pages (including Turbolinks navigation handling) and improved search input behavior.
 - **Super admin location scoping**: Location options now correctly scope to the selected shul instead of mixing locations across organizations.
 - **Scheduled imports no longer undo manual disabled choices**: Added persistent manual-enable flag on imported entries so weekly sync honors admin enable/disable decisions until a full reimport.

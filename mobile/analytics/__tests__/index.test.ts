@@ -112,6 +112,7 @@ describe('analytics runtime state', () => {
     expect(mockState.posthogInstances).toHaveLength(1);
 
     const posthog = mockState.posthogInstances[0];
+    expect(posthog.optOut).not.toHaveBeenCalled();
     expect(posthog.register).not.toHaveBeenCalled();
     expect(posthog.unregister).toHaveBeenCalledWith('advertising_id');
 
@@ -132,6 +133,7 @@ describe('analytics runtime state', () => {
     expect(mockState.posthogInstances).toHaveLength(1);
 
     const posthog = mockState.posthogInstances[0];
+    expect(posthog.optOut).not.toHaveBeenCalled();
     expect(posthog.register).toHaveBeenCalledWith({ advertising_id: 'ios-ad-id-123' });
     expect(mockState.advertisingIdCalls).toBe(1);
 

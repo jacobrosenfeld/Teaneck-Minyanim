@@ -85,7 +85,6 @@ function ensureClient(): PostHog | null {
     },
   });
 
-  posthogClient.optOut();
   return posthogClient;
 }
 
@@ -144,7 +143,7 @@ async function applyAnalyticsState(captureAppOpen: boolean): Promise<void> {
 
   if (!runtime.analyticsEnabled) {
     if (posthogClient) {
-      posthogClient.optOut();
+      await posthogClient.optOut();
       await syncAdvertisingId(false);
     }
     return;
@@ -153,7 +152,7 @@ async function applyAnalyticsState(captureAppOpen: boolean): Promise<void> {
   const client = ensureClient();
   if (!client) return;
 
-  client.optIn();
+  await client.optIn();
   await syncAdvertisingId(canAttachAdvertisingId());
 
   if (captureAppOpen && !runtime.appOpenCaptured) {
