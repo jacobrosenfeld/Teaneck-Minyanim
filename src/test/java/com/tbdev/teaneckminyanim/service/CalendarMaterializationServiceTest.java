@@ -133,6 +133,69 @@ class CalendarMaterializationServiceTest {
     }
 
     @Test
+    void syncImportedEntriesInRangeLive_deletesDuplicateMaterializedRowsForSameImport() {
+        String orgId = "org-duplicates";
+        LocalDate date = LocalDate.now();
+
+        Organization org = Organization.builder()
+                .id(orgId)
+                .name("Org")
+                .orgColor("#000000")
+                .nusach(Nusach.ASHKENAZ)
+                .build();
+
+        OrganizationCalendarEntry entry = OrganizationCalendarEntry.builder()
+                .id(101L)
+                .organizationId(orgId)
+                .date(date)
+                .classification(MinyanType.SHACHARIS)
+                .startTime(LocalTime.of(5, 15))
+                .enabled(true)
+                .notes("Vasikin Minyan")
+                .build();
+
+        CalendarEvent canonical = CalendarEvent.builder()
+                .id(1L)
+                .organizationId(orgId)
+                .date(date)
+                .minyanType(MinyanType.SHACHARIS)
+                .startTime(LocalTime.of(5, 15))
+                .enabled(true)
+                .source(EventSource.IMPORTED)
+                .sourceRef("import-101")
+                .build();
+
+        CalendarEvent duplicate = CalendarEvent.builder()
+                .id(2L)
+                .organizationId(orgId)
+                .date(date)
+                .minyanType(MinyanType.SHACHARIS)
+                .startTime(LocalTime.of(5, 15))
+                .enabled(true)
+                .source(EventSource.IMPORTED)
+                .sourceRef("import-101")
+                .build();
+
+        when(organizationService.findById(orgId)).thenReturn(Optional.of(org));
+        when(importedEntryRepository.findEntriesInRange(orgId, date, date))
+                .thenReturn(List.of(entry));
+        when(calendarEventRepository.findByOrganizationIdAndSourceAndDateBetween(
+                orgId, EventSource.IMPORTED, date, date))
+                .thenReturn(List.of(duplicate, canonical));
+
+        service.syncImportedEntriesInRangeLive(orgId, date, date);
+
+        verify(calendarEventRepository).deleteAll(List.of(duplicate));
+
+        ArgumentCaptor<List<CalendarEvent>> captor = ArgumentCaptor.forClass(List.class);
+        verify(calendarEventRepository).saveAll(captor.capture());
+        List<CalendarEvent> saved = captor.getValue();
+        assertEquals(1, saved.size());
+        assertEquals(canonical.getId(), saved.get(0).getId());
+        assertEquals("Vasikin Minyan", saved.get(0).getNotes());
+    }
+
+    @Test
     void syncImportedEntriesInRangeLive_disablesExistingWhenEntryIsNonMinyan() {
         String orgId = "org-2";
         LocalDate date = LocalDate.now();

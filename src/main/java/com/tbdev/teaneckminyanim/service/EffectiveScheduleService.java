@@ -1,6 +1,7 @@
 package com.tbdev.teaneckminyanim.service;
 
 import com.tbdev.teaneckminyanim.enums.EventSource;
+import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.model.CalendarEvent;
 import com.tbdev.teaneckminyanim.repo.CalendarEventRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -150,7 +153,7 @@ public class EffectiveScheduleService {
         if (hasFullDayManualOverride) {
             CalendarEvent sample = dayEvents.get(0);
             log.debug("Using MANUAL full-day override events for org {} on {}", sample.getOrganizationId(), sample.getDate());
-            return sortByTime(manualEvents);
+            return dedupeDisplayDuplicates(sortByTime(manualEvents));
         }
 
         boolean hasImported = dayEvents.stream()
@@ -166,6 +169,47 @@ public class EffectiveScheduleService {
 
         return effectiveEvents
                 .sorted(Comparator.comparing(CalendarEvent::getStartTime))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), this::dedupeDisplayDuplicates));
+    }
+
+    private List<CalendarEvent> dedupeDisplayDuplicates(List<CalendarEvent> events) {
+        Map<DisplayEventKey, CalendarEvent> uniqueEvents = new LinkedHashMap<>();
+        for (CalendarEvent event : events) {
+            uniqueEvents.putIfAbsent(DisplayEventKey.from(event), event);
+        }
+        return List.copyOf(uniqueEvents.values());
+    }
+
+    private record DisplayEventKey(
+            String organizationId,
+            LocalDate date,
+            LocalTime startTime,
+            MinyanType minyanType,
+            String locationName,
+            String notes,
+            String dynamicTimeString,
+            String whatsapp) {
+
+        static DisplayEventKey from(CalendarEvent event) {
+            return new DisplayEventKey(
+                    event.getOrganizationId(),
+                    event.getDate(),
+                    event.getStartTime(),
+                    event.getMinyanType(),
+                    normalize(event.getLocationName()),
+                    normalize(event.getNotes()),
+                    normalize(event.getDynamicTimeString()),
+                    normalize(event.getWhatsapp()));
+        }
+
+        private static String normalize(String value) {
+            return value == null ? "" : value.trim();
+        }
+    }
+
+    private List<CalendarEvent> sortByTime(List<CalendarEvent> events) {
+        return events.stream()
+                .sorted(Comparator.comparing(CalendarEvent::getStartTime))
                 .collect(Collectors.toList());
     }
 
@@ -175,9 +219,4 @@ public class EffectiveScheduleService {
                 && event.getSourceRef().startsWith(MANUAL_FULL_DAY_SOURCE_REF_PREFIX);
     }
 
-    private List<CalendarEvent> sortByTime(List<CalendarEvent> events) {
-        return events.stream()
-                .sorted(Comparator.comparing(CalendarEvent::getStartTime))
-                .collect(Collectors.toList());
-    }
 }

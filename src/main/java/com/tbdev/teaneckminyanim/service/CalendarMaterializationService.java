@@ -204,11 +204,7 @@ public class CalendarMaterializationService {
                         organizationId, EventSource.IMPORTED, startDate, endDate);
 
         Map<String, CalendarEvent> bySourceRef = new HashMap<>();
-        for (CalendarEvent existing : existingImported) {
-            if (existing.getSourceRef() != null) {
-                bySourceRef.put(existing.getSourceRef(), existing);
-            }
-        }
+        populateImportedEventCache(organizationId, existingImported, bySourceRef);
 
         List<CalendarEvent> eventsToSave = new ArrayList<>();
         for (OrganizationCalendarEntry entry : entries) {
@@ -264,11 +260,7 @@ public class CalendarMaterializationService {
                         organizationId, EventSource.IMPORTED, effectiveStart, effectiveEnd);
 
         Map<String, CalendarEvent> bySourceRef = new HashMap<>();
-        for (CalendarEvent existing : existingImported) {
-            if (existing.getSourceRef() != null) {
-                bySourceRef.put(existing.getSourceRef(), existing);
-            }
-        }
+        populateImportedEventCache(organizationId, existingImported, bySourceRef);
 
         List<CalendarEvent> eventsToSave = new ArrayList<>();
         for (OrganizationCalendarEntry entry : entries) {
@@ -342,6 +334,47 @@ public class CalendarMaterializationService {
 
     private String importedSourceRef(Long entryId) {
         return "import-" + entryId;
+    }
+
+    private void populateImportedEventCache(
+            String organizationId,
+            List<CalendarEvent> existingImported,
+            Map<String, CalendarEvent> bySourceRef) {
+        List<CalendarEvent> duplicates = new ArrayList<>();
+
+        for (CalendarEvent existing : existingImported) {
+            if (existing.getSourceRef() == null) {
+                continue;
+            }
+
+            CalendarEvent current = bySourceRef.get(existing.getSourceRef());
+            if (current == null) {
+                bySourceRef.put(existing.getSourceRef(), existing);
+                continue;
+            }
+
+            if (shouldPreferImportedEvent(existing, current)) {
+                bySourceRef.put(existing.getSourceRef(), existing);
+                duplicates.add(current);
+            } else {
+                duplicates.add(existing);
+            }
+        }
+
+        if (!duplicates.isEmpty()) {
+            calendarEventRepository.deleteAll(duplicates);
+            log.warn("Deleted {} duplicate imported calendar_events rows for {}", duplicates.size(), organizationId);
+        }
+    }
+
+    private boolean shouldPreferImportedEvent(CalendarEvent candidate, CalendarEvent current) {
+        if (candidate.getId() == null) {
+            return false;
+        }
+        if (current.getId() == null) {
+            return true;
+        }
+        return candidate.getId() < current.getId();
     }
 
     /**
