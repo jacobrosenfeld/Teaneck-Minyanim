@@ -136,7 +136,7 @@ Same query params as combined schedule, but max range is **30 days**.
 ## Zmanim
 
 ### `GET /api/v1/zmanim`
-Returns 14 halachic times for a date, calculated for **Teaneck, NJ**.
+Returns 15 halachic times for a date, calculated for **Teaneck, NJ**.
 
 **Query params:**
 

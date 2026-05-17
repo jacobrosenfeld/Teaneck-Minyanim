@@ -70,6 +70,27 @@ class EffectiveScheduleServiceTest {
     }
 
     @Test
+    void getEffectiveEventsForDate_collapsesExactDisplayDuplicates() {
+        when(materializationService.isDateInWindow(DATE)).thenReturn(true);
+
+        CalendarEvent firstImported = event(1L, ORG_ID, DATE, LocalTime.of(5, 15), EventSource.IMPORTED, "import-1");
+        firstImported.setNotes("Vasikin Minyan. Netz: 5:35 AM");
+
+        CalendarEvent duplicateImported = event(2L, ORG_ID, DATE, LocalTime.of(5, 15), EventSource.IMPORTED, "import-2");
+        duplicateImported.setNotes("Vasikin Minyan. Netz: 5:35 AM");
+
+        CalendarEvent sameTimeDifferentNotes = event(3L, ORG_ID, DATE, LocalTime.of(5, 15), EventSource.IMPORTED, "import-3");
+        sameTimeDifferentNotes.setNotes("Hashkama");
+
+        when(calendarEventRepository.findByOrganizationIdAndDateAndEnabledTrue(ORG_ID, DATE))
+                .thenReturn(List.of(duplicateImported, sameTimeDifferentNotes, firstImported));
+
+        List<CalendarEvent> effective = effectiveScheduleService.getEffectiveEventsForDate(ORG_ID, DATE);
+
+        assertIterableEquals(List.of(2L, 3L), effective.stream().map(CalendarEvent::getId).toList());
+    }
+
+    @Test
     void getEffectiveEventsInRange_importedBeatsRulesWhenNoManual() {
         LocalDate date2 = DATE.plusDays(1);
         CalendarEvent d1Imported = event(1L, ORG_ID, DATE, LocalTime.of(7, 0), EventSource.IMPORTED, "imp-1");
