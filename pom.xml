@@ -5,12 +5,12 @@
   <parent> 
     <groupId>org.springframework.boot</groupId>  
     <artifactId>spring-boot-starter-parent</artifactId>  
-    <version>3.5.12</version>  
+    <version>3.5.14</version>
     <relativePath/>
   </parent>  
   <groupId>com.tbdev</groupId>  
   <artifactId>Teaneck-Minyanim</artifactId>  
-  <version>1.10.4</version>
+  <version>1.10.5</version>
   <name>Teaneck-Minyanim</name>
   <description>Teaneck-Minyanim</description>
   <properties>
@@ -19,7 +19,9 @@
     <!-- Security overrides for Dependabot alerts -->
     <jackson-bom.version>2.21.1</jackson-bom.version>
     <logback.version>1.5.25</logback.version>
-    <spring-security.version>6.5.9</spring-security.version>
+    <spring-security.version>6.5.10</spring-security.version>
+    <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
+    <commons-lang3.version>3.18.0</commons-lang3.version>
   </properties>  
   <dependencies> 
     <dependency> 
@@ -155,6 +157,13 @@
         <groupId>org.springframework.boot</groupId>  
         <artifactId>spring-boot-maven-plugin</artifactId> 
       </plugin>  
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <proc>full</proc>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
