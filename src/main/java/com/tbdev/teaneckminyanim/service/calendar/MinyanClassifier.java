@@ -143,7 +143,7 @@ public class MinyanClassifier {
      * @param title Entry title
      * @param type Entry type
      * @param description Entry description
-     * @param date Entry date (for computing Shkiya for Mincha/Maariv)
+     * @param date Entry date (for computing date-sensitive classifier notes)
      * @param time Entry time (for NS abbreviation classification)
      * @return Classification result with reason
      */
@@ -211,12 +211,7 @@ public class MinyanClassifier {
         // Check for combined Mincha/Maariv first (most specific)
         for (Pattern pattern : MINCHA_MAARIV_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
-                // Generate Shkiya note and add any title qualifiers
-                String notes = generateShkiyaNote(date);
-                String titleQualifier = extractTitleQualifier(title);
-                if (titleQualifier != null && !titleQualifier.isEmpty()) {
-                    notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
-                }
+                String notes = extractTitleQualifier(title);
                 return new ClassificationResult(
                     MinyanType.MINCHA_MAARIV,
                     "Matched combined Mincha/Maariv pattern: " + pattern.pattern(),
@@ -321,7 +316,7 @@ public class MinyanClassifier {
      * @param title Entry title
      * @param type Entry type
      * @param description Entry description
-     * @param date Entry date (for computing Shkiya for Mincha/Maariv)
+     * @param date Entry date (for computing date-sensitive classifier notes)
      * @return Classification result with reason
      */
     public ClassificationResult classify(String title, String type, String description, LocalDate date) {
@@ -379,42 +374,6 @@ public class MinyanClassifier {
             }
         } catch (Exception e) {
             log.error("Error computing Netz Hachama for date {}: {}", date, e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Generate a note with Shkiya (sunset) time for a given date.
-     * Used for Mincha/Maariv combined entries.
-     * 
-     * @param date The date to compute Shkiya for
-     * @return Formatted note string, or null if Shkiya cannot be computed
-     */
-    private String generateShkiyaNote(LocalDate date) {
-        if (date == null) {
-            return null;
-        }
-        
-        try {
-            Dictionary<Zman, Date> zmanim = zmanimHandler.getZmanim(date);
-            Date shkiya = zmanim.get(Zman.SHEKIYA);
-            
-            if (shkiya != null) {
-                // Convert Date to LocalTime for formatting
-                LocalTime shkiyaTime = shkiya.toInstant()
-                    .atZone(settingsService.getZoneId())
-                    .toLocalTime();
-                
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
-                String formattedTime = shkiyaTime.format(formatter);
-                
-                return "Shkiya: " + formattedTime;
-            } else {
-                log.warn("Unable to compute Shkiya for date: {}", date);
-                return null;
-            }
-        } catch (Exception e) {
-            log.error("Error computing Shkiya for date {}: {}", date, e.getMessage());
             return null;
         }
     }

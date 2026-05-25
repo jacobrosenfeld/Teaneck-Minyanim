@@ -224,8 +224,8 @@ public class ZmanimService {
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
         
-        // Annotate Maariv/Mincha-Maariv events near Plag with the Plag time in their notes
-        scheduleEnrichmentService.annotatePlag(minyanEvents, zmanim);
+        // Add final zman notes, including Shkiya for Mincha/Maariv and Plag replacements.
+        scheduleEnrichmentService.annotateZmanim(minyanEvents, zmanim);
 
         // Populate organization slugs for all minyan events
         populateOrganizationSlugs(minyanEvents);
@@ -322,8 +322,8 @@ public class ZmanimService {
         
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
 
-        // Annotate Maariv/Mincha-Maariv events near Plag with the Plag time in their notes
-        scheduleEnrichmentService.annotatePlag(minyanEvents, zmanim);
+        // Add final zman notes, including Shkiya for Mincha/Maariv and Plag replacements.
+        scheduleEnrichmentService.annotateZmanim(minyanEvents, zmanim);
 
         mv.getModel().put("allminyanim", minyanEvents);
 

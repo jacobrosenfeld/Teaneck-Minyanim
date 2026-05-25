@@ -92,9 +92,8 @@ public class SuperAdminMaintenanceController {
 
     /**
      * Deletes all calendar entries for every org that has a calendar URL, then
-     * re-fetches and re-classifies each one from scratch.  This ensures the
-     * classifier's current logic (including Plag vs. Shkiya note generation) is
-     * applied uniformly to all stored data.
+     * re-fetches and re-classifies each one from scratch. Final schedule
+     * enrichment applies current Shkiya/Plag display notes at response time.
      */
     @PostMapping("/admin/super/maintenance/reimport-all")
     public RedirectView reimportAll(RedirectAttributes redirectAttributes) {

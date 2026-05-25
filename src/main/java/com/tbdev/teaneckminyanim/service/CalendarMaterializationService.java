@@ -78,26 +78,53 @@ public class CalendarMaterializationService {
     public void materializeOrganization(String organizationId) {
         log.info("Materializing events for organization: {}", organizationId);
         
-        LocalDate today = LocalDate.now();
-        LocalDate startDate = today.minusWeeks(PAST_WEEKS);
-        LocalDate endDate = today.plusWeeks(FUTURE_WEEKS);
-        
-        // Step 1: Delete existing RULES events in the window
-        log.debug("Deleting RULES events for {} from {} to {}", organizationId, startDate, endDate);
-        calendarEventRepository.deleteRulesEventsInRange(organizationId, startDate, endDate);
-        
-        // Step 2: Generate new RULES events
-        List<CalendarEvent> rulesEvents = generateRulesEvents(organizationId, startDate, endDate);
-        log.debug("Generated {} RULES events for {}", rulesEvents.size(), organizationId);
-        calendarEventRepository.saveAll(rulesEvents);
+        WindowBounds bounds = getWindowBounds();
+        LocalDate startDate = bounds.getStartDate();
+        LocalDate endDate = bounds.getEndDate();
+
+        List<CalendarEvent> rulesEvents = replaceRulesEventsInRange(organizationId, startDate, endDate);
         
         // Step 3: Materialize IMPORTED events (if any new ones exist)
         List<CalendarEvent> importedEvents = materializeImportedEvents(organizationId, startDate, endDate);
         log.debug("Materialized {} IMPORTED events for {}", importedEvents.size(), organizationId);
-        calendarEventRepository.saveAll(importedEvents);
+        if (!importedEvents.isEmpty()) {
+            calendarEventRepository.saveAll(importedEvents);
+        }
         
         log.info("Completed materialization for organization {}: {} rules, {} imported", 
                 organizationId, rulesEvents.size(), importedEvents.size());
+    }
+
+    /**
+     * Live-sync rule-based minyan changes into the materialized rolling window.
+     * Used by admin rule create/edit/enable/disable/delete actions.
+     */
+    @Transactional
+    public void syncRulesForOrganizationLive(String organizationId) {
+        if (organizationId == null || organizationId.isBlank()) {
+            return;
+        }
+
+        WindowBounds bounds = getWindowBounds();
+        List<CalendarEvent> rulesEvents = replaceRulesEventsInRange(
+                organizationId, bounds.getStartDate(), bounds.getEndDate());
+
+        log.debug("Live-synced {} rule-based materialized events for {}", rulesEvents.size(), organizationId);
+    }
+
+    private List<CalendarEvent> replaceRulesEventsInRange(
+            String organizationId,
+            LocalDate startDate,
+            LocalDate endDate) {
+        log.debug("Deleting RULES events for {} from {} to {}", organizationId, startDate, endDate);
+        calendarEventRepository.deleteRulesEventsInRange(organizationId, startDate, endDate);
+
+        List<CalendarEvent> rulesEvents = generateRulesEvents(organizationId, startDate, endDate);
+        log.debug("Generated {} RULES events for {}", rulesEvents.size(), organizationId);
+        if (!rulesEvents.isEmpty()) {
+            calendarEventRepository.saveAll(rulesEvents);
+        }
+        return rulesEvents;
     }
 
     /**

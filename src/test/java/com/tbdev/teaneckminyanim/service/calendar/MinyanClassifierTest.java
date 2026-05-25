@@ -79,9 +79,7 @@ class MinyanClassifierTest {
 
         assertEquals(MinyanType.MINCHA_MAARIV, result.classification);
         assertNotNull(result.reason);
-        assertNotNull(result.notes, "Should include Shkiya note");
-        assertTrue(result.notes.contains("Shkiya"), 
-            "Notes should mention Shkiya time");
+        assertNull(result.notes, "Shkiya is added at final schedule display time");
     }
 
     @Test
@@ -90,7 +88,7 @@ class MinyanClassifierTest {
             classifier.classify("Mincha & Maariv", null, null, LocalDate.now());
 
         assertEquals(MinyanType.MINCHA_MAARIV, result.classification);
-        assertNotNull(result.notes, "Should include Shkiya note");
+        assertNull(result.notes, "Shkiya is added at final schedule display time");
     }
 
     @Test
@@ -99,7 +97,7 @@ class MinyanClassifierTest {
             classifier.classify("Mincha-Maariv", null, null, LocalDate.now());
 
         assertEquals(MinyanType.MINCHA_MAARIV, result.classification);
-        assertNotNull(result.notes, "Should include Shkiya note");
+        assertNull(result.notes, "Shkiya is added at final schedule display time");
     }
 
     @Test
@@ -240,15 +238,12 @@ class MinyanClassifierTest {
     }
 
     @Test
-    void testShkiyaNote_Format() {
+    void testClassify_MinchaMaariv_DoesNotGenerateShkiyaAtImportLevel() {
         MinyanClassifier.ClassificationResult result = 
             classifier.classify("Mincha/Maariv", null, null, LocalDate.of(2024, 1, 15));
 
-        assertNotNull(result.notes);
-        assertTrue(result.notes.startsWith("Shkiya:"), 
-            "Shkiya note should start with 'Shkiya:'");
-        assertTrue(result.notes.contains(":"), 
-            "Shkiya note should contain time with colon");
+        assertEquals(MinyanType.MINCHA_MAARIV, result.classification);
+        assertNull(result.notes, "Shkiya is added by ScheduleEnrichmentService at final display time");
     }
 
     /**
@@ -335,9 +330,7 @@ class MinyanClassifierTest {
 
         assertEquals(MinyanType.MINCHA_MAARIV, result.classification,
             "Mincha/Maariv must be classified as MINCHA_MAARIV and should be enabled");
-        assertNotNull(result.notes);
-        assertTrue(result.notes.contains("Shkiya"),
-            "Mincha/Maariv should include Shkiya note");
+        assertNull(result.notes, "Shkiya is added at final schedule display time");
     }
     
     // Tests for spelling variants

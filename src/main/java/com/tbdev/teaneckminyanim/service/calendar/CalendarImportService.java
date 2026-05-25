@@ -206,8 +206,8 @@ public class CalendarImportService {
     /**
      * Force-reimport calendars for all organizations with calendar URLs, regardless of
      * useScrapedCalendar flag.  All existing entries are deleted before the fresh import
-     * so the classifier re-processes every event from scratch (fixes stale notes like
-     * "Shkiya:" that should have been replaced on the original import pass).
+     * so the classifier re-processes every event from scratch. Final schedule
+     * enrichment applies current Shkiya/Plag display notes at response time.
      *
      * @return Map of organization ID → import result
      */
