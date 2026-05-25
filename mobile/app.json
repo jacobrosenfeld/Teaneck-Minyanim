@@ -7,11 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "teaneckminyanim",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "bundleIdentifier": "com.teaneckminyanim.app",
       "buildNumber": "31",
@@ -48,6 +43,18 @@
     },
     "plugins": [
       "expo-router",
+      "expo-font",
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-status-bar",
+      "expo-web-browser",
       [
         "expo-location",
         {
