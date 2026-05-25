@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import PostHog from 'posthog-react-native';
 import {
   getTrackingPermissionsAsync,
@@ -7,6 +6,11 @@ import {
 } from 'expo-tracking-transparency';
 
 import { getAnalyticsConfig } from './config';
+import {
+  buildAnalyticsEventMetadata,
+  buildPostHogAppProperties,
+  getAnalyticsPlatform,
+} from './appMetadata';
 import {
   computeAnalyticsEnabled,
   mapTrackingPermissionStatus,
@@ -47,9 +51,7 @@ let posthogClient: PostHog | null = null;
 let posthogReadyPromise: Promise<void> | null = null;
 
 function currentPlatform(): 'ios' | 'android' | 'web' {
-  if (Platform.OS === 'ios') return 'ios';
-  if (Platform.OS === 'android') return 'android';
-  return 'web';
+  return getAnalyticsPlatform();
 }
 
 function ensureClient(): PostHog | null {
@@ -63,6 +65,10 @@ function ensureClient(): PostHog | null {
     captureAppLifecycleEvents: true,
     disableGeoip: true,
     enableSessionReplay: config.sessionReplayEnabled,
+    customAppProperties: (properties) => ({
+      ...properties,
+      ...buildPostHogAppProperties(),
+    }),
     sessionReplayConfig: config.sessionReplayEnabled
       ? {
           maskAllTextInputs: true,
@@ -113,18 +119,27 @@ async function syncAdvertisingId(shouldAttachAdvertisingId: boolean): Promise<vo
   if (!posthogClient) return;
 
   if (!shouldAttachAdvertisingId) {
-    posthogClient.unregister('advertising_id');
+    await posthogClient.unregister('advertising_id');
     return;
   }
 
   try {
     const advertisingId = await getAdvertisingId();
     if (advertisingId) {
-      posthogClient.register({ advertising_id: advertisingId });
+      await posthogClient.register({ advertising_id: advertisingId });
     }
   } catch {
     // Ignore; tracking may be unavailable on this device.
   }
+}
+
+async function syncAppMetadata(): Promise<void> {
+  if (!posthogClient) return;
+
+  const metadata = buildAnalyticsEventMetadata();
+  if (Object.keys(metadata).length === 0) return;
+
+  await posthogClient.register(metadata);
 }
 
 async function readPlatformTrackingPermission(): Promise<PlatformTrackingPermission> {
@@ -162,11 +177,13 @@ async function applyAnalyticsState(captureAppOpen: boolean): Promise<void> {
 
   await waitForClientReady();
   await client.optIn();
+  await syncAppMetadata();
   await syncAdvertisingId(canAttachAdvertisingId());
 
   if (captureAppOpen && !runtime.appOpenCaptured) {
     runtime.appOpenCaptured = true;
     dispatchCapture(client, true, 'app_open', {
+      ...buildAnalyticsEventMetadata(),
       platform: currentPlatform(),
       consent: runtime.consent,
       tracking_permission: runtime.platformTrackingPermission,
@@ -250,7 +267,10 @@ export function capture(
   const client = ensureClient();
   if (!client) return false;
 
-  const safeProperties = sanitizeProperties(properties);
+  const safeProperties = {
+    ...sanitizeProperties(properties),
+    ...buildAnalyticsEventMetadata(),
+  };
   return dispatchCapture(client, runtime.analyticsEnabled, eventName, safeProperties);
 }
 

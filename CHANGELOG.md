@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Mobile app version telemetry**: PostHog mobile analytics now records app version/build, platform, and OS version metadata for iOS and Android events.
 - **iOS app website splash popup**: Added a dismissible public-site popup announcing the iOS app, using the site logo, App Store badge, and `https://l.teaneckminyanim.com/ios` download link.
 - **Public error preview routes**: Added `/test/errors/{code}` endpoints for `400`, `403`, `404`, `429`, `500`, and `503` so themed error pages can be validated on live environments without ad-hoc URL tricks.
 - **Manual override workflows (org + super admin)**: Added dedicated override pages for shul admins and super admins, including manual add/delete/toggle flows, start/end date range entry, and guidance that manual overrides do not require a location.

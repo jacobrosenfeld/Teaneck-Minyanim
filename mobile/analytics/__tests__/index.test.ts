@@ -16,6 +16,23 @@ const mockState = vi.hoisted(() => ({
   requestTrackingStatus: 'denied',
   getTrackingStatus: 'denied',
   advertisingId: 'ios-ad-id-123',
+  nativeApplicationVersion: '1.1.4' as string | null,
+  nativeBuildVersion: '32' as string | null,
+  applicationId: 'com.teaneckminyanim.app' as string | null,
+  osName: 'iOS' as string | null,
+  osVersion: '17.5' as string | null,
+  expoConfig: {
+    version: '1.1.4',
+    slug: 'teaneck-minyanim',
+    ios: {
+      buildNumber: '32',
+      bundleIdentifier: 'com.teaneckminyanim.app',
+    },
+    android: {
+      package: 'com.teaneckminyanim.app',
+      versionCode: 16,
+    },
+  },
   posthogInstances: [] as any[],
   requestTrackingCalls: 0,
   getTrackingCalls: 0,
@@ -74,8 +91,54 @@ vi.mock('expo-tracking-transparency', () => ({
   },
 }));
 
+vi.mock('expo-application', () => ({
+  get nativeApplicationVersion() {
+    return mockState.nativeApplicationVersion;
+  },
+  get nativeBuildVersion() {
+    return mockState.nativeBuildVersion;
+  },
+  get applicationId() {
+    return mockState.applicationId;
+  },
+}));
+
+vi.mock('expo-constants', () => ({
+  default: {
+    get expoConfig() {
+      return mockState.expoConfig;
+    },
+  },
+}));
+
+vi.mock('expo-device', () => ({
+  get osName() {
+    return mockState.osName;
+  },
+  get osVersion() {
+    return mockState.osVersion;
+  },
+}));
+
 async function loadAnalyticsModule() {
   return import('../index');
+}
+
+function expectedMetadata(overrides: Record<string, string> = {}) {
+  return expect.objectContaining({
+    $app_version: '1.1.4',
+    $app_build: '32',
+    $app_namespace: 'com.teaneckminyanim.app',
+    $os_name: 'iOS',
+    $os_version: '17.5',
+    app_platform: 'ios',
+    app_version: '1.1.4',
+    app_build: '32',
+    app_namespace: 'com.teaneckminyanim.app',
+    os_name: 'iOS',
+    os_version: '17.5',
+    ...overrides,
+  });
 }
 
 describe('analytics runtime state', () => {
@@ -96,6 +159,23 @@ describe('analytics runtime state', () => {
     mockState.requestTrackingStatus = 'denied';
     mockState.getTrackingStatus = 'denied';
     mockState.advertisingId = 'ios-ad-id-123';
+    mockState.nativeApplicationVersion = '1.1.4';
+    mockState.nativeBuildVersion = '32';
+    mockState.applicationId = 'com.teaneckminyanim.app';
+    mockState.osName = 'iOS';
+    mockState.osVersion = '17.5';
+    mockState.expoConfig = {
+      version: '1.1.4',
+      slug: 'teaneck-minyanim',
+      ios: {
+        buildNumber: '32',
+        bundleIdentifier: 'com.teaneckminyanim.app',
+      },
+      android: {
+        package: 'com.teaneckminyanim.app',
+        versionCode: 16,
+      },
+    };
     mockState.posthogInstances = [];
     mockState.requestTrackingCalls = 0;
     mockState.getTrackingCalls = 0;
@@ -115,12 +195,18 @@ describe('analytics runtime state', () => {
     const posthog = mockState.posthogInstances[0];
     expect(posthog.ready).toHaveBeenCalled();
     expect(posthog.optOut).not.toHaveBeenCalled();
-    expect(posthog.register).not.toHaveBeenCalled();
+    expect(posthog.register).toHaveBeenCalledWith(expectedMetadata());
+    expect(posthog.register).not.toHaveBeenCalledWith(
+      expect.objectContaining({ advertising_id: 'ios-ad-id-123' }),
+    );
     expect(posthog.unregister).toHaveBeenCalledWith('advertising_id');
 
     const didCapture = analytics.capture('screen_view', { pathname: '/(tabs)' });
     expect(didCapture).toBe(true);
-    expect(posthog.capture).toHaveBeenCalledWith('screen_view', { pathname: '/(tabs)' });
+    expect(posthog.capture).toHaveBeenCalledWith(
+      'screen_view',
+      expectedMetadata({ pathname: '/(tabs)' }),
+    );
   });
 
   it('captures events and registers advertising_id when iOS ATT is authorized', async () => {
@@ -137,12 +223,61 @@ describe('analytics runtime state', () => {
     const posthog = mockState.posthogInstances[0];
     expect(posthog.ready).toHaveBeenCalled();
     expect(posthog.optOut).not.toHaveBeenCalled();
+    expect(posthog.register).toHaveBeenCalledWith(expectedMetadata());
     expect(posthog.register).toHaveBeenCalledWith({ advertising_id: 'ios-ad-id-123' });
     expect(mockState.advertisingIdCalls).toBe(1);
 
     const didCapture = analytics.capture('screen_view', { pathname: '/(tabs)' });
     expect(didCapture).toBe(true);
-    expect(posthog.capture).toHaveBeenCalledWith('screen_view', { pathname: '/(tabs)' });
+    expect(posthog.capture).toHaveBeenCalledWith(
+      'screen_view',
+      expectedMetadata({ pathname: '/(tabs)' }),
+    );
+  });
+
+  it('falls back to Expo config build metadata on Android when native values are unavailable', async () => {
+    mockState.platform = 'android';
+    mockState.nativeBuildVersion = null;
+    mockState.osName = null;
+    mockState.osVersion = '15';
+    mockState.advertisingId = 'android-ad-id-123';
+
+    const analytics = await loadAnalyticsModule();
+    await analytics.initAnalytics();
+
+    const accepted = await analytics.setConsent('accept');
+    expect(accepted.analyticsEnabled).toBe(true);
+    expect(mockState.posthogInstances).toHaveLength(1);
+
+    const posthog = mockState.posthogInstances[0];
+    expect(posthog.register).toHaveBeenCalledWith(
+      expectedMetadata({
+        $app_build: '16',
+        $os_name: 'Android',
+        $os_version: '15',
+        app_platform: 'android',
+        app_build: '16',
+        os_name: 'Android',
+        os_version: '15',
+      }),
+    );
+    expect(posthog.register).toHaveBeenCalledWith({ advertising_id: 'android-ad-id-123' });
+
+    const didCapture = analytics.capture('screen_view', { pathname: '/(tabs)' });
+    expect(didCapture).toBe(true);
+    expect(posthog.capture).toHaveBeenCalledWith(
+      'screen_view',
+      expectedMetadata({
+        $app_build: '16',
+        $os_name: 'Android',
+        $os_version: '15',
+        app_platform: 'android',
+        app_build: '16',
+        os_name: 'Android',
+        os_version: '15',
+        pathname: '/(tabs)',
+      }),
+    );
   });
 
   it('blocks capture when consent is declined', async () => {
