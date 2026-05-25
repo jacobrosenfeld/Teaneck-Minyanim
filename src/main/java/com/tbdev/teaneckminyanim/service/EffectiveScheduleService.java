@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,6 +32,8 @@ import java.util.stream.Stream;
 public class EffectiveScheduleService {
 
     public static final String MANUAL_FULL_DAY_SOURCE_REF_PREFIX = "manual:FULL_DAY_REPLACE";
+    private static final Pattern GENERATED_ZMAN_NOTE_PATTERN = Pattern.compile(
+            "(?i)(^|\\s*\\|\\s*|\\.\\s*)\\b(?:Shkiya|Plag):\\s*\\d{1,2}:\\d{2}\\s*[AP]M\\b\\.?\\s*");
 
     private final CalendarEventRepository calendarEventRepository;
     private final CalendarMaterializationService materializationService;
@@ -197,13 +200,23 @@ public class EffectiveScheduleService {
                     event.getStartTime(),
                     event.getMinyanType(),
                     normalize(event.getLocationName()),
-                    normalize(event.getNotes()),
+                    normalizeGeneratedZmanNotes(event.getNotes()),
                     normalize(event.getDynamicTimeString()),
                     normalize(event.getWhatsapp()));
         }
 
         private static String normalize(String value) {
             return value == null ? "" : value.trim();
+        }
+
+        private static String normalizeGeneratedZmanNotes(String value) {
+            if (value == null) {
+                return "";
+            }
+            return GENERATED_ZMAN_NOTE_PATTERN.matcher(value)
+                    .replaceAll(" ")
+                    .replaceAll("\\s+", " ")
+                    .trim();
         }
     }
 

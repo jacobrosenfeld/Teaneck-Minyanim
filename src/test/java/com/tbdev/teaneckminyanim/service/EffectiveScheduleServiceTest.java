@@ -91,6 +91,26 @@ class EffectiveScheduleServiceTest {
     }
 
     @Test
+    void getEffectiveEventsForDate_collapsesDuplicatesThatOnlyDifferByGeneratedZmanNotes() {
+        when(materializationService.isDateInWindow(DATE)).thenReturn(true);
+
+        CalendarEvent staleImported = event(1L, ORG_ID, DATE, LocalTime.of(18, 30), EventSource.IMPORTED, "import-1");
+        staleImported.setMinyanType(MinyanType.MINCHA_MAARIV);
+        staleImported.setNotes("Shkiya: 6:55 PM. Teen Minyan");
+
+        CalendarEvent currentImported = event(2L, ORG_ID, DATE, LocalTime.of(18, 30), EventSource.IMPORTED, "import-2");
+        currentImported.setMinyanType(MinyanType.MINCHA_MAARIV);
+        currentImported.setNotes("Teen Minyan");
+
+        when(calendarEventRepository.findByOrganizationIdAndDateAndEnabledTrue(ORG_ID, DATE))
+                .thenReturn(List.of(staleImported, currentImported));
+
+        List<CalendarEvent> effective = effectiveScheduleService.getEffectiveEventsForDate(ORG_ID, DATE);
+
+        assertEquals(1, effective.size());
+    }
+
+    @Test
     void getEffectiveEventsInRange_importedBeatsRulesWhenNoManual() {
         LocalDate date2 = DATE.plusDays(1);
         CalendarEvent d1Imported = event(1L, ORG_ID, DATE, LocalTime.of(7, 0), EventSource.IMPORTED, "imp-1");

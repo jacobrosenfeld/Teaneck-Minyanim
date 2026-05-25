@@ -108,7 +108,7 @@ public class OrganizationCalendarEntry {
     private String classificationReason;
 
     /**
-     * Additional notes (e.g., Shkiya time for Mincha/Maariv events)
+     * Additional classifier notes and title qualifiers.
      */
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;

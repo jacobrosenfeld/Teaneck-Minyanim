@@ -106,7 +106,7 @@ public class ScheduleApiController {
 
         List<CalendarEvent> events = effectiveScheduleService.getAllOrgsEffectiveEventsInRange(from, to);
         Map<String, Organization> orgCache = buildOrgCache(events);
-        List<ScheduleEventDto> dtos = enrichmentService.annotatePlag(toSortedDtos(events, orgCache));
+        List<ScheduleEventDto> dtos = enrichmentService.annotateZmanim(toSortedDtos(events, orgCache));
 
         return ResponseEntity.ok(ApiResponse.ok(dtos, buildMeta(from, to, dtos.size(), window)));
     }
@@ -172,7 +172,7 @@ public class ScheduleApiController {
         }
 
         List<CalendarEvent> events = effectiveScheduleService.getEffectiveEventsInRange(org.getId(), from, to);
-        List<ScheduleEventDto> dtos = enrichmentService.annotatePlag(events.stream()
+        List<ScheduleEventDto> dtos = enrichmentService.annotateZmanim(events.stream()
                 .sorted(Comparator.comparing(CalendarEvent::getDate).thenComparing(CalendarEvent::getStartTime))
                 .map(e -> ScheduleEventDto.from(e, org))
                 .toList());

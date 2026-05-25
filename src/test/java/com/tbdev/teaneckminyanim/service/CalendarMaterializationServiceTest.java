@@ -4,6 +4,8 @@ import com.tbdev.teaneckminyanim.enums.EventSource;
 import com.tbdev.teaneckminyanim.enums.Nusach;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.model.CalendarEvent;
+import com.tbdev.teaneckminyanim.model.Location;
+import com.tbdev.teaneckminyanim.model.Minyan;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry;
 import com.tbdev.teaneckminyanim.repo.CalendarEventRepository;
@@ -17,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -251,5 +254,50 @@ class CalendarMaterializationServiceTest {
         verify(importedEntryRepository, never()).findEntriesInRange(any(), any(), any());
         verify(calendarEventRepository, never()).saveAll(any());
         verify(organizationService, never()).findById(eq(orgId));
+    }
+
+    @Test
+    void syncRulesForOrganizationLive_rebuildsRuleMaterializedEventsInWindow() {
+        String orgId = "org-rules";
+        Organization org = Organization.builder()
+                .id(orgId)
+                .name("Org")
+                .orgColor("#000000")
+                .nusach(Nusach.ASHKENAZ)
+                .build();
+        Location location = new Location("Main", orgId);
+
+        Minyan minyan = new Minyan();
+        minyan.setId("rule-1");
+        minyan.setOrganizationId(orgId);
+        minyan.setLocationId(location.getId());
+        minyan.setType(MinyanType.MINCHA_MAARIV);
+        minyan.setNusach(Nusach.ASHKENAZ);
+        minyan.setNotes("Rule note");
+        minyan.setWhatsapp("https://chat.example");
+        minyan.setSchedule(fixedSchedule("T18:0:0:0"));
+
+        when(minyanService.findEnabledMatching(orgId)).thenReturn(List.of(minyan));
+        when(organizationService.findById(orgId)).thenReturn(Optional.of(org));
+        when(settingsService.getZoneId()).thenReturn(ZoneId.of("America/New_York"));
+        when(locationService.findById(location.getId())).thenReturn(location);
+
+        service.syncRulesForOrganizationLive(orgId);
+
+        verify(calendarEventRepository).deleteRulesEventsInRange(eq(orgId), any(LocalDate.class), any(LocalDate.class));
+
+        ArgumentCaptor<List<CalendarEvent>> savedCaptor = ArgumentCaptor.forClass(List.class);
+        verify(calendarEventRepository).saveAll(savedCaptor.capture());
+        List<CalendarEvent> saved = savedCaptor.getValue();
+        assertFalse(saved.isEmpty());
+        assertTrue(saved.stream().allMatch(e -> e.getSource() == EventSource.RULES));
+        assertTrue(saved.stream().allMatch(e -> "rule-1".equals(e.getSourceRef())));
+        assertTrue(saved.stream().allMatch(e -> e.getMinyanType() == MinyanType.MINCHA_MAARIV));
+        assertTrue(saved.stream().allMatch(e -> "Main".equals(e.getLocationName())));
+    }
+
+    private com.tbdev.teaneckminyanim.minyan.Schedule fixedSchedule(String time) {
+        return new com.tbdev.teaneckminyanim.minyan.Schedule(
+                time, time, time, time, time, time, time, time, time, time, time);
     }
 }

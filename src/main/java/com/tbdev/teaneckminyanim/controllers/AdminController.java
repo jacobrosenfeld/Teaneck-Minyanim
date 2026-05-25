@@ -1587,6 +1587,7 @@ public class AdminController {
 
         minyan.setEnabled(true);
         minyanService.update(minyan);
+        calendarMaterializationService.syncRulesForOrganizationLive(minyan.getOrganizationId());
 
         ModelAndView mv = new ModelAndView();
         if (rd != null) {
@@ -1611,6 +1612,7 @@ public class AdminController {
 
         minyan.setEnabled(false);
         minyanService.update(minyan);
+        calendarMaterializationService.syncRulesForOrganizationLive(minyan.getOrganizationId());
 
         ModelAndView mv = new ModelAndView();
         if (rd != null) {
@@ -1718,7 +1720,7 @@ public class AdminController {
         MinyanTime chanukaTime = MinyanTime.fromFormData(chanukaTimeType, chanukaTimeString, chanukaZman, chanukaZmanOffset);
         MinyanTime rccTime = MinyanTime.fromFormData(rccTimeType, rccTimeString, rccZman, rccZmanOffset);
 
-        Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, ytTime, rcTime, chanukaTime, rccTime);
+        Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, rcTime, ytTime, chanukaTime, rccTime);
 
 //        validate nusach
         Nusach nusach = Nusach.fromString(nusachString.toUpperCase());
@@ -1744,6 +1746,7 @@ public class AdminController {
 
         try {
             minyanService.save(minyan);
+            calendarMaterializationService.syncRulesForOrganizationLive(orgId);
 
             mv.addObject("successmessage", "You successfully created a minyan. Click <a href='/admin/" + orgId + "/minyanim/'>here</a> to return to the minyan schedule. Click <a href=\"#\" onclick='branch()'>here</a> to fill in the fields like the last minyan.");
 
@@ -1900,6 +1903,7 @@ public class AdminController {
 
         try {
             minyanService.update(updatedMinyan);
+            calendarMaterializationService.syncRulesForOrganizationLive(organizationId);
             return new ModelAndView("redirect:/admin/minyanim/" + oldMinyan.getId() + "/view?success=updated");
         } catch (Exception e) {
             log.error("Failed to update minyan {}", minyanId, e);
@@ -1922,6 +1926,7 @@ public class AdminController {
 
             try {
                 minyanService.delete(minyan);
+                calendarMaterializationService.syncRulesForOrganizationLive(organizationId);
                 return minyanim(organizationId, "The minyan was successfully deleted.", null);
             } catch (Exception e) {
                 e.printStackTrace();
