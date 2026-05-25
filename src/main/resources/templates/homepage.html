@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="/assets/css/ionicons.min.css"> <!-- Resource style -->
     <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
     <link rel="stylesheet" href="/homepage.css">
+    <link rel="stylesheet" href="/ios-app-splash.css">
     <script src="https://unpkg.com/counterup2@2.0.2/dist/index.js">	</script>
     <script type="text/javascript" src="/assets/js/plugins.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6026762329140546"
@@ -451,6 +452,19 @@
 
       </div> <!-- Main -->
       
+      <div class="ios-app-splash" id="ios-app-splash" data-version="ios-app-launch-2026-05" hidden aria-hidden="true">
+        <div class="ios-app-splash__panel" role="dialog" aria-modal="true" aria-labelledby="ios-app-splash-title">
+          <button class="ios-app-splash__close" type="button" aria-label="Close iOS app announcement" data-ios-splash-close>&times;</button>
+          <img class="ios-app-splash__logo" src="/assets/icons/favicon.svg" th:alt="${displaySiteName + ' logo'}">
+          <p class="ios-app-splash__eyebrow">Now available for iPhone</p>
+          <h2 class="ios-app-splash__title" id="ios-app-splash-title" th:text="|Get ${displaySiteName} on iOS|">Get Teaneck Minyanim on iOS</h2>
+          <p class="ios-app-splash__copy">Open minyan times, zmanim, shul details, maps, and reminders faster from the new iPhone app.</p>
+          <a class="ios-app-splash__badge-link" href="https://l.teaneckminyanim.com/ios" target="_blank" rel="noopener" aria-label="Download Teaneck Minyanim on the App Store">
+            <img class="ios-app-splash__badge" src="/assets/images/app-store-badge.svg" alt="Download on the App Store">
+          </a>
+        </div>
+      </div>
+
       <!-- Notification Popup Script -->
       <script th:inline="javascript">
         /*<![CDATA[*/
@@ -486,6 +500,7 @@
 
       <script type="text/javascript" src="/minyan-table.js"></script>
       <script type="text/javascript" src="/minyan-filter.js"></script>
+      <script type="text/javascript" src="/ios-app-splash.js"></script>
       <script type="text/javascript" src="/assets/js/custom.js"></script>
       <script type="text/javascript" src="/edot.js"></script>
       <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>

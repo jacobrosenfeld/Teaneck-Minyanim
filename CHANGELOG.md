@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **iOS app website splash popup**: Added a dismissible public-site popup announcing the iOS app, using the site logo, App Store badge, and `https://l.teaneckminyanim.com/ios` download link.
 - **Public error preview routes**: Added `/test/errors/{code}` endpoints for `400`, `403`, `404`, `429`, `500`, and `503` so themed error pages can be validated on live environments without ad-hoc URL tricks.
 - **Manual override workflows (org + super admin)**: Added dedicated override pages for shul admins and super admins, including manual add/delete/toggle flows, start/end date range entry, and guidance that manual overrides do not require a location.
 - **Bulk XLSX override import + downloadable templates**: Added XLSX import on override pages with templates tailored for org admins and super admins (including shul-name-based mapping and validated minyan types).
@@ -35,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dependabot alert #98 (CVE-2026-24734)**: Spring Boot upgrade also lifts embedded Tomcat to a patched 10.1.x release outside the vulnerable range.
 - **Dependabot alert #102 (CVE-2026-22732)**: Pinned Spring Security to `6.5.9` via Maven property override so transitive `spring-security-web` is upgraded out of the vulnerable range.
 - **iOS PostHog release telemetry under ATT denial**: iOS analytics now enables after in-app consent even when ATT is denied/unavailable, advertising ID registration remains restricted to ATT-authorized sessions only, and SDK opt-in/opt-out transitions are now awaited to prevent startup race conditions that could leave capture disabled.
+- **Mobile PostHog production delivery hardening**: Analytics initialization now waits for SDK readiness before applying opt-in, Expo config now embeds resolved analytics settings into `expo.extra` as a runtime fallback when `EXPO_PUBLIC_*` injection is missing, and production builds/updates now fail fast unless analytics is explicitly configured (including required PostHog host/key when enabled) to prevent silent no-telemetry releases.
 - **Super admin shul picker reliability**: Fixed dropdown/search initialization issues on override pages (including Turbolinks navigation handling) and improved search input behavior.
 - **Super admin location scoping**: Location options now correctly scope to the selected shul instead of mixing locations across organizations.
 - **Scheduled imports no longer undo manual disabled choices**: Added persistent manual-enable flag on imported entries so weekly sync honors admin enable/disable decisions until a full reimport.

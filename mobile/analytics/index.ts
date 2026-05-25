@@ -44,6 +44,7 @@ const runtime: RuntimeState = {
 };
 
 let posthogClient: PostHog | null = null;
+let posthogReadyPromise: Promise<void> | null = null;
 
 function currentPlatform(): 'ios' | 'android' | 'web' {
   if (Platform.OS === 'ios') return 'ios';
@@ -85,7 +86,14 @@ function ensureClient(): PostHog | null {
     },
   });
 
+  posthogReadyPromise = posthogClient.ready().catch(() => {});
+
   return posthogClient;
+}
+
+async function waitForClientReady(): Promise<void> {
+  if (!posthogReadyPromise) return;
+  await posthogReadyPromise;
 }
 
 function canAttachAdvertisingId(): boolean {
@@ -152,6 +160,7 @@ async function applyAnalyticsState(captureAppOpen: boolean): Promise<void> {
   const client = ensureClient();
   if (!client) return;
 
+  await waitForClientReady();
   await client.optIn();
   await syncAdvertisingId(canAttachAdvertisingId());
 
