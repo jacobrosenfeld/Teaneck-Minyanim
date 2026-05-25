@@ -26,6 +26,8 @@ Backend tests use JUnit 5 and Mockito. Add tests beside the code they cover, usi
 ## Commit & Pull Request Guidelines
 Recent history favors short, imperative subjects with optional prefixes: `fix:`, `docs:`, `ci:`. Keep the first line under about 72 characters and describe the user-visible change, for example `fix: guard null nusach on org page`. PRs should target `dev`, summarize behavior changes, note config or schema impacts, and include screenshots for UI/admin/mobile work. Update `CHANGELOG.md` for user-facing or operational changes; skip changelog-only edits for agent-instruction files and tooling-only tweaks.
 
+When the user says "staging branch", interpret that as likely referring to the `dev` branch unless they explicitly specify a separate branch named `staging`.
+
 ## Version & Changelog Rules
 - Bump the project version in `pom.xml` once per release-intent change set (for example, a new PR/release candidate).
 - Use semantic versioning:
