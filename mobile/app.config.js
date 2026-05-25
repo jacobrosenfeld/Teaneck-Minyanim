@@ -57,6 +57,10 @@ function withoutReactNativeMapsPlugin(plugins) {
   });
 }
 
+function readEnv(key) {
+  return (process.env[key] || '').trim();
+}
+
 module.exports = () => {
   if (isProductionProfile()) {
     loadProductionEnvFile();
@@ -65,18 +69,31 @@ module.exports = () => {
   const baseExpoConfig = appJson.expo;
   const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
   const plugins = withoutReactNativeMapsPlugin(baseExpoConfig.plugins);
-  const analyticsEnabled =
-    (process.env.EXPO_PUBLIC_ANALYTICS_ENABLED || '').trim().toLowerCase() === 'true';
-  const posthogKey = (process.env.EXPO_PUBLIC_POSTHOG_KEY || '').trim();
+  const analyticsEnabledRaw = readEnv('EXPO_PUBLIC_ANALYTICS_ENABLED');
+  const analyticsEnabled = analyticsEnabledRaw.toLowerCase() === 'true';
+  const posthogKey = readEnv('EXPO_PUBLIC_POSTHOG_KEY');
+  const posthogHost = readEnv('EXPO_PUBLIC_POSTHOG_HOST');
+  const sessionReplayEnabledRaw = readEnv('EXPO_PUBLIC_SESSION_REPLAY_ENABLED');
+  const sessionReplayEnabled = sessionReplayEnabledRaw.toLowerCase() === 'true';
 
   if (!mapsApiKey && process.env.EAS_BUILD_PROFILE === 'production') {
     throw new Error(
       'Missing GOOGLE_MAPS_API_KEY. Set this EAS environment variable before running a production Android build.',
     );
   }
+  if (isProductionProfile() && analyticsEnabledRaw === '') {
+    throw new Error(
+      'Missing EXPO_PUBLIC_ANALYTICS_ENABLED. Set it explicitly to true or false for production builds/updates.',
+    );
+  }
   if (isProductionProfile() && analyticsEnabled && !posthogKey) {
     throw new Error(
       'Analytics is enabled but EXPO_PUBLIC_POSTHOG_KEY is empty. Set it in .env.production before building production.',
+    );
+  }
+  if (isProductionProfile() && analyticsEnabled && !posthogHost) {
+    throw new Error(
+      'Analytics is enabled but EXPO_PUBLIC_POSTHOG_HOST is empty. Set it in .env.production before building production.',
     );
   }
 
@@ -89,8 +106,19 @@ module.exports = () => {
     ]);
   }
 
+  const extra = {
+    ...(baseExpoConfig.extra || {}),
+    analyticsConfig: {
+      analyticsGloballyEnabled: analyticsEnabled,
+      posthogKey,
+      posthogHost,
+      sessionReplayEnabled,
+    },
+  };
+
   return {
     ...baseExpoConfig,
     plugins,
+    extra,
   };
 };

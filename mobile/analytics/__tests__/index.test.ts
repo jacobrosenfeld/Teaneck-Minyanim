@@ -33,6 +33,7 @@ vi.mock('react-native', () => ({
 vi.mock('posthog-react-native', () => {
   class MockPostHog {
     capture = vi.fn();
+    ready = vi.fn(async () => {});
     optIn = vi.fn(async () => {});
     optOut = vi.fn(async () => {});
     register = vi.fn(async () => {});
@@ -112,6 +113,7 @@ describe('analytics runtime state', () => {
     expect(mockState.posthogInstances).toHaveLength(1);
 
     const posthog = mockState.posthogInstances[0];
+    expect(posthog.ready).toHaveBeenCalled();
     expect(posthog.optOut).not.toHaveBeenCalled();
     expect(posthog.register).not.toHaveBeenCalled();
     expect(posthog.unregister).toHaveBeenCalledWith('advertising_id');
@@ -133,6 +135,7 @@ describe('analytics runtime state', () => {
     expect(mockState.posthogInstances).toHaveLength(1);
 
     const posthog = mockState.posthogInstances[0];
+    expect(posthog.ready).toHaveBeenCalled();
     expect(posthog.optOut).not.toHaveBeenCalled();
     expect(posthog.register).toHaveBeenCalledWith({ advertising_id: 'ios-ad-id-123' });
     expect(mockState.advertisingIdCalls).toBe(1);
