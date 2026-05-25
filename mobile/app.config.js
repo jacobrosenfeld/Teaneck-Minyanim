@@ -1,4 +1,3 @@
-const appJson = require('./app.json');
 const fs = require('fs');
 const path = require('path');
 
@@ -61,12 +60,12 @@ function readEnv(key) {
   return (process.env[key] || '').trim();
 }
 
-module.exports = () => {
+module.exports = ({ config }) => {
   if (isProductionProfile()) {
     loadProductionEnvFile();
   }
 
-  const baseExpoConfig = appJson.expo;
+  const baseExpoConfig = config;
   const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
   const plugins = withoutReactNativeMapsPlugin(baseExpoConfig.plugins);
   const analyticsEnabledRaw = readEnv('EXPO_PUBLIC_ANALYTICS_ENABLED');

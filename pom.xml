@@ -10,7 +10,7 @@
   </parent>  
   <groupId>com.tbdev</groupId>  
   <artifactId>Teaneck-Minyanim</artifactId>  
-  <version>1.10.6</version>
+  <version>1.10.7</version>
   <name>Teaneck-Minyanim</name>
   <description>Teaneck-Minyanim</description>
   <properties>
@@ -22,6 +22,7 @@
     <spring-security.version>6.5.10</spring-security.version>
     <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
     <commons-lang3.version>3.18.0</commons-lang3.version>
+    <tomcat.version>10.1.55</tomcat.version>
   </properties>  
   <dependencies> 
     <dependency> 
