@@ -155,6 +155,12 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
             String organizationId, EventSource source, Sort sort);
 
     /**
+     * Delete all events for an organization/source combination.
+     * Used when destructive reimport replaces imported source rows.
+     */
+    long deleteByOrganizationIdAndSource(String organizationId, EventSource source);
+
+    /**
      * Find events by organization and minyan type with sorting
      */
     List<CalendarEvent> findByOrganizationIdAndMinyanType(

@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Android release pipeline wiring (Issue #132)**: Mobile Expo config now injects `GOOGLE_MAPS_API_KEY` into the `react-native-maps` Android config plugin at build time, production builds load analytics values from `.env.production` (with fail-fast if analytics is enabled but PostHog key is missing), Android map screen explicitly uses Google provider, `eas submit` production profile now includes Android staged rollout defaults, and release runbook was added at `docs/mobile/android-release-checklist.md`.
 
 ### Fixed
+- **Maintenance rematerialize/reimport follow-up (#211)**: The master calendar "Rematerialize All" button now posts to a handled super-admin route, and destructive calendar reimports clear stale imported `calendar_events` rows before live-syncing the fresh source entries.
 - **Rule-based schedule edits now go live immediately (#228)**: Creating, updating, enabling, disabling, or deleting a rule-based minyan now rebuilds that shul's RULES materialized rows inside the rolling window, and new minyan creation now preserves Rosh Chodesh/Yom Tov times in the correct fields.
 - **Mincha/Maariv Shkiya notes are final schedule enrichment (#235)**: Shkiya is now added for final MINCHA_MAARIV schedule responses across imported, rule-based, and manual events, with stale import-time Shkiya/Plag fragments stripped before the current display note is appended.
 - **Dependabot security refresh**: Upgraded embedded Tomcat to `10.1.55` for the latest critical runtime advisories and moved the mobile app to Expo SDK 56 with patched npm dependency resolutions.
@@ -47,6 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scheduled imports no longer undo manual disabled choices**: Added persistent manual-enable flag on imported entries so weekly sync honors admin enable/disable decisions until a full reimport.
 - **Imported materialization drift correction**: Materialization now syncs existing imported `calendar_events` rows (including `enabled`) instead of skipping already-materialized entries.
 - **Calendar Entries admin render regression**: Removed fragile per-row `#httpServletRequest` expression from toggle form and switched redirect-state fallback to `Referer`, preventing mixed partial admin render/error-template bleed-through.
+
+### Security
+- **Admin organization access control (#216)**: Organization managers and users can no longer view, edit, or route into admin panels for shuls outside their account by changing organization ids in URLs or form submissions.
 
 ## [1.9.2] - 2026-03-20
 

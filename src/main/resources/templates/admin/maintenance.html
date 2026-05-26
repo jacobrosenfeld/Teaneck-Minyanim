@@ -84,8 +84,8 @@
                     <ul class="text-muted" style="font-size:.85rem;">
                         <li>Applies to all orgs with a calendar URL (ignores useScrapedCalendar flag)</li>
                         <li>Re-runs the full classification pipeline on every event</li>
-                        <li>Fixes notes/Plag annotations on reimport</li>
-                        <li>After reimport, rematerialize to update live schedule</li>
+                        <li>Replaces stale imported materialized rows as part of the import</li>
+                        <li>Live schedule updates for dates inside the rolling window</li>
                     </ul>
                     <button type="button" class="btn btn-warning mt-2"
                             data-toggle="modal" data-target="#reimport-all-modal">
@@ -106,8 +106,8 @@
                     <p class="card-text text-muted" style="font-size:.9rem;">
                         Triggers a full rebuild of the materialized <code>calendar_events</code> table from
                         Minyan rules and imported calendar entries. This is the same job that runs automatically
-                        every Sunday at 2 AM. Run this after reimporting calendars or editing Minyan schedules
-                        to push changes live immediately.
+                        every Sunday at 2 AM. Use this for manual repair/backfill or to refresh the rolling
+                        schedule window on demand.
                     </p>
                     <ul class="text-muted" style="font-size:.85rem;">
                         <li>Deletes and rebuilds all RULES-sourced events</li>
@@ -144,8 +144,7 @@
                        that has a calendar URL, then re-fetch and re-classify from scratch.</p>
                     <p class="text-muted" style="font-size:.9rem;">
                         This operation may take a minute or two. The page will reload when it completes.
-                        After reimporting, run <strong>Rematerialize All</strong> to push the updated
-                        data to the live schedule.
+                        Dates inside the rolling schedule window are synced to the live schedule automatically.
                     </p>
                 </div>
                 <div class="modal-footer">

@@ -610,6 +610,28 @@ public class CalendarEventsAdminController {
     }
 
     /**
+     * Trigger full materialization from the master calendar page.
+     */
+    @PostMapping("/admin/calendar-events/rematerialize-all")
+    public RedirectView rematerializeAll(RedirectAttributes redirectAttributes) {
+        if (!userService.isSuperAdmin()) {
+            throw new AccessDeniedException("Only super admins can rematerialize all calendar events");
+        }
+
+        try {
+            materializationScheduler.triggerMaterialization();
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Full calendar rematerialization completed successfully.");
+        } catch (Exception e) {
+            log.error("Error triggering full materialization", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
+        }
+
+        return new RedirectView("/admin/calendar-events/all");
+    }
+
+    /**
      * Delete event (only for MANUAL source events)
      */
     @PostMapping("/admin/{orgId}/calendar-events/{eventId}/delete")
