@@ -2414,7 +2414,9 @@ public class AdminController {
                     entryRepo.findByOrganizationIdOrderByDateDesc(orgId);
             
             entryRepo.deleteAll(existingEntries);
-            log.info("Deleted {} existing entries for organization {}", existingEntries.size(), orgId);
+            long deletedMaterialized = calendarMaterializationService.clearImportedEventsForOrganization(orgId);
+            log.info("Deleted {} existing entries and {} imported materialized rows for organization {}",
+                    existingEntries.size(), deletedMaterialized, orgId);
 
             // Trigger fresh import
             com.tbdev.teaneckminyanim.service.calendar.CalendarImportService importService = 

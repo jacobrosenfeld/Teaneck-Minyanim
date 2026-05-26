@@ -61,6 +61,18 @@ class CalendarMaterializationServiceTest {
     private CalendarMaterializationService service;
 
     @Test
+    void clearImportedEventsForOrganization_deletesImportedMaterializedRows() {
+        String orgId = "org-import-cleanup";
+        when(calendarEventRepository.deleteByOrganizationIdAndSource(orgId, EventSource.IMPORTED))
+                .thenReturn(3L);
+
+        long deleted = service.clearImportedEventsForOrganization(orgId);
+
+        assertEquals(3L, deleted);
+        verify(calendarEventRepository).deleteByOrganizationIdAndSource(orgId, EventSource.IMPORTED);
+    }
+
+    @Test
     void syncImportedEntriesInRangeLive_updatesExistingAndCreatesMissing() {
         String orgId = "org-1";
         LocalDate date = LocalDate.now();

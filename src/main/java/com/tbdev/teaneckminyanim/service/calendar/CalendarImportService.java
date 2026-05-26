@@ -206,8 +206,8 @@ public class CalendarImportService {
     /**
      * Force-reimport calendars for all organizations with calendar URLs, regardless of
      * useScrapedCalendar flag.  All existing entries are deleted before the fresh import
-     * so the classifier re-processes every event from scratch. Final schedule
-     * enrichment applies current Shkiya/Plag display notes at response time.
+     * so the classifier re-processes every event from scratch. Existing imported
+     * materialized rows are also deleted so old sourceRef values cannot remain live.
      *
      * @return Map of organization ID → import result
      */
@@ -229,7 +229,9 @@ public class CalendarImportService {
                 List<com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry> existing =
                         entryRepository.findByOrganizationIdOrderByDateDesc(orgId);
                 entryRepository.deleteAll(existing);
-                log.info("Deleted {} existing entries for {}", existing.size(), org.getName());
+                long deletedMaterialized = materializationService.clearImportedEventsForOrganization(orgId);
+                log.info("Deleted {} existing entries and {} imported materialized rows for {}",
+                        existing.size(), deletedMaterialized, org.getName());
 
                 ImportResult result = importCalendarForOrganization(orgId);
                 results.put(orgId, result);

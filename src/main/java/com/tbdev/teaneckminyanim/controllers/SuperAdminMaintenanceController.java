@@ -30,8 +30,7 @@ import java.util.Map;
  * <ul>
  *   <li>Reimport All Calendars — deletes all calendar entries for every org that has a
  *       calendar URL and runs a fresh import so the classifier re-processes every event
- *       from scratch (fixes stale notes such as "Shkiya:" that should have been replaced
- *       during the original import).</li>
+ *       from scratch. The import path live-syncs the materialized imported rows.</li>
  *   <li>Rematerialize All — triggers a full rebuild of the {@code calendar_events} table
  *       from the current set of Minyan rules and imported calendar entries.</li>
  * </ul>
@@ -92,8 +91,8 @@ public class SuperAdminMaintenanceController {
 
     /**
      * Deletes all calendar entries for every org that has a calendar URL, then
-     * re-fetches and re-classifies each one from scratch. Final schedule
-     * enrichment applies current Shkiya/Plag display notes at response time.
+     * re-fetches and re-classifies each one from scratch. Imported materialized
+     * rows are also replaced by the import live-sync path.
      */
     @PostMapping("/admin/super/maintenance/reimport-all")
     public RedirectView reimportAll(RedirectAttributes redirectAttributes) {

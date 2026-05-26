@@ -112,6 +112,25 @@ public class CalendarMaterializationService {
         log.debug("Live-synced {} rule-based materialized events for {}", rulesEvents.size(), organizationId);
     }
 
+    /**
+     * Remove all materialized imported events for an organization.
+     * Used by destructive reimport flows that delete and recreate source entries,
+     * which gives imported rows new {@code sourceRef} values.
+     */
+    @Transactional
+    public long clearImportedEventsForOrganization(String organizationId) {
+        if (organizationId == null || organizationId.isBlank()) {
+            return 0;
+        }
+
+        long deleted = calendarEventRepository.deleteByOrganizationIdAndSource(
+                organizationId, EventSource.IMPORTED);
+        if (deleted > 0) {
+            log.info("Deleted {} stale imported calendar_events rows for {}", deleted, organizationId);
+        }
+        return deleted;
+    }
+
     private List<CalendarEvent> replaceRulesEventsInRange(
             String organizationId,
             LocalDate startDate,
