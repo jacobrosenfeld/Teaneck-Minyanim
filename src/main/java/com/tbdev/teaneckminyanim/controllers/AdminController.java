@@ -91,7 +91,18 @@ public class AdminController {
 
     private boolean isSuperAdmin() {
         TNMUser user = getCurrentUser();
-        return user.getOrganizationId() == null && user.role().equals(ADMIN);
+        return user != null && user.getOrganizationId() == null && user.role().equals(ADMIN);
+    }
+
+    private boolean canAccessOrganization(String orgId) {
+        TNMUser user = getCurrentUser();
+        return user != null && (user.isSuperAdmin() || Objects.equals(user.getOrganizationId(), orgId));
+    }
+
+    private void requireOrganizationAccess(String orgId) {
+        if (!canAccessOrganization(orgId)) {
+            throw new AccessDeniedException("You do not have permission to access this organization.");
+        }
     }
 
 //    private List<String> getOrganizationsWithAccess() {
@@ -140,16 +151,16 @@ public class AdminController {
      * Verifies that the current user has access to the organization in question and returns it
      */
     private Organization getOrganization(String orgId) throws AccessDeniedException {
+        if (orgId == null || orgId.isBlank()) {
+            return null;
+        }
+
+        requireOrganizationAccess(orgId);
         Optional<Organization> org = organizationService.findById(orgId);
         if (org.isEmpty()) {
             return null;
         } else {
-//            verify user has user permissions for this organization
-            if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(org.get().getId())) {
-                throw new AccessDeniedException("You do not have permission to access this organization.");
-            } else {
-                return org.get();
-            }
+            return org.get();
         }
     }
 
@@ -159,7 +170,7 @@ public class AdminController {
             return null;
         } else {
 //            verify user has user permissions for this organization
-            if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(location.getOrganizationId())) {
+            if (!canAccessOrganization(location.getOrganizationId())) {
                 throw new AccessDeniedException("You do not have permission to access this location.");
             } else {
                 return location;
@@ -173,7 +184,7 @@ public class AdminController {
             throw new Exception("Organization not found.");
         } else {
 //            verify user has user permissions for this organization
-            return isSuperAdmin() || getCurrentUser().getOrganizationId().equals(org.get().getId());
+            return canAccessOrganization(org.get().getId());
         }
     }
 
@@ -557,38 +568,24 @@ public class AdminController {
         }
 
 //        check permissions
-        if (isAdmin()) {
-//                find organization for id
-            Optional<Organization> organization = this.organizationService.findById(id);
-            if (organization.isEmpty()) {
+        if (isUser()) {
+            String organizationId = id;
+            if (!isSuperAdmin() && (organizationId == null || organizationId.isBlank())) {
+                TNMUser user = getCurrentUser();
+                organizationId = user != null ? user.getOrganizationId() : null;
+            }
+
+            Organization organization = getOrganization(organizationId);
+            if (organization == null) {
 //                    TODO: HANDLE ERROR CORRECTLY
                 throw new Exception("Organization not found.");
-            } else {
-                mv.getModel().put("organization", organization.get());
             }
 
-            List<TNMUser> associatedUsers = this.organizationService.getUsersForOrganization(organization.get());
+            mv.getModel().put("organization", organization);
+            List<TNMUser> associatedUsers = this.organizationService.getUsersForOrganization(organization);
             mv.addObject("associatedusers", associatedUsers);
-        } else if (isUser()) {
-//              check if user is associated with organization
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            TNMUser user = this.TNMUserDAO.findByName(username);
-            String associatedOrganizationId = user.getOrganizationId();
-            if (!associatedOrganizationId.equals(id)) {
-                throw new AccessDeniedException("You do not have permission to view this organization.");
-            } else {
-//                find organization for id
-                Optional<Organization> organization = this.organizationService.findById(id);
-                if (organization.isEmpty()) {
-//                    TODO: HANDLE ERROR CORRECTLY
-                    throw new Exception("Organization not found.");
-                } else {
-                    mv.getModel().put("organization", organization.get());
-                }
-
-                List<TNMUser> associatedUsers = this.organizationService.getUsersForOrganization(organization.get());
-                mv.addObject("associatedusers", associatedUsers);
-            }
+        } else {
+            throw new AccessDeniedException("You are not authorized to view this organization.");
         }
 
         addStandardPageData(mv);
@@ -607,6 +604,11 @@ public class AdminController {
                                            @RequestParam(value = "calendar", required = false) String calendar,
                                            @RequestParam(value = "useScrapedCalendar", required = false) Boolean useScrapedCalendar,
                                            @RequestParam(value = "whatsapp", required = false) String whatsapp) throws Exception {
+
+        Organization organization = getOrganization(id);
+        if (organization == null) {
+            throw new Exception("Organization not found.");
+        }
 
 //        validate input
         if (name == null || name.isEmpty()) {
@@ -628,12 +630,8 @@ public class AdminController {
             return organization(id, null, null, "Invalid nusach type.", null);
         }
 
-        // Fetch the existing org to preserve fields not in the form (enabled, coordinates, etc.)
-        Optional<Organization> existingOrgOpt = organizationService.findById(id);
-        if (existingOrgOpt.isEmpty()) {
-            return organization(id, null, null, "Organization not found.", null);
-        }
-        Organization organization = existingOrgOpt.get();
+        // Mutate the existing org so fields not present in the form (enabled,
+        // coordinates, etc.) are preserved.
         organization.setName(name);
         organization.setAddress(address);
         organization.setWebsiteURIStr(siteURI != null ? siteURI.toString() : null);
@@ -647,22 +645,13 @@ public class AdminController {
         // Ensure organization has a slug (generate from name if not provided)
         organizationService.ensureSlug(organization);
 
-//        check permissions
-        if (isAdmin()) {
+        if (isUser()) {
             if (this.organizationService.update(organization)) {
                 geocodeIfAddressChanged(id, address);
                 RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
                 return new ModelAndView(redirectView);
             } else {
                 return organization(id, null, null, "Sorry, the update failed.", null);
-            }
-        } else if (isUser()) {
-            if (this.organizationService.update(organization)) {
-                geocodeIfAddressChanged(id, address);
-                RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
-                return new ModelAndView(redirectView);
-            } else {
-                return organization(id, null, "Sorry, the update failed.", null, null);
             }
         } else {
             throw new AccessDeniedException("You do not have permission to view this organization.");
@@ -1193,6 +1182,7 @@ public class AdminController {
 
     @RequestMapping(value = "/admin/org/{organizationId}/dashboard", method = RequestMethod.GET)
     public RedirectView orgDashboard(@PathVariable String organizationId) {
+        requireOrganizationAccess(organizationId);
         // Redirect to minyanim page for now (we can create a proper dashboard later)
         return new RedirectView("/admin/" + organizationId + "/minyanim");
     }
@@ -1201,6 +1191,7 @@ public class AdminController {
     public RedirectView orgMinyanim(@PathVariable String organizationId, 
                                     @RequestParam(required = false) String successMessage, 
                                     @RequestParam(required = false) String errorMessage) {
+        requireOrganizationAccess(organizationId);
         String redirectUrl = "/admin/" + organizationId + "/minyanim";
         if (successMessage != null || errorMessage != null) {
             redirectUrl += "?";
@@ -1217,6 +1208,7 @@ public class AdminController {
     public RedirectView orgLocations(@PathVariable String oid, 
                                      @RequestParam(required = false) String successMessage, 
                                      @RequestParam(required = false) String errorMessage) {
+        requireOrganizationAccess(oid);
         String redirectUrl = "/admin/" + oid + "/locations";
         if (successMessage != null || errorMessage != null) {
             redirectUrl += "?";
@@ -1241,6 +1233,7 @@ public class AdminController {
                                            @RequestParam(required = false) String startDate,
                                            @RequestParam(required = false) String endDate,
                                            @RequestParam(required = false) Boolean showNonMinyan) {
+        requireOrganizationAccess(orgId);
         // Build redirect URL with all parameters
         StringBuilder redirectUrl = new StringBuilder("/admin/" + orgId + "/calendar-entries?");
         boolean hasParam = false;
@@ -1299,12 +1292,11 @@ public class AdminController {
 
     @RequestMapping(value = "/admin/{oid}/locations", method = RequestMethod.GET)
     public ModelAndView locations(@PathVariable(value = "oid") String oid, String successMessage, String errorMessage) {
-        String oidToUse;
-        if (isSuperAdmin()) {
-            oidToUse = oid;
-        } else {
-            oidToUse = getCurrentUser().getOrganizationId();
+        Organization organization = getOrganization(oid);
+        if (organization == null) {
+            throw new AccessDeniedException("Organization not found.");
         }
+        String oidToUse = organization.getId();
 
         ModelAndView mv = new ModelAndView("admin/locations");
         mv.addObject("locations", locationDAO.findMatching(oidToUse));
@@ -1312,8 +1304,7 @@ public class AdminController {
         TNMUser currentUser = getCurrentUser();
         mv.addObject("user", currentUser);
 
-        Optional<Organization> organization = organizationService.findById(oidToUse);
-        mv.addObject("organization", organization.orElseGet(Organization::new));
+        mv.addObject("organization", organization);
 
         addStandardPageData(mv);
 
@@ -1325,19 +1316,20 @@ public class AdminController {
 
     @RequestMapping(value = "/admin/create-location")
     public ModelAndView createLocation(@RequestParam(value = "name", required = true) String name, @RequestParam(value = "oid", required = true) String organizationId) {
-        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(organizationId)) {
-            throw new AccessDeniedException("You do not have permission to create a location for this organization.");
+        Organization organization = getOrganization(organizationId);
+        if (organization == null) {
+            throw new AccessDeniedException("Organization not found.");
         }
 
         if (name.isEmpty()) {
-            return locations(null, null, "Sorry, an error occurred. The location could not be created.");
+            return locations(organization.getId(), null, "Sorry, an error occurred. The location could not be created.");
         }
 
-        Location location = new Location(name, organizationId);
+        Location location = new Location(name, organization.getId());
         if (locationDAO.save(location)) {
-            return locations(organizationId,"Successfully created location '" + location.getName() + ".'", null);
+            return locations(organization.getId(),"Successfully created location '" + location.getName() + ".'", null);
         } else {
-            return locations(organizationId,null, "Sorry, an error occurred. The location could not be created.");
+            return locations(organization.getId(),null, "Sorry, an error occurred. The location could not be created.");
         }
     }
 
@@ -1346,7 +1338,10 @@ public class AdminController {
             @RequestParam(value = "id", required = true) String id,
             @RequestParam(value = "name", required = true) String newName) {
         Location locationToUpdate = locationDAO.findById(id);
-        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(locationToUpdate.getOrganizationId())) {
+        if (locationToUpdate == null) {
+            throw new AccessDeniedException("Location not found.");
+        }
+        if (!canAccessOrganization(locationToUpdate.getOrganizationId())) {
             throw new AccessDeniedException("You do not have permission to update a location for this organization.");
         }
 
@@ -1367,8 +1362,11 @@ public class AdminController {
     @RequestMapping(value = "/admin/delete-location")
     public ModelAndView deleteLocation(@RequestParam(value = "id", required = true) String id) {
         Location locationToDelete = locationDAO.findById(id);
+        if (locationToDelete == null) {
+            throw new AccessDeniedException("Location not found.");
+        }
         String organizationId = locationToDelete.getOrganizationId();
-        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(locationToDelete.getOrganizationId())) {
+        if (!canAccessOrganization(locationToDelete.getOrganizationId())) {
             throw new AccessDeniedException("You do not have permission to delete a location for this organization.");
         }
 
@@ -1383,18 +1381,15 @@ public class AdminController {
     public ModelAndView minyanim(@PathVariable String organizationId, String successMessage, String errorMessage) {
         ModelAndView mv = new ModelAndView("minyanschedule");
 
-        String oidToUse;
-        if (isSuperAdmin()) {
-            if (organizationId == null) {
-                throw new IllegalArgumentException("You must specify an organization ID.");
-            } else {
-                oidToUse = organizationId;
-            }
-        } else if (isUser()) {
-            oidToUse = getCurrentUser().getOrganizationId();
-        } else {
+        if (!isUser()) {
             throw new AccessDeniedException("You do not have permission to view this page.");
         }
+
+        Organization organization = getOrganization(organizationId);
+        if (organization == null) {
+            throw new AccessDeniedException("Organization not found.");
+        }
+        String oidToUse = organization.getId();
 
         List<Minyan> minyanim = minyanService.findMatching(oidToUse);
 //        minyanim.stream().filter(m -> m.getType() == MinyanType.SHACHARIS);
@@ -1465,11 +1460,7 @@ public class AdminController {
         }
         mv.addObject("locationnames", locationNames);
 
-        Optional<Organization> organization = organizationService.findById(oidToUse);
-        if (organization.isEmpty()) {
-            throw new AccessDeniedException("Organization not found.");
-        }
-        mv.addObject("organization", organization.get());
+        mv.addObject("organization", organization);
 
         mv.addObject("successmessage", successMessage);
         mv.addObject("errormessage", errorMessage);
@@ -1485,18 +1476,15 @@ public class AdminController {
                                         @RequestParam(value = "locations", required = false) String[] selectedLocations) {
         ModelAndView mv = new ModelAndView("printable-schedule");
 
-        String oidToUse;
-        if (isSuperAdmin()) {
-            if (organizationId == null) {
-                throw new IllegalArgumentException("You must specify an organization ID.");
-            } else {
-                oidToUse = organizationId;
-            }
-        } else if (isUser()) {
-            oidToUse = getCurrentUser().getOrganizationId();
-        } else {
+        if (!isUser()) {
             throw new AccessDeniedException("You do not have permission to view this page.");
         }
+
+        Organization organization = getOrganization(organizationId);
+        if (organization == null) {
+            throw new AccessDeniedException("Organization not found.");
+        }
+        String oidToUse = organization.getId();
 
         List<Minyan> allMinyanim = minyanService.findMatching(oidToUse);
         List<Minyan> filteredMinyanim = allMinyanim.stream()
@@ -1563,7 +1551,7 @@ public class AdminController {
         mv.addObject("locationnames", locationNames);
 
         // Add organization and filter options for the filter form
-        mv.addObject("organization", organizationService.findById(oidToUse).orElse(null));
+        mv.addObject("organization", organization);
         mv.addObject("alllocations", locationDAO.findMatching(oidToUse));
         mv.addObject("selectedTypes", selectedTypes);
         mv.addObject("selectedLocations", selectedLocations);
@@ -1694,6 +1682,9 @@ public class AdminController {
 
 //        get and verify organization
         Organization organization = getOrganization(orgId);
+        if (organization == null) {
+            throw new Exception("Organization not found.");
+        }
 
         ModelAndView mv = newMinyan(orgId);
 
@@ -1706,6 +1697,9 @@ public class AdminController {
 
 //        get and verify location
         Location location = getLocation(locationId);
+        if (location == null || !organization.getId().equals(location.getOrganizationId())) {
+            throw new AccessDeniedException("You do not have permission to create a minyan using this location.");
+        }
 
         //        create minyan times
         MinyanTime sundayTime = MinyanTime.fromFormData(sundayTimeType, sundayTimeString, sundayZman, sundayZmanOffset);
@@ -1746,9 +1740,9 @@ public class AdminController {
 
         try {
             minyanService.save(minyan);
-            calendarMaterializationService.syncRulesForOrganizationLive(orgId);
+            calendarMaterializationService.syncRulesForOrganizationLive(organization.getId());
 
-            mv.addObject("successmessage", "You successfully created a minyan. Click <a href='/admin/" + orgId + "/minyanim/'>here</a> to return to the minyan schedule. Click <a href=\"#\" onclick='branch()'>here</a> to fill in the fields like the last minyan.");
+            mv.addObject("successmessage", "You successfully created a minyan. Click <a href='/admin/" + organization.getId() + "/minyanim/'>here</a> to return to the minyan schedule. Click <a href=\"#\" onclick='branch()'>here</a> to fill in the fields like the last minyan.");
 
             mv.addObject("branchMinyan", minyan);
 
@@ -1766,16 +1760,17 @@ public class AdminController {
                                    @RequestParam(required = false) String success) throws Exception {
         ModelAndView mv = new ModelAndView("admin/minyanim/update");
         Minyan minyan = minyanService.findById(id);
+        if (minyan == null) {
+            throw new Exception("Minyan not found.");
+        }
 //        authenticate user has permission to edit minyan
-        Optional<Organization> minyanOrganization = organizationService.findById(minyan.getOrganizationId());
-        if (!isSuperAdmin() && minyanOrganization.isPresent() && !getCurrentUser().getOrganizationId().equals(minyanOrganization.get().getId())) {
-            throw new AccessDeniedException("You do not have permission to edit this minyan.");
+        Organization minyanOrganization = getOrganization(minyan.getOrganizationId());
+        if (minyanOrganization == null) {
+            throw new Exception("Organization not found.");
         }
-        if (minyanOrganization.isPresent()) {
-            mv.addObject("minyan", minyan);
-            mv.addObject("organization", minyanOrganization.get());
-            mv.addObject("locations", locationDAO.findMatching(minyanOrganization.get().getId()));
-        }
+        mv.addObject("minyan", minyan);
+        mv.addObject("organization", minyanOrganization);
+        mv.addObject("locations", locationDAO.findMatching(minyanOrganization.getId()));
         if ("updated".equals(success)) {
             mv.addObject("successmessage", "The minyan was successfully updated.");
         }
@@ -1840,22 +1835,20 @@ public class AdminController {
 //        print starting message
 
 //        confirm user has access to organization
-        Optional<Organization> organization = organizationService.findById(organizationId);
-        if (organization.isEmpty()) {
+        Organization organization = getOrganization(organizationId);
+        if (organization == null) {
             throw new Exception("Organization not found.");
-        } else {
-//            verify user has permission to create minyan for this organization
-            if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(organization.get().getId())) {
-                throw new AccessDeniedException("You do not have permission to create a minyan for this organization.");
-            }
         }
 
         Minyan oldMinyan = minyanService.findById(minyanId);
         if (oldMinyan == null) {
             throw new Exception("Minyan not found.");
         }
+        if (!organization.getId().equals(oldMinyan.getOrganizationId())) {
+            throw new AccessDeniedException("Minyan does not belong to this organization.");
+        }
 
-        String organizationColor = organization.get().getOrgColor();
+        String organizationColor = organization.getOrgColor();
 
 //        verify minyan type
         MinyanType minyanType = MinyanType.fromString(type);
@@ -1868,9 +1861,11 @@ public class AdminController {
 //        get and verify location
         Location location = locationDAO.findById(locationId);
         if (location != null) {
-            if (!location.getOrganizationId().equals(organization.get().getId())) {
+            if (!location.getOrganizationId().equals(organization.getId())) {
                 throw new AccessDeniedException("You do not have permission to create a minyan using this location.");
             }
+        } else {
+            throw new AccessDeniedException("Location not found.");
         }
 
 //        create minyan times
@@ -1899,11 +1894,11 @@ public class AdminController {
 
         Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, rcTime, ytTime, chanukaTime, rccTime);
 
-        Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization.get(), minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled(), organizationColor, whatsapp);
+        Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization, minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled(), organizationColor, whatsapp);
 
         try {
             minyanService.update(updatedMinyan);
-            calendarMaterializationService.syncRulesForOrganizationLive(organizationId);
+            calendarMaterializationService.syncRulesForOrganizationLive(organization.getId());
             return new ModelAndView("redirect:/admin/minyanim/" + oldMinyan.getId() + "/view?success=updated");
         } catch (Exception e) {
             log.error("Failed to update minyan {}", minyanId, e);
@@ -1916,18 +1911,23 @@ public class AdminController {
     @RequestMapping(value = "/admin/{organizationId}/minyanim/{minyanId}/delete", method = RequestMethod.GET)
     public ModelAndView deleteMinyan(@PathVariable("organizationId") String organizationId, @PathVariable("minyanId") String minyanId) throws Exception {
 
+        Organization organization = getOrganization(organizationId);
+        if (organization == null) {
+            throw new Exception("Organization not found.");
+        }
+
         Minyan minyan = minyanService.findById(minyanId);
         if (minyan == null) {
             throw new Exception("Minyan not found.");
         } else {
-            if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(minyan.getOrganizationId())) {
+            if (!organization.getId().equals(minyan.getOrganizationId())) {
                 throw new AccessDeniedException("You do not have permission to delete this minyan.");
             }
 
             try {
                 minyanService.delete(minyan);
-                calendarMaterializationService.syncRulesForOrganizationLive(organizationId);
-                return minyanim(organizationId, "The minyan was successfully deleted.", null);
+                calendarMaterializationService.syncRulesForOrganizationLive(organization.getId());
+                return minyanim(organization.getId(), "The minyan was successfully deleted.", null);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new Exception("Sorry, there was an error deleting the minyan.");
