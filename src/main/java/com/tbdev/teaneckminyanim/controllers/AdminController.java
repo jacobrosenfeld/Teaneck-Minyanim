@@ -737,48 +737,6 @@ public class AdminController {
         }
     }
 
-    /**
-     * Re-geocodes all organizations that are missing lat/lng, or all if force=true.
-     * Super admin only. Used to backfill coordinates after the geocoding feature was added.
-     */
-    @RequestMapping(value = "/admin/geocode-all-organizations", method = RequestMethod.POST)
-    public ModelAndView geocodeAllOrganizations(
-            @RequestParam(value = "force", required = false, defaultValue = "false") boolean force) {
-        if (!isSuperAdmin()) {
-            throw new AccessDeniedException("You are not authorized to perform this action.");
-        }
-
-        List<Organization> allOrgs = organizationService.getAll();
-        int updated = 0;
-        int skipped = 0;
-        int failed = 0;
-
-        for (Organization org : allOrgs) {
-            boolean missingCoords = org.getLatitude() == null || org.getLongitude() == null;
-            if (!force && !missingCoords) {
-                skipped++;
-                continue;
-            }
-            double[] coords = geocodingService.geocodeAddress(org.getAddress());
-            if (coords != null) {
-                if (organizationService.updateGeocode(org.getId(), coords[0], coords[1])) {
-                    updated++;
-                } else {
-                    log.warn("updateGeocode returned false for org id={} name={}", org.getId(), org.getName());
-                    failed++;
-                }
-            } else {
-                log.warn("Geocoding returned null for org id={} name={} address={}", org.getId(), org.getName(), org.getAddress());
-                failed++;
-            }
-        }
-
-        log.info("Re-geocode all: updated={}, skipped={}, failed={}", updated, skipped, failed);
-        String msg = String.format("Geocoding complete: %d updated, %d already had coords (skipped), %d failed.",
-                updated, skipped, failed);
-        return organizations(msg, failed > 0 ? failed + " organization(s) could not be geocoded — check Mapbox token and addresses." : null);
-    }
-
     @RequestMapping(value = "/admin/delete-account")
     public ModelAndView deleteAccount(@RequestParam(value = "id", required = true) String id) throws Exception {
         if (!isSuperAdmin() && !isAdmin()) {
@@ -2092,9 +2050,9 @@ public class AdminController {
     private org.springframework.data.domain.Sort buildSort(String sortBy, String sortDir) {
         String sortField = sortBy != null ? sortBy : "date";
         org.springframework.data.domain.Sort.Direction direction = 
-                "asc".equalsIgnoreCase(sortDir) ? 
-                org.springframework.data.domain.Sort.Direction.ASC : 
-                org.springframework.data.domain.Sort.Direction.DESC;
+                "desc".equalsIgnoreCase(sortDir) ?
+                org.springframework.data.domain.Sort.Direction.DESC :
+                org.springframework.data.domain.Sort.Direction.ASC;
 
         // Map sort field names to entity field names
         switch (sortField) {

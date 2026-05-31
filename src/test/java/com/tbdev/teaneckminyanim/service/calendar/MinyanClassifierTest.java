@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -391,6 +392,25 @@ class MinyanClassifierTest {
             classifier.classify("Kiddush", null, null, LocalDate.now());
         
         assertEquals(MinyanType.NON_MINYAN, result.classification);
+    }
+
+    @Test
+    void testClassify_TeenMinyanVariations_ShacharisEvenWithKiddushDescription() {
+        String[] titles = {"Teen Minyan", "Teen-minyan"};
+
+        for (String title : titles) {
+            MinyanClassifier.ClassificationResult result =
+                classifier.classify(
+                    title,
+                    null,
+                    "Kiddush follows davening",
+                    LocalDate.of(2026, 5, 9),
+                    LocalTime.of(9, 15)
+                );
+
+            assertEquals(MinyanType.SHACHARIS, result.classification,
+                "Title '" + title + "' should be classified as SHACHARIS");
+        }
     }
     
     @Test

@@ -4,6 +4,7 @@ import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.CalendarMaterializationScheduler;
+import com.tbdev.teaneckminyanim.service.GeocodingService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.calendar.CalendarImportService;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
@@ -33,6 +35,8 @@ import java.util.Map;
  *       from scratch. The import path live-syncs the materialized imported rows.</li>
  *   <li>Rematerialize All — triggers a full rebuild of the {@code calendar_events} table
  *       from the current set of Minyan rules and imported calendar entries.</li>
+ *   <li>Geocode All Organizations — backfills or refreshes organization coordinates
+ *       using the configured geocoding provider.</li>
  * </ul>
  */
 @Slf4j
@@ -46,6 +50,7 @@ public class SuperAdminMaintenanceController {
     private final TNMUserService userService;
     private final ApplicationSettingsService settingsService;
     private final OrganizationCalendarEntryRepository calendarEntryRepo;
+    private final GeocodingService geocodingService;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -146,6 +151,64 @@ public class SuperAdminMaintenanceController {
         } catch (Exception e) {
             log.error("Rematerialize-all failed", e);
             redirectAttributes.addFlashAttribute("errorMessage", "Rematerialization failed: " + e.getMessage());
+        }
+
+        return new RedirectView("/admin/super/maintenance");
+    }
+
+    /**
+     * Re-geocodes all organizations that are missing lat/lng, or all organizations
+     * when force=true. Used to backfill coordinates after address cleanup or
+     * geocoding configuration changes.
+     */
+    @PostMapping("/admin/super/maintenance/geocode-all")
+    public RedirectView geocodeAll(
+            @RequestParam(value = "force", required = false, defaultValue = "false") boolean force,
+            RedirectAttributes redirectAttributes) {
+        requireSuperAdmin();
+
+        log.info("Super admin {} triggered geocode-all force={}",
+                userService.getCurrentUser().getUsername(), force);
+
+        try {
+            List<Organization> allOrgs = organizationService.getAll();
+            int updated = 0;
+            int skipped = 0;
+            int failed = 0;
+
+            for (Organization org : allOrgs) {
+                boolean missingCoords = org.getLatitude() == null || org.getLongitude() == null;
+                if (!force && !missingCoords) {
+                    skipped++;
+                    continue;
+                }
+
+                double[] coords = geocodingService.geocodeAddress(org.getAddress());
+                if (coords != null) {
+                    if (organizationService.updateGeocode(org.getId(), coords[0], coords[1])) {
+                        updated++;
+                    } else {
+                        log.warn("updateGeocode returned false for org id={} name={}", org.getId(), org.getName());
+                        failed++;
+                    }
+                } else {
+                    log.warn("Geocoding returned null for org id={} name={} address={}",
+                            org.getId(), org.getName(), org.getAddress());
+                    failed++;
+                }
+            }
+
+            String msg = "Geocoding complete: %d updated, %d already had coords (skipped), %d failed."
+                    .formatted(updated, skipped, failed);
+            if (failed > 0) {
+                redirectAttributes.addFlashAttribute("warningMessage",
+                        msg + " Check Mapbox token and organization addresses for failures.");
+            } else {
+                redirectAttributes.addFlashAttribute("successMessage", msg);
+            }
+        } catch (Exception e) {
+            log.error("Geocode-all failed", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Geocoding failed: " + e.getMessage());
         }
 
         return new RedirectView("/admin/super/maintenance");

@@ -375,27 +375,27 @@
     <!-- Statistics -->
     <div class="stats-grid" th:if="${hasMinyanim}">
         <div class="stat-card">
-            <div class="stat-number" th:text="${totalMinyanCount}">0</div>
+            <div class="stat-number" th:text="${#numbers.formatInteger(totalMinyanCount, 1, 'COMMA')}">0</div>
             <div class="stat-label">Total</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number" style="color: #1976d2;" th:text="${shacharisminyanim.size()}">0</div>
+            <div class="stat-number" style="color: #1976d2;" th:text="${#numbers.formatInteger(shacharisminyanim.size(), 1, 'COMMA')}">0</div>
             <div class="stat-label">Shacharis</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number" style="color: #e65100;" th:text="${minchaminyanim.size()}">0</div>
+            <div class="stat-number" style="color: #e65100;" th:text="${#numbers.formatInteger(minchaminyanim.size(), 1, 'COMMA')}">0</div>
             <div class="stat-label">Mincha</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number" style="color: #6a1b9a;" th:text="${maarivminyanim.size()}">0</div>
+            <div class="stat-number" style="color: #6a1b9a;" th:text="${#numbers.formatInteger(maarivminyanim.size(), 1, 'COMMA')}">0</div>
             <div class="stat-label">Maariv</div>
         </div>
         <div class="stat-card" th:if="${selichosminyanim.size() > 0}">
-            <div class="stat-number" style="color: #2e7d32;" th:text="${selichosminyanim.size()}">0</div>
+            <div class="stat-number" style="color: #2e7d32;" th:text="${#numbers.formatInteger(selichosminyanim.size(), 1, 'COMMA')}">0</div>
             <div class="stat-label">Selichos</div>
         </div>
         <div class="stat-card" th:if="${megilaminyanim.size() > 0}">
-            <div class="stat-number" style="color: #283593;" th:text="${megilaminyanim.size()}">0</div>
+            <div class="stat-number" style="color: #283593;" th:text="${#numbers.formatInteger(megilaminyanim.size(), 1, 'COMMA')}">0</div>
             <div class="stat-label">Megila</div>
         </div>
     </div>

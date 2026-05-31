@@ -142,6 +142,43 @@
             <div class="admin-sidebar-section">
                 <div class="admin-sidebar-section-title">Super Admin</div>
             </div>
+            <a class="admin-sidebar-link" th:href="@{/admin/organizations}"
+               th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/organizations')} ? 'active' : ''">
+                <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/>
+                </svg>
+                <span>Organizations</span>
+            </a>
+            <a class="admin-sidebar-link" th:href="@{/admin/new-organization}"
+               th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/new-organization')} ? 'active' : ''">
+                <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
+                </svg>
+                <span>New Organization</span>
+            </a>
+            <a class="admin-sidebar-link" th:href="@{/admin/accounts}"
+               th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/accounts')} ? 'active' : ''">
+                <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                <span>Accounts</span>
+            </a>
+            <a class="admin-sidebar-link" th:href="@{/admin/notifications}"
+               th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/notifications')} ? 'active' : ''">
+                <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0a3 3 0 01-6 0"/>
+                </svg>
+                <span>Notifications</span>
+            </a>
+            <a class="admin-sidebar-link" th:href="@{/admin/settings}"
+               th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/settings')} ? 'active' : ''">
+                <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span>Settings</span>
+            </a>
             <a class="admin-sidebar-link" th:href="@{/admin/super/overrides}"
                th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/super/overrides')} ? 'active' : ''">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">

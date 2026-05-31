@@ -297,6 +297,13 @@ small, .text-sm {
     font-size: var(--font-size-base);
 }
 
+@media (max-width: 480px) {
+    .btn-modern {
+        white-space: normal;
+        min-height: 2.5rem;
+    }
+}
+
 /* ============================================
    Cards
    ============================================ */
@@ -525,11 +532,73 @@ small, .text-sm {
    Tables
    ============================================ */
 
+.table-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color-light);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.table-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-5);
+    background: var(--color-gray-50);
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.table-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+}
+
+.count-pill {
+    background: var(--color-gray-200);
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+}
+
+.table-modern-wrapper,
+.table-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
 .table-modern {
     width: 100%;
+    min-width: var(--table-min-width, 720px);
     border-collapse: separate;
     border-spacing: 0;
     font-size: var(--font-size-sm);
+}
+
+.table-modern.table-compact {
+    font-size: var(--font-size-xs);
+}
+
+.table-modern.table-fit {
+    min-width: 0;
+}
+
+.table-modern.table-admin-list {
+    --table-min-width: 760px;
+}
+
+.table-modern.table-admin-wide {
+    --table-min-width: 1000px;
 }
 
 .table-modern thead {
@@ -557,6 +626,35 @@ small, .text-sm {
 
 .table-modern tbody tr:last-child td {
     border-bottom: none;
+}
+
+.table-cell-nowrap {
+    white-space: nowrap;
+}
+
+.table-cell-truncate {
+    max-width: var(--table-cell-max-width, 16rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.table-actions-nowrap {
+    flex-wrap: nowrap;
+}
+
+@media (max-width: 768px) {
+    .table-modern th,
+    .table-modern td {
+        padding: var(--space-3);
+    }
 }
 
 /* ============================================

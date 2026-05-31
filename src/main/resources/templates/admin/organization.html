@@ -138,27 +138,27 @@
                         </div>
                     </div>
                     <div class="card-modern-body">
-                        <div class="table-responsive">
-                            <table class="table-modern">
+                        <div class="table-modern-wrapper">
+                            <table class="table-modern table-admin-list">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
+                                        <th class="table-cell-nowrap">ID</th>
                                         <th>Username</th>
                                         <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Actions</th>
+                                        <th class="table-cell-nowrap">Role</th>
+                                        <th class="table-cell-nowrap">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr th:each="user: ${associatedusers}">
-                                        <td th:text="${user.id}"></td>
+                                        <td class="table-cell-nowrap" th:text="${user.id}"></td>
                                         <td th:text="${user.username}"></td>
                                         <td th:text="${user.email}"></td>
                                         <td>
                                             <span class="badge badge-primary" th:text="${user.getRoleDisplayName()}"></span>
                                         </td>
                                         <td>
-                                            <div class="btn-group">
+                                            <div class="table-actions table-actions-nowrap">
                                                 <button type="button" class="btn-modern btn-sm btn-warning" 
                                                         th:disabled="${associatedusers.size() <= 1}" 
                                                         data-toggle="modal" 

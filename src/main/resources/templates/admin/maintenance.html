@@ -47,19 +47,19 @@
     <!-- Stats row -->
     <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;">
         <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${totalOrgs}">0</div>
+            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${#numbers.formatInteger(totalOrgs, 1, 'COMMA')}">0</div>
             <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Total Orgs</div>
         </div>
         <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${orgsWithCalendars}">0</div>
+            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${#numbers.formatInteger(orgsWithCalendars, 1, 'COMMA')}">0</div>
             <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Orgs w/ Calendars</div>
         </div>
         <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${totalCalendarEntries}">0</div>
+            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${#numbers.formatInteger(totalCalendarEntries, 1, 'COMMA')}">0</div>
             <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Calendar Entries</div>
         </div>
         <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#28a745;" th:text="${enabledCalendarEntries}">0</div>
+            <div style="font-size:2rem;font-weight:700;color:#28a745;" th:text="${#numbers.formatInteger(enabledCalendarEntries, 1, 'COMMA')}">0</div>
             <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Enabled Entries</div>
         </div>
     </div>
@@ -117,6 +117,32 @@
                     <button type="button" class="btn btn-secondary mt-2"
                             data-toggle="modal" data-target="#rematerialize-all-modal">
                         <i class="fas fa-calendar-alt mr-1"></i> Rematerialize All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Geocode All Organizations -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge badge-secondary mr-2" style="font-size:.75rem;">Safe</span>
+                        <h5 class="card-title mb-0">Geocode All Organizations</h5>
+                    </div>
+                    <p class="card-text text-muted" style="font-size:.9rem;">
+                        Looks up GPS coordinates for organizations that are missing latitude/longitude values
+                        using the configured Mapbox Geocoding API. Existing coordinates are skipped unless
+                        you choose to force a full refresh.
+                    </p>
+                    <ul class="text-muted" style="font-size:.85rem;">
+                        <li>Backfills missing coordinates for all organizations</li>
+                        <li>Can optionally refresh organizations that already have coordinates</li>
+                        <li>Useful after address cleanup or Mapbox token/config changes</li>
+                    </ul>
+                    <button type="button" class="btn btn-secondary mt-2"
+                            data-toggle="modal" data-target="#geocode-all-modal">
+                        <i class="fas fa-map-marker-alt mr-1"></i> Geocode All Organizations
                     </button>
                 </div>
             </div>
@@ -192,6 +218,58 @@
         </div>
     </div>
 
+    <!-- Geocode All modal -->
+    <div class="modal fade" id="geocode-all-modal" tabindex="-1"
+         aria-labelledby="geocode-all-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="geocode-all-modal-label">
+                        <i class="fas fa-map-marker-alt mr-2"></i>Geocode All Organizations?
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p>This will look up GPS coordinates for all organizations missing location data using the Mapbox Geocoding API.</p>
+                    <p class="text-muted" style="font-size:.9rem;">
+                        Organizations that already have coordinates will be skipped unless you check the box below.
+                    </p>
+                    <div class="mt-3">
+                        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:500;">
+                            <input type="checkbox" id="geocode-force-checkbox" style="width:16px;height:16px;">
+                            Re-geocode all organizations, including those with existing coordinates
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+                    <form method="post" th:action="@{/admin/super/maintenance/geocode-all}" id="geocode-all-form" style="display:inline;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="force" id="geocode-force-input" value="false">
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-map-marker-alt mr-1"></i> Run Geocoding
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<th:block layout:fragment="scripts">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const forceCheckbox = document.getElementById('geocode-force-checkbox');
+            const forceInput = document.getElementById('geocode-force-input');
+
+            if (forceCheckbox && forceInput) {
+                forceCheckbox.addEventListener('change', function() {
+                    forceInput.value = this.checked ? 'true' : 'false';
+                });
+            }
+        });
+    </script>
+</th:block>
 </body>
 </html>

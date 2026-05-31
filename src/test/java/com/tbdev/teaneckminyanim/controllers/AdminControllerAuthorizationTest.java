@@ -15,6 +15,7 @@ import com.tbdev.teaneckminyanim.service.VersionService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -149,6 +150,26 @@ class AdminControllerAuthorizationTest {
 
         assertEquals("admin/organization", mv.getViewName());
         assertEquals(orgB, mv.getModel().get("organization"));
+    }
+
+    @Test
+    void calendarEntriesDefaultSortMatchesDisplayedAscendingDateHeader() {
+        Sort sort = ReflectionTestUtils.invokeMethod(controller, "buildSort", null, null);
+
+        Sort.Order dateOrder = sort.getOrderFor("date");
+        Sort.Order startTimeOrder = sort.getOrderFor("startTime");
+
+        assertEquals(Sort.Direction.ASC, dateOrder.getDirection());
+        assertEquals(Sort.Direction.ASC, startTimeOrder.getDirection());
+    }
+
+    @Test
+    void calendarEntriesDescendingSortStillHonorsExplicitRequest() {
+        Sort sort = ReflectionTestUtils.invokeMethod(controller, "buildSort", "date", "desc");
+
+        Sort.Order dateOrder = sort.getOrderFor("date");
+
+        assertEquals(Sort.Direction.DESC, dateOrder.getDirection());
     }
 
     private void authenticate(String username, Role role) {

@@ -45,6 +45,10 @@ public class MinyanClassifier {
     
     // Netz Hachama patterns (sunrise minyanim with special zman note)
     private static final Set<Pattern> NETZ_PATTERNS = new HashSet<>();
+
+    // Explicit Shacharis title patterns that are strong enough to classify before non-minyan descriptions.
+    private static final Pattern TEEN_MINYAN_TITLE_PATTERN =
+        Pattern.compile("\\bteen\\s*-?\\s*minyan\\b", Pattern.CASE_INSENSITIVE);
     
     static {
         // Combined Mincha/Maariv patterns (check FIRST - most specific)
@@ -85,7 +89,7 @@ public class MinyanClassifier {
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bnetz\\b", Pattern.CASE_INSENSITIVE));
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bsunrise\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
-        SHACHARIS_PATTERNS.add(Pattern.compile("\\bteen\\s+minyan\\b", Pattern.CASE_INSENSITIVE));
+        SHACHARIS_PATTERNS.add(TEEN_MINYAN_TITLE_PATTERN);
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bShc\\b", Pattern.CASE_INSENSITIVE));
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bShac\\b", Pattern.CASE_INSENSITIVE));
         SHACHARIS_PATTERNS.add(Pattern.compile("\\bHashkamah\\b", Pattern.CASE_INSENSITIVE));
@@ -218,6 +222,15 @@ public class MinyanClassifier {
                     notes
                 );
             }
+        }
+
+        if (title != null && TEEN_MINYAN_TITLE_PATTERN.matcher(title).find()) {
+            String notes = extractTitleQualifier(title);
+            return new ClassificationResult(
+                MinyanType.SHACHARIS,
+                "Matched explicit Teen Minyan title pattern: " + TEEN_MINYAN_TITLE_PATTERN.pattern(),
+                notes
+            );
         }
         
         // Check denylist (explicit non-minyan events)
@@ -395,7 +408,7 @@ public class MinyanClassifier {
         
         // Multi-word phrases to extract (check these first)
         String[] multiWordPatterns = {
-            "teen minyan", "youth minyan", "young adult minyan",
+            "teen minyan", "teen-minyan", "youth minyan", "young adult minyan",
             "early shacharis", "early shacharit", "late shacharis", "late shacharit",
             "early mincha", "late mincha", "fast mincha",
             "early maariv", "late maariv",
