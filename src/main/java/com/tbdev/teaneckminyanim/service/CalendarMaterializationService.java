@@ -16,9 +16,11 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Service responsible for materializing calendar events from various sources.
@@ -256,6 +258,7 @@ public class CalendarMaterializationService {
         for (OrganizationCalendarEntry entry : entries) {
             upsertImportedEventFromEntry(entry, org, bySourceRef, eventsToSave);
         }
+        disableOrphanedImportedEvents(entries, bySourceRef, eventsToSave);
 
         return eventsToSave;
     }
@@ -312,6 +315,7 @@ public class CalendarMaterializationService {
         for (OrganizationCalendarEntry entry : entries) {
             upsertImportedEventFromEntry(entry, org, bySourceRef, eventsToSave);
         }
+        disableOrphanedImportedEvents(entries, bySourceRef, eventsToSave);
 
         if (!eventsToSave.isEmpty()) {
             calendarEventRepository.saveAll(eventsToSave);
@@ -335,7 +339,9 @@ public class CalendarMaterializationService {
         MinyanType minyanType = entry.getClassification() != null
                 ? entry.getClassification()
                 : MinyanType.OTHER;
-        boolean materializable = resolvedStartTime != null && minyanType != MinyanType.NON_MINYAN;
+        boolean materializable = resolvedStartTime != null
+                && minyanType != MinyanType.NON_MINYAN
+                && !entry.isSourceDeleted();
 
         if (!materializable) {
             if (existingEvent != null && existingEvent.isEnabled()) {
@@ -362,10 +368,29 @@ public class CalendarMaterializationService {
         target.setNotes(entry.getNotes());
         target.setLocationId(null);
         target.setLocationName(entry.getLocation());
-        target.setEnabled(entry.isEnabled());
+        target.setEnabled(entry.isEnabled() && !entry.isSourceDeleted());
         target.setNusach(org.getNusach());
 
         eventsToSave.add(target);
+    }
+
+    private void disableOrphanedImportedEvents(
+            List<OrganizationCalendarEntry> entries,
+            Map<String, CalendarEvent> existingBySourceRef,
+            List<CalendarEvent> eventsToSave) {
+        Set<String> currentSourceRefs = new HashSet<>();
+        for (OrganizationCalendarEntry entry : entries) {
+            if (entry != null && entry.getId() != null) {
+                currentSourceRefs.add(importedSourceRef(entry.getId()));
+            }
+        }
+
+        for (CalendarEvent existingEvent : existingBySourceRef.values()) {
+            if (!currentSourceRefs.contains(existingEvent.getSourceRef()) && existingEvent.isEnabled()) {
+                existingEvent.setEnabled(false);
+                eventsToSave.add(existingEvent);
+            }
+        }
     }
 
     private LocalTime resolveStartTime(OrganizationCalendarEntry entry) {

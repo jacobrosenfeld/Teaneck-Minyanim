@@ -2209,6 +2209,15 @@ public class AdminController {
                     throw new AccessDeniedException("Entry does not belong to this organization");
                 }
 
+                if (entry.isSourceDeleted() && !entry.isEnabled()) {
+                    String message = "Entry was removed from the source calendar. Create a manual override to restore it.";
+                    if (ajaxRequest) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of("success", false, "message", message));
+                    }
+                    return buildCalendarEntriesRedirect(orgId, resolveReturnTo(returnTo, referer), "errorMessage", message);
+                }
+
                 // Toggle enabled status
                 entry.setEnabled(!entry.isEnabled());
                 entry.setEnabledManuallySet(true);

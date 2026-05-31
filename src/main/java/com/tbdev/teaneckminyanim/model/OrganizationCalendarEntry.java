@@ -94,6 +94,13 @@ public class OrganizationCalendarEntry {
     @Column(name = "duplicate_reason")
     private String duplicateReason;
 
+    @Builder.Default
+    @Column(name = "source_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean sourceDeleted = false;
+
+    @Column(name = "source_deleted_at")
+    private LocalDateTime sourceDeletedAt;
+
     /**
      * Classification of this entry (SHACHARIS, MINCHA, MAARIV, MINCHA_MAARIV, SELICHOS, NON_MINYAN, OTHER)
      */
