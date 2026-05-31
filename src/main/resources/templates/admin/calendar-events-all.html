@@ -367,19 +367,19 @@
     <!-- Stats -->
     <div class="mc-stats">
         <div class="mc-stat">
-            <div class="mc-stat-num fmt-number" th:text="${totalEvents}">0</div>
+            <div class="mc-stat-num fmt-number" th:text="${#numbers.formatInteger(totalEvents, 1, 'COMMA')}">0</div>
             <div class="mc-stat-label">Total Events</div>
         </div>
         <div class="mc-stat">
-            <div class="mc-stat-num fmt-number" style="color: #1976d2;" th:text="${rulesEvents}">0</div>
+            <div class="mc-stat-num fmt-number" style="color: #1976d2;" th:text="${#numbers.formatInteger(rulesEvents, 1, 'COMMA')}">0</div>
             <div class="mc-stat-label">Rules-Based</div>
         </div>
         <div class="mc-stat">
-            <div class="mc-stat-num fmt-number" style="color: #388e3c;" th:text="${importedEvents}">0</div>
+            <div class="mc-stat-num fmt-number" style="color: #388e3c;" th:text="${#numbers.formatInteger(importedEvents, 1, 'COMMA')}">0</div>
             <div class="mc-stat-label">Imported</div>
         </div>
         <div class="mc-stat">
-            <div class="mc-stat-num fmt-number" style="color: #f57c00;" th:text="${manualEvents}">0</div>
+            <div class="mc-stat-num fmt-number" style="color: #f57c00;" th:text="${#numbers.formatInteger(manualEvents, 1, 'COMMA')}">0</div>
             <div class="mc-stat-label">Manual</div>
         </div>
     </div>
@@ -456,7 +456,7 @@
                 <i class="fas fa-calendar-alt" style="color: var(--color-primary);"></i>
                 <span>Calendar Events</span>
                 <span class="count-pill" th:if="${totalCount > 0}"
-                      th:text="${fromIndex} + '–' + ${toIndex} + ' of ' + ${totalCount}">0</span>
+                      th:text="|${#numbers.formatInteger(fromIndex, 1, 'COMMA')}–${#numbers.formatInteger(toIndex, 1, 'COMMA')} of ${#numbers.formatInteger(totalCount, 1, 'COMMA')}|">0</span>
                 <span class="count-pill" th:if="${totalCount == 0}">0 results</span>
             </div>
             <div class="page-size-bar" style="align-items: center; gap: var(--space-3);">
@@ -644,14 +644,14 @@
 
     // ── Format numbers with commas ────────────────────────────
     document.querySelectorAll('.fmt-number').forEach(function (el) {
-        var n = parseInt(el.textContent, 10);
+        var n = parseInt(el.textContent.replace(/,/g, ''), 10);
         if (!isNaN(n)) el.textContent = n.toLocaleString();
     });
 
     var countPill = document.querySelector('.fmt-count');
     if (countPill) {
         var raw = countPill.textContent.trim();
-        var num = parseInt(raw, 10);
+        var num = parseInt(raw.replace(/,/g, ''), 10);
         if (!isNaN(num)) countPill.textContent = num.toLocaleString() + ' shown';
     }
 

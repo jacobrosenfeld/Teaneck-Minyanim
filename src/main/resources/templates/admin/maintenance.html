@@ -47,19 +47,19 @@
     <!-- Stats row -->
     <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;">
         <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${totalOrgs}">0</div>
+            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${#numbers.formatInteger(totalOrgs, 1, 'COMMA')}">0</div>
             <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Total Orgs</div>
         </div>
         <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${orgsWithCalendars}">0</div>
+            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${#numbers.formatInteger(orgsWithCalendars, 1, 'COMMA')}">0</div>
             <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Orgs w/ Calendars</div>
         </div>
         <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${totalCalendarEntries}">0</div>
+            <div style="font-size:2rem;font-weight:700;color:#275ed8;" th:text="${#numbers.formatInteger(totalCalendarEntries, 1, 'COMMA')}">0</div>
             <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Calendar Entries</div>
         </div>
         <div class="stat-card" style="background:#fff;border:1px solid #dee2e6;border-radius:.5rem;padding:1.25rem;text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#28a745;" th:text="${enabledCalendarEntries}">0</div>
+            <div style="font-size:2rem;font-weight:700;color:#28a745;" th:text="${#numbers.formatInteger(enabledCalendarEntries, 1, 'COMMA')}">0</div>
             <div style="font-size:.8rem;color:#6c757d;text-transform:uppercase;letter-spacing:.05em;">Enabled Entries</div>
         </div>
     </div>

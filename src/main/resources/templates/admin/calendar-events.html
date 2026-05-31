@@ -258,15 +258,15 @@
     <!-- Stats -->
     <div class="preview-stats">
         <div class="preview-stat">
-            <div class="preview-stat-number" th:text="${totalDays}">0</div>
+            <div class="preview-stat-number" th:text="${#numbers.formatInteger(totalDays, 1, 'COMMA')}">0</div>
             <div class="preview-stat-label">Days<br>with services</div>
         </div>
         <div class="preview-stat stat-import">
-            <div class="preview-stat-number" th:text="${importedDaysCount}">0</div>
+            <div class="preview-stat-number" th:text="${#numbers.formatInteger(importedDaysCount, 1, 'COMMA')}">0</div>
             <div class="preview-stat-label">Days using<br>calendar import</div>
         </div>
         <div class="preview-stat stat-rules">
-            <div class="preview-stat-number" th:text="${rulesDaysCount}">0</div>
+            <div class="preview-stat-number" th:text="${#numbers.formatInteger(rulesDaysCount, 1, 'COMMA')}">0</div>
             <div class="preview-stat-label">Days using<br>rule-based schedule</div>
         </div>
     </div>

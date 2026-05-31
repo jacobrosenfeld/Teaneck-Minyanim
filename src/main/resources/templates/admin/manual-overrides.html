@@ -344,7 +344,7 @@
             <div class="table-topbar-left">
                 <i class="fas fa-calendar-alt" style="color: var(--color-primary);"></i>
                 <span>Manual Overrides</span>
-                <span class="count-pill" th:text="${totalManualEvents} + ' shown'">0 shown</span>
+                <span class="count-pill" th:text="|${#numbers.formatInteger(totalManualEvents, 1, 'COMMA')} shown|">0 shown</span>
             </div>
             <small style="color: var(--text-secondary); font-size: var(--font-size-xs);">
                 Range: <span th:text="${#temporals.format(startDate, 'MMM d, yyyy')}">Start</span>

@@ -391,23 +391,23 @@
     <!-- Stats -->
     <div class="ce-stats">
         <div class="ce-stat">
-            <div class="ce-stat-num fmt-number" th:text="${totalEntries}">0</div>
+            <div class="ce-stat-num fmt-number" th:text="${#numbers.formatInteger(totalEntries, 1, 'COMMA')}">0</div>
             <div class="ce-stat-label">Total in DB</div>
         </div>
         <div class="ce-stat">
-            <div class="ce-stat-num fmt-number" style="color: #2e7d32;" th:text="${enabledCount}">0</div>
+            <div class="ce-stat-num fmt-number" style="color: #2e7d32;" th:text="${#numbers.formatInteger(enabledCount, 1, 'COMMA')}">0</div>
             <div class="ce-stat-label">Enabled</div>
         </div>
         <div class="ce-stat">
-            <div class="ce-stat-num fmt-number" style="color: var(--text-secondary);" th:text="${disabledCount}">0</div>
+            <div class="ce-stat-num fmt-number" style="color: var(--text-secondary);" th:text="${#numbers.formatInteger(disabledCount, 1, 'COMMA')}">0</div>
             <div class="ce-stat-label">Disabled</div>
         </div>
         <div class="ce-stat">
-            <div class="ce-stat-num fmt-number" style="color: var(--color-primary);" th:text="${minyanCount}">0</div>
+            <div class="ce-stat-num fmt-number" style="color: var(--color-primary);" th:text="${#numbers.formatInteger(minyanCount, 1, 'COMMA')}">0</div>
             <div class="ce-stat-label">Minyan</div>
         </div>
         <div class="ce-stat">
-            <div class="ce-stat-num fmt-number" style="color: var(--color-gray-500);" th:text="${nonMinyanCount}">0</div>
+            <div class="ce-stat-num fmt-number" style="color: var(--color-gray-500);" th:text="${#numbers.formatInteger(nonMinyanCount, 1, 'COMMA')}">0</div>
             <div class="ce-stat-label">Non-Minyan</div>
         </div>
     </div>
@@ -476,7 +476,7 @@
             <div class="table-topbar-left">
                 <i class="fas fa-calendar-alt" style="color: var(--color-primary);"></i>
                 <span>Entries</span>
-                <span class="count-pill fmt-count" th:text="${filteredCount} + ' shown'">0 shown</span>
+                <span class="count-pill fmt-count" th:text="|${#numbers.formatInteger(filteredCount, 1, 'COMMA')} shown|">0 shown</span>
             </div>
             <small style="color: var(--text-secondary); font-size: var(--font-size-xs);">
                 Click column headers to sort
@@ -638,7 +638,7 @@
 
     // ── Format numbers with commas ────────────────────────────
     document.querySelectorAll('.fmt-number').forEach(function (el) {
-        var n = parseInt(el.textContent, 10);
+        var n = parseInt(el.textContent.replace(/,/g, ''), 10);
         if (!isNaN(n)) el.textContent = n.toLocaleString();
     });
 
@@ -646,7 +646,7 @@
     var countPill = document.querySelector('.fmt-count');
     if (countPill) {
         var raw = countPill.textContent.trim();
-        var num = parseInt(raw, 10);
+        var num = parseInt(raw.replace(/,/g, ''), 10);
         if (!isNaN(num)) {
             countPill.textContent = num.toLocaleString() + ' shown';
         }
