@@ -601,9 +601,8 @@
                                 <button type="submit"
                                         class="toggle-btn ce-toggle-btn"
                                         th:classappend="${entry.enabled} ? ' toggle-disable' : ' toggle-enable'"
-                                        th:disabled="${entry.sourceDeleted}"
-                                        th:title="${entry.sourceDeleted} ? 'Removed from source calendar; use a manual override to restore it' : ''"
-                                        th:text="${entry.sourceDeleted} ? 'Source Removed' : (${entry.enabled} ? 'Disable' : 'Enable')">Toggle</button>
+                                        th:title="${entry.sourceDeleted} ? 'Removed from source calendar; enabling keeps it live as a manual admin choice' : ''"
+                                        th:text="${entry.enabled} ? 'Disable' : 'Enable'">Toggle</button>
                             </form>
                         </td>
                     </tr>

@@ -339,9 +339,11 @@ public class CalendarMaterializationService {
         MinyanType minyanType = entry.getClassification() != null
                 ? entry.getClassification()
                 : MinyanType.OTHER;
+        boolean sourceDeletedButRestored =
+                entry.isSourceDeleted() && entry.isEnabled() && entry.isEnabledManuallySet();
         boolean materializable = resolvedStartTime != null
                 && minyanType != MinyanType.NON_MINYAN
-                && !entry.isSourceDeleted();
+                && (!entry.isSourceDeleted() || sourceDeletedButRestored);
 
         if (!materializable) {
             if (existingEvent != null && existingEvent.isEnabled()) {
@@ -368,7 +370,7 @@ public class CalendarMaterializationService {
         target.setNotes(entry.getNotes());
         target.setLocationId(null);
         target.setLocationName(entry.getLocation());
-        target.setEnabled(entry.isEnabled() && !entry.isSourceDeleted());
+        target.setEnabled(entry.isEnabled() && (!entry.isSourceDeleted() || sourceDeletedButRestored));
         target.setNusach(org.getNusach());
 
         eventsToSave.add(target);

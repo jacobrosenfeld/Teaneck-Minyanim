@@ -47,7 +47,6 @@ public class CalendarImportService {
 
     private static final int HTTP_TIMEOUT_SECONDS = 30;
     private static final String USER_AGENT = "TeaneckMinyanim/1.2.1 (Calendar Import Bot)";
-    private static final String SOURCE_DELETED_REASON = "Auto-disabled: Missing from latest source calendar import";
 
     /**
      * Result of an import operation
@@ -364,7 +363,7 @@ public class CalendarImportService {
 
         List<OrganizationCalendarEntry> existingEntries =
                 entryRepository.findEntriesInRange(organizationId, minDate, maxDate);
-        List<OrganizationCalendarEntry> entriesToDisable = new ArrayList<>();
+        List<OrganizationCalendarEntry> entriesToSave = new ArrayList<>();
         LocalDateTime disabledAt = LocalDateTime.now();
 
         for (OrganizationCalendarEntry existingEntry : existingEntries) {
@@ -372,26 +371,30 @@ public class CalendarImportService {
                 continue;
             }
             if (markEntrySourceDeleted(existingEntry, disabledAt)) {
-                entriesToDisable.add(existingEntry);
+                entriesToSave.add(existingEntry);
             }
         }
 
-        if (!entriesToDisable.isEmpty()) {
-            entryRepository.saveAll(entriesToDisable);
-            result.disabledMissingEntries += entriesToDisable.size();
-            log.info("Disabled {} imported entries missing from latest source calendar for {} from {} to {}",
-                    entriesToDisable.size(), organizationId, minDate, maxDate);
+        if (!entriesToSave.isEmpty()) {
+            entryRepository.saveAll(entriesToSave);
+            long disabledCount = entriesToSave.stream()
+                    .filter(entry -> !entry.isEnabled())
+                    .count();
+            result.disabledMissingEntries += (int) disabledCount;
+            log.info("Reconciled {} imported entries missing from latest source calendar for {} from {} to {}; {} disabled",
+                    entriesToSave.size(), organizationId, minDate, maxDate, disabledCount);
         }
     }
 
     private boolean markEntrySourceDeleted(OrganizationCalendarEntry entry, LocalDateTime disabledAt) {
         boolean changed = false;
+        boolean manuallyEnabled = entry.isEnabledManuallySet() && entry.isEnabled();
 
-        if (entry.isEnabled()) {
+        if (entry.isEnabled() && !manuallyEnabled) {
             entry.setEnabled(false);
             changed = true;
         }
-        if (entry.isEnabledManuallySet()) {
+        if (entry.isEnabledManuallySet() && !manuallyEnabled) {
             entry.setEnabledManuallySet(false);
             changed = true;
         }
@@ -403,8 +406,11 @@ public class CalendarImportService {
             entry.setSourceDeletedAt(disabledAt);
             changed = true;
         }
-        if (!SOURCE_DELETED_REASON.equals(entry.getDuplicateReason())) {
-            entry.setDuplicateReason(SOURCE_DELETED_REASON);
+        String missingReason = manuallyEnabled
+                ? OrganizationCalendarEntry.SOURCE_RESTORED_REASON
+                : OrganizationCalendarEntry.SOURCE_DELETED_REASON;
+        if (!missingReason.equals(entry.getDuplicateReason())) {
+            entry.setDuplicateReason(missingReason);
             changed = true;
         }
 
@@ -487,7 +493,8 @@ public class CalendarImportService {
         if (entry.isSourceDeleted()) {
             entry.setSourceDeleted(false);
             entry.setSourceDeletedAt(null);
-            if (SOURCE_DELETED_REASON.equals(entry.getDuplicateReason())) {
+            if (OrganizationCalendarEntry.SOURCE_DELETED_REASON.equals(entry.getDuplicateReason())
+                    || OrganizationCalendarEntry.SOURCE_RESTORED_REASON.equals(entry.getDuplicateReason())) {
                 entry.setDuplicateReason(null);
             }
         }

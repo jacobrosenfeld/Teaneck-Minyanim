@@ -43,7 +43,7 @@ class CalendarImportServiceTest {
 
     private static final String ORG_ID = "org-import";
     private static final String SOURCE_DELETED_REASON =
-            "Auto-disabled: Missing from latest source calendar import";
+            OrganizationCalendarEntry.SOURCE_DELETED_REASON;
 
     @Mock
     private CalendarUrlBuilder urlBuilder;
@@ -178,7 +178,7 @@ class CalendarImportServiceTest {
                 .title("Removed Shacharis")
                 .fingerprint("stale-fingerprint")
                 .enabled(true)
-                .enabledManuallySet(true)
+                .enabledManuallySet(false)
                 .sourceDeleted(false)
                 .build();
 
@@ -206,6 +206,51 @@ class CalendarImportServiceTest {
         assertTrue(disabled.isSourceDeleted());
         assertNotNull(disabled.getSourceDeletedAt());
         assertEquals(SOURCE_DELETED_REASON, disabled.getDuplicateReason());
+
+        verify(materializationService).syncImportedEntriesInRangeLive(ORG_ID, date, date);
+    }
+
+    @Test
+    void importCalendarForOrganization_marksMissingManuallyEnabledEntryWithoutDisablingIt() throws Exception {
+        LocalDate date = LocalDate.now().plusDays(4);
+        OrganizationCalendarEntry manuallyEnabledEntry = OrganizationCalendarEntry.builder()
+                .id(30L)
+                .organizationId(ORG_ID)
+                .date(date)
+                .startTime(java.time.LocalTime.of(8, 0))
+                .title("Admin Restored Shacharis")
+                .fingerprint("manual-enabled-fingerprint")
+                .enabled(true)
+                .enabledManuallySet(true)
+                .sourceDeleted(false)
+                .build();
+
+        when(urlBuilder.buildCsvExportUrl(anyString())).thenReturn(serveCsv(csv(date, "Mincha", "Main")));
+        when(entryRepository.findByFingerprint(anyString())).thenReturn(Optional.empty());
+        when(entryRepository.findByOrganizationIdAndDate(eq(ORG_ID), eq(date)))
+                .thenReturn(List.of(manuallyEnabledEntry));
+        when(entryRepository.findEntriesInRange(ORG_ID, date, date))
+                .thenReturn(List.of(manuallyEnabledEntry));
+        when(entryRepository.saveAll(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        CalendarImportService.ImportResult result = service.importCalendarForOrganization(ORG_ID);
+
+        assertTrue(result.success);
+        assertEquals(1, result.newEntries);
+        assertEquals(0, result.disabledMissingEntries);
+
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        ArgumentCaptor<Iterable<OrganizationCalendarEntry>> saveAllCaptor =
+                ArgumentCaptor.forClass((Class) Iterable.class);
+        verify(entryRepository).saveAll(saveAllCaptor.capture());
+        OrganizationCalendarEntry restored = saveAllCaptor.getValue().iterator().next();
+        assertEquals(manuallyEnabledEntry.getId(), restored.getId());
+        assertTrue(restored.isEnabled());
+        assertTrue(restored.isEnabledManuallySet());
+        assertTrue(restored.isSourceDeleted());
+        assertNotNull(restored.getSourceDeletedAt());
+        assertEquals(OrganizationCalendarEntry.SOURCE_RESTORED_REASON, restored.getDuplicateReason());
 
         verify(materializationService).syncImportedEntriesInRangeLive(ORG_ID, date, date);
     }

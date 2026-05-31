@@ -28,6 +28,11 @@ import java.time.LocalTime;
         })
 public class OrganizationCalendarEntry {
 
+    public static final String SOURCE_DELETED_REASON =
+            "Auto-disabled: Missing from latest source calendar import";
+    public static final String SOURCE_RESTORED_REASON =
+            "Manually re-enabled after source calendar removal";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
