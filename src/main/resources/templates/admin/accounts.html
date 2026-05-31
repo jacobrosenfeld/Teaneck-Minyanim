@@ -49,42 +49,44 @@
     <!-- Accounts Table -->
     <div class="card-modern">
         <div class="card-modern-body">
-            <table class="table-modern w-full">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Linked Organization</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="account: ${accounts}">
-                        <td th:text="${account.id}">1</td>
-                        <td th:text="${account.username}">username</td>
-                        <td th:text="${account.email}">email@example.com</td>
-                        <td>
-                            <span class="badge-modern badge-secondary" th:text="${account.getRoleDisplayName()}">Role</span>
-                        </td>
-                        <td th:text="${organizationNames.get(account.id)}">Organization</td>
-                        <td>
-                            <a class="btn-modern btn-sm btn-primary" th:href="@{/admin/account?id=} + ${account.id}">
-                                <i class="fas fa-user"></i>
-                                <span>Manage</span>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(accounts)}">
-                        <td colspan="6" style="text-align: center; padding: var(--space-12); color: var(--text-secondary);">
-                            <i class="fas fa-users" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3;"></i>
-                            <p style="margin: 0; font-weight: var(--font-weight-medium);">No accounts found.</p>
-                            <p style="margin-top: var(--space-2); font-size: var(--font-size-sm);">Create a new organization with an account to get started.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-modern-wrapper">
+                <table class="table-modern table-admin-list w-full">
+                    <thead>
+                        <tr>
+                            <th class="table-cell-nowrap">ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th class="table-cell-nowrap">Role</th>
+                            <th>Linked Organization</th>
+                            <th class="table-cell-nowrap">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="account: ${accounts}">
+                            <td class="table-cell-nowrap" th:text="${account.id}">1</td>
+                            <td th:text="${account.username}">username</td>
+                            <td th:text="${account.email}">email@example.com</td>
+                            <td>
+                                <span class="badge-modern badge-secondary" th:text="${account.getRoleDisplayName()}">Role</span>
+                            </td>
+                            <td th:text="${organizationNames.get(account.id)}">Organization</td>
+                            <td class="table-cell-nowrap">
+                                <a class="btn-modern btn-sm btn-primary" th:href="@{/admin/account?id=} + ${account.id}">
+                                    <i class="fas fa-user"></i>
+                                    <span>Manage</span>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(accounts)}">
+                            <td colspan="6" style="text-align: center; padding: var(--space-12); color: var(--text-secondary);">
+                                <i class="fas fa-users" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3;"></i>
+                                <p style="margin: 0; font-weight: var(--font-weight-medium);">No accounts found.</p>
+                                <p style="margin-top: var(--space-2); font-size: var(--font-size-sm);">Create a new organization with an account to get started.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

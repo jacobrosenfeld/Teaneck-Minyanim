@@ -43,20 +43,20 @@
     <div class="card-modern">
         <div class="card-modern-body">
             <div class="table-modern-wrapper">
-                <table class="table-modern w-full">
+                <table class="table-modern table-admin-list w-full">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th class="table-cell-nowrap">ID</th>
                             <th>Name</th>
                             <th>Schedule Type</th>
                             <th>Website</th>
-                            <th>Minyan Schedule</th>
-                            <th>Profile &amp; Accounts</th>
+                            <th class="table-cell-nowrap">Minyan Schedule</th>
+                            <th class="table-cell-nowrap">Profile &amp; Accounts</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="organization: ${organizations}">
-                            <td th:text="${organization.id}">1</td>
+                            <td class="table-cell-nowrap" th:text="${organization.id}">1</td>
                             <td th:text="${organization.name}">Organization Name</td>
                             <td>
                                 <span th:if="${organization.useScrapedCalendar != null and organization.useScrapedCalendar}"
@@ -78,14 +78,14 @@
                                     th:text="${organization.websiteURI}"
                                     class="text-primary">website.com</a>
                             </td>
-                            <td>
+                            <td class="table-cell-nowrap">
                                 <a class="btn-modern btn-sm btn-primary"
                                     th:href="@{|/admin/org/${organization.id}/minyanim|}">
                                     <i class="fas fa-calendar"></i>
                                     <span>Manage</span>
                                 </a>
                             </td>
-                            <td>
+                            <td class="table-cell-nowrap">
                                 <a class="btn-modern btn-sm btn-secondary"
                                     th:href="@{/admin/organization(id=${organization.id})}">
                                     <i class="fas fa-building"></i>

@@ -50,39 +50,43 @@
     <!-- Locations Table -->
     <div class="card-modern">
         <div class="card-modern-body">
-            <table class="table-modern w-full">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="location: ${locations}">
-                        <td th:text="${location.id}">1</td>
-                        <td th:text="${location.name}">Location Name</td>
-                        <td>
-                            <button class="btn-modern btn-sm btn-outline" data-toggle="modal" th:data-target="${'#update-location-modal-' + location.id}">
-                                <i class="fas fa-edit"></i>
-                                <span>Edit</span>
-                            </button>
-                            <button class="btn-modern btn-sm btn-outline" style="border-color: var(--color-danger); color: var(--color-danger);"
-                                    data-toggle="modal" th:data-target="${'#delete-location-modal-' + location.id}">
-                                <i class="fas fa-trash"></i>
-                                <span>Delete</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(locations)}">
-                        <td colspan="3" style="text-align: center; padding: var(--space-12); color: var(--text-secondary);">
-                            <i class="fas fa-map-marker-alt" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3; display: block;"></i>
-                            <p style="margin: 0; font-weight: var(--font-weight-medium);">No locations found.</p>
-                            <p style="margin-top: var(--space-2); font-size: var(--font-size-sm);">Create a new location to get started.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-modern-wrapper">
+                <table class="table-modern table-fit w-full">
+                    <thead>
+                        <tr>
+                            <th class="table-cell-nowrap">ID</th>
+                            <th>Name</th>
+                            <th class="table-cell-nowrap">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="location: ${locations}">
+                            <td class="table-cell-nowrap" th:text="${location.id}">1</td>
+                            <td th:text="${location.name}">Location Name</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn-modern btn-sm btn-outline" data-toggle="modal" th:data-target="${'#update-location-modal-' + location.id}">
+                                        <i class="fas fa-edit"></i>
+                                        <span>Edit</span>
+                                    </button>
+                                    <button class="btn-modern btn-sm btn-outline" style="border-color: var(--color-danger); color: var(--color-danger);"
+                                            data-toggle="modal" th:data-target="${'#delete-location-modal-' + location.id}">
+                                        <i class="fas fa-trash"></i>
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(locations)}">
+                            <td colspan="3" style="text-align: center; padding: var(--space-12); color: var(--text-secondary);">
+                                <i class="fas fa-map-marker-alt" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3; display: block;"></i>
+                                <p style="margin: 0; font-weight: var(--font-weight-medium);">No locations found.</p>
+                                <p style="margin-top: var(--space-2); font-size: var(--font-size-sm);">Create a new location to get started.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

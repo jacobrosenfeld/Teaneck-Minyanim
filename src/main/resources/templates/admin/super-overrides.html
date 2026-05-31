@@ -153,46 +153,6 @@
             color: var(--text-secondary);
         }
 
-        .table-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color-light);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-        }
-
-        .table-topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: var(--space-3);
-            padding: var(--space-3) var(--space-5);
-            background: var(--color-gray-50);
-            border-bottom: 1px solid var(--border-color-light);
-        }
-
-        .table-topbar-left {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            font-weight: var(--font-weight-semibold);
-            font-size: var(--font-size-sm);
-            color: var(--text-primary);
-        }
-
-        .count-pill {
-            background: var(--color-gray-200);
-            color: var(--text-secondary);
-            font-size: var(--font-size-xs);
-            font-weight: var(--font-weight-medium);
-            padding: 2px 10px;
-            border-radius: var(--radius-full);
-            white-space: nowrap;
-        }
-
-        .table-wrap {
-            overflow-x: auto;
-        }
-
         .table {
             width: 100%;
             border-collapse: separate;
@@ -505,7 +465,7 @@
             </small>
         </div>
 
-        <div class="table-wrap" th:if="${!#lists.isEmpty(manualEvents)}">
+        <div class="table-scroll" th:if="${!#lists.isEmpty(manualEvents)}">
             <table class="table">
                 <thead>
                 <tr>

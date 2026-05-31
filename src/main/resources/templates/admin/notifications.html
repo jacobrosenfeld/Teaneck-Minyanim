@@ -26,7 +26,7 @@
                 <h1 class="page-title">Notification Management</h1>
                 <p class="page-description">Manage site-wide notifications for banners and popups</p>
             </div>
-            <div class="page-header-actions">
+            <div class="page-actions">
                 <button class="btn-modern btn-primary" data-toggle="modal" data-target="#createNotificationModal">
                     <i class="fas fa-plus"></i>
                     <span>Create Notification</span>
@@ -47,8 +47,8 @@
 
         <!-- Notifications Table -->
         <div class="card-modern" th:if="${!notifications.isEmpty()}">
-            <div class="table-container" style="overflow-x: auto;">
-                <table class="table-modern" style="min-width: 1000px;">
+            <div class="table-modern-wrapper">
+                <table class="table-modern table-admin-wide">
                     <thead>
                         <tr>
                             <th style="width: 60px;">ID</th>
@@ -85,7 +85,7 @@
                             <td th:text="${notification.expirationDate != null} ? ${#temporals.format(notification.expirationDate, 'MMM d, yyyy')} : 'Never'"></td>
                             <td th:text="${#temporals.format(notification.createdAt, 'MMM d, yyyy')}"></td>
                             <td>
-                                <div style="display: flex; gap: var(--space-1);">
+                                <div class="table-actions table-actions-nowrap">
                                     <button class="btn-modern btn-sm btn-outline edit-btn" 
                                             th:data-id="${notification.id}"
                                             th:data-title="${notification.title}"
