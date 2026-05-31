@@ -2050,9 +2050,9 @@ public class AdminController {
     private org.springframework.data.domain.Sort buildSort(String sortBy, String sortDir) {
         String sortField = sortBy != null ? sortBy : "date";
         org.springframework.data.domain.Sort.Direction direction = 
-                "asc".equalsIgnoreCase(sortDir) ? 
-                org.springframework.data.domain.Sort.Direction.ASC : 
-                org.springframework.data.domain.Sort.Direction.DESC;
+                "desc".equalsIgnoreCase(sortDir) ?
+                org.springframework.data.domain.Sort.Direction.DESC :
+                org.springframework.data.domain.Sort.Direction.ASC;
 
         // Map sort field names to entity field names
         switch (sortField) {
