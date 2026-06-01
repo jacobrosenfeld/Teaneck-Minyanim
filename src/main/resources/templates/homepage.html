@@ -283,6 +283,14 @@
                                               </div>
                                               <hr>
                                           </div>
+                                          <div class="col-12" th:if="${candleLighting != null and !candleLightingAfterNightfall}">
+                                              <div>
+                                                  <span class="p-time" th:text="${candleLighting}"></span>
+                                                  &nbsp;
+                                                  <span class="p-zman">Candle Lighting</span>
+                                              </div>
+                                              <hr>
+                                          </div>
                                           <div class="col-12">
                                               <div>
                                                   <span class="p-time" th:text="${shekiya}"></span>
@@ -304,6 +312,22 @@
                                                   <span class="p-time" th:text="${tzes}"></span>
                                                       &nbsp;
                                                       <span class="p-zman">Tzes HaKochavim</span>
+                                              </div>
+                                          </div>
+                                          <div class="col-12" th:if="${candleLighting != null and candleLightingAfterNightfall}">
+                                              <hr>
+                                              <div>
+                                                  <span class="p-time" th:text="${candleLighting}"></span>
+                                                  &nbsp;
+                                                  <span class="p-zman">Candle Lighting</span>
+                                              </div>
+                                          </div>
+                                          <div class="col-12" th:if="${havdala != null}">
+                                              <hr>
+                                              <div>
+                                                  <span class="p-time" th:text="${havdala}"></span>
+                                                  &nbsp;
+                                                  <span class="p-zman">Havdala</span>
                                               </div>
                                           </div>
                                       </div>

@@ -69,10 +69,12 @@ public class ZmanimHandler {
     }
 
     public Dictionary<Zman, Date> getZmanim(LocalDate date) {
-        Dictionary<Zman, Date> dictionary = new Hashtable();
+        Dictionary<Zman, Date> dictionary = new Hashtable<>();
 
         ComplexZmanimCalendar complexZmanimCalendar = new ComplexZmanimCalendar(getGeoLocation());
         complexZmanimCalendar.getCalendar().set(date.getYear(), date.getMonth().getValue() - 1, date.getDayOfMonth());
+        JewishCalendar jewishCalendar = jewishCalendar(date);
+        JewishCalendar tomorrowJewishCalendar = jewishCalendar(date.plusDays(1));
 
         dictionary.put(Zman.ALOS_HASHACHAR, complexZmanimCalendar.getAlosHashachar());
         dictionary.put(Zman.ETT, complexZmanimCalendar.getBeginCivilTwilight());
@@ -90,8 +92,51 @@ public class ZmanimHandler {
         dictionary.put(Zman.EARLIEST_SHEMA, complexZmanimCalendar.getTzaisGeonim5Point88Degrees());
         dictionary.put(Zman.TZES, complexZmanimCalendar.getTzais());
         dictionary.put(Zman.CHATZOS_LAILA, complexZmanimCalendar.getSolarMidnight());
+        if (jewishCalendar.hasCandleLighting()) {
+            dictionary.put(
+                    Zman.CANDLE_LIGHTING,
+                    candleLightingTime(complexZmanimCalendar, jewishCalendar, tomorrowJewishCalendar));
+        }
+        if (hasHavdala(jewishCalendar, tomorrowJewishCalendar)) {
+            dictionary.put(Zman.HAVDALA, complexZmanimCalendar.getTzais());
+        }
 
         return dictionary;
+    }
+
+    private JewishCalendar jewishCalendar(LocalDate date) {
+        JewishCalendar jewishCalendar = new JewishCalendar(date);
+        jewishCalendar.setInIsrael(false);
+        return jewishCalendar;
+    }
+
+    private Date candleLightingTime(
+            ComplexZmanimCalendar complexZmanimCalendar,
+            JewishCalendar jewishCalendar,
+            JewishCalendar tomorrowJewishCalendar) {
+        if (isCandleLightingAfterNightfall(jewishCalendar, tomorrowJewishCalendar)) {
+            return complexZmanimCalendar.getTzais();
+        }
+        return complexZmanimCalendar.getCandleLighting();
+    }
+
+    private boolean isCandleLightingAfterNightfall(
+            JewishCalendar jewishCalendar,
+            JewishCalendar tomorrowJewishCalendar) {
+        if (jewishCalendar.getDayOfWeek() == Calendar.SATURDAY) {
+            return true;
+        }
+        return jewishCalendar.isYomTovAssurBemelacha()
+                && tomorrowJewishCalendar.isYomTovAssurBemelacha()
+                && tomorrowJewishCalendar.getDayOfWeek() != Calendar.SATURDAY;
+    }
+
+    private boolean hasHavdala(JewishCalendar jewishCalendar, JewishCalendar tomorrowJewishCalendar) {
+        if (!jewishCalendar.isAssurBemelacha()) {
+            return false;
+        }
+        return !tomorrowJewishCalendar.isAssurBemelacha()
+                || jewishCalendar.getDayOfWeek() == Calendar.SATURDAY;
     }
 
     public String getHebrewDate(Date date) {
