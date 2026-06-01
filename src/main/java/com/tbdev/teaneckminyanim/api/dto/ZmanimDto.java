@@ -27,6 +27,8 @@ public record ZmanimDto(
             String shekiya,          // Shekiya (sunset)
             String earliestShema,    // Earliest time to recite Shema at night
             String tzeis,            // Tzeis Hakochavim (nightfall)
+            String candleLighting,   // Candle lighting when applicable
+            String havdala,          // Havdala when applicable
             String chatzosLaila      // Chatzos Laila (midnight)
     ) {}
 }

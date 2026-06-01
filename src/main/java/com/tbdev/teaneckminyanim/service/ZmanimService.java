@@ -119,6 +119,7 @@ public class ZmanimService {
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
+        addSpecialZmanimToModel(mv, zmanim);
 
         List<MinyanEvent> minyanEvents = new ArrayList<>();
         LocalDate localDateRef = dateToLocalDate(date);
@@ -275,6 +276,7 @@ public class ZmanimService {
         mv.getModel().put("shekiya", timeFormatWithRoundingToSecond(zmanim.get(Zman.SHEKIYA)));
         mv.getModel().put("earliestShema", timeFormatWithRoundingToSecond(zmanim.get(Zman.EARLIEST_SHEMA)));
         mv.getModel().put("tzes", timeFormatWithRoundingToSecond(zmanim.get(Zman.TZES)));
+        addSpecialZmanimToModel(mv, zmanim);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a");
         Date datenow = new Date();
@@ -440,12 +442,30 @@ public class ZmanimService {
         dateFormat.setTimeZone(tz);
         onlyDateFormat.setTimeZone(tz);
         strippedDayFormat.setTimeZone(tz);
+        timeFormatSec.setTimeZone(tz);
+    }
+
+    private void addSpecialZmanimToModel(ModelAndView mv, Dictionary<Zman, Date> zmanim) {
+        Date candleLighting = zmanim.get(Zman.CANDLE_LIGHTING);
+        Date shekiya = zmanim.get(Zman.SHEKIYA);
+        mv.getModel().put("candleLighting", timeFormatWithoutSecondsOptional(candleLighting));
+        mv.getModel().put(
+                "candleLightingAfterNightfall",
+                candleLighting != null && shekiya != null && candleLighting.after(shekiya));
+        mv.getModel().put("havdala", timeFormatWithoutSecondsOptional(zmanim.get(Zman.HAVDALA)));
     }
 
     private String timeFormatWithRoundingToSecond(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         return timeFormatSec.format(calendar.getTime());
+    }
+
+    private String timeFormatWithoutSecondsOptional(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return timeFormat.format(date);
     }
 
     private static LocalDate dateToLocalDate(Date date) {

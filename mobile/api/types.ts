@@ -62,6 +62,8 @@ export interface ZmanimTimes {
   shekiya: string | null;
   tzeis: string | null;
   earliestShema: string | null;
+  candleLighting?: string | null;
+  havdala?: string | null;
   chatzosLaila: string | null;
 }
 

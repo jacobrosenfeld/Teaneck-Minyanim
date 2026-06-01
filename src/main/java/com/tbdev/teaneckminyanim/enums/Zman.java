@@ -16,6 +16,8 @@ public enum Zman {
     SHEKIYA("SHEKIYA"),
     EARLIEST_SHEMA("EARLIEST_SHEMA"),
     TZES("TZES"),
+    CANDLE_LIGHTING("CANDLE_LIGHTING"),
+    HAVDALA("HAVDALA"),
     CHATZOS_LAILA("CHATZOS_LAILA");
 
     private String text;
@@ -68,6 +70,10 @@ public enum Zman {
                 return "Earliest Shema";
             case TZES:
                 return "Tzes";
+            case CANDLE_LIGHTING:
+                return "Candle Lighting";
+            case HAVDALA:
+                return "Havdala";
             case CHATZOS_LAILA:
                 return "Chatzos Laila";
             default:

@@ -29,24 +29,75 @@ import { toApiDate } from '@/api/client';
 import { formatTime } from '@/utils/time';
 import type { ZmanimTimes } from '@/api/types';
 
-// Labels matching teaneckminyanim.com exactly (transliterated Hebrew)
-const ZMANIM_ROWS: { label: string; key: keyof ZmanimTimes; section?: string; highlight?: boolean }[] = [
-  { label: 'Alos HaShachar', key: 'alotHashachar', section: 'Morning' },
-  { label: 'Misheyakir', key: 'misheyakir' },
-  { label: 'Netz', key: 'netz', highlight: true },
-  { label: 'Sof Zman Krias Shema (MGA)', key: 'sofZmanShmaMga' },
-  { label: 'Sof Zman Krias Shema (GRA)', key: 'sofZmanShmaGra' },
-  { label: 'Sof Zman Tefilla (MGA)', key: 'sofZmanTfilaMga' },
-  { label: 'Sof Zman Tefilla (GRA)', key: 'sofZmanTfilaGra' },
-  { label: 'Chatzos', key: 'chatzos', section: 'Afternoon', highlight: true },
-  { label: 'Mincha Gedola', key: 'minchaGedola' },
-  { label: 'Mincha Ketana', key: 'minchaKetana' },
-  { label: 'Plag HaMincha', key: 'plagHamincha', highlight: true },
-  { label: 'Shekiya', key: 'shekiya', section: 'Evening', highlight: true },
-  { label: 'Earliest Shema', key: 'earliestShema' },
-  { label: 'Tzes HaKochavim', key: 'tzeis', highlight: true },
-  { label: 'Chatzos Laila', key: 'chatzosLaila' },
+type ZmanimRow = {
+  label: string;
+  key: keyof ZmanimTimes;
+  highlight?: boolean;
+  optional?: boolean;
+  order: number;
+};
+
+const ZMANIM_SECTIONS: { title: string; rows: ZmanimRow[] }[] = [
+  {
+    title: 'Morning',
+    rows: [
+      { label: 'Alos HaShachar', key: 'alotHashachar', order: 10 },
+      { label: 'Misheyakir', key: 'misheyakir', order: 20 },
+      { label: 'Netz', key: 'netz', highlight: true, order: 30 },
+      { label: 'Sof Zman Krias Shema (MGA)', key: 'sofZmanShmaMga', order: 40 },
+      { label: 'Sof Zman Krias Shema (GRA)', key: 'sofZmanShmaGra', order: 50 },
+      { label: 'Sof Zman Tefilla (MGA)', key: 'sofZmanTfilaMga', order: 60 },
+      { label: 'Sof Zman Tefilla (GRA)', key: 'sofZmanTfilaGra', order: 70 },
+    ],
+  },
+  {
+    title: 'Afternoon',
+    rows: [
+      { label: 'Chatzos', key: 'chatzos', highlight: true, order: 10 },
+      { label: 'Mincha Gedola', key: 'minchaGedola', order: 20 },
+      { label: 'Mincha Ketana', key: 'minchaKetana', order: 30 },
+      { label: 'Plag HaMincha', key: 'plagHamincha', highlight: true, order: 40 },
+    ],
+  },
+  {
+    title: 'Evening',
+    rows: [
+      { label: 'Candle Lighting', key: 'candleLighting', optional: true, highlight: true, order: 10 },
+      { label: 'Shekiya', key: 'shekiya', highlight: true, order: 20 },
+      { label: 'Earliest Shema', key: 'earliestShema', order: 30 },
+      { label: 'Tzes HaKochavim', key: 'tzeis', highlight: true, order: 40 },
+      { label: 'Havdala', key: 'havdala', optional: true, highlight: true, order: 50 },
+      { label: 'Chatzos Laila', key: 'chatzosLaila', order: 60 },
+    ],
+  },
 ];
+
+function eveningMinutes(time: string | null | undefined): number | null {
+  if (!time) return null;
+  const [hour, minute] = time.split(':').map(Number);
+  if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
+  const minutes = hour * 60 + minute;
+  return minutes < 12 * 60 ? minutes + 24 * 60 : minutes;
+}
+
+function rowsForSection(
+  section: { title: string; rows: ZmanimRow[] },
+  times: ZmanimTimes | undefined,
+): ZmanimRow[] {
+  const rows = section.rows.filter((row) => !row.optional || !!times?.[row.key]);
+  if (section.title !== 'Evening') return rows;
+
+  return [...rows].sort((a, b) => {
+    const aMinutes = eveningMinutes(times?.[a.key]);
+    const bMinutes = eveningMinutes(times?.[b.key]);
+    if (aMinutes !== null && bMinutes !== null && aMinutes !== bMinutes) {
+      return aMinutes - bMinutes;
+    }
+    if (aMinutes !== null && bMinutes === null) return -1;
+    if (aMinutes === null && bMinutes !== null) return 1;
+    return a.order - b.order;
+  });
+}
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 const SUPPORT_EMAIL = 'info@teaneckminyanim.com';
@@ -112,9 +163,6 @@ export default function ZmanimScreen() {
     }),
   ).current;
 
-  // Find which rows form section headers
-  let currentSection = '';
-
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
@@ -158,43 +206,45 @@ export default function ZmanimScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.list}>
           {/* Zmanim rows */}
-          {ZMANIM_ROWS.map((row) => {
-            const raw = zmanim?.times?.[row.key];
-            const time = raw ? formatTime(raw) : null;
-            const isNewSection = !!row.section && row.section !== currentSection;
-            if (row.section) currentSection = row.section;
-
+          {ZMANIM_SECTIONS.map((section) => {
+            const rows = rowsForSection(section, zmanim?.times);
             return (
-              <React.Fragment key={row.key}>
-                {isNewSection && (
-                  <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-                    <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
-                    <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-                      {row.section!.toUpperCase()}
-                    </Text>
-                    <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
-                  </View>
-                )}
-                <View
-                  style={[
-                    styles.zmanRow,
-                    { backgroundColor: colors.card, borderBottomColor: colors.border },
-                  ]}>
-                  <Text
-                    style={[
-                      styles.zmanLabel,
-                      { color: colors.text },
-                    ]}>
-                    {row.label}
+              <React.Fragment key={section.title}>
+                <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
+                  <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
+                  <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+                    {section.title.toUpperCase()}
                   </Text>
-                  <Text
-                    style={[
-                      styles.zmanTime,
-                      { color: time ? colors.text : colors.border },
-                    ]}>
-                    {time ?? '—'}
-                  </Text>
+                  <View style={[styles.sectionLine, { backgroundColor: colors.border }]} />
                 </View>
+                {rows.map((row) => {
+                  const raw = zmanim?.times?.[row.key];
+                  const time = raw ? formatTime(raw) : null;
+
+                  return (
+                    <View
+                      key={row.key}
+                      style={[
+                        styles.zmanRow,
+                        { backgroundColor: colors.card, borderBottomColor: colors.border },
+                      ]}>
+                      <Text
+                        style={[
+                          styles.zmanLabel,
+                          { color: colors.text },
+                        ]}>
+                        {row.label}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.zmanTime,
+                          { color: time ? colors.text : colors.border },
+                        ]}>
+                        {time ?? '—'}
+                      </Text>
+                    </View>
+                  );
+                })}
               </React.Fragment>
             );
           })}
