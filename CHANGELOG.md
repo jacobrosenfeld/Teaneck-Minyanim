@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Calendar entries toggle UX now preserves filters**: Enable/Disable actions on `/admin/{orgId}/calendar-entries` now update in place via AJAX, keeping active search/date/type/sort state.
 - **Calendar entries location updates now preserve filters**: Location changes on `/admin/{orgId}/calendar-entries` now apply in place via AJAX (no full-page reload), with the same toast feedback pattern as enable/disable.
 - **Mobile privacy policy disclosure text updated**: The public privacy policy now documents consent-gated mobile analytics, ATT behavior on iOS, and Android disclosure expectations.
-- **Mobile PostHog SDK range widened**: The mobile app now allows any PostHog React Native `4.x` release while continuing to block automatic `5.x` upgrades.
+- **Mobile PostHog SDK range widened**: The mobile app now allows any PostHog React Native `4.x` release and refreshes the PostHog lockfile during EAS builds while continuing to block automatic `5.x` upgrades.
 - **Android release pipeline wiring (Issue #132)**: Mobile Expo config now injects `GOOGLE_MAPS_API_KEY` into the `react-native-maps` Android config plugin at build time, production builds load analytics values from `.env.production` (with fail-fast if analytics is enabled but PostHog key is missing), Android map screen explicitly uses Google provider, `eas submit` production profile now includes Android staged rollout defaults, and release runbook was added at `docs/mobile/android-release-checklist.md`.
 
 ### Fixed
