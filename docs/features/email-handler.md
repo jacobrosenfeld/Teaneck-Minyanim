@@ -2,6 +2,8 @@
 
 The application can send transactional/admin email through either SMTP or AWS SES API. Configuration is stored in `APPLICATION_SETTINGS` and is editable from the super-admin Email Settings page at `/admin/settings/email`.
 
+Sensitive email credentials are encrypted at rest. Set `APP_SETTINGS_ENCRYPTION_KEY` before saving SMTP or SES credentials.
+
 ## Provider Selection
 
 Set `email.provider` to one of:
@@ -50,3 +52,17 @@ The endpoint requires an authenticated super-admin session. It returns JSON with
 ## Secret Handling
 
 SMTP and SES credentials are marked sensitive in the settings schema. They are masked in the settings page and in application logs. Leaving a sensitive setting blank in the admin edit modal keeps the existing value unchanged.
+
+Sensitive values are stored with reversible AES-GCM encryption using the `ENC:v1:` database prefix. Generate a 256-bit key with:
+
+```bash
+openssl rand -base64 32
+```
+
+Set it as:
+
+```bash
+APP_SETTINGS_ENCRYPTION_KEY=base64:<generated-key>
+```
+
+Use the same key for every app instance and keep it outside the database. Existing plaintext sensitive settings are encrypted automatically on startup when the key is configured. If the database already contains plaintext or encrypted sensitive settings and the key is missing, startup fails instead of continuing with unsafe or unreadable credentials.
