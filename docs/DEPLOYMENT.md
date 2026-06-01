@@ -54,6 +54,7 @@ sudo nano /opt/teaneck/prod/env
 SPRING_DATASOURCE_URL=jdbc:mariadb://localhost:3306/teaneck-minyanim
 SPRING_DATASOURCE_USERNAME=user
 SPRING_DATASOURCE_PASSWORD=yourpassword
+APP_SETTINGS_ENCRYPTION_KEY=base64:<generated-key>
 SERVER_PORT=8080
 ```
 
@@ -65,8 +66,11 @@ sudo nano /opt/teaneck/dev/env
 SPRING_DATASOURCE_URL=jdbc:mariadb://localhost:3306/teaneck-minyanim-dev
 SPRING_DATASOURCE_USERNAME=user
 SPRING_DATASOURCE_PASSWORD=yourpassword
+APP_SETTINGS_ENCRYPTION_KEY=base64:<generated-key>
 SERVER_PORT=8081
 ```
+
+Generate the settings encryption key once with `openssl rand -base64 32`, prefix it with `base64:`, and keep the same value across restarts. This key is required before saving or migrating sensitive email settings such as SMTP passwords.
 
 ```bash
 sudo chmod 600 /opt/teaneck/prod/env /opt/teaneck/dev/env

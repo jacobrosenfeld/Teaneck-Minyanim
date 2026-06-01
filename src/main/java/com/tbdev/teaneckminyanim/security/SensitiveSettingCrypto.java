@@ -1,6 +1,7 @@
 package com.tbdev.teaneckminyanim.security;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
@@ -24,6 +25,7 @@ public class SensitiveSettingCrypto {
 
     private final SecretKeySpec secretKey;
 
+    @Autowired
     public SensitiveSettingCrypto(@Value("${app.settings.encryption-key:}") String encryptionKey) {
         this.secretKey = parseKey(encryptionKey);
     }

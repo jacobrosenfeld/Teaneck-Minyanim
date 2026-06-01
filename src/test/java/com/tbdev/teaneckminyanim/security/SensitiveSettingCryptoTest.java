@@ -2,6 +2,7 @@ package com.tbdev.teaneckminyanim.security;
 
 import com.tbdev.teaneckminyanim.security.SensitiveSettingCrypto.SensitiveSettingCryptoException;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -15,6 +16,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SensitiveSettingCryptoTest {
     private static final String TEST_KEY = Base64.getEncoder()
             .encodeToString("0123456789abcdef0123456789abcdef".getBytes(StandardCharsets.UTF_8));
+
+    @Test
+    void springContext_canInstantiateCryptoComponentWithoutConfiguredKey() {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
+            context.registerBean(SensitiveSettingCrypto.class);
+            context.refresh();
+
+            assertFalse(context.getBean(SensitiveSettingCrypto.class).isConfigured());
+        }
+    }
 
     @Test
     void encrypt_returnsPrefixedCiphertextThatDecryptsToOriginalValue() {
