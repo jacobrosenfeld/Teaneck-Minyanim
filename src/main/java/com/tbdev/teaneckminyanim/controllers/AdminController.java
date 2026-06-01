@@ -2210,8 +2210,12 @@ public class AdminController {
                 }
 
                 // Toggle enabled status
-                entry.setEnabled(!entry.isEnabled());
+                boolean enablingEntry = !entry.isEnabled();
+                entry.setEnabled(enablingEntry);
                 entry.setEnabledManuallySet(true);
+                if (enablingEntry && entry.isSourceDeleted()) {
+                    entry.setDuplicateReason(OrganizationCalendarEntry.SOURCE_RESTORED_REASON);
+                }
                 entryRepo.save(entry);
                 calendarMaterializationService.syncImportedEntryLive(entry);
 

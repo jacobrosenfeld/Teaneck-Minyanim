@@ -58,6 +58,7 @@ public class CalendarImportService {
         public int newEntries;
         public int updatedEntries;
         public int duplicatesSkipped;
+        public int disabledMissingEntries;
         public String errorMessage;
         public LocalDateTime importedAt;
 
@@ -128,7 +129,7 @@ public class CalendarImportService {
             log.info("Parsed {} entries from CSV", parsedEntries.size());
 
             // Process and save entries
-            processEntries(organizationId, parsedEntries, csvUrl, result);
+            Set<String> latestImportFingerprints = processEntries(organizationId, parsedEntries, csvUrl, result);
 
             if (!parsedEntries.isEmpty()) {
                 LocalDate minDate = parsedEntries.stream()
@@ -142,13 +143,16 @@ public class CalendarImportService {
                         .max(LocalDate::compareTo)
                         .orElse(null);
                 if (minDate != null && maxDate != null) {
+                    reconcileMissingEntries(
+                            organizationId, latestImportFingerprints, minDate, maxDate, result);
                     materializationService.syncImportedEntriesInRangeLive(organizationId, minDate, maxDate);
                 }
             }
 
             result.success = true;
-            log.info("Import completed for {}: {} new, {} updated, {} duplicates skipped",
-                    org.getName(), result.newEntries, result.updatedEntries, result.duplicatesSkipped);
+            log.info("Import completed for {}: {} new, {} updated, {} duplicates skipped, {} missing disabled",
+                    org.getName(), result.newEntries, result.updatedEntries,
+                    result.duplicatesSkipped, result.disabledMissingEntries);
 
         } catch (javax.net.ssl.SSLHandshakeException e) {
             result.success = false;
@@ -284,15 +288,17 @@ public class CalendarImportService {
      * Process parsed entries: deduplicate and save to database.
      * Each entry is processed independently with proper error isolation.
      */
-    private void processEntries(String organizationId, 
-                                List<CalendarCsvParser.ParsedEntry> parsedEntries,
-                                String sourceUrl,
-                                ImportResult result) {
+    private Set<String> processEntries(String organizationId,
+                                       List<CalendarCsvParser.ParsedEntry> parsedEntries,
+                                       String sourceUrl,
+                                       ImportResult result) {
+        Set<String> latestImportFingerprints = new HashSet<>();
         
         for (CalendarCsvParser.ParsedEntry parsed : parsedEntries) {
             try {
                 // Generate fingerprint for deduplication
                 String fingerprint = generateFingerprint(organizationId, parsed);
+                latestImportFingerprints.add(fingerprint);
 
                 // Check if entry already exists
                 Optional<OrganizationCalendarEntry> existing = 
@@ -340,6 +346,75 @@ public class CalendarImportService {
                 // Continue processing other entries
             }
         }
+
+        return latestImportFingerprints;
+    }
+
+    private void reconcileMissingEntries(String organizationId,
+                                         Set<String> latestImportFingerprints,
+                                         LocalDate minDate,
+                                         LocalDate maxDate,
+                                         ImportResult result) {
+        if (latestImportFingerprints == null || latestImportFingerprints.isEmpty()) {
+            log.warn("Skipping source-deletion reconciliation for {} because no import fingerprints were produced",
+                    organizationId);
+            return;
+        }
+
+        List<OrganizationCalendarEntry> existingEntries =
+                entryRepository.findEntriesInRange(organizationId, minDate, maxDate);
+        List<OrganizationCalendarEntry> entriesToSave = new ArrayList<>();
+        LocalDateTime disabledAt = LocalDateTime.now();
+
+        for (OrganizationCalendarEntry existingEntry : existingEntries) {
+            if (latestImportFingerprints.contains(existingEntry.getFingerprint())) {
+                continue;
+            }
+            if (markEntrySourceDeleted(existingEntry, disabledAt)) {
+                entriesToSave.add(existingEntry);
+            }
+        }
+
+        if (!entriesToSave.isEmpty()) {
+            entryRepository.saveAll(entriesToSave);
+            long disabledCount = entriesToSave.stream()
+                    .filter(entry -> !entry.isEnabled())
+                    .count();
+            result.disabledMissingEntries += (int) disabledCount;
+            log.info("Reconciled {} imported entries missing from latest source calendar for {} from {} to {}; {} disabled",
+                    entriesToSave.size(), organizationId, minDate, maxDate, disabledCount);
+        }
+    }
+
+    private boolean markEntrySourceDeleted(OrganizationCalendarEntry entry, LocalDateTime disabledAt) {
+        boolean changed = false;
+        boolean manuallyEnabled = entry.isEnabledManuallySet() && entry.isEnabled();
+
+        if (entry.isEnabled() && !manuallyEnabled) {
+            entry.setEnabled(false);
+            changed = true;
+        }
+        if (entry.isEnabledManuallySet() && !manuallyEnabled) {
+            entry.setEnabledManuallySet(false);
+            changed = true;
+        }
+        if (!entry.isSourceDeleted()) {
+            entry.setSourceDeleted(true);
+            changed = true;
+        }
+        if (entry.getSourceDeletedAt() == null) {
+            entry.setSourceDeletedAt(disabledAt);
+            changed = true;
+        }
+        String missingReason = manuallyEnabled
+                ? OrganizationCalendarEntry.SOURCE_RESTORED_REASON
+                : OrganizationCalendarEntry.SOURCE_DELETED_REASON;
+        if (!missingReason.equals(entry.getDuplicateReason())) {
+            entry.setDuplicateReason(missingReason);
+            changed = true;
+        }
+
+        return changed;
     }
 
     /**
@@ -414,6 +489,15 @@ public class CalendarImportService {
         
         // Normalize title to remove redundant words
         String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
+
+        if (entry.isSourceDeleted()) {
+            entry.setSourceDeleted(false);
+            entry.setSourceDeletedAt(null);
+            if (OrganizationCalendarEntry.SOURCE_DELETED_REASON.equals(entry.getDuplicateReason())
+                    || OrganizationCalendarEntry.SOURCE_RESTORED_REASON.equals(entry.getDuplicateReason())) {
+                entry.setDuplicateReason(null);
+            }
+        }
         
         // Core Rule: Apply NON_MINYAN auto-disable during updates
         // UNLESS an admin manually set enabled/disabled for this entry.
@@ -480,6 +564,10 @@ public class CalendarImportService {
                 : "";
 
         for (OrganizationCalendarEntry existing : entriesOnDate) {
+            if (existing.isSourceDeleted()) {
+                continue;
+            }
+
             String normalizedExistingTitle = csvParser.normalizeTitle(existing.getTitle());
             String normalizedExistingTime = existing.getStartTime() != null
                     ? csvParser.normalizeTime(existing.getStartTime()).toString()

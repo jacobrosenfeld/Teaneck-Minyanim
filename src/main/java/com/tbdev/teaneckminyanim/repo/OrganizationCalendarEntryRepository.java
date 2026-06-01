@@ -18,8 +18,12 @@ public interface OrganizationCalendarEntryRepository extends JpaRepository<Organ
     /**
      * Find all enabled entries for an organization on a specific date
      */
+    @Query("SELECT e FROM OrganizationCalendarEntry e WHERE e.organizationId = :orgId " +
+            "AND e.date = :date AND e.enabled = true " +
+            "AND (e.sourceDeleted = false OR e.enabledManuallySet = true)")
     List<OrganizationCalendarEntry> findByOrganizationIdAndDateAndEnabledTrue(
-            String organizationId, LocalDate date);
+            @Param("orgId") String organizationId,
+            @Param("date") LocalDate date);
 
     /**
      * Find all entries (enabled and disabled) for an organization on a specific date
@@ -31,7 +35,8 @@ public interface OrganizationCalendarEntryRepository extends JpaRepository<Organ
      * Find all enabled entries for an organization within a date range
      */
     @Query("SELECT e FROM OrganizationCalendarEntry e WHERE e.organizationId = :orgId " +
-            "AND e.date BETWEEN :startDate AND :endDate AND e.enabled = true ORDER BY e.date, e.startTime")
+            "AND e.date BETWEEN :startDate AND :endDate AND e.enabled = true " +
+            "AND (e.sourceDeleted = false OR e.enabledManuallySet = true) ORDER BY e.date, e.startTime")
     List<OrganizationCalendarEntry> findEnabledEntriesInRange(
             @Param("orgId") String organizationId,
             @Param("startDate") LocalDate startDate,

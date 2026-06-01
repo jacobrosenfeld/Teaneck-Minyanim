@@ -257,6 +257,144 @@ class CalendarMaterializationServiceTest {
     }
 
     @Test
+    void syncImportedEntriesInRangeLive_disablesExistingWhenEntryWasRemovedFromSource() {
+        String orgId = "org-source-deleted";
+        LocalDate date = LocalDate.now();
+
+        Organization org = Organization.builder()
+                .id(orgId)
+                .name("Org")
+                .orgColor("#111111")
+                .build();
+
+        OrganizationCalendarEntry sourceDeletedEntry = OrganizationCalendarEntry.builder()
+                .id(404L)
+                .organizationId(orgId)
+                .date(date)
+                .classification(MinyanType.SHACHARIS)
+                .startTime(LocalTime.of(7, 15))
+                .enabled(true)
+                .sourceDeleted(true)
+                .build();
+
+        CalendarEvent existingEvent = CalendarEvent.builder()
+                .id(4L)
+                .organizationId(orgId)
+                .date(date)
+                .minyanType(MinyanType.SHACHARIS)
+                .startTime(LocalTime.of(7, 15))
+                .enabled(true)
+                .source(EventSource.IMPORTED)
+                .sourceRef("import-404")
+                .build();
+
+        when(organizationService.findById(orgId)).thenReturn(Optional.of(org));
+        when(importedEntryRepository.findEntriesInRange(orgId, date, date))
+                .thenReturn(List.of(sourceDeletedEntry));
+        when(calendarEventRepository.findByOrganizationIdAndSourceAndDateBetween(
+                orgId, EventSource.IMPORTED, date, date))
+                .thenReturn(List.of(existingEvent));
+
+        service.syncImportedEntriesInRangeLive(orgId, date, date);
+
+        ArgumentCaptor<List<CalendarEvent>> captor = ArgumentCaptor.forClass(List.class);
+        verify(calendarEventRepository).saveAll(captor.capture());
+        List<CalendarEvent> saved = captor.getValue();
+        assertEquals(1, saved.size());
+        assertFalse(saved.get(0).isEnabled(), "Source-deleted imported entries must not stay live");
+    }
+
+    @Test
+    void syncImportedEntriesInRangeLive_enablesSourceDeletedEntryWhenAdminRestoredIt() {
+        String orgId = "org-source-restored";
+        LocalDate date = LocalDate.now();
+
+        Organization org = Organization.builder()
+                .id(orgId)
+                .name("Org")
+                .orgColor("#111111")
+                .nusach(Nusach.ASHKENAZ)
+                .build();
+
+        OrganizationCalendarEntry sourceDeletedEntry = OrganizationCalendarEntry.builder()
+                .id(405L)
+                .organizationId(orgId)
+                .date(date)
+                .classification(MinyanType.SHACHARIS)
+                .startTime(LocalTime.of(7, 15))
+                .enabled(true)
+                .enabledManuallySet(true)
+                .sourceDeleted(true)
+                .build();
+
+        CalendarEvent existingEvent = CalendarEvent.builder()
+                .id(6L)
+                .organizationId(orgId)
+                .date(date)
+                .minyanType(MinyanType.SHACHARIS)
+                .startTime(LocalTime.of(7, 15))
+                .enabled(false)
+                .source(EventSource.IMPORTED)
+                .sourceRef("import-405")
+                .build();
+
+        when(organizationService.findById(orgId)).thenReturn(Optional.of(org));
+        when(importedEntryRepository.findEntriesInRange(orgId, date, date))
+                .thenReturn(List.of(sourceDeletedEntry));
+        when(calendarEventRepository.findByOrganizationIdAndSourceAndDateBetween(
+                orgId, EventSource.IMPORTED, date, date))
+                .thenReturn(List.of(existingEvent));
+
+        service.syncImportedEntriesInRangeLive(orgId, date, date);
+
+        ArgumentCaptor<List<CalendarEvent>> captor = ArgumentCaptor.forClass(List.class);
+        verify(calendarEventRepository).saveAll(captor.capture());
+        List<CalendarEvent> saved = captor.getValue();
+        assertEquals(1, saved.size());
+        assertEquals(existingEvent.getId(), saved.get(0).getId());
+        assertTrue(saved.get(0).isEnabled(), "Admin-restored source-deleted imported entries must stay live");
+    }
+
+    @Test
+    void syncImportedEntriesInRangeLive_disablesMaterializedRowsWithoutSourceEntry() {
+        String orgId = "org-orphan";
+        LocalDate date = LocalDate.now();
+
+        Organization org = Organization.builder()
+                .id(orgId)
+                .name("Org")
+                .orgColor("#111111")
+                .build();
+
+        CalendarEvent orphanedEvent = CalendarEvent.builder()
+                .id(5L)
+                .organizationId(orgId)
+                .date(date)
+                .minyanType(MinyanType.MINCHA)
+                .startTime(LocalTime.of(13, 30))
+                .enabled(true)
+                .source(EventSource.IMPORTED)
+                .sourceRef("import-505")
+                .build();
+
+        when(organizationService.findById(orgId)).thenReturn(Optional.of(org));
+        when(importedEntryRepository.findEntriesInRange(orgId, date, date))
+                .thenReturn(List.of());
+        when(calendarEventRepository.findByOrganizationIdAndSourceAndDateBetween(
+                orgId, EventSource.IMPORTED, date, date))
+                .thenReturn(List.of(orphanedEvent));
+
+        service.syncImportedEntriesInRangeLive(orgId, date, date);
+
+        ArgumentCaptor<List<CalendarEvent>> captor = ArgumentCaptor.forClass(List.class);
+        verify(calendarEventRepository).saveAll(captor.capture());
+        List<CalendarEvent> saved = captor.getValue();
+        assertEquals(1, saved.size());
+        assertEquals(orphanedEvent.getId(), saved.get(0).getId());
+        assertFalse(saved.get(0).isEnabled(), "Orphaned imported materialized rows must be disabled");
+    }
+
+    @Test
     void syncImportedEntriesInRangeLive_outsideWindowDoesNothing() {
         String orgId = "org-3";
         LocalDate farFuture = LocalDate.now().plusYears(2);

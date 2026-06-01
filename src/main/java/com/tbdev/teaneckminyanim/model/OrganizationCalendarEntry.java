@@ -28,6 +28,11 @@ import java.time.LocalTime;
         })
 public class OrganizationCalendarEntry {
 
+    public static final String SOURCE_DELETED_REASON =
+            "Auto-disabled: Missing from latest source calendar import";
+    public static final String SOURCE_RESTORED_REASON =
+            "Manually re-enabled after source calendar removal";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
@@ -93,6 +98,13 @@ public class OrganizationCalendarEntry {
 
     @Column(name = "duplicate_reason")
     private String duplicateReason;
+
+    @Builder.Default
+    @Column(name = "source_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean sourceDeleted = false;
+
+    @Column(name = "source_deleted_at")
+    private LocalDateTime sourceDeletedAt;
 
     /**
      * Classification of this entry (SHACHARIS, MINCHA, MAARIV, MINCHA_MAARIV, SELICHOS, NON_MINYAN, OTHER)
