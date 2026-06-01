@@ -448,11 +448,11 @@ public class ZmanimService {
     private void addSpecialZmanimToModel(ModelAndView mv, Dictionary<Zman, Date> zmanim) {
         Date candleLighting = zmanim.get(Zman.CANDLE_LIGHTING);
         Date shekiya = zmanim.get(Zman.SHEKIYA);
-        mv.getModel().put("candleLighting", timeFormatOptional(candleLighting));
+        mv.getModel().put("candleLighting", timeFormatWithoutSecondsOptional(candleLighting));
         mv.getModel().put(
                 "candleLightingAfterNightfall",
                 candleLighting != null && shekiya != null && candleLighting.after(shekiya));
-        mv.getModel().put("havdala", timeFormatOptional(zmanim.get(Zman.HAVDALA)));
+        mv.getModel().put("havdala", timeFormatWithoutSecondsOptional(zmanim.get(Zman.HAVDALA)));
     }
 
     private String timeFormatWithRoundingToSecond(Date date) {
@@ -461,11 +461,11 @@ public class ZmanimService {
         return timeFormatSec.format(calendar.getTime());
     }
 
-    private String timeFormatOptional(Date date) {
+    private String timeFormatWithoutSecondsOptional(Date date) {
         if (date == null) {
             return null;
         }
-        return timeFormatWithRoundingToSecond(date);
+        return timeFormat.format(date);
     }
 
     private static LocalDate dateToLocalDate(Date date) {
