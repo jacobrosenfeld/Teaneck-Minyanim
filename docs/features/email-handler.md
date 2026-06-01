@@ -1,6 +1,6 @@
 # Email Handler
 
-The application can send transactional/admin email through either SMTP or AWS SES API. Configuration is stored in `APPLICATION_SETTINGS` and is editable from the super-admin settings panel.
+The application can send transactional/admin email through either SMTP or AWS SES API. Configuration is stored in `APPLICATION_SETTINGS` and is editable from the super-admin Email Settings page at `/admin/settings/email`.
 
 ## Provider Selection
 
@@ -31,6 +31,10 @@ Leave `email.provider` blank to disable email sending. Invalid or incomplete con
 - `email.ses.access-key-id`: access key ID with SES send permissions.
 - `email.ses.secret-access-key`: matching secret access key.
 - `email.ses.configuration-set`: optional SES configuration set.
+
+## Admin UI
+
+Open `/admin/settings`, then choose **Email Settings**. Each field saves independently with its own check button. Sensitive values are never displayed back to the browser; leave a sensitive field blank to keep the saved value unchanged.
 
 ## Test Endpoint
 

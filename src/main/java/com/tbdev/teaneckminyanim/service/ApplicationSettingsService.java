@@ -15,6 +15,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -373,6 +374,18 @@ public class ApplicationSettingsService {
      */
     public Map<String, List<ApplicationSettings>> getSettingsByCategory() {
         return getAllSettings().stream()
+            .collect(Collectors.groupingBy(
+                setting -> setting.getCategory() != null ? setting.getCategory() : "General"
+            ));
+    }
+
+    /**
+     * Get settings grouped by category while omitting categories that have a dedicated editor.
+     */
+    public Map<String, List<ApplicationSettings>> getSettingsByCategoryExcluding(Set<String> excludedCategories) {
+        return getAllSettings().stream()
+            .filter(setting -> !excludedCategories.contains(
+                setting.getCategory() != null ? setting.getCategory() : "General"))
             .collect(Collectors.groupingBy(
                 setting -> setting.getCategory() != null ? setting.getCategory() : "General"
             ));

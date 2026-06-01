@@ -261,8 +261,9 @@ public class AdminController {
         
         // Get application settings grouped by category
         Map<String, List<com.tbdev.teaneckminyanim.model.ApplicationSettings>> applicationSettingsByCategory = 
-                this.settingsService.getSettingsByCategory();
+                this.settingsService.getSettingsByCategoryExcluding(Set.of("Email"));
         mv.addObject("applicationSettingsByCategory", applicationSettingsByCategory);
+        mv.addObject("emailProvider", this.settingsService.getEmailProvider());
 
         addStandardPageData(mv);
 

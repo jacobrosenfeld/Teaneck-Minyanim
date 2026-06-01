@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="|Email Settings - ${siteName ?: 'Minyanim Platform'}|">Email Settings</title>
+
+    <th:block layout:fragment="styles">
+        <style>
+            .settings-breadcrumb {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.55rem;
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin-bottom: var(--space-5, 1.25rem);
+            }
+
+            .settings-breadcrumb a {
+                color: var(--text-secondary, #6c757d);
+                text-decoration: none;
+            }
+
+            .settings-breadcrumb a:hover {
+                color: var(--text-primary, #212529);
+            }
+
+            .email-settings-shell {
+                max-width: 1120px;
+                margin: 0 auto;
+            }
+
+            .email-tabs {
+                display: flex;
+                align-items: center;
+                gap: var(--space-5, 1.25rem);
+                margin-bottom: var(--space-6, 1.5rem);
+                border-bottom: 1px solid var(--border-color, #dee2e6);
+                overflow-x: auto;
+            }
+
+            .email-tab {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                color: var(--text-secondary, #6c757d);
+                padding: 0 0 var(--space-3, 0.75rem);
+                border-bottom: 2px solid transparent;
+                white-space: nowrap;
+                text-decoration: none;
+            }
+
+            .email-tab:first-child {
+                color: var(--text-primary, #212529);
+                border-color: var(--text-primary, #212529);
+            }
+
+            .email-tab:hover {
+                color: var(--text-primary, #212529);
+                text-decoration: none;
+            }
+
+            .email-status-panel {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--space-4, 1rem);
+                padding: var(--space-4, 1rem);
+                margin-bottom: var(--space-8, 2rem);
+                background: #eef8ff;
+                border: 1px solid #b8dff5;
+                border-left: 4px solid var(--color-info, #2196f3);
+                border-radius: var(--radius-lg, 0.5rem);
+            }
+
+            .email-status-copy {
+                display: flex;
+                align-items: flex-start;
+                gap: var(--space-3, 0.75rem);
+                min-width: 0;
+            }
+
+            .email-status-icon {
+                color: var(--color-info, #2196f3);
+                padding-top: 0.15rem;
+                flex: 0 0 auto;
+            }
+
+            .email-status-title {
+                color: var(--text-primary, #212529);
+                font-weight: var(--font-weight-semibold, 600);
+                margin-bottom: var(--space-1, 0.25rem);
+            }
+
+            .email-status-text {
+                color: var(--text-secondary, #6c757d);
+                margin: 0;
+            }
+
+            .provider-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-full, 9999px);
+                font-size: var(--font-size-sm, 0.875rem);
+                white-space: nowrap;
+            }
+
+            .email-settings-section {
+                display: grid;
+                grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
+                gap: var(--space-8, 2rem);
+                align-items: start;
+                margin-bottom: var(--space-6, 1.5rem);
+            }
+
+            .section-copy {
+                position: sticky;
+                top: calc(var(--navbar-height, 3.5rem) + var(--space-5, 1.25rem));
+            }
+
+            .section-title {
+                display: flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                font-size: var(--font-size-xl, 1.25rem);
+                margin-bottom: var(--space-2, 0.5rem);
+            }
+
+            .section-title i {
+                color: var(--color-primary, #275ed8);
+                width: 1.2rem;
+                text-align: center;
+            }
+
+            .section-description {
+                color: var(--text-secondary, #6c757d);
+                margin: 0;
+            }
+
+            .email-settings-panel,
+            .email-test-panel {
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-lg, 0.5rem);
+                box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+                overflow: hidden;
+            }
+
+            .email-setting-form {
+                display: grid;
+                grid-template-columns: minmax(180px, 280px) minmax(260px, 1fr);
+                gap: var(--space-4, 1rem);
+                align-items: center;
+                padding: var(--space-4, 1rem) var(--space-5, 1.25rem);
+                border-bottom: 1px solid var(--border-color-light, #e9ecef);
+            }
+
+            .email-setting-form:last-child {
+                border-bottom: 0;
+            }
+
+            .field-label {
+                display: block;
+                color: var(--text-primary, #212529);
+                font-weight: var(--font-weight-semibold, 600);
+                margin-bottom: var(--space-1, 0.25rem);
+            }
+
+            .field-description {
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin: 0;
+            }
+
+            .field-control {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 2.5rem minmax(5rem, auto);
+                gap: var(--space-2, 0.5rem);
+                align-items: center;
+            }
+
+            .field-input {
+                width: 100%;
+                height: 2.75rem;
+                padding: 0 var(--space-3, 0.75rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color-dark, #ced4da);
+                border-radius: var(--radius-md, 0.375rem);
+                font-size: var(--font-size-base, 1rem);
+            }
+
+            .field-input:focus {
+                border-color: var(--text-primary, #212529);
+                box-shadow: 0 0 0 2px rgba(33, 37, 41, 0.08);
+                outline: none;
+            }
+
+            .field-save-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.5rem;
+                height: 2.5rem;
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color-dark, #ced4da);
+                border-radius: var(--radius-md, 0.375rem);
+                cursor: pointer;
+                transition: border-color var(--transition-fast, 150ms ease),
+                            background var(--transition-fast, 150ms ease),
+                            color var(--transition-fast, 150ms ease);
+            }
+
+            .field-save-button:hover,
+            .field-save-button:focus {
+                color: var(--color-accent-dark, #388e3c);
+                border-color: var(--color-accent, #4caf50);
+                outline: none;
+            }
+
+            .field-save-button.saving {
+                color: var(--text-secondary, #6c757d);
+                pointer-events: none;
+            }
+
+            .field-state {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-1, 0.25rem);
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                min-width: 5rem;
+                white-space: nowrap;
+            }
+
+            .field-state.saved {
+                color: var(--color-accent-dark, #388e3c);
+            }
+
+            .field-state.error {
+                color: var(--color-danger, #f44336);
+                white-space: normal;
+            }
+
+            .email-test-body {
+                padding: var(--space-5, 1.25rem);
+            }
+
+            .email-test-form {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: var(--space-3, 0.75rem);
+                align-items: center;
+            }
+
+            .test-result {
+                margin-top: var(--space-3, 0.75rem);
+                font-size: var(--font-size-sm, 0.875rem);
+            }
+
+            .test-result.success {
+                color: var(--color-accent-dark, #388e3c);
+            }
+
+            .test-result.error {
+                color: var(--color-danger, #f44336);
+            }
+
+            @media (max-width: 900px) {
+                .email-settings-section {
+                    grid-template-columns: 1fr;
+                    gap: var(--space-3, 0.75rem);
+                }
+
+                .section-copy {
+                    position: static;
+                }
+
+                .email-setting-form {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (max-width: 560px) {
+                .email-status-panel,
+                .email-test-form {
+                    grid-template-columns: 1fr;
+                }
+
+                .email-status-panel {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+
+                .field-control {
+                    grid-template-columns: minmax(0, 1fr) 2.5rem;
+                }
+
+                .field-state {
+                    grid-column: 1 / -1;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="email-settings-shell">
+        <div class="settings-breadcrumb">
+            <a th:href="@{/admin/organizations}">Dashboard</a>
+            <span>/</span>
+            <a th:href="@{/admin/settings}">Settings</a>
+            <span>/</span>
+            <span>Email</span>
+        </div>
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Email Settings</h1>
+                <p class="page-description">Configure delivery, sender identity, provider credentials, and test messages.</p>
+            </div>
+            <div class="page-actions">
+                <a class="btn-modern btn-secondary" th:href="@{/admin/settings}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+
+        <nav class="email-tabs" aria-label="Email settings sections">
+            <a class="email-tab" href="#delivery">Delivery</a>
+            <a class="email-tab" href="#sender">Sender</a>
+            <a class="email-tab" href="#smtp">SMTP</a>
+            <a class="email-tab" href="#ses">AWS SES</a>
+            <a class="email-tab" href="#test-email">Test</a>
+        </nav>
+
+        <div class="email-status-panel">
+            <div class="email-status-copy">
+                <i class="fas fa-envelope-circle-check email-status-icon"></i>
+                <div>
+                    <div class="email-status-title">Email delivery</div>
+                    <p class="email-status-text">Transactional email is controlled by the selected provider and validated one field at a time.</p>
+                </div>
+            </div>
+            <div class="provider-pill">
+                <i class="fas fa-paper-plane"></i>
+                <span id="providerStatus" th:text="${emailProvider != null and !emailProvider.isBlank() ? emailProvider : 'Disabled'}">Disabled</span>
+            </div>
+        </div>
+
+        <section th:each="section : ${sections}" class="email-settings-section" th:id="${section.id}">
+            <div class="section-copy">
+                <h2 class="section-title">
+                    <i th:class="${'fas ' + section.icon}"></i>
+                    <span th:text="${section.title}">Section</span>
+                </h2>
+                <p class="section-description" th:text="${section.description}">Section description</p>
+            </div>
+
+            <div class="email-settings-panel">
+                <form th:each="field : ${section.fields}"
+                      class="email-setting-form"
+                      th:action="@{/admin/settings/email/update-field}"
+                      method="post"
+                      th:data-key="${field.key}"
+                      th:data-sensitive="${field.sensitive}">
+                    <div>
+                        <label class="field-label" th:for="${'field-' + field.key}" th:text="${field.label}">Setting</label>
+                        <p class="field-description" th:text="${field.description}">Description</p>
+                    </div>
+
+                    <div class="field-control">
+                        <input type="hidden" name="settingKey" th:value="${field.key}">
+
+                        <select th:if="${field.hasOptions}"
+                                class="field-input"
+                                name="settingValue"
+                                th:id="${'field-' + field.key}">
+                            <option th:each="option : ${field.options}"
+                                    th:value="${option.value}"
+                                    th:selected="${option.value == field.value}"
+                                    th:text="${option.label}">Option</option>
+                        </select>
+
+                        <input th:unless="${field.hasOptions}"
+                               class="field-input"
+                               name="settingValue"
+                               th:id="${'field-' + field.key}"
+                               th:type="${field.inputType}"
+                               th:value="${field.value}"
+                               th:placeholder="${field.placeholder}">
+
+                        <button class="field-save-button" type="submit" th:attr="aria-label=${'Save ' + field.label}">
+                            <i class="fas fa-check"></i>
+                        </button>
+
+                        <span class="field-state">
+                            <i class="far fa-circle"></i>
+                            <span th:text="${field.displayValue}">Not set</span>
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="email-settings-section" id="test-email">
+            <div class="section-copy">
+                <h2 class="section-title">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Test Email</span>
+                </h2>
+                <p class="section-description">Send a message using the current provider and credentials.</p>
+            </div>
+
+            <div class="email-test-panel">
+                <div class="email-test-body">
+                    <form id="testEmailForm" class="email-test-form" th:action="@{/admin/email/test}" method="post">
+                        <input class="field-input" type="email" name="recipient" placeholder="recipient@example.com" required>
+                        <button class="btn-modern btn-primary" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Send Test</span>
+                        </button>
+                    </form>
+                    <div id="testEmailResult" class="test-result" aria-live="polite"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script>
+        document.querySelectorAll('.email-setting-form').forEach(function(form) {
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const button = form.querySelector('.field-save-button');
+                const state = form.querySelector('.field-state');
+                const stateText = state.querySelector('span');
+                const stateIcon = state.querySelector('i');
+                const input = form.querySelector('[name="settingValue"]');
+                const key = form.getAttribute('data-key');
+                const sensitive = form.getAttribute('data-sensitive') === 'true';
+
+                button.classList.add('saving');
+                state.className = 'field-state';
+                stateIcon.className = 'fas fa-spinner fa-spin';
+                stateText.textContent = 'Saving';
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams(new FormData(form))
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || 'Setting could not be saved.');
+                    }
+
+                    state.className = 'field-state saved';
+                    stateIcon.className = 'fas fa-check-circle';
+                    stateText.textContent = result.displayValue || 'Saved';
+
+                    if (sensitive) {
+                        input.value = '';
+                        input.placeholder = 'Saved value hidden - enter a new value to replace';
+                    }
+
+                    if (key === 'email.provider') {
+                        document.getElementById('providerStatus').textContent = input.value || 'Disabled';
+                    }
+                } catch (error) {
+                    state.className = 'field-state error';
+                    stateIcon.className = 'fas fa-exclamation-circle';
+                    stateText.textContent = error.message;
+                } finally {
+                    button.classList.remove('saving');
+                }
+            });
+        });
+
+        const testEmailForm = document.getElementById('testEmailForm');
+        const testEmailResult = document.getElementById('testEmailResult');
+
+        if (testEmailForm) {
+            testEmailForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const button = testEmailForm.querySelector('button[type="submit"]');
+                const icon = button.querySelector('i');
+                const label = button.querySelector('span');
+
+                button.disabled = true;
+                icon.className = 'fas fa-spinner fa-spin';
+                label.textContent = 'Sending';
+                testEmailResult.className = 'test-result';
+                testEmailResult.textContent = '';
+
+                try {
+                    const response = await fetch(testEmailForm.action, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams(new FormData(testEmailForm))
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || 'Test email could not be sent.');
+                    }
+
+                    testEmailResult.className = 'test-result success';
+                    testEmailResult.textContent = result.message || 'Test email sent.';
+                } catch (error) {
+                    testEmailResult.className = 'test-result error';
+                    testEmailResult.textContent = error.message;
+                } finally {
+                    button.disabled = false;
+                    icon.className = 'fas fa-paper-plane';
+                    label.textContent = 'Send Test';
+                }
+            });
+        }
+    </script>
+</th:block>
+</body>
+</html>

@@ -137,6 +137,63 @@
                 border-radius: 0.25rem;
                 display: inline-block;
             }
+            .settings-actions-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+            .settings-action-link {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 1rem;
+                background: #ffffff;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                color: #212529;
+                text-decoration: none;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            }
+            .settings-action-link:hover {
+                color: #212529;
+                border-color: #275ed8;
+                text-decoration: none;
+            }
+            .settings-action-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.25rem;
+                height: 2.25rem;
+                color: #275ed8;
+                background: #e3ecfa;
+                border-radius: 0.5rem;
+                flex: 0 0 auto;
+            }
+            .settings-action-copy {
+                min-width: 0;
+                flex: 1;
+            }
+            .settings-action-title {
+                font-weight: 600;
+                margin-bottom: 0.2rem;
+            }
+            .settings-action-description {
+                display: block;
+                color: #6c757d;
+                font-size: 0.875rem;
+                margin: 0;
+            }
+            .settings-action-meta {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                color: #6c757d;
+                font-size: 0.875rem;
+                white-space: nowrap;
+            }
             .color-picker-wrapper {
                 display: flex;
                 align-items: center;
@@ -223,6 +280,21 @@
 
         <div class="row my-4" style="padding-bottom: 60px">
             <div class="col-lg-10">
+                <div class="settings-actions-grid">
+                    <a class="settings-action-link" th:href="@{/admin/settings/email}">
+                        <span class="settings-action-icon">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <span class="settings-action-copy">
+                            <span class="settings-action-title">Email Settings</span>
+                            <span class="settings-action-description">Configure SMTP or AWS SES delivery, sender defaults, and test emails.</span>
+                        </span>
+                        <span class="settings-action-meta">
+                            <span th:text="${emailProvider != null and !emailProvider.isBlank() ? emailProvider : 'Not configured'}">Not configured</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    </a>
+                </div>
                 
                 <!-- Application Settings (Location, Timezone, Calendar) -->
                 <h3 class="mb-3">System Configuration</h3>
