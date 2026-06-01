@@ -1,9 +1,11 @@
 /**
- * Convert "HH:mm" (24-hour) to "h:mm AM/PM" (12-hour).
- * e.g. "07:30" → "7:30 AM", "19:00" → "7:00 PM"
+ * Convert "HH:mm" or "HH:mm:ss" (24-hour) to "h:mm AM/PM" (12-hour).
+ * e.g. "07:30" → "7:30 AM", "19:00:45" → "7:00 PM"
  */
 export function formatTime(time: string): string {
-  const [h, m] = time.split(':').map(Number);
+  const [hourPart, minutePart] = time.split(':');
+  const h = Number(hourPart);
+  const m = Number(minutePart);
   const period = h >= 12 ? 'PM' : 'AM';
   const hour = h % 12 || 12;
   return `${hour}:${m.toString().padStart(2, '0')} ${period}`;
