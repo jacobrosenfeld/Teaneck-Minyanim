@@ -28,6 +28,7 @@ class ZmanimHandlerTest {
         Dictionary<Zman, Date> friday = handler.getZmanim(LocalDate.of(2026, 6, 5));
 
         assertNotNull(friday.get(Zman.CANDLE_LIGHTING));
+        assertRoundedToMinute(friday.get(Zman.CANDLE_LIGHTING));
         assertTrue(friday.get(Zman.CANDLE_LIGHTING).before(friday.get(Zman.SHEKIYA)));
         assertNull(friday.get(Zman.HAVDALA));
 
@@ -42,14 +43,16 @@ class ZmanimHandlerTest {
         Dictionary<Zman, Date> shabbos = handler.getZmanim(LocalDate.of(2026, 6, 6));
 
         assertNull(shabbos.get(Zman.CANDLE_LIGHTING));
-        assertEquals(shabbos.get(Zman.TZES), shabbos.get(Zman.HAVDALA));
+        assertRoundedToMinute(shabbos.get(Zman.HAVDALA));
+        assertWithinNextMinute(shabbos.get(Zman.HAVDALA), shabbos.get(Zman.TZES));
     }
 
     @Test
     void getZmanim_usesYomTovCandleLightingDaysFromJewishCalendar() {
         Dictionary<Zman, Date> firstDayPesach = handler.getZmanim(LocalDate.of(2026, 4, 2));
 
-        assertEquals(firstDayPesach.get(Zman.TZES), firstDayPesach.get(Zman.CANDLE_LIGHTING));
+        assertRoundedToMinute(firstDayPesach.get(Zman.CANDLE_LIGHTING));
+        assertWithinPreviousMinute(firstDayPesach.get(Zman.CANDLE_LIGHTING), firstDayPesach.get(Zman.TZES));
         assertNull(firstDayPesach.get(Zman.HAVDALA));
     }
 
@@ -58,6 +61,7 @@ class ZmanimHandlerTest {
         Dictionary<Zman, Date> firstDayShavuos = handler.getZmanim(LocalDate.of(2026, 5, 22));
 
         assertNotNull(firstDayShavuos.get(Zman.CANDLE_LIGHTING));
+        assertRoundedToMinute(firstDayShavuos.get(Zman.CANDLE_LIGHTING));
         assertTrue(firstDayShavuos.get(Zman.CANDLE_LIGHTING).before(firstDayShavuos.get(Zman.SHEKIYA)));
         assertNull(firstDayShavuos.get(Zman.HAVDALA));
     }
@@ -66,7 +70,24 @@ class ZmanimHandlerTest {
     void getZmanim_showsHavdalaForShabbosIntoYomTov() {
         Dictionary<Zman, Date> firstDayRoshHashana = handler.getZmanim(LocalDate.of(2026, 9, 12));
 
-        assertEquals(firstDayRoshHashana.get(Zman.TZES), firstDayRoshHashana.get(Zman.CANDLE_LIGHTING));
-        assertEquals(firstDayRoshHashana.get(Zman.TZES), firstDayRoshHashana.get(Zman.HAVDALA));
+        assertRoundedToMinute(firstDayRoshHashana.get(Zman.CANDLE_LIGHTING));
+        assertWithinPreviousMinute(firstDayRoshHashana.get(Zman.CANDLE_LIGHTING), firstDayRoshHashana.get(Zman.TZES));
+        assertRoundedToMinute(firstDayRoshHashana.get(Zman.HAVDALA));
+        assertWithinNextMinute(firstDayRoshHashana.get(Zman.HAVDALA), firstDayRoshHashana.get(Zman.TZES));
+    }
+
+    private void assertRoundedToMinute(Date date) {
+        assertNotNull(date);
+        assertEquals(0, Math.floorMod(date.getTime(), 60_000));
+    }
+
+    private void assertWithinPreviousMinute(Date rounded, Date raw) {
+        assertTrue(!rounded.after(raw));
+        assertTrue(raw.getTime() - rounded.getTime() < 60_000);
+    }
+
+    private void assertWithinNextMinute(Date rounded, Date raw) {
+        assertTrue(!rounded.before(raw));
+        assertTrue(rounded.getTime() - raw.getTime() < 60_000);
     }
 }

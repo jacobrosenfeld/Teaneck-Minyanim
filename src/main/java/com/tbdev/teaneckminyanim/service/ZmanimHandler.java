@@ -95,13 +95,36 @@ public class ZmanimHandler {
         if (jewishCalendar.hasCandleLighting()) {
             dictionary.put(
                     Zman.CANDLE_LIGHTING,
-                    candleLightingTime(complexZmanimCalendar, jewishCalendar, tomorrowJewishCalendar));
+                    roundDownToMinute(candleLightingTime(
+                            complexZmanimCalendar,
+                            jewishCalendar,
+                            tomorrowJewishCalendar)));
         }
         if (hasHavdala(jewishCalendar, tomorrowJewishCalendar)) {
-            dictionary.put(Zman.HAVDALA, complexZmanimCalendar.getTzais());
+            dictionary.put(Zman.HAVDALA, roundUpToMinute(complexZmanimCalendar.getTzais()));
         }
 
         return dictionary;
+    }
+
+    private Date roundDownToMinute(Date date) {
+        if (date == null) {
+            return null;
+        }
+        long millis = date.getTime();
+        return new Date(millis - Math.floorMod(millis, 60_000));
+    }
+
+    private Date roundUpToMinute(Date date) {
+        if (date == null) {
+            return null;
+        }
+        long millis = date.getTime();
+        long remainder = Math.floorMod(millis, 60_000);
+        if (remainder == 0) {
+            return date;
+        }
+        return new Date(millis + 60_000 - remainder);
     }
 
     private JewishCalendar jewishCalendar(LocalDate date) {
