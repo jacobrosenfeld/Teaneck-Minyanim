@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Email handler (#35)**: Added settings-backed SMTP and AWS SES email delivery, masked email credential settings, a super-admin test email endpoint, and operator documentation for configuring providers.
 - **Candle lighting and havdala in zmanim (#234)**: Added KosherJava-calendar-driven candle lighting and havdala times to the public zmanim API, website zmanim panel, and mobile Zmanim screen, with optional display only on applicable Shabbos/Yom Tov dates. Candle lighting is rounded down to the minute, havdala is rounded up to the minute, and both display without seconds.
 - **Mobile app version telemetry**: PostHog mobile analytics now records app version/build, platform, and OS version metadata for iOS and Android events.
 - **iOS app website splash popup**: Added a dismissible public-site popup announcing the iOS app, using the site logo, App Store badge, and `https://l.teaneckminyanim.com/ios` download link.

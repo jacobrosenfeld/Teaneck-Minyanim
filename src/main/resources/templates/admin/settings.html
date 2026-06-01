@@ -235,14 +235,15 @@
                         
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="setting-value" th:text="${setting.settingValue}"></div>
+                                <div class="setting-value" th:text="${setting.displayValue}"></div>
                             </div>
                             <div class="col-md-6 text-right">
                                 <button type="button" class="btn btn-sm btn-outline-primary" 
                                         th:data-key="${setting.settingKey}"
-                                        th:data-value="${setting.settingValue}"
+                                        th:data-value="${setting.sensitive ? '' : setting.settingValue}"
                                         th:data-type="${setting.settingType}"
                                         th:data-description="${setting.description}"
+                                        th:data-sensitive="${setting.sensitive}"
                                         data-toggle="modal" 
                                         data-target="#editAppSettingModal"
                                         onclick="prepareEditModal(this)">
@@ -440,10 +441,12 @@
                 const value = button.getAttribute('data-value');
                 const type = button.getAttribute('data-type');
                 const description = button.getAttribute('data-description');
+                const sensitive = button.getAttribute('data-sensitive') === 'true';
                 
                 document.getElementById('modalSettingKey').value = key;
                 document.getElementById('modalSettingKeyDisplay').value = key;
                 document.getElementById('modalSettingDescription').textContent = description;
+                settingValueInput.required = !sensitive;
                 
                 // Set input hints based on type
                 let hint = '';
@@ -451,6 +454,8 @@
                     hint = 'Enter a decimal number (e.g., 40.906871)';
                 } else if (type === 'INTEGER') {
                     hint = 'Enter a whole number (e.g., 30)';
+                } else if (type === 'BOOLEAN') {
+                    hint = 'Enter true or false';
                 } else if (type === 'STRING') {
                     if (key.includes('timezone')) {
                         hint = 'Search for a timezone (e.g., America/New_York)';
@@ -483,7 +488,7 @@
                     colorPicker.style.display = 'none';
                     settingValueInput.style.display = 'block';
                     settingValueInput.value = value || '';
-                    settingValueInput.placeholder = 'Enter value...';
+                    settingValueInput.placeholder = sensitive ? 'Leave blank to keep current value' : 'Enter value...';
                     settingValueInput.dataset.isTimezone = 'false';
                     document.getElementById('timezoneDropdown').style.display = 'none';
                 }

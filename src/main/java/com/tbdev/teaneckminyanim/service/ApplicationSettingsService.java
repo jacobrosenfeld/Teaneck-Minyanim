@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,7 +56,7 @@ public class ApplicationSettingsService {
                 setting.setCategory(key.getCategory());
                 repository.save(setting);
                 settingsCache.put(key.getKey(), key.getDefaultValue());
-                log.info("Created default setting: {} = {}", key.getKey(), key.getDefaultValue());
+                log.info("Created default setting: {} = {}", key.getKey(), key.maskValue(key.getDefaultValue()));
             } else {
                 // Load into cache
                 ApplicationSettings existing = repository.findBySettingKey(key.getKey()).get();
@@ -183,6 +184,58 @@ public class ApplicationSettingsService {
         return getString(SettingKey.MAPBOX_ACCESS_TOKEN);
     }
 
+    public String getEmailProvider() {
+        return getString(SettingKey.EMAIL_PROVIDER);
+    }
+
+    public String getEmailSmtpHost() {
+        return getString(SettingKey.EMAIL_SMTP_HOST);
+    }
+
+    public Integer getEmailSmtpPort() {
+        return getInteger(SettingKey.EMAIL_SMTP_PORT);
+    }
+
+    public String getEmailSmtpUsername() {
+        return getString(SettingKey.EMAIL_SMTP_USERNAME);
+    }
+
+    public String getEmailSmtpPassword() {
+        return getString(SettingKey.EMAIL_SMTP_PASSWORD);
+    }
+
+    public Boolean isEmailSmtpStartTlsEnabled() {
+        return getBoolean(SettingKey.EMAIL_SMTP_STARTTLS_ENABLED);
+    }
+
+    public String getEmailFromAddress() {
+        return getString(SettingKey.EMAIL_FROM_ADDRESS);
+    }
+
+    public String getEmailFromName() {
+        return getString(SettingKey.EMAIL_FROM_NAME);
+    }
+
+    public String getEmailReplyTo() {
+        return getString(SettingKey.EMAIL_REPLY_TO);
+    }
+
+    public String getEmailSesRegion() {
+        return getString(SettingKey.EMAIL_SES_REGION);
+    }
+
+    public String getEmailSesAccessKeyId() {
+        return getString(SettingKey.EMAIL_SES_ACCESS_KEY_ID);
+    }
+
+    public String getEmailSesSecretAccessKey() {
+        return getString(SettingKey.EMAIL_SES_SECRET_ACCESS_KEY);
+    }
+
+    public String getEmailSesConfigurationSet() {
+        return getString(SettingKey.EMAIL_SES_CONFIGURATION_SET);
+    }
+
     /**
      * Get iOS App Store URL.
      */
@@ -281,7 +334,7 @@ public class ApplicationSettingsService {
         // Update cache
         settingsCache.put(key.getKey(), normalizedValue);
         
-        log.info("Updated setting: {} = {}", key.getKey(), normalizedValue);
+        log.info("Updated setting: {} = {}", key.getKey(), key.maskValue(normalizedValue));
     }
     
     /**
@@ -290,6 +343,22 @@ public class ApplicationSettingsService {
     public void updateSettingByKey(String keyStr, String value) throws ValidationException {
         SettingKey key = SettingKey.fromKey(keyStr);
         updateSetting(key, value);
+    }
+
+    public boolean isSensitiveSetting(String keyStr) {
+        try {
+            return SettingKey.fromKey(keyStr).isSensitive();
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public String safeValueForLog(String keyStr, String value) {
+        try {
+            return SettingKey.fromKey(keyStr).maskValue(value);
+        } catch (IllegalArgumentException e) {
+            return value;
+        }
     }
     
     /**
@@ -340,7 +409,25 @@ public class ApplicationSettingsService {
                 validateHexColor(value);
                 break;
             case SITE_SUPPORT_EMAIL:
-                validateEmail(value);
+                validateEmail(value, "Support email");
+                break;
+            case EMAIL_PROVIDER:
+                validateEmailProvider(value);
+                break;
+            case EMAIL_SMTP_PORT:
+                validateTcpPort(value);
+                break;
+            case EMAIL_SMTP_STARTTLS_ENABLED:
+                validateBoolean(value, "SMTP STARTTLS enabled");
+                break;
+            case EMAIL_FROM_ADDRESS:
+                validateEmail(value, "Email from address");
+                break;
+            case EMAIL_REPLY_TO:
+                validateEmail(value, "Email reply-to address");
+                break;
+            case EMAIL_SES_REGION:
+                validateAwsRegion(value);
                 break;
             case SITE_ROOT_URL:
                 validateUrl(value, "Root URL");
@@ -381,6 +468,17 @@ public class ApplicationSettingsService {
             case MAPBOX_ACCESS_TOKEN:
             case MOBILE_IOS_APP_URL:
             case MOBILE_GOOGLE_PLAY_URL:
+            case EMAIL_PROVIDER:
+            case EMAIL_SMTP_HOST:
+            case EMAIL_SMTP_USERNAME:
+            case EMAIL_SMTP_PASSWORD:
+            case EMAIL_FROM_ADDRESS:
+            case EMAIL_FROM_NAME:
+            case EMAIL_REPLY_TO:
+            case EMAIL_SES_REGION:
+            case EMAIL_SES_ACCESS_KEY_ID:
+            case EMAIL_SES_SECRET_ACCESS_KEY:
+            case EMAIL_SES_CONFIGURATION_SET:
                 return true;
             default:
                 return false;
@@ -393,10 +491,41 @@ public class ApplicationSettingsService {
         }
     }
     
-    private void validateEmail(String value) throws ValidationException {
+    private void validateEmail(String value, String fieldName) throws ValidationException {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         if (!value.matches(emailRegex)) {
-            throw new ValidationException("Support email must be a valid email address");
+            throw new ValidationException(fieldName + " must be a valid email address");
+        }
+    }
+
+    private void validateEmailProvider(String value) throws ValidationException {
+        String normalized = value.toUpperCase(Locale.ROOT);
+        if (!normalized.equals("SMTP") && !normalized.equals("SES")) {
+            throw new ValidationException("Email provider must be SMTP or SES");
+        }
+    }
+
+    private void validateTcpPort(String value) throws ValidationException {
+        try {
+            int port = Integer.parseInt(value);
+            if (port < 1 || port > 65535) {
+                throw new ValidationException("SMTP port must be between 1 and 65535");
+            }
+        } catch (NumberFormatException e) {
+            throw new ValidationException("SMTP port must be a valid integer");
+        }
+    }
+
+    private void validateBoolean(String value, String fieldName) throws ValidationException {
+        String normalized = value.toLowerCase(Locale.ROOT);
+        if (!normalized.equals("true") && !normalized.equals("false")) {
+            throw new ValidationException(fieldName + " must be true or false");
+        }
+    }
+
+    private void validateAwsRegion(String value) throws ValidationException {
+        if (!value.matches("^[a-z]{2}-[a-z]+-\\d$")) {
+            throw new ValidationException("AWS region must look like us-east-1");
         }
     }
     

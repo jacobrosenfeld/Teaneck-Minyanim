@@ -1121,11 +1121,20 @@ public class AdminController {
         }
 
         try {
+            if (settingsService.isSensitiveSetting(settingKey)
+                    && (settingValue == null || settingValue.isBlank())) {
+                log.info("Sensitive application setting left unchanged: {} by user {}",
+                        settingKey, getCurrentUser().getUsername());
+                return settings("Application setting left unchanged.", null);
+            }
+
             // Update the setting
             settingsService.updateSettingByKey(settingKey, settingValue);
             
             log.info("Application setting updated: {} = {} by user {}", 
-                    settingKey, settingValue, getCurrentUser().getUsername());
+                    settingKey,
+                    settingsService.safeValueForLog(settingKey, settingValue),
+                    getCurrentUser().getUsername());
             
             return settings("Application setting updated successfully!", null);
             
