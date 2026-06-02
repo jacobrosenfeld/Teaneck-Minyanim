@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" 
+<html lang="en"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{admin/layout}">
@@ -7,567 +7,504 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="|Settings - ${siteName ?: 'Minyanim Platform'}|">Settings</title>
-    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
-    <link rel="manifest" href="/assets/icons/site.webmanifest">
-    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
-    
-    <meta name="msapplication-TileColor" content="#275ed8">
-    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1RbZVAqL1WCoVSnvgoYpP74ifdbrKvN5/NgJ5DZ2iI6N6D2qOAh" crossorigin="anonymous">
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLoa6Zb7Meevd+You33Sk3vp5+Ndzo7Q7in1JVrw5MwQJR3p6db8rrMnnf" crossorigin="anonymous"></script>
-    <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <!-- Moment.js -->
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-    <!-- Moment Timezone -->
-    <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.43/builds/moment-timezone-with-data.min.js"></script>
-    
-    <style>
-        .settings-section {
-            margin-bottom: 2rem;
-            border: 1px solid #dee2e6;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            background-color: #fff;
-        }
-        .settings-section h4 {
-            color: #495057;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e9ecef;
-        }
-        .setting-row {
-            padding: 1rem 0;
-            border-bottom: 1px solid #f8f9fa;
-        }
-        .setting-row:last-child {
-            border-bottom: none;
-        }
-        .setting-label {
-            font-weight: 600;
-            color: #212529;
-            margin-bottom: 0.25rem;
-        }
-        .setting-description {
-            font-size: 0.875rem;
-            color: #6c757d;
-            margin-bottom: 0.5rem;
-        }
-        .setting-value {
-            font-family: 'Courier New', monospace;
-            background-color: #f8f9fa;
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            display: inline-block;
-        }
-        .alert-custom {
-            margin-bottom: 1.5rem;
-        }
-        .color-picker-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        #modalSettingColorPicker {
-            flex-shrink: 0;
-            cursor: pointer;
-            height: 38px;
-            border-radius: 0.25rem;
-            border: 1px solid #ced4da;
-            width: 60px;
-        }
-        #modalSettingColorPicker:hover {
-            border-color: #80bdff;
-        }
-        #modalSettingValue {
-            font-family: 'Courier New', monospace;
-        }
-    </style>
-    
+
     <th:block layout:fragment="styles">
-        <!-- Select2 CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-        
         <style>
-            .settings-section {
-                margin-bottom: 2rem;
-                border: 1px solid #dee2e6;
-                border-radius: 0.5rem;
-                padding: 1.5rem;
-                background-color: #fff;
+            .settings-breadcrumb {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: var(--space-2, 0.5rem);
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin-bottom: var(--space-5, 1.25rem);
             }
-            .settings-section h4 {
-                color: #495057;
-                margin-bottom: 1rem;
-                padding-bottom: 0.5rem;
-                border-bottom: 2px solid #e9ecef;
+
+            .settings-breadcrumb a {
+                color: var(--text-secondary, #6c757d);
+                text-decoration: none;
             }
-            .setting-row {
-                padding: 1rem 0;
-                border-bottom: 1px solid #f8f9fa;
+
+            .settings-breadcrumb a:hover {
+                color: var(--text-primary, #212529);
             }
-            .setting-row:last-child {
-                border-bottom: none;
+
+            .settings-shell {
+                max-width: 1120px;
+                margin: 0 auto;
             }
-            .setting-label {
-                font-weight: 600;
-                color: #212529;
-                margin-bottom: 0.25rem;
+
+            .settings-tabs {
+                display: flex;
+                align-items: center;
+                gap: var(--space-5, 1.25rem);
+                margin-bottom: var(--space-6, 1.5rem);
+                border-bottom: 1px solid var(--border-color, #dee2e6);
+                overflow-x: auto;
             }
-            .setting-description {
-                font-size: 0.875rem;
-                color: #6c757d;
-                margin-bottom: 0.5rem;
+
+            .settings-tab {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                color: var(--text-secondary, #6c757d);
+                padding: 0 0 var(--space-3, 0.75rem);
+                border-bottom: 2px solid transparent;
+                white-space: nowrap;
+                text-decoration: none;
             }
-            .setting-value {
-                font-family: 'Courier New', monospace;
-                background-color: #f8f9fa;
-                padding: 0.5rem;
-                border-radius: 0.25rem;
-                display: inline-block;
+
+            .settings-tab:first-child {
+                color: var(--text-primary, #212529);
+                border-color: var(--text-primary, #212529);
             }
-            .settings-actions-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-                gap: 1rem;
-                margin-bottom: 2rem;
+
+            .settings-tab:hover {
+                color: var(--text-primary, #212529);
+                text-decoration: none;
             }
-            .settings-action-link {
+
+            .settings-status-panel {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 1rem;
-                padding: 1rem;
-                background: #ffffff;
-                border: 1px solid #dee2e6;
-                border-radius: 0.5rem;
-                color: #212529;
-                text-decoration: none;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+                gap: var(--space-4, 1rem);
+                padding: var(--space-4, 1rem);
+                margin-bottom: var(--space-8, 2rem);
+                background: #eef8ff;
+                border: 1px solid #b8dff5;
+                border-left: 4px solid var(--color-info, #2196f3);
+                border-radius: var(--radius-lg, 0.5rem);
             }
-            .settings-action-link:hover {
-                color: #212529;
-                border-color: #275ed8;
-                text-decoration: none;
+
+            .settings-status-copy {
+                display: flex;
+                align-items: flex-start;
+                gap: var(--space-3, 0.75rem);
+                min-width: 0;
             }
-            .settings-action-icon {
+
+            .settings-status-icon {
+                color: var(--color-info, #2196f3);
+                padding-top: 0.15rem;
+                flex: 0 0 auto;
+            }
+
+            .settings-status-title {
+                color: var(--text-primary, #212529);
+                font-weight: var(--font-weight-semibold, 600);
+                margin-bottom: var(--space-1, 0.25rem);
+            }
+
+            .settings-status-text {
+                color: var(--text-secondary, #6c757d);
+                margin: 0;
+            }
+
+            .provider-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-full, 9999px);
+                font-size: var(--font-size-sm, 0.875rem);
+                white-space: nowrap;
+            }
+
+            .settings-section {
+                display: grid;
+                grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
+                gap: var(--space-8, 2rem);
+                align-items: start;
+                margin-bottom: var(--space-6, 1.5rem);
+            }
+
+            .section-copy {
+                position: sticky;
+                top: calc(var(--navbar-height, 3.5rem) + var(--space-5, 1.25rem));
+            }
+
+            .section-title {
+                display: flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                font-size: var(--font-size-xl, 1.25rem);
+                margin-bottom: var(--space-2, 0.5rem);
+            }
+
+            .section-title i {
+                color: var(--color-primary, #275ed8);
+                width: 1.2rem;
+                text-align: center;
+            }
+
+            .section-description {
+                color: var(--text-secondary, #6c757d);
+                margin: 0;
+            }
+
+            .settings-panel {
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-lg, 0.5rem);
+                box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+                overflow: hidden;
+            }
+
+            .setting-field-form {
+                display: grid;
+                grid-template-columns: minmax(180px, 280px) minmax(260px, 1fr);
+                gap: var(--space-4, 1rem);
+                align-items: center;
+                padding: var(--space-4, 1rem) var(--space-5, 1.25rem);
+                border-bottom: 1px solid var(--border-color-light, #e9ecef);
+            }
+
+            .setting-field-form:last-child {
+                border-bottom: 0;
+            }
+
+            .field-label {
+                display: block;
+                color: var(--text-primary, #212529);
+                font-weight: var(--font-weight-semibold, 600);
+                margin-bottom: var(--space-1, 0.25rem);
+            }
+
+            .field-description {
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin: 0;
+            }
+
+            .field-control {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 2.5rem minmax(5rem, auto);
+                gap: var(--space-2, 0.5rem);
+                align-items: center;
+            }
+
+            .field-input {
+                width: 100%;
+                height: 2.75rem;
+                padding: 0 var(--space-3, 0.75rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color-dark, #ced4da);
+                border-radius: var(--radius-md, 0.375rem);
+                font-size: var(--font-size-base, 1rem);
+            }
+
+            .field-input[type="color"] {
+                padding: 0.25rem;
+                cursor: pointer;
+            }
+
+            .field-input:focus {
+                border-color: var(--text-primary, #212529);
+                box-shadow: 0 0 0 2px rgba(33, 37, 41, 0.08);
+                outline: none;
+            }
+
+            .field-save-button {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                width: 2.25rem;
-                height: 2.25rem;
-                color: #275ed8;
-                background: #e3ecfa;
-                border-radius: 0.5rem;
-                flex: 0 0 auto;
+                width: 2.5rem;
+                height: 2.5rem;
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color-dark, #ced4da);
+                border-radius: var(--radius-md, 0.375rem);
+                cursor: pointer;
+                transition: border-color var(--transition-fast, 150ms ease),
+                            background var(--transition-fast, 150ms ease),
+                            color var(--transition-fast, 150ms ease);
             }
-            .settings-action-copy {
-                min-width: 0;
-                flex: 1;
+
+            .field-save-button:hover,
+            .field-save-button:focus {
+                color: var(--color-accent-dark, #388e3c);
+                border-color: var(--color-accent, #4caf50);
+                outline: none;
             }
-            .settings-action-title {
-                font-weight: 600;
-                margin-bottom: 0.2rem;
+
+            .field-save-button.saving {
+                color: var(--text-secondary, #6c757d);
+                pointer-events: none;
             }
-            .settings-action-description {
-                display: block;
-                color: #6c757d;
-                font-size: 0.875rem;
-                margin: 0;
-            }
-            .settings-action-meta {
+
+            .field-state {
                 display: inline-flex;
                 align-items: center;
-                gap: 0.4rem;
-                color: #6c757d;
-                font-size: 0.875rem;
+                gap: var(--space-1, 0.25rem);
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                min-width: 5rem;
+                max-width: 12rem;
                 white-space: nowrap;
             }
-            .color-picker-wrapper {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
+
+            .field-state span {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
-            #modalSettingColorPicker {
-                flex-shrink: 0;
-                cursor: pointer;
-                height: 38px;
-                border-radius: 0.25rem;
-                border: 1px solid #ced4da;
-                width: 60px;
+
+            .field-state.unsaved {
+                color: var(--color-warning, #ff9800);
             }
-            #modalSettingColorPicker:hover {
-                border-color: #80bdff;
+
+            .field-state.saved {
+                color: var(--color-accent-dark, #388e3c);
             }
-            #modalSettingValue {
-                font-family: 'Courier New', monospace;
+
+            .field-state.error {
+                color: var(--color-danger, #f44336);
+                max-width: 16rem;
+                white-space: normal;
             }
-            #modalSettingValue::placeholder {
-                color: #adb5bd;
+
+            @media (max-width: 900px) {
+                .settings-section {
+                    grid-template-columns: 1fr;
+                    gap: var(--space-3, 0.75rem);
+                }
+
+                .section-copy {
+                    position: static;
+                }
+
+                .setting-field-form {
+                    grid-template-columns: 1fr;
+                }
             }
-            #modalSettingValue:focus {
-                border-color: #80bdff;
-                box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-            }
-            .timezone-search-container {
-                position: relative;
-                width: 100%;
-            }
-            .timezone-search-input {
-                width: 100%;
-            }
-            .timezone-dropdown-list {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: white;
-                border: 1px solid #dee2e6;
-                border-top: none;
-                border-radius: 0 0 0.25rem 0.25rem;
-                max-height: 250px;
-                overflow-y: auto;
-                z-index: 1000;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            }
-            .timezone-option {
-                padding: 10px 12px;
-                cursor: pointer;
-                border-bottom: 1px solid #f0f0f0;
-                font-size: 14px;
-                color: #212529;
-                transition: background-color 0.15s;
-            }
-            .timezone-option:last-child {
-                border-bottom: none;
-            }
-            .timezone-option:hover {
-                background-color: #f8f9fa;
-            }
-            .timezone-option.selected {
-                background-color: #007bff;
-                color: white;
-            }
-            .timezone-option-match {
-                font-weight: 600;
-                color: #007bff;
-            }
-            .timezone-option.selected .timezone-option-match {
-                color: white;
+
+            @media (max-width: 560px) {
+                .settings-status-panel {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+
+                .field-control {
+                    grid-template-columns: minmax(0, 1fr) 2.5rem;
+                }
+
+                .field-state {
+                    grid-column: 1 / -1;
+                    max-width: 100%;
+                }
             }
         </style>
     </th:block>
 </head>
 
 <body>
-    <div layout:fragment="content">
+<div layout:fragment="content">
+    <div class="settings-shell">
+        <div class="settings-breadcrumb">
+            <a th:href="@{/admin/organizations}">Dashboard</a>
+            <span>/</span>
+            <span>Settings</span>
+        </div>
+
         <div class="page-header">
-            <h3 class="lead d-sm-block">Application Settings</h3>
-            <p class="text-muted">Configure application-wide settings for location, timezone, calendar import, and external services. 
-            </p>
-        </div>
-
-        <div class="row my-4" style="padding-bottom: 60px">
-            <div class="col-lg-10">
-                <div class="settings-actions-grid">
-                    <a class="settings-action-link" th:href="@{/admin/settings/email}">
-                        <span class="settings-action-icon">
-                            <i class="fas fa-envelope"></i>
-                        </span>
-                        <span class="settings-action-copy">
-                            <span class="settings-action-title">Email Settings</span>
-                            <span class="settings-action-description">Configure SMTP or AWS SES delivery, sender defaults, and test emails.</span>
-                        </span>
-                        <span class="settings-action-meta">
-                            <span th:text="${emailProvider != null and !emailProvider.isBlank() ? emailProvider : 'Not configured'}">Not configured</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </span>
-                    </a>
-                </div>
-                
-                <!-- Application Settings (Location, Timezone, Calendar) -->
-                <h3 class="mb-3">System Configuration</h3>
-                <div th:each="category : ${applicationSettingsByCategory.keySet()}" class="settings-section">
-                    <h4 th:text="${category}"></h4>
-                    
-                    <div th:each="setting : ${applicationSettingsByCategory.get(category)}" class="setting-row">
-                        <div class="setting-label" th:text="${setting.settingKey}"></div>
-                        <div class="setting-description" th:text="${setting.description}"></div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="setting-value" th:text="${setting.displayValue}"></div>
-                            </div>
-                            <div class="col-md-6 text-right">
-                                <button type="button" class="btn btn-sm btn-outline-primary" 
-                                        th:data-key="${setting.settingKey}"
-                                        th:data-value="${setting.sensitive ? '' : setting.settingValue}"
-                                        th:data-type="${setting.settingType}"
-                                        th:data-description="${setting.description}"
-                                        th:data-sensitive="${setting.sensitive}"
-                                        data-toggle="modal" 
-                                        data-target="#editAppSettingModal"
-                                        onclick="prepareEditModal(this)">
-                                    Edit
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
+            <div>
+                <h1 class="page-title">Settings</h1>
+                <p class="page-description">Manage site, location, mobile, service, and calendar defaults.</p>
+            </div>
+            <div class="page-actions">
+                <a class="btn-modern btn-secondary" th:href="@{/admin/settings/email}">
+                    <i class="fas fa-envelope"></i>
+                    <span>Email Settings</span>
+                </a>
             </div>
         </div>
 
-        <!-- Edit Application Setting Modal -->
-        <div class="modal fade" id="editAppSettingModal" tabindex="-1" aria-labelledby="editAppSettingModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editAppSettingModalLabel">Edit Application Setting</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+        <nav class="settings-tabs" aria-label="Settings sections">
+            <a th:each="section : ${settingSections}"
+               class="settings-tab"
+               th:href="${'#' + section.id}"
+               th:text="${section.title}">Section</a>
+        </nav>
+
+        <div class="settings-status-panel">
+            <div class="settings-status-copy">
+                <i class="fas fa-sliders settings-status-icon"></i>
+                <div>
+                    <div class="settings-status-title">Application Configuration</div>
+                    <p class="settings-status-text">Each setting saves independently and applies after validation.</p>
+                </div>
+            </div>
+            <div class="provider-pill">
+                <i class="fas fa-envelope"></i>
+                <span th:text="${emailProvider != null and !emailProvider.isBlank() ? 'Email: ' + emailProvider : 'Email: Disabled'}">Email: Disabled</span>
+            </div>
+        </div>
+
+        <section th:each="section : ${settingSections}" class="settings-section" th:id="${section.id}">
+            <div class="section-copy">
+                <h2 class="section-title">
+                    <i th:class="${'fas ' + section.icon}"></i>
+                    <span th:text="${section.title}">Section</span>
+                </h2>
+                <p class="section-description" th:text="${section.description}">Section description</p>
+            </div>
+
+            <div class="settings-panel">
+                <form th:each="field : ${section.fields}"
+                      class="setting-field-form"
+                      th:action="@{/admin/settings/update-field}"
+                      method="post"
+                      th:data-key="${field.key}"
+                      th:data-sensitive="${field.sensitive}">
+                    <div>
+                        <label class="field-label" th:for="${field.htmlId}" th:text="${field.label}">Setting</label>
+                        <p class="field-description" th:text="${field.description}">Description</p>
+                    </div>
+
+                    <div class="field-control">
+                        <input type="hidden" name="settingKey" th:value="${field.key}">
+
+                        <select th:if="${field.hasOptions}"
+                                class="field-input"
+                                name="settingValue"
+                                th:id="${field.htmlId}">
+                            <option th:each="option : ${field.options}"
+                                    th:value="${option.value}"
+                                    th:selected="${option.value == field.value}"
+                                    th:text="${option.label}">Option</option>
+                        </select>
+
+                        <input th:unless="${field.hasOptions}"
+                               class="field-input"
+                               name="settingValue"
+                               th:id="${field.htmlId}"
+                               th:type="${field.inputType}"
+                               th:value="${field.inputType == 'color' and (field.value == null or field.value.isBlank()) ? '#275ed8' : field.value}"
+                               th:placeholder="${field.placeholder}"
+                               th:step="${field.step}"
+                               th:attr="list=${field.timezone ? 'timezone-options' : null}">
+
+                        <button class="field-save-button" type="submit" th:attr="aria-label=${'Save ' + field.label}">
+                            <i class="fas fa-check"></i>
                         </button>
+
+                        <span class="field-state">
+                            <i class="far fa-circle"></i>
+                            <span th:text="${field.displayValue}">Not set</span>
+                        </span>
                     </div>
-                    <form method="post" th:action="@{/admin/settings/update-application-setting}" id="editAppSettingForm">
-                        <div class="modal-body">
-                            <input type="hidden" name="settingKey" id="modalSettingKey">
-                            
-                            <div class="form-group">
-                                <label>Setting Key</label>
-                                <input type="text" class="form-control" id="modalSettingKeyDisplay" readonly>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Description</label>
-                                <p class="form-text text-muted" id="modalSettingDescription"></p>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="modalSettingValue">Value <span class="text-danger">*</span></label>
-                                <div class="timezone-autocomplete-wrapper">
-                                    <input type="color" class="form-control" id="modalSettingColorPicker" style="display: none;" title="Pick a color">
-                                    <input type="text" class="form-control" name="settingValue" id="modalSettingValue" placeholder="Enter value..." required>
-                                </div>
-                                <div class="timezone-dropdown-list" id="timezoneDropdown" style="display: none;"></div>
-                                <small class="form-text text-muted" id="modalValueHint"></small>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                        </div>
-                    </form>
-                </div>
+                </form>
             </div>
-        </div>
+        </section>
 
-        <!-- Edit Notification Settings Modals -->
-        <div th:each="settings: ${notificationSettings}">
-            <div class="modal fade" th:id="${'update-notification-modal-' + settings.id}" tabindex="-1" th:aria-labelledby="${'update-notification-modal-label-' + settings.id}" style="display: none;" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title h4" th:id="${'update-notification-modal-label-' + settings.id}">Edit Notification</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">×</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <form method="post" th:action="@{/admin/update-settings}">
-                                <div class="form-group">
-                                    <input type="hidden" name="id" th:value="${settings.id}">
-                                    <input type="hidden" name="setting" th:value="${settings.setting}">
-                                    <input type="hidden" name="type" th:value="${settings.type}">
-                                    <h4 th:text="${settings.setting}"></h4>
-                                    <div class="form-group">
-                                        <label for="enabled">Enabled</label>
-                                        <select class="form-control" name="enabled" th:id="${'new-enabled-' + settings.id}" th:disabled="${settings.enabled == 'n/a'}">
-                                            <option th:value="'Enabled'" th:selected="${settings.enabled == 'Enabled'}">Enabled</option>
-                                            <option th:value="'Disabled'" th:selected="${settings.enabled == 'Disabled'}">Disabled</option>
-                                        </select>
-                                        <input type="hidden" name="enabledHidden" th:value="${settings.enabled == 'n/a' ? 'n/a' : settings.enabled}">
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="text">Message Text (Markdown Supported)</label>
-                                        <textarea class="form-control" th:id="${'new-text-' + settings.id}" name="text" rows="5" th:text="${settings.text}"></textarea>
-                                        <small class="form-text text-muted">
-                                            Supports markdown: **bold**, *italic*, [link](url), `code`, - list items, ## headers
-                                        </small>
-                                    </div>
-
-                                    <div class="form-group mt-3">
-                                        <label th:for="${'new-expiration-date-' + settings.id}">Expiration Date (Optional)</label>
-                                        <input type="date" class="form-control" th:id="${'new-expiration-date-' + settings.id}" name="expirationDate" th:value="${settings.expirationDate}">
-                                        <small class="form-text text-muted">Leave empty for no expiration. Format: YYYY-MM-DD</small>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label th:for="${'new-max-displays-' + settings.id}">Max Displays Per User (Optional)</label>
-                                        <input type="number" class="form-control" th:id="${'new-max-displays-' + settings.id}" name="maxDisplays" th:value="${settings.maxDisplays}" min="1" max="100">
-                                        <small class="form-text text-muted">Leave empty for unlimited displays. Max: 100</small>
-                                    </div>
-
-                                </div>
-                                <hr>
-                                <button type="submit" class="btn btn-primary">Save</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <datalist id="timezone-options"></datalist>
     </div>
+</div>
 
-    <th:block layout:fragment="scripts">
-        <!-- Select2 JS -->
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        <!-- Moment.js -->
-        <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-        <!-- Moment Timezone -->
-        <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.43/builds/moment-timezone-with-data.min.js"></script>
-        
-        <script th:src="@{/account.js}"></script>
-        <script th:src="@{/admin/timezone.js}"></script>
-        
-        <script>
-            // Show toast notifications for success/error messages
-            const successMsg = /*[[${success}]]*/ null;
-            const errorMsg = /*[[${error}]]*/ null;
-            
-            if (successMsg) {
-                showToast('success', successMsg);
-            }
-            if (errorMsg) {
-                showToast('error', errorMsg);
-            }
-            
-            const colorPicker = document.getElementById('modalSettingColorPicker');
-            const settingValueInput = document.getElementById('modalSettingValue');
-            const valueHint = document.getElementById('modalValueHint');
+<th:block layout:fragment="scripts">
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.43/builds/moment-timezone-with-data.min.js"></script>
 
-            function normalizeHexColor(rawValue) {
-                if (!rawValue) {
-                    return '';
-                }
-                const trimmed = rawValue.trim();
-                const match = trimmed.match(/^#?[0-9a-fA-F]{6}$/);
-                if (!match) {
-                    return '';
-                }
-                return trimmed.startsWith('#') ? trimmed.toLowerCase() : `#${trimmed.toLowerCase()}`;
-            }
+    <script>
+        const successMsg = /*[[${success}]]*/ null;
+        const errorMsg = /*[[${error}]]*/ null;
 
-            function extractHexColor(value) {
-                if (!value) return '';
-                // Try direct normalization first
-                let normalized = normalizeHexColor(value);
-                if (normalized) return normalized;
-                
-                // Try to find hex pattern
-                const match = value.match(/#?[0-9a-fA-F]{6}/);
-                if (match) {
-                    const hex = match[0];
-                    return hex.startsWith('#') ? hex.toLowerCase() : '#' + hex.toLowerCase();
-                }
-                return '';
-            }
+        if (successMsg) {
+            showToast('success', successMsg);
+        }
+        if (errorMsg) {
+            showToast('error', errorMsg);
+        }
 
-            function showColorPicker(value) {
-                const hexColor = extractHexColor(value) || '#275ed8';
-                
-                // Show only color picker
-                colorPicker.style.display = 'block';
-                settingValueInput.style.display = 'none';
-                
-                // Set value in both (input for submission, picker for display)
-                settingValueInput.value = hexColor;
-                colorPicker.value = hexColor;
-            }
-
-            function hideColorPicker(value) {
-                colorPicker.style.display = 'none';
-                settingValueInput.style.display = 'block';
-                settingValueInput.value = value;
-            }
-
-            // Sync color picker to hidden input
-            colorPicker.addEventListener('input', function() {
-                if (colorPicker.style.display === 'none') return;
-                settingValueInput.value = colorPicker.value;
+        const timezoneOptions = document.getElementById('timezone-options');
+        if (timezoneOptions && window.moment && moment.tz) {
+            moment.tz.names().forEach(function(timezone) {
+                const option = document.createElement('option');
+                option.value = timezone;
+                timezoneOptions.appendChild(option);
             });
+        }
 
-            function prepareEditModal(button) {
-                const key = button.getAttribute('data-key');
-                const value = button.getAttribute('data-value');
-                const type = button.getAttribute('data-type');
-                const description = button.getAttribute('data-description');
-                const sensitive = button.getAttribute('data-sensitive') === 'true';
-                
-                document.getElementById('modalSettingKey').value = key;
-                document.getElementById('modalSettingKeyDisplay').value = key;
-                document.getElementById('modalSettingDescription').textContent = description;
-                settingValueInput.required = !sensitive;
-                
-                // Set input hints based on type
-                let hint = '';
-                if (type === 'DOUBLE') {
-                    hint = 'Enter a decimal number (e.g., 40.906871)';
-                } else if (type === 'INTEGER') {
-                    hint = 'Enter a whole number (e.g., 30)';
-                } else if (type === 'BOOLEAN') {
-                    hint = 'Enter true or false';
-                } else if (type === 'STRING') {
-                    if (key.includes('timezone')) {
-                        hint = 'Search for a timezone (e.g., America/New_York)';
-                    } else if (key.includes('cron')) {
-                        hint = 'Enter a valid cron expression (e.g., 0 0 2 * * SUN)';
-                    } else {
-                        hint = 'Enter a text value';
-                    } 
-                }
+        function markFieldUnsaved(form) {
+            const state = form.querySelector('.field-state');
+            const stateText = state.querySelector('span');
+            const stateIcon = state.querySelector('i');
 
-                if (key === 'site.app.color') {
-                    // Show color picker, hide text input
-                    colorPicker.style.display = 'block';
-                    settingValueInput.style.display = 'none';
-                    showColorPicker(value);
-                    hint = 'Pick a hex color (#RRGGBB).';
-                } else if (key === 'timezone') {
-                    // Show text input with timezone autocomplete
-                    colorPicker.style.display = 'none';
-                    settingValueInput.style.display = 'block';
-                    settingValueInput.value = value || '';
-                    settingValueInput.placeholder = 'Search timezones...';
-                    settingValueInput.dataset.isTimezone = 'true';
-                    // Initialize timezone autocomplete after a short delay to ensure DOM is ready
-                    setTimeout(function() {
-                        initializeTimezoneSelect2();
-                    }, 100);
-                } else {
-                    // Show text input for other values — hide timezone autocomplete
-                    colorPicker.style.display = 'none';
-                    settingValueInput.style.display = 'block';
-                    settingValueInput.value = value || '';
-                    settingValueInput.placeholder = sensitive ? 'Leave blank to keep current value' : 'Enter value...';
-                    settingValueInput.dataset.isTimezone = 'false';
-                    document.getElementById('timezoneDropdown').style.display = 'none';
-                }
-                
-                valueHint.textContent = hint;
+            state.className = 'field-state unsaved';
+            stateIcon.className = 'far fa-circle-dot';
+            stateText.textContent = 'Unsaved';
+        }
+
+        document.querySelectorAll('.setting-field-form').forEach(function(form) {
+            const input = form.querySelector('[name="settingValue"]');
+
+            if (input) {
+                input.addEventListener('input', function() {
+                    markFieldUnsaved(form);
+                });
+                input.addEventListener('change', function() {
+                    markFieldUnsaved(form);
+                });
             }
-        </script>
-    </th:block>
+
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const button = form.querySelector('.field-save-button');
+                const state = form.querySelector('.field-state');
+                const stateText = state.querySelector('span');
+                const stateIcon = state.querySelector('i');
+                const fieldInput = form.querySelector('[name="settingValue"]');
+                const sensitive = form.getAttribute('data-sensitive') === 'true';
+
+                button.classList.add('saving');
+                state.className = 'field-state';
+                stateIcon.className = 'fas fa-spinner fa-spin';
+                stateText.textContent = 'Saving';
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams(new FormData(form))
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || 'Setting could not be saved.');
+                    }
+
+                    state.className = 'field-state saved';
+                    stateIcon.className = 'fas fa-check-circle';
+                    stateText.textContent = result.displayValue || 'Saved';
+
+                    if (sensitive && fieldInput) {
+                        fieldInput.value = '';
+                        fieldInput.placeholder = 'Saved value hidden - enter a new value to replace';
+                    }
+
+                    if (window.showToast) {
+                        showToast('success', result.message || 'Saved');
+                    }
+                } catch (error) {
+                    state.className = 'field-state error';
+                    stateIcon.className = 'fas fa-exclamation-circle';
+                    stateText.textContent = error.message;
+
+                    if (window.showToast) {
+                        showToast('error', error.message);
+                    }
+                } finally {
+                    button.classList.remove('saving');
+                }
+            });
+        });
+    </script>
+</th:block>
 </body>
 </html>

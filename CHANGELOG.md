@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configurable Smart App Banner settings**: Added `mobile.ios.app.url` and `mobile.google.play.url` to `APPLICATION_SETTINGS`, with iOS app id parsing from the configured App Store URL and dynamic Safari Smart App Banner meta-tag rendering on all public (non-admin) pages.
 
 ### Changed
+- **Settings page modernization**: Updated the main super-admin Settings page to match the new email settings form style with section navigation, inline field controls, and per-field save states.
 - **Error page UX refreshed with themed copy and graphics**: Browser error handling now renders status-specific themed messages, guidance, CTAs, and dedicated SVG icons for `400`, `403`, `404`, `429`, `500`, and `503` while keeping the shared template/navigation shell.
 - **Override page UI modernization**: Updated override tables and actions to match the admin design system styling used by calendar-entry management views.
 - **Build tooling baseline moved to Java 21**: Added Java 21 enforcement/toolchain setup for local and CI consistency.

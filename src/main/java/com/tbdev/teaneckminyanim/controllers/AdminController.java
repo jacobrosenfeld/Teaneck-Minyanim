@@ -3,6 +3,7 @@ package com.tbdev.teaneckminyanim.controllers;
 import com.tbdev.teaneckminyanim.model.*;
 import com.tbdev.teaneckminyanim.security.Encrypter;
 import com.tbdev.teaneckminyanim.service.*;
+import com.tbdev.teaneckminyanim.enums.SettingKey;
 import com.tbdev.teaneckminyanim.enums.Nusach;
 import com.tbdev.teaneckminyanim.enums.Role;
 import com.tbdev.teaneckminyanim.minyan.MinyanDay;
@@ -263,6 +264,7 @@ public class AdminController {
         Map<String, List<com.tbdev.teaneckminyanim.model.ApplicationSettings>> applicationSettingsByCategory = 
                 this.settingsService.getSettingsByCategoryExcluding(Set.of("Email"));
         mv.addObject("applicationSettingsByCategory", applicationSettingsByCategory);
+        mv.addObject("settingSections", buildSettingsPageSections(applicationSettingsByCategory));
         mv.addObject("emailProvider", this.settingsService.getEmailProvider());
 
         addStandardPageData(mv);
@@ -270,6 +272,296 @@ public class AdminController {
         mv.getModel().put("success", successMessage);
         mv.getModel().put("error", errorMessage);
         return mv;
+    }
+
+    @ResponseBody
+    @PostMapping("/admin/settings/update-field")
+    public ResponseEntity<SettingsFieldUpdateResponse> updateSettingsField(
+            @RequestParam("settingKey") String settingKey,
+            @RequestParam(value = "settingValue", required = false) String settingValue) {
+        if (!isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to perform this action");
+        }
+
+        SettingKey key;
+        try {
+            key = SettingKey.fromKey(settingKey);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(SettingsFieldUpdateResponse.failure(settingKey, "Unknown setting."));
+        }
+
+        if ("Email".equals(key.getCategory())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(SettingsFieldUpdateResponse.failure(settingKey, "Use Email Settings to update email fields."));
+        }
+
+        try {
+            if (key.isSensitive() && (settingValue == null || settingValue.isBlank())) {
+                log.info("Sensitive application setting left unchanged: {} by user {}",
+                        key.getKey(), getCurrentUser().getUsername());
+                return ResponseEntity.ok(SettingsFieldUpdateResponse.success(
+                        key.getKey(),
+                        displaySettingsValue(key, settingsService.getString(key)),
+                        "Saved"));
+            }
+
+            settingsService.updateSetting(key, settingValue);
+
+            log.info("Application setting updated: {} = {} by user {}",
+                    key.getKey(),
+                    key.maskValue(settingValue),
+                    getCurrentUser().getUsername());
+
+            return ResponseEntity.ok(SettingsFieldUpdateResponse.success(
+                    key.getKey(),
+                    displaySettingsValue(key, settingsService.getString(key)),
+                    "Saved"));
+        } catch (ApplicationSettingsService.ValidationException e) {
+            log.warn("Validation error updating setting {}: {}", key.getKey(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(SettingsFieldUpdateResponse.failure(key.getKey(), e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error updating setting {}: {}", key.getKey(), e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(SettingsFieldUpdateResponse.failure(key.getKey(), "Setting could not be saved."));
+        }
+    }
+
+    private List<SettingsPageSection> buildSettingsPageSections(
+            Map<String, List<com.tbdev.teaneckminyanim.model.ApplicationSettings>> settingsByCategory) {
+        Map<String, com.tbdev.teaneckminyanim.model.ApplicationSettings> settingsByKey = settingsByCategory.values().stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toMap(
+                        com.tbdev.teaneckminyanim.model.ApplicationSettings::getSettingKey,
+                        setting -> setting,
+                        (first, second) -> first));
+
+        Map<String, List<SettingsPageField>> fieldsByCategory = new LinkedHashMap<>();
+        for (SettingKey key : SettingKey.values()) {
+            if ("Email".equals(key.getCategory())) {
+                continue;
+            }
+            com.tbdev.teaneckminyanim.model.ApplicationSettings setting = settingsByKey.get(key.getKey());
+            if (setting == null) {
+                continue;
+            }
+            fieldsByCategory
+                    .computeIfAbsent(key.getCategory(), ignored -> new ArrayList<>())
+                    .add(settingsPageField(key, setting));
+        }
+
+        List<String> categoryOrder = settingsCategoryOrder();
+        List<SettingsPageSection> sections = new ArrayList<>();
+        for (String category : categoryOrder) {
+            List<SettingsPageField> fields = fieldsByCategory.get(category);
+            if (fields == null || fields.isEmpty()) {
+                continue;
+            }
+            SettingsCategoryMeta meta = settingsCategoryMeta(category);
+            sections.add(new SettingsPageSection(
+                    slugify(category),
+                    meta.title(),
+                    meta.description(),
+                    meta.icon(),
+                    fields));
+        }
+        fieldsByCategory.forEach((category, fields) -> {
+            if (!categoryOrder.contains(category)) {
+                SettingsCategoryMeta meta = settingsCategoryMeta(category);
+                sections.add(new SettingsPageSection(
+                        slugify(category),
+                        meta.title(),
+                        meta.description(),
+                        meta.icon(),
+                        fields));
+            }
+        });
+        return sections;
+    }
+
+    private List<String> settingsCategoryOrder() {
+        return List.of(
+                "Site Branding & Appearance",
+                "Location & Coordinates",
+                "Timezone",
+                "Mobile Apps",
+                "External Services",
+                "Calendar Import");
+    }
+
+    private SettingsPageField settingsPageField(
+            SettingKey key,
+            com.tbdev.teaneckminyanim.model.ApplicationSettings setting) {
+        List<SettingOption> options = List.of();
+        if ("BOOLEAN".equals(setting.getSettingType())) {
+            options = List.of(
+                    new SettingOption("true", "Enabled"),
+                    new SettingOption("false", "Disabled"));
+        }
+
+        String inputType = settingsInputType(key, setting.getSettingType());
+        String value = key.isSensitive() ? "" : setting.getSettingValue();
+
+        return new SettingsPageField(
+                key.getKey(),
+                "setting-" + slugify(key.getKey()),
+                key.getDisplayName(),
+                key.getDescription(),
+                inputType,
+                inputStep(setting.getSettingType()),
+                value,
+                displaySettingsValue(key, setting.getSettingValue()),
+                key.isSensitive(),
+                settingsPlaceholder(key, setting.getSettingType()),
+                options,
+                !options.isEmpty(),
+                "timezone".equals(key.getKey()));
+    }
+
+    private SettingsCategoryMeta settingsCategoryMeta(String category) {
+        switch (category) {
+            case "Site Branding & Appearance":
+                return new SettingsCategoryMeta(
+                        "Branding",
+                        "Control the public site identity, support links, and default brand color.",
+                        "fa-palette");
+            case "Location & Coordinates":
+                return new SettingsCategoryMeta(
+                        "Location",
+                        "Set the default place used by zmanim and site-wide location calculations.",
+                        "fa-location-dot");
+            case "Timezone":
+                return new SettingsCategoryMeta(
+                        "Timezone",
+                        "Choose the default timezone used for scheduling and admin timestamps.",
+                        "fa-clock");
+            case "Mobile Apps":
+                return new SettingsCategoryMeta(
+                        "Mobile Apps",
+                        "Manage App Store and Google Play links surfaced by the public website.",
+                        "fa-mobile-screen");
+            case "External Services":
+                return new SettingsCategoryMeta(
+                        "External Services",
+                        "Configure third-party service credentials used by shared platform features.",
+                        "fa-plug");
+            case "Calendar Import":
+                return new SettingsCategoryMeta(
+                        "Calendar Import",
+                        "Tune scheduled imports and cleanup windows for external calendar data.",
+                        "fa-calendar-days");
+            default:
+                return new SettingsCategoryMeta(
+                        category,
+                        "Manage application-wide configuration values.",
+                        "fa-sliders");
+        }
+    }
+
+    private String settingsInputType(SettingKey key, String settingType) {
+        if (key == SettingKey.SITE_APP_COLOR) {
+            return "color";
+        }
+        if (key == SettingKey.SITE_SUPPORT_EMAIL) {
+            return "email";
+        }
+        if (key == SettingKey.SITE_ROOT_URL
+                || key == SettingKey.MOBILE_IOS_APP_URL
+                || key == SettingKey.MOBILE_GOOGLE_PLAY_URL) {
+            return "url";
+        }
+        if ("INTEGER".equals(settingType) || "DOUBLE".equals(settingType)) {
+            return "number";
+        }
+        return "text";
+    }
+
+    private String inputStep(String settingType) {
+        if ("DOUBLE".equals(settingType)) {
+            return "any";
+        }
+        if ("INTEGER".equals(settingType)) {
+            return "1";
+        }
+        return null;
+    }
+
+    private String settingsPlaceholder(SettingKey key, String settingType) {
+        if (key.isSensitive()) {
+            return "Saved value hidden - enter a new value to replace";
+        }
+        if (key == SettingKey.SITE_APP_COLOR) {
+            return "#275ed8";
+        }
+        if (key == SettingKey.TIMEZONE) {
+            return "America/New_York";
+        }
+        if (key == SettingKey.CALENDAR_IMPORT_CRON) {
+            return "0 0 2 * * SUN";
+        }
+        if ("INTEGER".equals(settingType)) {
+            return "30";
+        }
+        if ("DOUBLE".equals(settingType)) {
+            return "40.906871";
+        }
+        return "Enter value";
+    }
+
+    private String displaySettingsValue(SettingKey key, String value) {
+        if (value == null || value.isBlank()) {
+            return "Not set";
+        }
+        return key.maskValue(value);
+    }
+
+    private String slugify(String value) {
+        return value == null
+                ? "setting"
+                : value.toLowerCase(Locale.ROOT)
+                    .replaceAll("[^a-z0-9]+", "-")
+                    .replaceAll("(^-|-$)", "");
+    }
+
+    public record SettingsPageSection(
+            String id,
+            String title,
+            String description,
+            String icon,
+            List<SettingsPageField> fields) {
+    }
+
+    public record SettingsPageField(
+            String key,
+            String htmlId,
+            String label,
+            String description,
+            String inputType,
+            String step,
+            String value,
+            String displayValue,
+            boolean sensitive,
+            String placeholder,
+            List<SettingOption> options,
+            boolean hasOptions,
+            boolean timezone) {
+    }
+
+    public record SettingsCategoryMeta(String title, String description, String icon) {
+    }
+
+    public record SettingOption(String value, String label) {
+    }
+
+    public record SettingsFieldUpdateResponse(boolean success, String key, String displayValue, String message) {
+        static SettingsFieldUpdateResponse success(String key, String displayValue, String message) {
+            return new SettingsFieldUpdateResponse(true, key, displayValue, message);
+        }
+
+        static SettingsFieldUpdateResponse failure(String key, String message) {
+            return new SettingsFieldUpdateResponse(false, key, null, message);
+        }
     }
 
     @RequestMapping(value = "/admin/new-organization", method = RequestMethod.GET)

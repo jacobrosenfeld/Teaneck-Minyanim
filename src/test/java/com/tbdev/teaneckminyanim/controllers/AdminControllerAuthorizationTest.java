@@ -1,6 +1,7 @@
 package com.tbdev.teaneckminyanim.controllers;
 
 import com.tbdev.teaneckminyanim.enums.Role;
+import com.tbdev.teaneckminyanim.enums.SettingKey;
 import com.tbdev.teaneckminyanim.model.Minyan;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.TNMUser;
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,6 +33,7 @@ import java.util.TimeZone;
 import static com.tbdev.teaneckminyanim.enums.Role.ADMIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -42,6 +46,7 @@ class AdminControllerAuthorizationTest {
     private TNMUserService userService;
     private OrganizationService organizationService;
     private MinyanService minyanService;
+    private ApplicationSettingsService settingsService;
 
     @BeforeEach
     void setUp() {
@@ -50,7 +55,7 @@ class AdminControllerAuthorizationTest {
         organizationService = mock(OrganizationService.class);
         minyanService = mock(MinyanService.class);
 
-        ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
+        settingsService = mock(ApplicationSettingsService.class);
         when(settingsService.getTimeZone()).thenReturn(TimeZone.getTimeZone("America/New_York"));
         when(settingsService.getSiteName()).thenReturn("Teaneck Minyanim");
         when(settingsService.getSupportEmail()).thenReturn("support@example.com");
@@ -150,6 +155,44 @@ class AdminControllerAuthorizationTest {
 
         assertEquals("admin/organization", mv.getViewName());
         assertEquals(orgB, mv.getModel().get("organization"));
+    }
+
+    @Test
+    void superAdminCanUpdateApplicationSettingField() throws Exception {
+        authenticate("super", ADMIN);
+        when(userService.findByName("super")).thenReturn(user("A0", "super", null, ADMIN));
+        when(settingsService.getString(SettingKey.SITE_NAME)).thenReturn("New Site Name");
+
+        ResponseEntity<AdminController.SettingsFieldUpdateResponse> response =
+                controller.updateSettingsField(SettingKey.SITE_NAME.getKey(), "New Site Name");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().success());
+        assertEquals("New Site Name", response.getBody().displayValue());
+        verify(settingsService).updateSetting(SettingKey.SITE_NAME, "New Site Name");
+    }
+
+    @Test
+    void settingsFieldEndpointRejectsEmailSettings() throws Exception {
+        authenticate("super", ADMIN);
+        when(userService.findByName("super")).thenReturn(user("A0", "super", null, ADMIN));
+
+        ResponseEntity<AdminController.SettingsFieldUpdateResponse> response =
+                controller.updateSettingsField(SettingKey.EMAIL_PROVIDER.getKey(), "SMTP");
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(settingsService, never()).updateSetting(any(), any());
+    }
+
+    @Test
+    void orgAdminCannotUpdateApplicationSettingField() throws Exception {
+        authenticate("manager", ADMIN);
+        when(userService.findByName("manager")).thenReturn(user("A1", "manager", "org-a", ADMIN));
+
+        assertThrows(AccessDeniedException.class,
+                () -> controller.updateSettingsField(SettingKey.SITE_NAME.getKey(), "New Site Name"));
+
+        verify(settingsService, never()).updateSetting(any(), any());
     }
 
     @Test
