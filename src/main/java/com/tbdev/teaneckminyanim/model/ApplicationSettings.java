@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.model;
 
+import com.tbdev.teaneckminyanim.enums.SettingKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -44,5 +45,23 @@ public class ApplicationSettings {
         this.settingKey = key;
         this.settingValue = value;
         this.settingType = type;
+    }
+
+    @Transient
+    public boolean isSensitive() {
+        try {
+            return SettingKey.fromKey(settingKey).isSensitive();
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    @Transient
+    public String getDisplayValue() {
+        try {
+            return SettingKey.fromKey(settingKey).maskValue(settingValue);
+        } catch (IllegalArgumentException e) {
+            return settingValue;
+        }
     }
 }

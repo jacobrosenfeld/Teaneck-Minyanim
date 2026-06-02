@@ -5,15 +5,20 @@ import com.tbdev.teaneckminyanim.enums.SettingKey;
 import com.tbdev.teaneckminyanim.enums.SettingType;
 import com.tbdev.teaneckminyanim.model.ApplicationSettings;
 import com.tbdev.teaneckminyanim.repo.ApplicationSettingsRepository;
-import lombok.RequiredArgsConstructor;
+import com.tbdev.teaneckminyanim.security.SensitiveSettingCrypto;
+import com.tbdev.teaneckminyanim.security.SensitiveSettingCrypto.SensitiveSettingCryptoException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
+import java.util.Optional;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -26,16 +31,30 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ApplicationSettingsService {
 
     private final ApplicationSettingsRepository repository;
+    private final SensitiveSettingCrypto sensitiveSettingCrypto;
     
     // Cache for performance
     private final Map<String, String> settingsCache = new ConcurrentHashMap<>();
     private static final Pattern IOS_APP_ID_PATH_PATTERN = Pattern.compile("/id(\\d+)(?:[/?#]|$)");
     private static final Pattern IOS_APP_ID_QUERY_PATTERN = Pattern.compile("[?&]id=(\\d+)(?:[&#]|$)");
     private static final Pattern NUMERIC_ID_PATTERN = Pattern.compile("^\\d+$");
+
+    @Autowired
+    public ApplicationSettingsService(
+            ApplicationSettingsRepository repository,
+            SensitiveSettingCrypto sensitiveSettingCrypto) {
+        this.repository = repository;
+        this.sensitiveSettingCrypto = sensitiveSettingCrypto == null
+                ? SensitiveSettingCrypto.disabled()
+                : sensitiveSettingCrypto;
+    }
+
+    public ApplicationSettingsService(ApplicationSettingsRepository repository) {
+        this(repository, SensitiveSettingCrypto.disabled());
+    }
     
     /**
      * Initialize default settings on application startup if they don't exist.
@@ -45,7 +64,8 @@ public class ApplicationSettingsService {
         log.info("Initializing application settings with defaults");
         
         for (SettingKey key : SettingKey.values()) {
-            if (repository.findBySettingKey(key.getKey()).isEmpty()) {
+            Optional<ApplicationSettings> existing = repository.findBySettingKey(key.getKey());
+            if (existing.isEmpty()) {
                 ApplicationSettings setting = new ApplicationSettings(
                     key.getKey(),
                     key.getDefaultValue(),
@@ -55,11 +75,9 @@ public class ApplicationSettingsService {
                 setting.setCategory(key.getCategory());
                 repository.save(setting);
                 settingsCache.put(key.getKey(), key.getDefaultValue());
-                log.info("Created default setting: {} = {}", key.getKey(), key.getDefaultValue());
+                log.info("Created default setting: {} = {}", key.getKey(), key.maskValue(key.getDefaultValue()));
             } else {
-                // Load into cache
-                ApplicationSettings existing = repository.findBySettingKey(key.getKey()).get();
-                settingsCache.put(key.getKey(), existing.getSettingValue());
+                settingsCache.put(key.getKey(), readStoredSettingValue(key, existing.get()));
             }
         }
     }
@@ -70,8 +88,9 @@ public class ApplicationSettingsService {
     public String getString(SettingKey key) {
         String value = settingsCache.get(key.getKey());
         if (value == null) {
-            value = repository.findBySettingKey(key.getKey())
-                .map(ApplicationSettings::getSettingValue)
+            Optional<ApplicationSettings> setting = repository.findBySettingKey(key.getKey());
+            value = setting
+                .map(applicationSettings -> readStoredSettingValue(key, applicationSettings))
                 .orElse(key.getDefaultValue());
             settingsCache.put(key.getKey(), value);
         }
@@ -183,6 +202,58 @@ public class ApplicationSettingsService {
         return getString(SettingKey.MAPBOX_ACCESS_TOKEN);
     }
 
+    public String getEmailProvider() {
+        return getString(SettingKey.EMAIL_PROVIDER);
+    }
+
+    public String getEmailSmtpHost() {
+        return getString(SettingKey.EMAIL_SMTP_HOST);
+    }
+
+    public Integer getEmailSmtpPort() {
+        return getInteger(SettingKey.EMAIL_SMTP_PORT);
+    }
+
+    public String getEmailSmtpUsername() {
+        return getString(SettingKey.EMAIL_SMTP_USERNAME);
+    }
+
+    public String getEmailSmtpPassword() {
+        return getString(SettingKey.EMAIL_SMTP_PASSWORD);
+    }
+
+    public Boolean isEmailSmtpStartTlsEnabled() {
+        return getBoolean(SettingKey.EMAIL_SMTP_STARTTLS_ENABLED);
+    }
+
+    public String getEmailFromAddress() {
+        return getString(SettingKey.EMAIL_FROM_ADDRESS);
+    }
+
+    public String getEmailFromName() {
+        return getString(SettingKey.EMAIL_FROM_NAME);
+    }
+
+    public String getEmailReplyTo() {
+        return getString(SettingKey.EMAIL_REPLY_TO);
+    }
+
+    public String getEmailSesRegion() {
+        return getString(SettingKey.EMAIL_SES_REGION);
+    }
+
+    public String getEmailSesAccessKeyId() {
+        return getString(SettingKey.EMAIL_SES_ACCESS_KEY_ID);
+    }
+
+    public String getEmailSesSecretAccessKey() {
+        return getString(SettingKey.EMAIL_SES_SECRET_ACCESS_KEY);
+    }
+
+    public String getEmailSesConfigurationSet() {
+        return getString(SettingKey.EMAIL_SES_CONFIGURATION_SET);
+    }
+
     /**
      * Get iOS App Store URL.
      */
@@ -275,13 +346,13 @@ public class ApplicationSettingsService {
         ApplicationSettings setting = repository.findBySettingKey(key.getKey())
             .orElseThrow(() -> new IllegalStateException("Setting not found: " + key.getKey()));
         
-        setting.setSettingValue(normalizedValue);
+        setting.setSettingValue(valueForStorage(key, normalizedValue));
         repository.save(setting);
         
         // Update cache
         settingsCache.put(key.getKey(), normalizedValue);
         
-        log.info("Updated setting: {} = {}", key.getKey(), normalizedValue);
+        log.info("Updated setting: {} = {}", key.getKey(), key.maskValue(normalizedValue));
     }
     
     /**
@@ -290,6 +361,22 @@ public class ApplicationSettingsService {
     public void updateSettingByKey(String keyStr, String value) throws ValidationException {
         SettingKey key = SettingKey.fromKey(keyStr);
         updateSetting(key, value);
+    }
+
+    public boolean isSensitiveSetting(String keyStr) {
+        try {
+            return SettingKey.fromKey(keyStr).isSensitive();
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public String safeValueForLog(String keyStr, String value) {
+        try {
+            return SettingKey.fromKey(keyStr).maskValue(value);
+        } catch (IllegalArgumentException e) {
+            return value;
+        }
     }
     
     /**
@@ -308,6 +395,18 @@ public class ApplicationSettingsService {
                 setting -> setting.getCategory() != null ? setting.getCategory() : "General"
             ));
     }
+
+    /**
+     * Get settings grouped by category while omitting categories that have a dedicated editor.
+     */
+    public Map<String, List<ApplicationSettings>> getSettingsByCategoryExcluding(Set<String> excludedCategories) {
+        return getAllSettings().stream()
+            .filter(setting -> !excludedCategories.contains(
+                setting.getCategory() != null ? setting.getCategory() : "General"))
+            .collect(Collectors.groupingBy(
+                setting -> setting.getCategory() != null ? setting.getCategory() : "General"
+            ));
+    }
     
     /**
      * Refresh the cache from database.
@@ -315,9 +414,54 @@ public class ApplicationSettingsService {
     public void refreshCache() {
         settingsCache.clear();
         for (ApplicationSettings setting : getAllSettings()) {
-            settingsCache.put(setting.getSettingKey(), setting.getSettingValue());
+            try {
+                SettingKey key = SettingKey.fromKey(setting.getSettingKey());
+                settingsCache.put(setting.getSettingKey(), readStoredSettingValue(key, setting));
+            } catch (IllegalArgumentException e) {
+                settingsCache.put(setting.getSettingKey(), setting.getSettingValue());
+            }
         }
         log.info("Settings cache refreshed");
+    }
+
+    private String valueForStorage(SettingKey key, String value) throws ValidationException {
+        if (!key.isSensitive() || value == null || value.isBlank()) {
+            return value;
+        }
+
+        if (!sensitiveSettingCrypto.isConfigured()) {
+            throw new ValidationException(
+                    "Sensitive settings encryption key is not configured. Set APP_SETTINGS_ENCRYPTION_KEY before saving this field.");
+        }
+
+        try {
+            return sensitiveSettingCrypto.encrypt(value);
+        } catch (SensitiveSettingCryptoException e) {
+            throw new ValidationException(
+                    "Sensitive setting could not be encrypted. Check APP_SETTINGS_ENCRYPTION_KEY.", e);
+        }
+    }
+
+    private String readStoredSettingValue(SettingKey key, ApplicationSettings setting) {
+        String storedValue = setting.getSettingValue();
+        if (!key.isSensitive() || storedValue == null || storedValue.isBlank()) {
+            return storedValue;
+        }
+
+        if (sensitiveSettingCrypto.isEncrypted(storedValue)) {
+            return sensitiveSettingCrypto.decrypt(storedValue);
+        }
+
+        if (!sensitiveSettingCrypto.isConfigured()) {
+            throw new IllegalStateException(
+                    "Sensitive setting " + key.getKey()
+                            + " is stored as plaintext. Set APP_SETTINGS_ENCRYPTION_KEY so it can be encrypted before startup.");
+        }
+
+        setting.setSettingValue(sensitiveSettingCrypto.encrypt(storedValue));
+        repository.save(setting);
+        log.info("Migrated sensitive setting to encrypted storage: {}", key.getKey());
+        return storedValue;
     }
     
     /**
@@ -340,7 +484,25 @@ public class ApplicationSettingsService {
                 validateHexColor(value);
                 break;
             case SITE_SUPPORT_EMAIL:
-                validateEmail(value);
+                validateEmail(value, "Support email");
+                break;
+            case EMAIL_PROVIDER:
+                validateEmailProvider(value);
+                break;
+            case EMAIL_SMTP_PORT:
+                validateTcpPort(value);
+                break;
+            case EMAIL_SMTP_STARTTLS_ENABLED:
+                validateBoolean(value, "SMTP STARTTLS enabled");
+                break;
+            case EMAIL_FROM_ADDRESS:
+                validateEmail(value, "Email from address");
+                break;
+            case EMAIL_REPLY_TO:
+                validateEmail(value, "Email reply-to address");
+                break;
+            case EMAIL_SES_REGION:
+                validateAwsRegion(value);
                 break;
             case SITE_ROOT_URL:
                 validateUrl(value, "Root URL");
@@ -381,6 +543,17 @@ public class ApplicationSettingsService {
             case MAPBOX_ACCESS_TOKEN:
             case MOBILE_IOS_APP_URL:
             case MOBILE_GOOGLE_PLAY_URL:
+            case EMAIL_PROVIDER:
+            case EMAIL_SMTP_HOST:
+            case EMAIL_SMTP_USERNAME:
+            case EMAIL_SMTP_PASSWORD:
+            case EMAIL_FROM_ADDRESS:
+            case EMAIL_FROM_NAME:
+            case EMAIL_REPLY_TO:
+            case EMAIL_SES_REGION:
+            case EMAIL_SES_ACCESS_KEY_ID:
+            case EMAIL_SES_SECRET_ACCESS_KEY:
+            case EMAIL_SES_CONFIGURATION_SET:
                 return true;
             default:
                 return false;
@@ -393,10 +566,41 @@ public class ApplicationSettingsService {
         }
     }
     
-    private void validateEmail(String value) throws ValidationException {
+    private void validateEmail(String value, String fieldName) throws ValidationException {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         if (!value.matches(emailRegex)) {
-            throw new ValidationException("Support email must be a valid email address");
+            throw new ValidationException(fieldName + " must be a valid email address");
+        }
+    }
+
+    private void validateEmailProvider(String value) throws ValidationException {
+        String normalized = value.toUpperCase(Locale.ROOT);
+        if (!normalized.equals("SMTP") && !normalized.equals("SES")) {
+            throw new ValidationException("Email provider must be SMTP or SES");
+        }
+    }
+
+    private void validateTcpPort(String value) throws ValidationException {
+        try {
+            int port = Integer.parseInt(value);
+            if (port < 1 || port > 65535) {
+                throw new ValidationException("SMTP port must be between 1 and 65535");
+            }
+        } catch (NumberFormatException e) {
+            throw new ValidationException("SMTP port must be a valid integer");
+        }
+    }
+
+    private void validateBoolean(String value, String fieldName) throws ValidationException {
+        String normalized = value.toLowerCase(Locale.ROOT);
+        if (!normalized.equals("true") && !normalized.equals("false")) {
+            throw new ValidationException(fieldName + " must be true or false");
+        }
+    }
+
+    private void validateAwsRegion(String value) throws ValidationException {
+        if (!value.matches("^[a-z]{2}-[a-z]+-\\d$")) {
+            throw new ValidationException("AWS region must look like us-east-1");
         }
     }
     
@@ -476,6 +680,10 @@ public class ApplicationSettingsService {
     public static class ValidationException extends Exception {
         public ValidationException(String message) {
             super(message);
+        }
+
+        public ValidationException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 }

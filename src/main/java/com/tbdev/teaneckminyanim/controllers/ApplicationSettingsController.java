@@ -75,11 +75,22 @@ public class ApplicationSettingsController {
         }
 
         try {
+            if (settingsService.isSensitiveSetting(settingKey)
+                    && (settingValue == null || settingValue.isBlank())) {
+                log.info("Sensitive setting left unchanged: {} by user {}",
+                        settingKey, getCurrentUser().getUsername());
+                redirectAttributes.addAttribute("success",
+                        "Setting left unchanged.");
+                return new ModelAndView(new RedirectView("/admin/application-settings", true));
+            }
+
             // Update the setting
             settingsService.updateSettingByKey(settingKey, settingValue);
             
             log.info("Setting updated: {} = {} by user {}", 
-                    settingKey, settingValue, getCurrentUser().getUsername());
+                    settingKey,
+                    settingsService.safeValueForLog(settingKey, settingValue),
+                    getCurrentUser().getUsername());
             
             redirectAttributes.addAttribute("success", 
                     "Setting updated successfully!");

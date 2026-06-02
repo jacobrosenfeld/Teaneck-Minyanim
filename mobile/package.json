@@ -7,7 +7,9 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "test": "vitest run"
+    "test": "vitest run",
+    "update-posthog-sdk": "npm update posthog-react-native posthog-react-native-session-replay --package-lock-only --ignore-scripts",
+    "eas-build-pre-install": "npm run update-posthog-sdk"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -34,7 +36,7 @@
     "expo-tracking-transparency": "~56.0.5",
     "expo-updates": "~56.0.16",
     "expo-web-browser": "~56.0.5",
-    "posthog-react-native": "^4.37.6",
+    "posthog-react-native": "4.x",
     "posthog-react-native-session-replay": "^1.5.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",

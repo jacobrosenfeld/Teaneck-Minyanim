@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Email handler (#35)**: Added settings-backed SMTP and AWS SES email delivery, a dedicated super-admin Email Settings page with per-field saves, masked email credential settings, a test email endpoint, and operator documentation for configuring providers.
 - **Candle lighting and havdala in zmanim (#234)**: Added KosherJava-calendar-driven candle lighting and havdala times to the public zmanim API, website zmanim panel, and mobile Zmanim screen, with optional display only on applicable Shabbos/Yom Tov dates. Candle lighting is rounded down to the minute, havdala is rounded up to the minute, and both display without seconds.
 - **Mobile app version telemetry**: PostHog mobile analytics now records app version/build, platform, and OS version metadata for iOS and Android events.
 - **iOS app website splash popup**: Added a dismissible public-site popup announcing the iOS app, using the site logo, App Store badge, and `https://l.teaneckminyanim.com/ios` download link.
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configurable Smart App Banner settings**: Added `mobile.ios.app.url` and `mobile.google.play.url` to `APPLICATION_SETTINGS`, with iOS app id parsing from the configured App Store URL and dynamic Safari Smart App Banner meta-tag rendering on all public (non-admin) pages.
 
 ### Changed
+- **Settings page modernization**: Updated the main super-admin Settings page to match the new email settings form style with section navigation, inline field controls, an in-flow Email Settings card, and per-field save/discard states.
 - **Error page UX refreshed with themed copy and graphics**: Browser error handling now renders status-specific themed messages, guidance, CTAs, and dedicated SVG icons for `400`, `403`, `404`, `429`, `500`, and `503` while keeping the shared template/navigation shell.
 - **Override page UI modernization**: Updated override tables and actions to match the admin design system styling used by calendar-entry management views.
 - **Build tooling baseline moved to Java 21**: Added Java 21 enforcement/toolchain setup for local and CI consistency.
@@ -27,10 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Calendar entries toggle UX now preserves filters**: Enable/Disable actions on `/admin/{orgId}/calendar-entries` now update in place via AJAX, keeping active search/date/type/sort state.
 - **Calendar entries location updates now preserve filters**: Location changes on `/admin/{orgId}/calendar-entries` now apply in place via AJAX (no full-page reload), with the same toast feedback pattern as enable/disable.
 - **Mobile privacy policy disclosure text updated**: The public privacy policy now documents consent-gated mobile analytics, ATT behavior on iOS, and Android disclosure expectations.
-- **Mobile PostHog SDK range widened**: The mobile app now allows any PostHog React Native `4.x` release while continuing to block automatic `5.x` upgrades.
+- **Mobile PostHog SDK range widened**: The mobile app now allows any PostHog React Native `4.x` release and refreshes the PostHog lockfile during EAS builds while continuing to block automatic `5.x` upgrades.
 - **Android release pipeline wiring (Issue #132)**: Mobile Expo config now injects `GOOGLE_MAPS_API_KEY` into the `react-native-maps` Android config plugin at build time, production builds load analytics values from `.env.production` (with fail-fast if analytics is enabled but PostHog key is missing), Android map screen explicitly uses Google provider, `eas submit` production profile now includes Android staged rollout defaults, and release runbook was added at `docs/mobile/android-release-checklist.md`.
 
 ### Fixed
+- **Email settings encryption startup**: Fixed the sensitive-settings crypto component constructor wiring so Spring can instantiate it during application startup.
 - **Deleted source calendar events (#240)**: Scheduled calendar imports now reconcile the successful feed coverage window, mark imported rows missing from the source calendar as source-deleted/disabled, disable stale imported `calendar_events` rows, and allow admins to manually re-enable source-removed imported rows when needed.
 - **Mobile admin panel responsiveness (#238)**: Added reusable responsive admin table primitives, migrated high-risk admin tables onto shared scroll/action wrappers, kept header actions within narrow mobile viewports, exposed super-admin navigation links in the mobile sidebar, and moved the Geocode All Organizations action to the super-admin Maintenance page.
 - **Admin statistic number formatting**: Large counts in admin statistic cards and count pills now render with thousands separators, including Maintenance, calendar entries, schedule preview, master calendar, and override views.
@@ -56,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Calendar Entries admin render regression**: Removed fragile per-row `#httpServletRequest` expression from toggle form and switched redirect-state fallback to `Referer`, preventing mixed partial admin render/error-template bleed-through.
 
 ### Security
+- **Email credential encryption**: Sensitive email settings, including SMTP password and SES credentials, are now stored with reversible AES-GCM encryption using `APP_SETTINGS_ENCRYPTION_KEY`, with startup migration for existing plaintext values when the key is configured.
 - **Admin organization access control (#216)**: Organization managers and users can no longer view, edit, or route into admin panels for shuls outside their account by changing organization ids in URLs or form submissions.
 
 ## [1.9.2] - 2026-03-20
