@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentMap;
  * Each unique client IP gets its own bucket. The default limit is 60 requests
  * per minute (one per second on average), configurable via
  * api.ratelimit.requests-per-minute in application.properties.
+ * Feedback submissions use a stricter bucket because each accepted request can
+ * create external GitHub/email work.
  *
  * Responses on limit:
  *   HTTP 429 with Retry-After: 60 and a standard ApiResponse error body.
@@ -41,11 +43,16 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     @Value("${api.ratelimit.requests-per-minute:60}")
     private int requestsPerMinute;
 
+    @Value("${api.ratelimit.feedback-requests-per-minute:5}")
+    private int feedbackRequestsPerMinute;
+
     private final ConcurrentMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Bucket> feedbackBuckets = new ConcurrentHashMap<>();
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith("/api/v1/");
+        return !request.getRequestURI().startsWith("/api/v1/")
+                || "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 
     @Override
@@ -53,7 +60,10 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
         String ip = resolveClientIp(request);
-        Bucket bucket = buckets.computeIfAbsent(ip, k -> newBucket());
+        boolean feedbackRequest = request.getRequestURI().startsWith("/api/v1/feedback");
+        int limit = feedbackRequest ? feedbackRequestsPerMinute : requestsPerMinute;
+        ConcurrentMap<String, Bucket> bucketMap = feedbackRequest ? feedbackBuckets : buckets;
+        Bucket bucket = bucketMap.computeIfAbsent(ip, k -> newBucket(limit));
 
         if (bucket.tryConsume(1)) {
             chain.doFilter(request, response);
@@ -64,16 +74,16 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
             response.setHeader("Retry-After", "60");
             response.getWriter().write(
                     "{\"data\":null,\"meta\":null,\"error\":{\"code\":\"RATE_LIMITED\"," +
-                    "\"message\":\"Too many requests. Maximum " + requestsPerMinute +
+                    "\"message\":\"Too many requests. Maximum " + limit +
                     " requests per minute. Please try again shortly.\"}}");
         }
     }
 
-    private Bucket newBucket() {
+    private Bucket newBucket(int limit) {
         return Bucket.builder()
                 .addLimit(Bandwidth.classic(
-                        requestsPerMinute,
-                        Refill.intervally(requestsPerMinute, Duration.ofMinutes(1))))
+                        limit,
+                        Refill.intervally(limit, Duration.ofMinutes(1))))
                 .build();
     }
 

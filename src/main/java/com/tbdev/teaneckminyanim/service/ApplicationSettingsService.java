@@ -202,6 +202,18 @@ public class ApplicationSettingsService {
         return getString(SettingKey.MAPBOX_ACCESS_TOKEN);
     }
 
+    public String getFeedbackGithubOwner() {
+        return getString(SettingKey.FEEDBACK_GITHUB_OWNER);
+    }
+
+    public String getFeedbackGithubRepo() {
+        return getString(SettingKey.FEEDBACK_GITHUB_REPO);
+    }
+
+    public String getFeedbackGithubToken() {
+        return getString(SettingKey.FEEDBACK_GITHUB_TOKEN);
+    }
+
     public String getEmailProvider() {
         return getString(SettingKey.EMAIL_PROVIDER);
     }
@@ -504,6 +516,12 @@ public class ApplicationSettingsService {
             case EMAIL_SES_REGION:
                 validateAwsRegion(value);
                 break;
+            case FEEDBACK_GITHUB_OWNER:
+                validateGithubOwner(value);
+                break;
+            case FEEDBACK_GITHUB_REPO:
+                validateGithubRepo(value);
+                break;
             case SITE_ROOT_URL:
                 validateUrl(value, "Root URL");
                 break;
@@ -541,6 +559,7 @@ public class ApplicationSettingsService {
     private boolean isOptionalSetting(SettingKey key) {
         switch (key) {
             case MAPBOX_ACCESS_TOKEN:
+            case FEEDBACK_GITHUB_TOKEN:
             case MOBILE_IOS_APP_URL:
             case MOBILE_GOOGLE_PLAY_URL:
             case EMAIL_PROVIDER:
@@ -601,6 +620,18 @@ public class ApplicationSettingsService {
     private void validateAwsRegion(String value) throws ValidationException {
         if (!value.matches("^[a-z]{2}-[a-z]+-\\d$")) {
             throw new ValidationException("AWS region must look like us-east-1");
+        }
+    }
+
+    private void validateGithubOwner(String value) throws ValidationException {
+        if (!value.matches("^[A-Za-z0-9][A-Za-z0-9-]{0,38}$")) {
+            throw new ValidationException("GitHub owner must be a valid user or organization name");
+        }
+    }
+
+    private void validateGithubRepo(String value) throws ValidationException {
+        if (!value.matches("^[A-Za-z0-9._-]+$")) {
+            throw new ValidationException("GitHub repository must be a valid repository name");
         }
     }
     

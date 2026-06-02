@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Feedback backend infrastructure (#245)**: Added a public feedback API that creates GitHub issues through server-side GitHub settings, captures automatic debugging/PostHog metadata without exposing optional user emails in public issue content, and sends private email notifications with the created issue link.
 - **Email handler (#35)**: Added settings-backed SMTP and AWS SES email delivery, a dedicated super-admin Email Settings page with per-field saves, masked email credential settings, a test email endpoint, and operator documentation for configuring providers.
 - **Candle lighting and havdala in zmanim (#234)**: Added KosherJava-calendar-driven candle lighting and havdala times to the public zmanim API, website zmanim panel, and mobile Zmanim screen, with optional display only on applicable Shabbos/Yom Tov dates. Candle lighting is rounded down to the minute, havdala is rounded up to the minute, and both display without seconds.
 - **Mobile app version telemetry**: PostHog mobile analytics now records app version/build, platform, and OS version metadata for iOS and Android events.

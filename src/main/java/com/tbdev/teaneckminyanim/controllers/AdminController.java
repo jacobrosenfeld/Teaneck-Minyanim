@@ -460,6 +460,9 @@ public class AdminController {
     }
 
     private String settingsInputType(SettingKey key, String settingType) {
+        if (key.isSensitive()) {
+            return "password";
+        }
         if (key == SettingKey.SITE_APP_COLOR) {
             return "color";
         }

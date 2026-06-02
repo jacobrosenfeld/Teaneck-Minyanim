@@ -107,14 +107,13 @@ public class WebSecurityConfiguration {
 
     /**
      * CORS config for the public REST API (/api/v1/**).
-     * Allows GET and OPTIONS from any origin so the mobile app and third-party
-     * consumers can query without a proxy.
+     * Allows public API clients to query data and submit feedback without a proxy.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setMaxAge(3600L);
 

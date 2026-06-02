@@ -24,6 +24,9 @@ public enum SettingKey {
     
     // External Services
     MAPBOX_ACCESS_TOKEN("mapbox.access.token", SettingType.STRING, ""),
+    FEEDBACK_GITHUB_OWNER("feedback.github.owner", SettingType.STRING, "jacobrosenfeld"),
+    FEEDBACK_GITHUB_REPO("feedback.github.repo", SettingType.STRING, "Teaneck-Minyanim"),
+    FEEDBACK_GITHUB_TOKEN("feedback.github.token", SettingType.STRING, "", true),
 
     // Email Provider Settings
     EMAIL_PROVIDER("email.provider", SettingType.STRING, ""),
@@ -121,6 +124,12 @@ public enum SettingKey {
                 return "Timezone";
             case MAPBOX_ACCESS_TOKEN:
                 return "Mapbox Access Token";
+            case FEEDBACK_GITHUB_OWNER:
+                return "Feedback GitHub Owner";
+            case FEEDBACK_GITHUB_REPO:
+                return "Feedback GitHub Repository";
+            case FEEDBACK_GITHUB_TOKEN:
+                return "Feedback GitHub Token";
             case EMAIL_PROVIDER:
                 return "Email Provider";
             case EMAIL_SMTP_HOST:
@@ -185,6 +194,12 @@ public enum SettingKey {
                 return "Timezone for all date/time calculations (e.g., America/New_York)";
             case MAPBOX_ACCESS_TOKEN:
                 return "Access token for Mapbox API (required for map features)";
+            case FEEDBACK_GITHUB_OWNER:
+                return "GitHub user or organization that owns the repository where feedback issues are created";
+            case FEEDBACK_GITHUB_REPO:
+                return "GitHub repository where feedback issues are created";
+            case FEEDBACK_GITHUB_TOKEN:
+                return "Server-side GitHub token used to create feedback issues. Use a fine-grained token with Issues read/write access for the configured repository.";
             case EMAIL_PROVIDER:
                 return "Email delivery provider. Supported values: SMTP or SES. Leave blank to disable email sending.";
             case EMAIL_SMTP_HOST:
@@ -232,7 +247,7 @@ public enum SettingKey {
             return "Timezone";
         } else if (key.startsWith("mobile.")) {
             return "Mobile Apps";
-        } else if (key.startsWith("mapbox.")) {
+        } else if (key.startsWith("mapbox.") || key.startsWith("feedback.github.")) {
             return "External Services";
         } else if (key.startsWith("email.")) {
             return "Email";

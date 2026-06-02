@@ -3,8 +3,8 @@
 **Base path:** `/api/v1/`
 **Interactive docs (Scalar):** `/api/docs`
 **OpenAPI JSON:** `/api/docs.json`
-**Auth:** None required (all endpoints are public read-only)
-**Rate limit:** 60 requests / minute / IP → `429 Too Many Requests`
+**Auth:** None required
+**Rate limit:** 60 requests / minute / IP; feedback submissions are limited to 5 requests / minute / IP → `429 Too Many Requests`
 **Times:** `HH:mm` format, `America/New_York` timezone
 **Dates:** ISO-8601 `YYYY-MM-DD`
 
@@ -205,6 +205,80 @@ Returns all currently active announcements.
 
 ---
 
+## Feedback
+
+### `POST /api/v1/feedback`
+Creates a GitHub issue from user-submitted feedback. The endpoint is public, but GitHub credentials are server-side only and configured from application settings.
+
+The visible client UI should collect only:
+
+| Field | Required | Description |
+|---|---|---|
+| `message` | Yes | Free-text user feedback. Max 5,000 characters. |
+| `email` | No | Optional user email for private follow-up. Never include this in public GitHub issue content. |
+
+Clients may send `metadata` gathered automatically in the background. Do not ask users to type this manually.
+
+**Request body:**
+
+```json
+{
+  "message": "The Shacharis time looks wrong for this shul.",
+  "email": "optional-user@example.com",
+  "metadata": {
+    "platform": "web",
+    "screen": "organization-detail",
+    "route": "/bnai-yeshurun",
+    "url": "https://www.teaneckminyanim.com/bnai-yeshurun",
+    "selectedDate": "2026-06-02",
+    "organization": {
+      "id": "O123",
+      "slug": "bnai-yeshurun",
+      "name": "Bnai Yeshurun"
+    },
+    "minyan": {
+      "id": "cal-123",
+      "type": "SHACHARIS",
+      "time": "07:00",
+      "date": "2026-06-02",
+      "locationName": "Main Shul"
+    },
+    "posthog": {
+      "distinctId": "distinct-id",
+      "sessionId": "session-id",
+      "sessionReplayUrl": "https://..."
+    }
+  }
+}
+```
+
+**Response `data`:**
+
+```json
+{
+  "feedbackId": "fb-uuid",
+  "githubIssueNumber": 245,
+  "githubIssueUrl": "https://github.com/jacobrosenfeld/Teaneck-Minyanim/issues/245",
+  "userEmailProvided": true,
+  "notificationEmailSent": true,
+  "notificationEmailMessage": "Email sent successfully."
+}
+```
+
+**Behavior notes:**
+
+- The public GitHub issue body includes the user message and automatically collected debugging metadata.
+- The optional user email is used only for private email notification/follow-up and is not written to the GitHub issue.
+- If email delivery fails, the GitHub issue still remains created and `notificationEmailSent` is `false`.
+- The created issue email includes the GitHub issue link.
+
+**Error codes:**
+- `INVALID_FEEDBACK` — blank message, invalid email, or message too long
+- `FEEDBACK_NOT_CONFIGURED` — GitHub owner/repo/token settings are missing
+- `FEEDBACK_SUBMISSION_FAILED` — GitHub issue creation failed
+
+---
+
 ## Mobile app usage patterns
 
 ### Initial load
@@ -239,7 +313,10 @@ GET /api/v1/organizations/bmob/schedule?start=2026-03-15&end=2026-03-21
 | `RANGE_TOO_LARGE` | 400 | Range exceeds the allowed max (14 or 30 days) |
 | `OUT_OF_WINDOW` | 400 | Requested dates outside materialization window |
 | `INVALID_TYPE` | 400 | Notification type is not BANNER or POPUP |
-| `RATE_LIMITED` | 429 | Exceeded 60 req/min — retry after 60 s (`Retry-After` header set) |
+| `INVALID_FEEDBACK` | 400 | Feedback message/email payload is invalid |
+| `FEEDBACK_NOT_CONFIGURED` | 503 | Feedback GitHub settings are incomplete |
+| `FEEDBACK_SUBMISSION_FAILED` | 502 | GitHub issue creation failed |
+| `RATE_LIMITED` | 429 | Exceeded endpoint rate limit — retry after 60 s (`Retry-After` header set) |
 
 ---
 
