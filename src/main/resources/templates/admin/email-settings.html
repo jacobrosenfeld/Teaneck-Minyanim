@@ -183,7 +183,7 @@
 
             .field-control {
                 display: grid;
-                grid-template-columns: minmax(0, 1fr) 2.5rem minmax(5rem, auto);
+                grid-template-columns: minmax(0, 1fr) 2.5rem 2.5rem minmax(5rem, auto);
                 gap: var(--space-2, 0.5rem);
                 align-items: center;
             }
@@ -205,7 +205,8 @@
                 outline: none;
             }
 
-            .field-save-button {
+            .field-save-button,
+            .field-discard-button {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -228,9 +229,23 @@
                 outline: none;
             }
 
+            .field-discard-button:hover,
+            .field-discard-button:focus {
+                color: var(--color-danger, #f44336);
+                border-color: var(--color-danger, #f44336);
+                outline: none;
+            }
+
             .field-save-button.saving {
                 color: var(--text-secondary, #6c757d);
                 pointer-events: none;
+            }
+
+            .field-discard-button:disabled {
+                color: var(--text-muted, #adb5bd);
+                background: var(--bg-body, #f8f9fa);
+                border-color: var(--border-color-light, #e9ecef);
+                cursor: not-allowed;
             }
 
             .field-state {
@@ -241,6 +256,10 @@
                 font-size: var(--font-size-sm, 0.875rem);
                 min-width: 5rem;
                 white-space: nowrap;
+            }
+
+            .field-state.unsaved {
+                color: var(--color-warning, #ff9800);
             }
 
             .field-state.saved {
@@ -303,7 +322,7 @@
                 }
 
                 .field-control {
-                    grid-template-columns: minmax(0, 1fr) 2.5rem;
+                    grid-template-columns: minmax(0, 1fr) 2.5rem 2.5rem;
                 }
 
                 .field-state {
@@ -375,7 +394,8 @@
                       th:action="@{/admin/settings/email/update-field}"
                       method="post"
                       th:data-key="${field.key}"
-                      th:data-sensitive="${field.sensitive}">
+                      th:data-sensitive="${field.sensitive}"
+                      th:data-original-display="${field.displayValue}">
                     <div>
                         <label class="field-label" th:for="${'field-' + field.key}" th:text="${field.label}">Setting</label>
                         <p class="field-description" th:text="${field.description}">Description</p>
@@ -387,7 +407,8 @@
                         <select th:if="${field.hasOptions}"
                                 class="field-input"
                                 name="settingValue"
-                                th:id="${'field-' + field.key}">
+                                th:id="${'field-' + field.key}"
+                                th:data-original-value="${field.value}">
                             <option th:each="option : ${field.options}"
                                     th:value="${option.value}"
                                     th:selected="${option.value == field.value}"
@@ -400,10 +421,15 @@
                                th:id="${'field-' + field.key}"
                                th:type="${field.inputType}"
                                th:value="${field.value}"
+                               th:data-original-value="${field.value}"
                                th:placeholder="${field.placeholder}">
 
                         <button class="field-save-button" type="submit" th:attr="aria-label=${'Save ' + field.label}">
                             <i class="fas fa-check"></i>
+                        </button>
+
+                        <button class="field-discard-button" type="button" disabled th:attr="aria-label=${'Discard ' + field.label}">
+                            <i class="fas fa-times"></i>
                         </button>
 
                         <span class="field-state">
@@ -442,11 +468,71 @@
 
 <th:block layout:fragment="scripts">
     <script>
+        function setEmailFieldClean(form) {
+            const state = form.querySelector('.field-state');
+            const stateText = state.querySelector('span');
+            const stateIcon = state.querySelector('i');
+            const discardButton = form.querySelector('.field-discard-button');
+
+            state.className = 'field-state';
+            stateIcon.className = 'far fa-circle';
+            stateText.textContent = form.dataset.originalDisplay || 'Not set';
+            if (discardButton) {
+                discardButton.disabled = true;
+            }
+        }
+
+        function markEmailFieldUnsaved(form) {
+            const state = form.querySelector('.field-state');
+            const stateText = state.querySelector('span');
+            const stateIcon = state.querySelector('i');
+            const discardButton = form.querySelector('.field-discard-button');
+
+            state.className = 'field-state unsaved';
+            stateIcon.className = 'far fa-circle-dot';
+            stateText.textContent = 'Unsaved';
+            if (discardButton) {
+                discardButton.disabled = false;
+            }
+        }
+
+        function updateEmailFieldDirtyState(form) {
+            const input = form.querySelector('[name="settingValue"]');
+            if (!input) {
+                return;
+            }
+            if (input.value === (input.dataset.originalValue || '')) {
+                setEmailFieldClean(form);
+            } else {
+                markEmailFieldUnsaved(form);
+            }
+        }
+
         document.querySelectorAll('.email-setting-form').forEach(function(form) {
+            const trackedInput = form.querySelector('[name="settingValue"]');
+            const discardButton = form.querySelector('.field-discard-button');
+
+            if (trackedInput) {
+                trackedInput.addEventListener('input', function() {
+                    updateEmailFieldDirtyState(form);
+                });
+                trackedInput.addEventListener('change', function() {
+                    updateEmailFieldDirtyState(form);
+                });
+            }
+
+            if (discardButton && trackedInput) {
+                discardButton.addEventListener('click', function() {
+                    trackedInput.value = trackedInput.dataset.originalValue || '';
+                    setEmailFieldClean(form);
+                });
+            }
+
             form.addEventListener('submit', async function(event) {
                 event.preventDefault();
 
                 const button = form.querySelector('.field-save-button');
+                const discard = form.querySelector('.field-discard-button');
                 const state = form.querySelector('.field-state');
                 const stateText = state.querySelector('span');
                 const stateIcon = state.querySelector('i');
@@ -455,6 +541,9 @@
                 const sensitive = form.getAttribute('data-sensitive') === 'true';
 
                 button.classList.add('saving');
+                if (discard) {
+                    discard.disabled = true;
+                }
                 state.className = 'field-state';
                 stateIcon.className = 'fas fa-spinner fa-spin';
                 stateText.textContent = 'Saving';
@@ -474,10 +563,14 @@
                     state.className = 'field-state saved';
                     stateIcon.className = 'fas fa-check-circle';
                     stateText.textContent = result.displayValue || 'Saved';
+                    form.dataset.originalDisplay = result.displayValue || 'Saved';
 
                     if (sensitive) {
                         input.value = '';
+                        input.dataset.originalValue = '';
                         input.placeholder = 'Saved value hidden - enter a new value to replace';
+                    } else if (input) {
+                        input.dataset.originalValue = input.value;
                     }
 
                     if (key === 'email.provider') {
@@ -487,6 +580,9 @@
                     state.className = 'field-state error';
                     stateIcon.className = 'fas fa-exclamation-circle';
                     stateText.textContent = error.message;
+                    if (discard && input && input.value !== (input.dataset.originalValue || '')) {
+                        discard.disabled = false;
+                    }
                 } finally {
                     button.classList.remove('saving');
                 }

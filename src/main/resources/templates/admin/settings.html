@@ -154,6 +154,72 @@
                 overflow: hidden;
             }
 
+            .settings-link-card {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--space-4, 1rem);
+                min-height: 5.5rem;
+                padding: var(--space-5, 1.25rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-lg, 0.5rem);
+                box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+                text-decoration: none;
+                transition: border-color var(--transition-fast, 150ms ease),
+                            box-shadow var(--transition-fast, 150ms ease);
+            }
+
+            .settings-link-card:hover,
+            .settings-link-card:focus {
+                color: var(--text-primary, #212529);
+                border-color: var(--text-primary, #212529);
+                box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
+                outline: none;
+                text-decoration: none;
+            }
+
+            .settings-link-card-main {
+                display: flex;
+                align-items: flex-start;
+                gap: var(--space-3, 0.75rem);
+                min-width: 0;
+            }
+
+            .settings-link-card-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.5rem;
+                height: 2.5rem;
+                color: var(--color-primary, #275ed8);
+                background: #eef8ff;
+                border: 1px solid #b8dff5;
+                border-radius: var(--radius-md, 0.375rem);
+                flex: 0 0 auto;
+            }
+
+            .settings-link-card-title {
+                font-weight: var(--font-weight-semibold, 600);
+                margin-bottom: var(--space-1, 0.25rem);
+            }
+
+            .settings-link-card-description {
+                color: var(--text-secondary, #6c757d);
+                margin: 0;
+            }
+
+            .settings-link-card-action {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                white-space: nowrap;
+                flex: 0 0 auto;
+            }
+
             .setting-field-form {
                 display: grid;
                 grid-template-columns: minmax(180px, 280px) minmax(260px, 1fr);
@@ -182,7 +248,7 @@
 
             .field-control {
                 display: grid;
-                grid-template-columns: minmax(0, 1fr) 2.5rem minmax(5rem, auto);
+                grid-template-columns: minmax(0, 1fr) 2.5rem 2.5rem minmax(5rem, auto);
                 gap: var(--space-2, 0.5rem);
                 align-items: center;
             }
@@ -209,7 +275,8 @@
                 outline: none;
             }
 
-            .field-save-button {
+            .field-save-button,
+            .field-discard-button {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -232,9 +299,23 @@
                 outline: none;
             }
 
+            .field-discard-button:hover,
+            .field-discard-button:focus {
+                color: var(--color-danger, #f44336);
+                border-color: var(--color-danger, #f44336);
+                outline: none;
+            }
+
             .field-save-button.saving {
                 color: var(--text-secondary, #6c757d);
                 pointer-events: none;
+            }
+
+            .field-discard-button:disabled {
+                color: var(--text-muted, #adb5bd);
+                background: var(--bg-body, #f8f9fa);
+                border-color: var(--border-color-light, #e9ecef);
+                cursor: not-allowed;
             }
 
             .field-state {
@@ -289,8 +370,13 @@
                     flex-direction: column;
                 }
 
+                .settings-link-card {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+
                 .field-control {
-                    grid-template-columns: minmax(0, 1fr) 2.5rem;
+                    grid-template-columns: minmax(0, 1fr) 2.5rem 2.5rem;
                 }
 
                 .field-state {
@@ -316,19 +402,15 @@
                 <h1 class="page-title">Settings</h1>
                 <p class="page-description">Manage site, location, mobile, service, and calendar defaults.</p>
             </div>
-            <div class="page-actions">
-                <a class="btn-modern btn-secondary" th:href="@{/admin/settings/email}">
-                    <i class="fas fa-envelope"></i>
-                    <span>Email Settings</span>
-                </a>
-            </div>
         </div>
 
         <nav class="settings-tabs" aria-label="Settings sections">
-            <a th:each="section : ${settingSections}"
-               class="settings-tab"
-               th:href="${'#' + section.id}"
-               th:text="${section.title}">Section</a>
+            <th:block th:each="section : ${settingSections}">
+                <a class="settings-tab"
+                   th:href="${'#' + section.id}"
+                   th:text="${section.title}">Section</a>
+                <a th:if="${section.id == 'timezone'}" class="settings-tab" href="#email-settings">Email</a>
+            </th:block>
         </nav>
 
         <div class="settings-status-panel">
@@ -345,62 +427,99 @@
             </div>
         </div>
 
-        <section th:each="section : ${settingSections}" class="settings-section" th:id="${section.id}">
-            <div class="section-copy">
-                <h2 class="section-title">
-                    <i th:class="${'fas ' + section.icon}"></i>
-                    <span th:text="${section.title}">Section</span>
-                </h2>
-                <p class="section-description" th:text="${section.description}">Section description</p>
-            </div>
+        <th:block th:each="section : ${settingSections}">
+            <section class="settings-section" th:id="${section.id}">
+                <div class="section-copy">
+                    <h2 class="section-title">
+                        <i th:class="${'fas ' + section.icon}"></i>
+                        <span th:text="${section.title}">Section</span>
+                    </h2>
+                    <p class="section-description" th:text="${section.description}">Section description</p>
+                </div>
 
-            <div class="settings-panel">
-                <form th:each="field : ${section.fields}"
-                      class="setting-field-form"
-                      th:action="@{/admin/settings/update-field}"
-                      method="post"
-                      th:data-key="${field.key}"
-                      th:data-sensitive="${field.sensitive}">
-                    <div>
-                        <label class="field-label" th:for="${field.htmlId}" th:text="${field.label}">Setting</label>
-                        <p class="field-description" th:text="${field.description}">Description</p>
-                    </div>
+                <div class="settings-panel">
+                    <form th:each="field : ${section.fields}"
+                          class="setting-field-form"
+                          th:action="@{/admin/settings/update-field}"
+                          method="post"
+                          th:data-key="${field.key}"
+                          th:data-sensitive="${field.sensitive}"
+                          th:data-original-display="${field.displayValue}">
+                        <div>
+                            <label class="field-label" th:for="${field.htmlId}" th:text="${field.label}">Setting</label>
+                            <p class="field-description" th:text="${field.description}">Description</p>
+                        </div>
 
-                    <div class="field-control">
-                        <input type="hidden" name="settingKey" th:value="${field.key}">
+                        <div class="field-control">
+                            <input type="hidden" name="settingKey" th:value="${field.key}">
 
-                        <select th:if="${field.hasOptions}"
-                                class="field-input"
-                                name="settingValue"
-                                th:id="${field.htmlId}">
-                            <option th:each="option : ${field.options}"
-                                    th:value="${option.value}"
-                                    th:selected="${option.value == field.value}"
-                                    th:text="${option.label}">Option</option>
-                        </select>
+                            <select th:if="${field.hasOptions}"
+                                    class="field-input"
+                                    name="settingValue"
+                                    th:id="${field.htmlId}"
+                                    th:data-original-value="${field.value}">
+                                <option th:each="option : ${field.options}"
+                                        th:value="${option.value}"
+                                        th:selected="${option.value == field.value}"
+                                        th:text="${option.label}">Option</option>
+                            </select>
 
-                        <input th:unless="${field.hasOptions}"
-                               class="field-input"
-                               name="settingValue"
-                               th:id="${field.htmlId}"
-                               th:type="${field.inputType}"
-                               th:value="${field.inputType == 'color' and (field.value == null or field.value.isBlank()) ? '#275ed8' : field.value}"
-                               th:placeholder="${field.placeholder}"
-                               th:step="${field.step}"
-                               th:attr="list=${field.timezone ? 'timezone-options' : null}">
+                            <input th:unless="${field.hasOptions}"
+                                   class="field-input"
+                                   name="settingValue"
+                                   th:id="${field.htmlId}"
+                                   th:type="${field.inputType}"
+                                   th:value="${field.inputType == 'color' and (field.value == null or field.value.isBlank()) ? '#275ed8' : field.value}"
+                                   th:data-original-value="${field.inputType == 'color' and (field.value == null or field.value.isBlank()) ? '#275ed8' : field.value}"
+                                   th:placeholder="${field.placeholder}"
+                                   th:step="${field.step}"
+                                   th:attr="list=${field.timezone ? 'timezone-options' : null}">
 
-                        <button class="field-save-button" type="submit" th:attr="aria-label=${'Save ' + field.label}">
-                            <i class="fas fa-check"></i>
-                        </button>
+                            <button class="field-save-button" type="submit" th:attr="aria-label=${'Save ' + field.label}">
+                                <i class="fas fa-check"></i>
+                            </button>
 
-                        <span class="field-state">
-                            <i class="far fa-circle"></i>
-                            <span th:text="${field.displayValue}">Not set</span>
+                            <button class="field-discard-button" type="button" disabled th:attr="aria-label=${'Discard ' + field.label}">
+                                <i class="fas fa-times"></i>
+                            </button>
+
+                            <span class="field-state">
+                                <i class="far fa-circle"></i>
+                                <span th:text="${field.displayValue}">Not set</span>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section th:if="${section.id == 'timezone'}" class="settings-section" id="email-settings">
+                <div class="section-copy">
+                    <h2 class="section-title">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email</span>
+                    </h2>
+                    <p class="section-description">Configure transactional email delivery and provider credentials.</p>
+                </div>
+
+                <a class="settings-link-card" th:href="@{/admin/settings/email}">
+                    <div class="settings-link-card-main">
+                        <span class="settings-link-card-icon">
+                            <i class="fas fa-envelope"></i>
                         </span>
+                        <div>
+                            <div class="settings-link-card-title">Email Settings</div>
+                            <p class="settings-link-card-description">
+                                Open the dedicated email form for SMTP, SES, sender identity, and test messages.
+                            </p>
+                        </div>
                     </div>
-                </form>
-            </div>
-        </section>
+                    <span class="settings-link-card-action">
+                        <span th:text="${emailProvider != null and !emailProvider.isBlank() ? 'Email: ' + emailProvider : 'Email: Disabled'}">Email: Disabled</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                </a>
+            </section>
+        </th:block>
 
         <datalist id="timezone-options"></datalist>
     </div>
@@ -430,25 +549,63 @@
             });
         }
 
+        function setFieldClean(form) {
+            const state = form.querySelector('.field-state');
+            const stateText = state.querySelector('span');
+            const stateIcon = state.querySelector('i');
+            const discardButton = form.querySelector('.field-discard-button');
+
+            state.className = 'field-state';
+            stateIcon.className = 'far fa-circle';
+            stateText.textContent = form.dataset.originalDisplay || 'Not set';
+            if (discardButton) {
+                discardButton.disabled = true;
+            }
+        }
+
         function markFieldUnsaved(form) {
             const state = form.querySelector('.field-state');
             const stateText = state.querySelector('span');
             const stateIcon = state.querySelector('i');
+            const discardButton = form.querySelector('.field-discard-button');
 
             state.className = 'field-state unsaved';
             stateIcon.className = 'far fa-circle-dot';
             stateText.textContent = 'Unsaved';
+            if (discardButton) {
+                discardButton.disabled = false;
+            }
+        }
+
+        function updateFieldDirtyState(form) {
+            const input = form.querySelector('[name="settingValue"]');
+            if (!input) {
+                return;
+            }
+            if (input.value === (input.dataset.originalValue || '')) {
+                setFieldClean(form);
+            } else {
+                markFieldUnsaved(form);
+            }
         }
 
         document.querySelectorAll('.setting-field-form').forEach(function(form) {
             const input = form.querySelector('[name="settingValue"]');
+            const discardButton = form.querySelector('.field-discard-button');
 
             if (input) {
                 input.addEventListener('input', function() {
-                    markFieldUnsaved(form);
+                    updateFieldDirtyState(form);
                 });
                 input.addEventListener('change', function() {
-                    markFieldUnsaved(form);
+                    updateFieldDirtyState(form);
+                });
+            }
+
+            if (discardButton && input) {
+                discardButton.addEventListener('click', function() {
+                    input.value = input.dataset.originalValue || '';
+                    setFieldClean(form);
                 });
             }
 
@@ -456,6 +613,7 @@
                 event.preventDefault();
 
                 const button = form.querySelector('.field-save-button');
+                const discard = form.querySelector('.field-discard-button');
                 const state = form.querySelector('.field-state');
                 const stateText = state.querySelector('span');
                 const stateIcon = state.querySelector('i');
@@ -463,6 +621,9 @@
                 const sensitive = form.getAttribute('data-sensitive') === 'true';
 
                 button.classList.add('saving');
+                if (discard) {
+                    discard.disabled = true;
+                }
                 state.className = 'field-state';
                 stateIcon.className = 'fas fa-spinner fa-spin';
                 stateText.textContent = 'Saving';
@@ -482,22 +643,29 @@
                     state.className = 'field-state saved';
                     stateIcon.className = 'fas fa-check-circle';
                     stateText.textContent = result.displayValue || 'Saved';
+                    form.dataset.originalDisplay = result.displayValue || 'Saved';
 
                     if (sensitive && fieldInput) {
                         fieldInput.value = '';
+                        fieldInput.dataset.originalValue = '';
                         fieldInput.placeholder = 'Saved value hidden - enter a new value to replace';
+                    } else if (fieldInput) {
+                        fieldInput.dataset.originalValue = fieldInput.value;
                     }
 
                     if (window.showToast) {
-                        showToast('success', result.message || 'Saved');
+                        showToast(result.message || 'Saved', 'success');
                     }
                 } catch (error) {
                     state.className = 'field-state error';
                     stateIcon.className = 'fas fa-exclamation-circle';
                     stateText.textContent = error.message;
+                    if (discard && fieldInput && fieldInput.value !== (fieldInput.dataset.originalValue || '')) {
+                        discard.disabled = false;
+                    }
 
                     if (window.showToast) {
-                        showToast('error', error.message);
+                        showToast(error.message, 'error');
                     }
                 } finally {
                     button.classList.remove('saving');
