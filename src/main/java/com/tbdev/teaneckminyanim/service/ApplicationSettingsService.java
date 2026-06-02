@@ -214,6 +214,12 @@ public class ApplicationSettingsService {
         return getString(SettingKey.FEEDBACK_GITHUB_TOKEN);
     }
 
+    public boolean isFeedbackEnabled() {
+        return hasText(getFeedbackGithubOwner())
+                && hasText(getFeedbackGithubRepo())
+                && hasText(getFeedbackGithubToken());
+    }
+
     public String getEmailProvider() {
         return getString(SettingKey.EMAIL_PROVIDER);
     }
@@ -633,6 +639,10 @@ public class ApplicationSettingsService {
         if (!value.matches("^[A-Za-z0-9._-]+$")) {
             throw new ValidationException("GitHub repository must be a valid repository name");
         }
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
     
     private void validateUrl(String value, String fieldName) throws ValidationException {

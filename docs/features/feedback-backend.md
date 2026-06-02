@@ -1,7 +1,8 @@
-# Feedback Backend Infrastructure
+# Feedback Infrastructure
 
-This backend feature exposes a public feedback submission endpoint without adding
-any website or mobile UI yet.
+This feature exposes a public feedback submission endpoint and a shared public
+website feedback widget. The website widget renders only when the GitHub owner,
+repository, and token settings are populated. Mobile UI has not been added yet.
 
 ## Endpoint
 
@@ -35,7 +36,22 @@ Request body:
 
 The visible UI should only collect `message` and optional `email`. Route,
 screen, shul, minyan, device, app version, and PostHog context should be
-gathered in the background by the eventual web/mobile clients.
+gathered in the background by web/mobile clients.
+
+## Website Widget
+
+The public web widget is rendered from the shared `frontnavbar` include so it
+can appear on public frontend pages that use the standard navigation shell.
+It is hidden automatically unless `ApplicationSettingsService.isFeedbackEnabled()`
+returns `true`.
+
+The floating launcher opens a Bootstrap modal and sends:
+
+- User-entered message and optional email
+- Current route, URL, screen, selected date, and active filters
+- Organization context when an org page exposes the current shul name
+- Browser, viewport, timezone, language, and app version metadata
+- PostHog distinct/session/replay details when a web PostHog client is present
 
 ## GitHub Settings
 
@@ -51,7 +67,7 @@ The token field is encrypted like other sensitive settings. Set
 Use a fine-grained GitHub personal access token scoped to the configured repo
 with **Issues: Read and write** permission. The backend calls GitHub's
 `POST /repos/{owner}/{repo}/issues` endpoint and never exposes the token to
-clients.
+clients. Created issues are labeled `user feedback`.
 
 ## Email Behavior
 

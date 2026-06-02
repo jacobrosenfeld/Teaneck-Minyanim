@@ -2100,3 +2100,125 @@ body {
 	font-variation-settings:
 	  "wdth" 100;
   }
+
+  /* Feedback */
+  .feedback-launcher {
+	position: fixed;
+	right: 22px;
+	bottom: 24px;
+	z-index: 1040;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 58px;
+	height: 58px;
+	color: #fff;
+	background: #275ED8;
+	border: 0;
+	border-radius: 50%;
+	box-shadow: 0 12px 28px rgba(39, 94, 216, 0.34), 0 3px 10px rgba(0, 0, 0, 0.18);
+	cursor: pointer;
+	transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+  }
+
+  .feedback-launcher-icon {
+	width: 1.55rem;
+	height: 1.55rem;
+	fill: currentColor;
+  }
+
+  .feedback-launcher:hover,
+  .feedback-launcher:focus {
+	color: #fff;
+	background: #1F4BAC;
+	box-shadow: 0 14px 32px rgba(31, 75, 172, 0.38), 0 4px 14px rgba(0, 0, 0, 0.2);
+	transform: translateY(-2px);
+	outline: none;
+  }
+
+  .feedback-launcher:focus-visible {
+	box-shadow: 0 0 0 4px rgba(39, 94, 216, 0.22), 0 12px 28px rgba(39, 94, 216, 0.34);
+  }
+
+  .feedback-modal .modal-content {
+	border: 0;
+	border-radius: 8px;
+	box-shadow: 0 18px 52px rgba(25, 35, 58, 0.22);
+  }
+
+  .feedback-modal .modal-header {
+	color: #fff;
+	background: #275ED8;
+	border-bottom: 0;
+	border-radius: 8px 8px 0 0;
+  }
+
+  .feedback-modal .modal-title {
+	font-family: 'Montserrat', sans-serif;
+	font-weight: 700;
+  }
+
+  .feedback-modal .btn-close {
+	filter: invert(1) grayscale(100%) brightness(200%);
+	opacity: 0.85;
+  }
+
+  .feedback-modal .form-label {
+	font-family: 'Montserrat', sans-serif;
+	color: #323842;
+	font-size: 0.82rem;
+	font-weight: 700;
+  }
+
+  .feedback-modal .form-label span {
+	color: #6c757d;
+	font-weight: 500;
+  }
+
+  .feedback-modal .form-control {
+	border-color: #cfd8e3;
+	border-radius: 6px;
+	font-size: 0.95rem;
+  }
+
+  .feedback-modal .form-control:focus {
+	border-color: #275ED8;
+	box-shadow: 0 0 0 0.18rem rgba(39, 94, 216, 0.16);
+  }
+
+  .feedback-status {
+	min-height: 1.35rem;
+	margin-top: 0.9rem;
+	color: #6c757d;
+	font-size: 0.86rem;
+  }
+
+  .feedback-status.feedback-status-error {
+	color: #b42318;
+  }
+
+  .feedback-status.feedback-status-success {
+	color: #157347;
+  }
+
+  .feedback-submit-button {
+	min-width: 5.25rem;
+  }
+
+  .feedback-submit-spinner {
+	display: none;
+	margin-left: 0.35rem;
+  }
+
+  .feedback-submit-button.is-loading .feedback-submit-spinner {
+	display: inline-block;
+  }
+
+  @media screen and (max-width: 600px) {
+	.feedback-launcher {
+	  right: 18px;
+	  bottom: 18px;
+	  width: 54px;
+	  height: 54px;
+	}
+  }

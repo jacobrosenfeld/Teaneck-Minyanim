@@ -93,6 +93,11 @@ public class ZmanimController {
         return versionService.getVersion();
     }
 
+    @ModelAttribute("feedbackEnabled")
+    public boolean feedbackEnabled() {
+        return applicationSettingsService.isFeedbackEnabled();
+    }
+
     @GetMapping("/checkAseresYemeiTeshuva")
     public String checkAseresYemeiTeshuva(Model model) {
         boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva();

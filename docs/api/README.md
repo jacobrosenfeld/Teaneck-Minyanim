@@ -8,6 +8,11 @@
 **Times:** `HH:mm` format, `America/New_York` timezone
 **Dates:** ISO-8601 `YYYY-MM-DD`
 
+**Servers:**
+- Production: `https://teaneckminyanim.com`
+- Dev: `https://dev.teaneckminyanim.com`
+- Local development: `http://localhost:8080`
+
 ---
 
 ## Response envelope
@@ -267,7 +272,9 @@ Clients may send `metadata` gathered automatically in the background. Do not ask
 
 **Behavior notes:**
 
+- The shared public website widget is rendered only when Feedback GitHub owner, repository, and token settings are populated.
 - The public GitHub issue body includes the user message and automatically collected debugging metadata.
+- Created GitHub issues are labeled `user feedback`.
 - The optional user email is used only for private email notification/follow-up and is not written to the GitHub issue.
 - If email delivery fails, the GitHub issue still remains created and `notificationEmailSent` is `false`.
 - The created issue email includes the GitHub issue link.

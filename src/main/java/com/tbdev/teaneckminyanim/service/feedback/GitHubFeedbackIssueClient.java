@@ -16,6 +16,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -94,9 +95,13 @@ public class GitHubFeedbackIssueClient implements FeedbackIssueClient {
     }
 
     private String issueJson(FeedbackIssueRequest request) throws IOException {
-        Map<String, String> payload = new LinkedHashMap<>();
+        Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("title", request.title());
         payload.put("body", request.body());
+        List<String> labels = request.labels();
+        if (labels != null && !labels.isEmpty()) {
+            payload.put("labels", labels);
+        }
         return objectMapper.writeValueAsString(payload);
     }
 

@@ -37,6 +37,7 @@ public class OpenApiConfig {
                                 .url("https://github.com/jacobrosenfeld/Teaneck-Minyanim")))
                 .servers(List.of(
                         new Server().url("https://teaneckminyanim.com").description("Production"),
+                        new Server().url("https://dev.teaneckminyanim.com").description("Dev"),
                         new Server().url("http://localhost:8080").description("Local development")
                 ));
     }

@@ -15,6 +15,7 @@ import org.springframework.web.util.HtmlUtils;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ public class FeedbackService {
     private static final int MAX_MESSAGE_LENGTH = 5_000;
     private static final int MAX_TITLE_LENGTH = 120;
     private static final String FALLBACK_SUPPORT_EMAIL = "info@teaneckminyanim.com";
+    private static final String USER_FEEDBACK_LABEL = "user feedback";
 
     private final FeedbackIssueClient issueClient;
     private final EmailService emailService;
@@ -40,7 +42,8 @@ public class FeedbackService {
 
         FeedbackIssueRequest issueRequest = new FeedbackIssueRequest(
                 buildIssueTitle(feedback.message(), feedback.metadata()),
-                buildIssueBody(feedbackId, feedback, serverContext, submittedAt));
+                buildIssueBody(feedbackId, feedback, serverContext, submittedAt),
+                List.of(USER_FEEDBACK_LABEL));
         CreatedGitHubIssue issue = issueClient.createIssue(issueRequest);
 
         EmailSendResult emailResult = sendNotificationEmail(feedbackId, feedback, issue, submittedAt);

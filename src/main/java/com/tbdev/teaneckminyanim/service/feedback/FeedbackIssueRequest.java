@@ -1,4 +1,6 @@
 package com.tbdev.teaneckminyanim.service.feedback;
 
-public record FeedbackIssueRequest(String title, String body) {
+import java.util.List;
+
+public record FeedbackIssueRequest(String title, String body, List<String> labels) {
 }

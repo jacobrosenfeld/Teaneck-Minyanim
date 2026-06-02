@@ -61,6 +61,7 @@ class FeedbackServiceTest {
         assertTrue(issueRequest.body().contains("posthog-session-123"));
         assertTrue(issueRequest.body().contains("Bnai Yeshurun"));
         assertFalse(issueRequest.body().contains("user@example.com"));
+        assertTrue(issueRequest.labels().contains("user feedback"));
 
         ArgumentCaptor<EmailMessage> emailCaptor = ArgumentCaptor.forClass(EmailMessage.class);
         verify(emailService).send(emailCaptor.capture());
