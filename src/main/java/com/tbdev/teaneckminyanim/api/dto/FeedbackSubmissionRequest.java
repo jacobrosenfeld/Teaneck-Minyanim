@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public record FeedbackSubmissionRequest(
         String message,
         String email,
+        String category,
         FeedbackMetadataDto metadata
 ) {
 }

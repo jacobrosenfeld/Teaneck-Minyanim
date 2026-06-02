@@ -1,9 +1,14 @@
 (function () {
   'use strict';
 
+  const POSTHOG_UI_HOST = 'https://us.posthog.com';
+
+  const widget = document.getElementById('feedback-widget');
+  const panel = document.getElementById('feedback-panel');
+  const toggleButton = widget ? widget.querySelector('[data-feedback-toggle]') : null;
+  const closeButton = widget ? widget.querySelector('[data-feedback-close]') : null;
   const form = document.getElementById('feedback-form');
-  const modalEl = document.getElementById('feedback-modal');
-  if (!form || !modalEl) return;
+  if (!widget || !panel || !toggleButton || !form) return;
 
   const statusEl = document.getElementById('feedback-status');
   const submitButton = form.querySelector('.feedback-submit-button');
@@ -11,11 +16,33 @@
   const messageInput = document.getElementById('feedback-message');
   const emailInput = document.getElementById('feedback-email');
 
+  toggleButton.addEventListener('click', function () {
+    setOpen(!widget.classList.contains('is-open'));
+  });
+
+  if (closeButton) {
+    closeButton.addEventListener('click', function () {
+      setOpen(false);
+    });
+  }
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && widget.classList.contains('is-open')) {
+      setOpen(false);
+    }
+  });
+
   form.addEventListener('submit', async function (event) {
     event.preventDefault();
 
     const message = messageInput.value.trim();
     const email = emailInput.value.trim();
+    const category = selectedCategory();
+
+    if (!category) {
+      setStatus('Choose a feedback type.', 'error');
+      return;
+    }
 
     if (!message) {
       setStatus('Message is required.', 'error');
@@ -39,6 +66,7 @@
         body: JSON.stringify({
           message: message,
           email: email || null,
+          category: category,
           metadata: buildMetadata()
         })
       });
@@ -51,13 +79,11 @@
 
       setStatus('Sent. Thank you.', 'success');
       form.reset();
+      setDefaultCategory();
 
       window.setTimeout(function () {
-        const modal = window.bootstrap && window.bootstrap.Modal
-          ? window.bootstrap.Modal.getInstance(modalEl)
-          : null;
-        if (modal) modal.hide();
-      }, 900);
+        setOpen(false);
+      }, 1200);
     } catch (error) {
       setStatus(error.message || 'Feedback could not be sent.', 'error');
     } finally {
@@ -65,10 +91,21 @@
     }
   });
 
-  modalEl.addEventListener('hidden.bs.modal', function () {
-    setStatus('', '');
-    setLoading(false);
-  });
+  function setOpen(isOpen) {
+    widget.classList.toggle('is-open', isOpen);
+    panel.hidden = !isOpen;
+    toggleButton.setAttribute('aria-expanded', String(isOpen));
+    toggleButton.setAttribute('aria-label', isOpen ? 'Close feedback' : 'Open feedback');
+    if (isOpen) {
+      window.setTimeout(function () {
+        const selected = form.querySelector('input[name="category"]:checked');
+        if (selected) selected.focus();
+      }, 60);
+    } else {
+      setStatus('', '');
+      setLoading(false);
+    }
+  }
 
   function buildMetadata() {
     const screen = inferScreen();
@@ -82,11 +119,11 @@
       page: screen,
       route: window.location.pathname,
       url: window.location.href,
-      appVersion: modalEl.dataset.appVersion || '',
+      appVersion: widget.dataset.appVersion || '',
       browser: browserName(),
       userAgent: window.navigator.userAgent,
       osName: platformName(),
-      selectedDate: modalEl.dataset.selectedDate || null,
+      selectedDate: widget.dataset.selectedDate || null,
       organization: organization,
       minyan: minyan,
       posthog: posthog,
@@ -144,7 +181,7 @@
       id: '',
       type: type,
       time: time,
-      date: modalEl.dataset.selectedDate || '',
+      date: widget.dataset.selectedDate || '',
       locationName: ''
     };
   }
@@ -153,10 +190,12 @@
     const posthog = window.posthog;
     if (!posthog) return null;
 
+    setPostHogUiHost(posthog);
+
     const context = {
       distinctId: safeCall(posthog, 'get_distinct_id'),
       sessionId: safeCall(posthog, 'get_session_id'),
-      sessionReplayUrl: safeCall(posthog, 'get_session_replay_url')
+      sessionReplayUrl: normalizePostHogReplayUrl(safeCall(posthog, 'get_session_replay_url'))
     };
 
     if (!context.sessionId && posthog.sessionManager && typeof posthog.sessionManager.checkAndGetSessionAndWindowId === 'function') {
@@ -172,6 +211,36 @@
       return context;
     }
     return null;
+  }
+
+  function setPostHogUiHost(posthog) {
+    if (typeof posthog.set_config === 'function') {
+      try {
+        posthog.set_config({ui_host: POSTHOG_UI_HOST});
+        return;
+      } catch (error) {
+        // Fall through to direct config update when PostHog blocks set_config.
+      }
+    }
+
+    if (posthog.config && typeof posthog.config === 'object') {
+      posthog.config.ui_host = POSTHOG_UI_HOST;
+    }
+  }
+
+  function normalizePostHogReplayUrl(value) {
+    const replayUrl = stringValue(value);
+    if (!replayUrl) return '';
+
+    try {
+      const parsed = new URL(replayUrl);
+      parsed.protocol = 'https:';
+      parsed.hostname = 'us.posthog.com';
+      parsed.port = '';
+      return parsed.toString();
+    } catch (error) {
+      return replayUrl.replace(/^https?:\/\/[^/]+/, POSTHOG_UI_HOST);
+    }
   }
 
   function filters() {
@@ -201,7 +270,7 @@
 
   function extraContext() {
     return compact({
-      displayDate: modalEl.dataset.displayDate || '',
+      displayDate: widget.dataset.displayDate || '',
       referrer: document.referrer || '',
       viewport: window.innerWidth + 'x' + window.innerHeight,
       devicePixelRatio: String(window.devicePixelRatio || ''),
@@ -222,6 +291,18 @@
   function activeShulFilter() {
     const select = document.getElementById('shul-filter-select');
     return select ? select.value : '';
+  }
+
+  function selectedCategory() {
+    const selected = form.querySelector('input[name="category"]:checked');
+    return selected ? selected.value : '';
+  }
+
+  function setDefaultCategory() {
+    const defaultCategory = form.querySelector('input[name="category"][value="MINYAN_SCHEDULE"]');
+    if (defaultCategory) {
+      defaultCategory.checked = true;
+    }
   }
 
   function safeCall(target, method) {

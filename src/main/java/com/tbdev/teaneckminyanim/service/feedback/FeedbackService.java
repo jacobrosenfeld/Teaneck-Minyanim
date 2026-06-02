@@ -41,7 +41,7 @@ public class FeedbackService {
         Instant submittedAt = Instant.now();
 
         FeedbackIssueRequest issueRequest = new FeedbackIssueRequest(
-                buildIssueTitle(feedback.message(), feedback.metadata()),
+                buildIssueTitle(feedback.message(), feedback.category()),
                 buildIssueBody(feedbackId, feedback, serverContext, submittedAt),
                 List.of(USER_FEEDBACK_LABEL));
         CreatedGitHubIssue issue = issueClient.createIssue(issueRequest);
@@ -79,12 +79,30 @@ public class FeedbackService {
             throw new FeedbackValidationException("Feedback message must be " + MAX_MESSAGE_LENGTH + " characters or fewer.");
         }
 
+        FeedbackCategory category = normalizeCategory(request.category(), request.metadata());
         String email = normalize(request.email());
         if (!email.isBlank()) {
             validateEmail(email);
         }
 
-        return new NormalizedFeedback(message, email, request.metadata());
+        return new NormalizedFeedback(message, email, category, request.metadata());
+    }
+
+    private FeedbackCategory normalizeCategory(String value, FeedbackMetadataDto metadata)
+            throws FeedbackValidationException {
+        String normalized = normalize(value);
+        if (normalized.isBlank()) {
+            return inferCategory(metadata);
+        }
+
+        return FeedbackCategory.from(normalized);
+    }
+
+    private FeedbackCategory inferCategory(FeedbackMetadataDto metadata) {
+        if (metadata != null && (metadata.minyan() != null || metadata.calendar() != null)) {
+            return FeedbackCategory.MINYAN_SCHEDULE;
+        }
+        return FeedbackCategory.APP_FUNCTIONALITY;
     }
 
     private void validateEmail(String email) throws FeedbackValidationException {
@@ -96,8 +114,8 @@ public class FeedbackService {
         }
     }
 
-    private String buildIssueTitle(String message, FeedbackMetadataDto metadata) {
-        String prefix = issuePrefix(metadata);
+    private String buildIssueTitle(String message, FeedbackCategory category) {
+        String prefix = category.issuePrefix();
         String summary = message
                 .replaceAll("\\s+", " ")
                 .replaceAll("[\\p{Cntrl}&&[^\t]]", "")
@@ -113,24 +131,6 @@ public class FeedbackService {
         return title.substring(0, MAX_TITLE_LENGTH - 1).trim() + "...";
     }
 
-    private String issuePrefix(FeedbackMetadataDto metadata) {
-        if (metadata == null) {
-            return "[Feedback]";
-        }
-        if (metadata.minyan() != null || metadata.calendar() != null) {
-            return "[Data]";
-        }
-
-        String platform = normalize(metadata.platform()).toLowerCase();
-        if (platform.equals("ios") || platform.equals("android")) {
-            return "[App]";
-        }
-        if (platform.equals("web") || hasText(metadata.url())) {
-            return "[Web]";
-        }
-        return "[Feedback]";
-    }
-
     private String buildIssueBody(
             String feedbackId,
             NormalizedFeedback feedback,
@@ -142,8 +142,8 @@ public class FeedbackService {
 
         appendSection(body, "Submission");
         appendLine(body, "Feedback ID", feedbackId);
+        appendLine(body, "Category", feedback.category().displayName());
         appendLine(body, "Submitted at", submittedAt.toString());
-        appendLine(body, "Inferred source", issuePrefix(feedback.metadata()));
         body.append("\n");
 
         appendClientContext(body, feedback.metadata());
@@ -263,6 +263,7 @@ public class FeedbackService {
         }
         body.append("GitHub issue: ").append(issue.url()).append("\n");
         body.append("Feedback ID: ").append(feedbackId).append("\n");
+        body.append("Category: ").append(feedback.category().displayName()).append("\n");
         body.append("Submitted at: ").append(submittedAt).append("\n\n");
         body.append("Message:\n").append(feedback.message()).append("\n\n");
         if (hasText(feedback.email())) {
@@ -295,6 +296,8 @@ public class FeedbackService {
                 .append("</a></p>");
         body.append("<p><strong>Feedback ID:</strong> ")
                 .append(HtmlUtils.htmlEscape(feedbackId))
+                .append("<br><strong>Category:</strong> ")
+                .append(HtmlUtils.htmlEscape(feedback.category().displayName()))
                 .append("<br><strong>Submitted at:</strong> ")
                 .append(HtmlUtils.htmlEscape(submittedAt.toString()))
                 .append("</p>");
@@ -381,7 +384,42 @@ public class FeedbackService {
     private record NormalizedFeedback(
             String message,
             String email,
+            FeedbackCategory category,
             FeedbackMetadataDto metadata
     ) {
+    }
+
+    private enum FeedbackCategory {
+        MINYAN_SCHEDULE("MINYAN_SCHEDULE", "Minyan time or schedule", "[Schedule]"),
+        APP_FUNCTIONALITY("APP_FUNCTIONALITY", "App or website functionality", "[Functionality]");
+
+        private final String value;
+        private final String displayName;
+        private final String issuePrefix;
+
+        FeedbackCategory(String value, String displayName, String issuePrefix) {
+            this.value = value;
+            this.displayName = displayName;
+            this.issuePrefix = issuePrefix;
+        }
+
+        static FeedbackCategory from(String value) throws FeedbackValidationException {
+            String normalized = value.trim().toUpperCase().replace('-', '_').replace(' ', '_');
+            for (FeedbackCategory category : values()) {
+                if (category.value.equals(normalized)) {
+                    return category;
+                }
+            }
+            throw new FeedbackValidationException(
+                    "Feedback category must be MINYAN_SCHEDULE or APP_FUNCTIONALITY.");
+        }
+
+        String displayName() {
+            return displayName;
+        }
+
+        String issuePrefix() {
+            return issuePrefix;
+        }
     }
 }

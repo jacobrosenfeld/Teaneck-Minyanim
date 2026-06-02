@@ -220,6 +220,7 @@ The visible client UI should collect only:
 | Field | Required | Description |
 |---|---|---|
 | `message` | Yes | Free-text user feedback. Max 5,000 characters. |
+| `category` | Yes | Feedback category. Supported values: `MINYAN_SCHEDULE` or `APP_FUNCTIONALITY`. |
 | `email` | No | Optional user email for private follow-up. Never include this in public GitHub issue content. |
 
 Clients may send `metadata` gathered automatically in the background. Do not ask users to type this manually.
@@ -230,6 +231,7 @@ Clients may send `metadata` gathered automatically in the background. Do not ask
 {
   "message": "The Shacharis time looks wrong for this shul.",
   "email": "optional-user@example.com",
+  "category": "MINYAN_SCHEDULE",
   "metadata": {
     "platform": "web",
     "screen": "organization-detail",
@@ -273,6 +275,7 @@ Clients may send `metadata` gathered automatically in the background. Do not ask
 **Behavior notes:**
 
 - The shared public website widget is rendered only when Feedback GitHub owner, repository, and token settings are populated.
+- Website submissions use an Intercom-style floating popup with a category selector for schedule/data issues versus app/website functionality issues.
 - The public GitHub issue body includes the user message and automatically collected debugging metadata.
 - Created GitHub issues are labeled `user feedback`.
 - The optional user email is used only for private email notification/follow-up and is not written to the GitHub issue.
@@ -280,7 +283,7 @@ Clients may send `metadata` gathered automatically in the background. Do not ask
 - The created issue email includes the GitHub issue link.
 
 **Error codes:**
-- `INVALID_FEEDBACK` — blank message, invalid email, or message too long
+- `INVALID_FEEDBACK` — blank message, invalid email, invalid category, or message too long
 - `FEEDBACK_NOT_CONFIGURED` — GitHub owner/repo/token settings are missing
 - `FEEDBACK_SUBMISSION_FAILED` — GitHub issue creation failed
 

@@ -16,6 +16,7 @@ Request body:
 {
   "message": "The Shacharis time looks wrong for this shul.",
   "email": "optional-user@example.com",
+  "category": "MINYAN_SCHEDULE",
   "metadata": {
     "platform": "web",
     "screen": "organization-detail",
@@ -34,9 +35,10 @@ Request body:
 }
 ```
 
-The visible UI should only collect `message` and optional `email`. Route,
-screen, shul, minyan, device, app version, and PostHog context should be
-gathered in the background by web/mobile clients.
+The visible UI should only collect `category`, `message`, and optional `email`.
+Route, screen, shul, minyan, device, app version, and PostHog context should be
+gathered in the background by web/mobile clients. Supported categories are
+`MINYAN_SCHEDULE` and `APP_FUNCTIONALITY`.
 
 ## Website Widget
 
@@ -45,8 +47,9 @@ can appear on public frontend pages that use the standard navigation shell.
 It is hidden automatically unless `ApplicationSettingsService.isFeedbackEnabled()`
 returns `true`.
 
-The floating launcher opens a Bootstrap modal and sends:
+The floating launcher opens an Intercom-style popup panel and sends:
 
+- Selected category for minyan time/schedule versus app/website functionality
 - User-entered message and optional email
 - Current route, URL, screen, selected date, and active filters
 - Organization context when an org page exposes the current shul name
@@ -77,8 +80,8 @@ Feedback issue creation is the primary action.
   the configured support email is CC'd.
 - If no user email is provided, the notification email is sent to the configured
   support email.
-- The email includes the GitHub issue link, feedback id, timestamp, and user
-  message.
+- The email includes the GitHub issue link, feedback id, category, timestamp,
+  and user message.
 - The user email address is never written to the public GitHub issue.
 - If email delivery is not configured or fails, the GitHub issue still remains
   created and the API response reports that notification email was not sent.

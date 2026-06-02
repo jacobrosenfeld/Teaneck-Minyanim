@@ -36,7 +36,7 @@ public class FeedbackApiController {
     @PostMapping
     @Operation(
             summary = "Submit user feedback",
-            description = "Creates a GitHub issue from user feedback and optional automatically collected client metadata."
+            description = "Creates a GitHub issue from categorized user feedback and optional automatically collected client metadata."
     )
     public ResponseEntity<ApiResponse<FeedbackSubmissionResponse>> submitFeedback(
             @RequestBody FeedbackSubmissionRequest request,
