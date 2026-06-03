@@ -123,5 +123,7 @@
     </div>
     <script type="text/javascript" src="/feedback.js"></script>
   </th:block>
+  <script th:if="${recaptchaEnabled}" type="text/javascript" src="/recaptcha.js"
+          th:attr="data-site-key=${recaptchaSiteKey}"></script>
 </body>
 </html>

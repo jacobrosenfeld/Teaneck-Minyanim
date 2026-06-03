@@ -17,6 +17,7 @@ Request body:
   "message": "The Shacharis time looks wrong for this shul.",
   "email": "optional-user@example.com",
   "category": "MINYAN_SCHEDULE",
+  "recaptchaToken": "recaptcha-response-token",
   "metadata": {
     "platform": "web",
     "screen": "organization-detail",
@@ -55,22 +56,30 @@ The floating launcher opens an Intercom-style popup panel and sends:
 - Organization context when an org page exposes the current shul name
 - Browser, viewport, timezone, language, and app version metadata
 - PostHog distinct/session/replay details when a web PostHog client is present
+- Invisible reCAPTCHA response token when reCAPTCHA is configured
 
-## GitHub Settings
+## External Service Settings
 
 Configure these under **Admin -> Settings -> External Services**:
 
 - `Feedback GitHub Owner`: defaults to `jacobrosenfeld`
 - `Feedback GitHub Repository`: defaults to `Teaneck-Minyanim`
 - `Feedback GitHub Token`: sensitive field used only server-side
+- `reCAPTCHA Site Key`: public key rendered to website forms
+- `reCAPTCHA Secret Key`: sensitive server-side key used to verify submitted tokens
 
-The token field is encrypted like other sensitive settings. Set
+Sensitive token/secret fields are encrypted like other sensitive settings. Set
 `APP_SETTINGS_ENCRYPTION_KEY` before saving it.
 
 Use a fine-grained GitHub personal access token scoped to the configured repo
 with **Issues: Read and write** permission. The backend calls GitHub's
 `POST /repos/{owner}/{repo}/issues` endpoint and never exposes the token to
 clients. Created issues are labeled `user feedback`.
+
+When both reCAPTCHA keys are populated, the website uses invisible reCAPTCHA for
+feedback and newsletter subscription forms. The backend verifies each token with
+Google before creating feedback issues or forwarding subscription requests to
+Sendy.
 
 ## Email Behavior
 

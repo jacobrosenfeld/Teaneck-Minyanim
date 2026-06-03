@@ -220,6 +220,18 @@ public class ApplicationSettingsService {
                 && hasText(getFeedbackGithubToken());
     }
 
+    public String getRecaptchaSiteKey() {
+        return getString(SettingKey.RECAPTCHA_SITE_KEY);
+    }
+
+    public String getRecaptchaSecretKey() {
+        return getString(SettingKey.RECAPTCHA_SECRET_KEY);
+    }
+
+    public boolean isRecaptchaEnabled() {
+        return hasText(getRecaptchaSiteKey()) && hasText(getRecaptchaSecretKey());
+    }
+
     public String getEmailProvider() {
         return getString(SettingKey.EMAIL_PROVIDER);
     }
@@ -566,6 +578,8 @@ public class ApplicationSettingsService {
         switch (key) {
             case MAPBOX_ACCESS_TOKEN:
             case FEEDBACK_GITHUB_TOKEN:
+            case RECAPTCHA_SITE_KEY:
+            case RECAPTCHA_SECRET_KEY:
             case MOBILE_IOS_APP_URL:
             case MOBILE_GOOGLE_PLAY_URL:
             case EMAIL_PROVIDER:

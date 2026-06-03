@@ -43,6 +43,7 @@ class FeedbackServiceTest {
                         "The Shacharis time looks wrong for this shul.",
                         "user@example.com",
                         "MINYAN_SCHEDULE",
+                        null,
                         metadata()),
                 new ServerFeedbackContext(
                         "https://www.teaneckminyanim.com/api/v1/feedback",
@@ -86,7 +87,7 @@ class FeedbackServiceTest {
                 EmailSendResult.success(EmailProvider.SES, "Email sent successfully."));
 
         FeedbackSubmissionResult result = service.submit(
-                new FeedbackSubmissionRequest("The app crashed on the map screen.", "", "APP_FUNCTIONALITY", null),
+                new FeedbackSubmissionRequest("The app crashed on the map screen.", "", "APP_FUNCTIONALITY", null, null),
                 null);
 
         assertFalse(result.userEmailProvided());
@@ -112,7 +113,7 @@ class FeedbackServiceTest {
                 EmailSendResult.failure(null, "Email provider is not configured."));
 
         FeedbackSubmissionResult result = service.submit(
-                new FeedbackSubmissionRequest("Please check this page.", "user@example.com", "APP_FUNCTIONALITY", null),
+                new FeedbackSubmissionRequest("Please check this page.", "user@example.com", "APP_FUNCTIONALITY", null, null),
                 null);
 
         assertEquals(247, result.githubIssue().number());
@@ -127,7 +128,7 @@ class FeedbackServiceTest {
         FeedbackService service = new FeedbackService(issueClient, emailService, settings());
 
         assertThrows(FeedbackValidationException.class,
-                () -> service.submit(new FeedbackSubmissionRequest(" ", "user@example.com", "APP_FUNCTIONALITY", null), null));
+                () -> service.submit(new FeedbackSubmissionRequest(" ", "user@example.com", "APP_FUNCTIONALITY", null, null), null));
         verify(issueClient, never()).createIssue(any());
         verify(emailService, never()).send(any());
     }
@@ -139,7 +140,7 @@ class FeedbackServiceTest {
         FeedbackService service = new FeedbackService(issueClient, emailService, settings());
 
         assertThrows(FeedbackValidationException.class,
-                () -> service.submit(new FeedbackSubmissionRequest("A real message", "not-email", "APP_FUNCTIONALITY", null), null));
+                () -> service.submit(new FeedbackSubmissionRequest("A real message", "not-email", "APP_FUNCTIONALITY", null, null), null));
         verify(issueClient, never()).createIssue(any());
         verify(emailService, never()).send(any());
     }
@@ -151,7 +152,7 @@ class FeedbackServiceTest {
         FeedbackService service = new FeedbackService(issueClient, emailService, settings());
 
         assertThrows(FeedbackValidationException.class,
-                () -> service.submit(new FeedbackSubmissionRequest("A real message", "", "OTHER", null), null));
+                () -> service.submit(new FeedbackSubmissionRequest("A real message", "", "OTHER", null, null), null));
         verify(issueClient, never()).createIssue(any());
         verify(emailService, never()).send(any());
     }

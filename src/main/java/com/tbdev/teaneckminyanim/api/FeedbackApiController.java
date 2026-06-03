@@ -9,6 +9,8 @@ import com.tbdev.teaneckminyanim.service.feedback.FeedbackService;
 import com.tbdev.teaneckminyanim.service.feedback.FeedbackSubmissionResult;
 import com.tbdev.teaneckminyanim.service.feedback.FeedbackValidationException;
 import com.tbdev.teaneckminyanim.service.feedback.ServerFeedbackContext;
+import com.tbdev.teaneckminyanim.service.recaptcha.RecaptchaService;
+import com.tbdev.teaneckminyanim.service.recaptcha.RecaptchaVerificationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class FeedbackApiController {
 
     private final FeedbackService feedbackService;
+    private final RecaptchaService recaptchaService;
 
     @PostMapping
     @Operation(
@@ -42,6 +45,7 @@ public class FeedbackApiController {
             @RequestBody FeedbackSubmissionRequest request,
             HttpServletRequest httpRequest) {
         try {
+            recaptchaService.verify(request == null ? null : request.recaptchaToken(), httpRequest);
             FeedbackSubmissionResult result = feedbackService.submit(
                     request,
                     ServerFeedbackContext.from(httpRequest));
@@ -50,6 +54,9 @@ public class FeedbackApiController {
         } catch (FeedbackValidationException e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.err("INVALID_FEEDBACK", e.getMessage()));
+        } catch (RecaptchaVerificationException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.err("INVALID_RECAPTCHA", e.getMessage()));
         } catch (FeedbackConfigurationException e) {
             log.warn("Feedback submission rejected because infrastructure is not configured: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)

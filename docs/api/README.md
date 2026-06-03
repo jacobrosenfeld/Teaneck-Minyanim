@@ -222,6 +222,7 @@ The visible client UI should collect only:
 | `message` | Yes | Free-text user feedback. Max 5,000 characters. |
 | `category` | Yes | Feedback category. Supported values: `MINYAN_SCHEDULE` or `APP_FUNCTIONALITY`. |
 | `email` | No | Optional user email for private follow-up. Never include this in public GitHub issue content. |
+| `recaptchaToken` | When configured | Invisible reCAPTCHA response token. Required when reCAPTCHA site and secret keys are configured. |
 
 Clients may send `metadata` gathered automatically in the background. Do not ask users to type this manually.
 
@@ -232,6 +233,7 @@ Clients may send `metadata` gathered automatically in the background. Do not ask
   "message": "The Shacharis time looks wrong for this shul.",
   "email": "optional-user@example.com",
   "category": "MINYAN_SCHEDULE",
+  "recaptchaToken": "recaptcha-response-token",
   "metadata": {
     "platform": "web",
     "screen": "organization-detail",
@@ -276,6 +278,7 @@ Clients may send `metadata` gathered automatically in the background. Do not ask
 
 - The shared public website widget is rendered only when Feedback GitHub owner, repository, and token settings are populated.
 - Website submissions use an Intercom-style floating popup with a category selector for schedule/data issues versus app/website functionality issues.
+- When reCAPTCHA site and secret key settings are populated, website submissions include an invisible reCAPTCHA token and the API verifies it before creating a GitHub issue.
 - The public GitHub issue body includes the user message and automatically collected debugging metadata.
 - Created GitHub issues are labeled `user feedback`.
 - The optional user email is used only for private email notification/follow-up and is not written to the GitHub issue.
@@ -284,6 +287,7 @@ Clients may send `metadata` gathered automatically in the background. Do not ask
 
 **Error codes:**
 - `INVALID_FEEDBACK` — blank message, invalid email, invalid category, or message too long
+- `INVALID_RECAPTCHA` — reCAPTCHA is configured but the token is missing or rejected by Google
 - `FEEDBACK_NOT_CONFIGURED` — GitHub owner/repo/token settings are missing
 - `FEEDBACK_SUBMISSION_FAILED` — GitHub issue creation failed
 
@@ -324,6 +328,7 @@ GET /api/v1/organizations/bmob/schedule?start=2026-03-15&end=2026-03-21
 | `OUT_OF_WINDOW` | 400 | Requested dates outside materialization window |
 | `INVALID_TYPE` | 400 | Notification type is not BANNER or POPUP |
 | `INVALID_FEEDBACK` | 400 | Feedback message/email payload is invalid |
+| `INVALID_RECAPTCHA` | 400 | reCAPTCHA token is missing or invalid |
 | `FEEDBACK_NOT_CONFIGURED` | 503 | Feedback GitHub settings are incomplete |
 | `FEEDBACK_SUBMISSION_FAILED` | 502 | GitHub issue creation failed |
 | `RATE_LIMITED` | 429 | Exceeded endpoint rate limit — retry after 60 s (`Retry-After` header set) |

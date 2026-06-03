@@ -60,6 +60,7 @@
     setStatus('', '');
 
     try {
+      const recaptchaToken = await recaptchaTokenFor('feedback');
       const response = await fetch('/api/v1/feedback', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -67,6 +68,7 @@
           message: message,
           email: email || null,
           category: category,
+          recaptchaToken: recaptchaToken,
           metadata: buildMetadata()
         })
       });
@@ -303,6 +305,13 @@
     if (defaultCategory) {
       defaultCategory.checked = true;
     }
+  }
+
+  function recaptchaTokenFor(action) {
+    if (!window.teaneckRecaptcha || typeof window.teaneckRecaptcha.execute !== 'function') {
+      return Promise.resolve(null);
+    }
+    return window.teaneckRecaptcha.execute(action);
   }
 
   function safeCall(target, method) {

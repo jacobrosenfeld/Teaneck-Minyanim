@@ -7,6 +7,7 @@ public record FeedbackSubmissionRequest(
         String message,
         String email,
         String category,
+        String recaptchaToken,
         FeedbackMetadataDto metadata
 ) {
 }

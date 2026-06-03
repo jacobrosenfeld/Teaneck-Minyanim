@@ -95,6 +95,28 @@ class ApplicationSettingsServiceTest {
     }
 
     @Test
+    void isRecaptchaEnabled_requiresSiteAndSecretKeys() {
+        stubExistingSettingsWithValues(Map.of(
+                SettingKey.RECAPTCHA_SITE_KEY, "site-key",
+                SettingKey.RECAPTCHA_SECRET_KEY, "secret-key"));
+
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertTrue(service.isRecaptchaEnabled());
+    }
+
+    @Test
+    void isRecaptchaEnabled_returnsFalseWhenSecretKeyIsBlank() {
+        stubExistingSettingsWithValues(Map.of(
+                SettingKey.RECAPTCHA_SITE_KEY, "site-key",
+                SettingKey.RECAPTCHA_SECRET_KEY, ""));
+
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertFalse(service.isRecaptchaEnabled());
+    }
+
+    @Test
     void updateSetting_encryptsSensitiveValuesBeforeSaving() throws Exception {
         ApplicationSettings setting = setting(SettingKey.EMAIL_SMTP_PASSWORD, "");
         when(repository.findBySettingKey(SettingKey.EMAIL_SMTP_PASSWORD.getKey()))
