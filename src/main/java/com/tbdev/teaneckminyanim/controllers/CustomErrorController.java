@@ -50,6 +50,7 @@ public class CustomErrorController implements ErrorController {
         mv.addObject("supportEmail", settingsService.getSupportEmail());
         mv.addObject("appleSmartAppBannerContent", settingsService.getAppleSmartAppBannerContent());
         mv.addObject("appVersion", versionService.getVersion());
+        mv.addObject("feedbackEnabled", settingsService.isFeedbackEnabled());
 
         return mv;
     }

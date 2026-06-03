@@ -29,28 +29,6 @@ jQuery(function($) {
    }
   });
 
-
-    /*-----------------------------------
-    ----------- Scroll To Top -----------
-    ------------------------------------*/
-
-    $(window).on('scroll', function () {
-      if ($(this).scrollTop() > 1000) {
-          $('#back-top').fadeIn();
-      } else {
-          $('#back-top').fadeOut();
-      }
-    });
-    // scroll body to 0px on click
-    $('#back-top').on('click', function () {
-      if (typeof $.fn.tooltip === 'function') $('#back-top').tooltip('hide');
-      $('body,html').animate({
-          scrollTop: 0
-      }, 1500);
-      return false;
-    });
-
-
     /*-------- Owl Carousel ---------- */
 
       $(".review-cards").owlCarousel({

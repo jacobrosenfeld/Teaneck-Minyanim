@@ -36,5 +36,94 @@
       </div>
     </div>
   </nav>
+  <th:block th:if="${feedbackEnabled}">
+    <div class="feedback-widget"
+         id="feedback-widget"
+         th:attr="data-selected-date=${dateString},data-display-date=${onlyDate},data-app-version=${appVersion}">
+      <section class="feedback-panel" id="feedback-panel" aria-labelledby="feedback-panel-title" hidden>
+        <header class="feedback-panel-header">
+          <div class="feedback-brand">
+            <span class="feedback-brand-mark" aria-hidden="true">
+              <img src="/assets/icons/favicon.svg" alt="">
+            </span>
+            <span>
+              <span class="feedback-panel-title" id="feedback-panel-title">Feedback</span>
+              <span class="feedback-panel-subtitle">Teaneck Minyanim team</span>
+            </span>
+          </div>
+          <button class="feedback-panel-close" type="button" data-feedback-close aria-label="Close feedback">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m6.4 5.3 5.6 5.6 5.6-5.6 1.1 1.1-5.6 5.6 5.6 5.6-1.1 1.1-5.6-5.6-5.6 5.6-1.1-1.1 5.6-5.6-5.6-5.6Z"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="feedback-panel-body">
+          <div class="feedback-message-card">
+            <p class="feedback-message-title">Send us feedback</p>
+            <p>Report a schedule issue or tell us about something that is not working.</p>
+          </div>
+
+          <form id="feedback-form" class="feedback-form" novalidate>
+            <fieldset class="feedback-category-field">
+              <legend>What is this about?</legend>
+              <label class="feedback-category-option">
+                <input type="radio" name="category" value="MINYAN_SCHEDULE" required checked>
+                <span>
+                  <strong>Minyan time or schedule</strong>
+                  <small>Wrong time, missing minyan, wrong shul data</small>
+                </span>
+              </label>
+              <label class="feedback-category-option">
+                <input type="radio" name="category" value="APP_FUNCTIONALITY" required>
+                <span>
+                  <strong>App or website functionality</strong>
+                  <small>Bug, broken page, confusing workflow</small>
+                </span>
+              </label>
+            </fieldset>
+
+            <div class="feedback-field">
+              <label class="feedback-label" for="feedback-message">Message</label>
+              <textarea class="feedback-control" id="feedback-message" name="message" rows="5" maxlength="5000" required
+                        placeholder="What should we know?"></textarea>
+            </div>
+
+            <div class="feedback-field">
+              <label class="feedback-label" for="feedback-email">Email <span>(optional)</span></label>
+              <input class="feedback-control" id="feedback-email" name="email" type="email" autocomplete="email"
+                     placeholder="you@example.com">
+            </div>
+
+            <div class="feedback-form-footer">
+              <div class="feedback-status" id="feedback-status" role="status" aria-live="polite"></div>
+              <button type="submit" class="feedback-submit-button">
+                <span class="feedback-submit-text">Send</span>
+                <span class="spinner-border spinner-border-sm feedback-submit-spinner" aria-hidden="true"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <button class="feedback-launcher"
+              type="button"
+              data-feedback-toggle
+              aria-expanded="false"
+              aria-controls="feedback-panel"
+              aria-label="Open feedback"
+              title="Send feedback">
+        <svg class="feedback-launcher-icon feedback-launcher-icon-open" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3C6.48 3 2 6.84 2 11.58c0 2.72 1.48 5.15 3.79 6.72L5 22l4.14-2.1c.92.2 1.88.31 2.86.31 5.52 0 10-3.84 10-8.63S17.52 3 12 3Zm-4.1 9.05a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Zm4.1 0a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Zm4.1 0a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Z"/>
+        </svg>
+        <svg class="feedback-launcher-icon feedback-launcher-icon-close" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m5.6 8.7 6.4 6.4 6.4-6.4 1.2 1.2-7.6 7.6-7.6-7.6Z"/>
+        </svg>
+      </button>
+    </div>
+    <script type="text/javascript" src="/feedback.js"></script>
+  </th:block>
+  <script th:if="${recaptchaEnabled}" type="text/javascript" src="/recaptcha.js"
+          th:attr="data-site-key=${recaptchaSiteKey}"></script>
 </body>
 </html>

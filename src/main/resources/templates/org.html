@@ -279,8 +279,8 @@
           <hr>
           <h3 th:text="@{|Subscribe now to stay up to date on ${displaySiteName} updates and news!|}"></h3>
           <div class="form wow fadeIn" data-wow-delay="0.2s">
-            <form id="chimp-form" class="subscribe-form wow zoomIn" action="https://sendy.josephjacobs.org/subscribe"
-              method="POST" accept-charset="utf-8">
+            <form id="chimp-form" class="subscribe-form wow zoomIn" action="/subscribe"
+              method="POST" accept-charset="utf-8" data-recaptcha-action="subscribe" data-recaptcha-status="response">
               <input type="text" name="name" id="name" placeholder="Enter your name" />
               <br />
               <input type="email" name="email" id="email" placeholder="Enter your email address" /><br />
@@ -290,6 +290,7 @@
               </div>
               <input type="hidden" name="list" value="2GTjv7L7dlk4MXC1SN9Lgg" />
               <input type="hidden" name="subform" value="yes" />
+              <input type="hidden" name="recaptchaToken" value="" />
               <input class="submit-button" name="submit" id="submit" type="submit" value="Sign up now" />
             </form>
             <div id="response"></div>
@@ -328,15 +329,6 @@
         </div>
       </div>
     </div>
-
-
-    <!-- Scroll To Top -->
-    <div id="back-top" class="bk-top">
-      <div class="bk-top-txt">
-        <a class="back-to-top js-scroll-trigger" href="#main">top</a>
-      </div>
-    </div>
-    <!-- Scroll To Top Ends-->
 
   </div> <!-- Main -->
 

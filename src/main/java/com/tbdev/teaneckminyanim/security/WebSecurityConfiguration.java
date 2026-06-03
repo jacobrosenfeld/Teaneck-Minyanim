@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
@@ -46,7 +47,7 @@ public class WebSecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, LoginRecaptchaFilter loginRecaptchaFilter) throws Exception {
         // Never save static asset requests as the post-login redirect target
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setRequestMatcher(new NegatedRequestMatcher(new OrRequestMatcher(
@@ -70,7 +71,7 @@ public class WebSecurityConfiguration {
                                  "/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/", "/zmanim/**", "/orgs/**", "/org/**", "/admin/login", "/admin/logout",
                                 "/webjars/**", "/**/*.css", "/**/*.js", "/static/**", "/db/**",
-                                "/assets/**", "/favicon.ico", "/test/errors/**").permitAll()
+                                "/assets/**", "/favicon.ico", "/test/errors/**", "/subscribe", "/subscription").permitAll()
                 .requestMatchers("/admin", "/admin/dashboard", "/admin/organization", "/admin/account", 
                                 "/admin/update-organization", "/admin/update-account", 
                                 "/admin/*/locations", "/admin/*/locations/**",
@@ -84,6 +85,7 @@ public class WebSecurityConfiguration {
                 .requestMatchers("/{slug:[a-z0-9-]+}", "/{slug:[a-z0-9-]+}/next", "/{slug:[a-z0-9-]+}/last").permitAll()
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(loginRecaptchaFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin(form -> form
                 .loginProcessingUrl("/j_spring_security_check")
                 .loginPage("/admin/login")
@@ -107,14 +109,13 @@ public class WebSecurityConfiguration {
 
     /**
      * CORS config for the public REST API (/api/v1/**).
-     * Allows GET and OPTIONS from any origin so the mobile app and third-party
-     * consumers can query without a proxy.
+     * Allows public API clients to query data and submit feedback without a proxy.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setMaxAge(3600L);
 

@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Map;
 import java.util.Optional;
 
 class ApplicationSettingsServiceTest {
@@ -67,6 +68,52 @@ class ApplicationSettingsServiceTest {
         String url = "https://apps.apple.com/us/app/teaneck-minyanim/id1234567890";
         assertEquals("app-id=1234567890", ApplicationSettingsService.buildAppleSmartAppBannerContent(url));
         assertNull(ApplicationSettingsService.buildAppleSmartAppBannerContent("https://apps.apple.com/us/app/no-id"));
+    }
+
+    @Test
+    void isFeedbackEnabled_requiresGithubOwnerRepoAndToken() {
+        stubExistingSettingsWithValues(Map.of(
+                SettingKey.FEEDBACK_GITHUB_OWNER, "jacobrosenfeld",
+                SettingKey.FEEDBACK_GITHUB_REPO, "Teaneck-Minyanim",
+                SettingKey.FEEDBACK_GITHUB_TOKEN, "github-token"));
+
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertTrue(service.isFeedbackEnabled());
+    }
+
+    @Test
+    void isFeedbackEnabled_returnsFalseWhenGithubTokenIsBlank() {
+        stubExistingSettingsWithValues(Map.of(
+                SettingKey.FEEDBACK_GITHUB_OWNER, "jacobrosenfeld",
+                SettingKey.FEEDBACK_GITHUB_REPO, "Teaneck-Minyanim",
+                SettingKey.FEEDBACK_GITHUB_TOKEN, ""));
+
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertFalse(service.isFeedbackEnabled());
+    }
+
+    @Test
+    void isRecaptchaEnabled_requiresSiteAndSecretKeys() {
+        stubExistingSettingsWithValues(Map.of(
+                SettingKey.RECAPTCHA_SITE_KEY, "site-key",
+                SettingKey.RECAPTCHA_SECRET_KEY, "secret-key"));
+
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertTrue(service.isRecaptchaEnabled());
+    }
+
+    @Test
+    void isRecaptchaEnabled_returnsFalseWhenSecretKeyIsBlank() {
+        stubExistingSettingsWithValues(Map.of(
+                SettingKey.RECAPTCHA_SITE_KEY, "site-key",
+                SettingKey.RECAPTCHA_SECRET_KEY, ""));
+
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertFalse(service.isRecaptchaEnabled());
     }
 
     @Test
@@ -143,6 +190,8 @@ class ApplicationSettingsServiceTest {
     }
 
     private void stubExistingSettingsWith(ApplicationSettings override) {
+        when(repository.save(any(ApplicationSettings.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
         when(repository.findBySettingKey(anyString())).thenAnswer(invocation -> {
             String keyString = invocation.getArgument(0);
             if (override.getSettingKey().equals(keyString)) {
@@ -150,6 +199,17 @@ class ApplicationSettingsServiceTest {
             }
             SettingKey key = SettingKey.fromKey(keyString);
             return Optional.of(setting(key, key.getDefaultValue()));
+        });
+    }
+
+    private void stubExistingSettingsWithValues(Map<SettingKey, String> values) {
+        when(repository.findBySettingKey(anyString())).thenAnswer(invocation -> {
+            SettingKey key = SettingKey.fromKey(invocation.getArgument(0));
+            String value = values.getOrDefault(key, key.getDefaultValue());
+            if (key.isSensitive() && value != null && !value.isBlank()) {
+                value = crypto.encrypt(value);
+            }
+            return Optional.of(setting(key, value));
         });
     }
 

@@ -27,6 +27,16 @@ public class LoginController {
     public String supportEmail() {
         return settingsService.getSupportEmail();
     }
+
+    @ModelAttribute("recaptchaEnabled")
+    public boolean recaptchaEnabled() {
+        return settingsService.isRecaptchaEnabled();
+    }
+
+    @ModelAttribute("recaptchaSiteKey")
+    public String recaptchaSiteKey() {
+        return settingsService.getRecaptchaSiteKey();
+    }
     
     @GetMapping("/admin/login")
     public ModelAndView login(@RequestParam(value = "error",required = false) String error, @RequestParam(value = "logout",	required = false) boolean logout) {

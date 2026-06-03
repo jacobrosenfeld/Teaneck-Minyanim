@@ -93,6 +93,21 @@ public class ZmanimController {
         return versionService.getVersion();
     }
 
+    @ModelAttribute("feedbackEnabled")
+    public boolean feedbackEnabled() {
+        return applicationSettingsService.isFeedbackEnabled();
+    }
+
+    @ModelAttribute("recaptchaEnabled")
+    public boolean recaptchaEnabled() {
+        return applicationSettingsService.isRecaptchaEnabled();
+    }
+
+    @ModelAttribute("recaptchaSiteKey")
+    public String recaptchaSiteKey() {
+        return applicationSettingsService.getRecaptchaSiteKey();
+    }
+
     @GetMapping("/checkAseresYemeiTeshuva")
     public String checkAseresYemeiTeshuva(Model model) {
         boolean isAseresYemeiTeshuva = zmanimHandler.isAseresYemeiTeshuva();

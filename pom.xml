@@ -10,7 +10,7 @@
   </parent>  
   <groupId>com.tbdev</groupId>  
   <artifactId>Teaneck-Minyanim</artifactId>  
-  <version>1.12.0</version>
+  <version>1.13.0</version>
   <name>Teaneck-Minyanim</name>
   <description>Teaneck-Minyanim</description>
   <properties>
