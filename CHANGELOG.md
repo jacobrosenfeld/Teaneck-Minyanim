@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Feedback infrastructure (#245)**: Added a public feedback API and shared Intercom-style public-site feedback popup that create GitHub issues labeled `user feedback` through server-side GitHub settings, separate minyan schedule/data issues from app/website functionality issues, capture automatic debugging/PostHog metadata without exposing optional user emails in public issue content, hide the widget until GitHub settings are complete, and send private email notifications with the created issue link.
+- **Feedback infrastructure (#245)**: Added a public feedback API and shared Intercom-style public-site feedback popup that create GitHub issues labeled `user feedback` through server-side GitHub settings, separate minyan schedule/data issues from app/website functionality issues, replace the legacy floating top button on public pages, capture automatic debugging/PostHog metadata without exposing optional user emails in public issue content, hide the widget until GitHub settings are complete, and send private email notifications with the created issue link.
 - **Email handler (#35)**: Added settings-backed SMTP and AWS SES email delivery, a dedicated super-admin Email Settings page with per-field saves, masked email credential settings, a test email endpoint, and operator documentation for configuring providers.
 - **Candle lighting and havdala in zmanim (#234)**: Added KosherJava-calendar-driven candle lighting and havdala times to the public zmanim API, website zmanim panel, and mobile Zmanim screen, with optional display only on applicable Shabbos/Yom Tov dates. Candle lighting is rounded down to the minute, havdala is rounded up to the minute, and both display without seconds.
 - **Mobile app version telemetry**: PostHog mobile analytics now records app version/build, platform, and OS version metadata for iOS and Android events.
@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **API docs server list**: Added `https://dev.teaneckminyanim.com` as the Dev server option in the generated OpenAPI docs.
+- **Public footer spacing**: Centered the footer contact email and added mobile bottom clearance so fixed floating action buttons do not cover footer content.
 - **Settings page modernization**: Updated the main super-admin Settings page to match the new email settings form style with section navigation, inline field controls, an in-flow Email Settings card, and per-field save/discard states.
 - **Error page UX refreshed with themed copy and graphics**: Browser error handling now renders status-specific themed messages, guidance, CTAs, and dedicated SVG icons for `400`, `403`, `404`, `429`, `500`, and `503` while keeping the shared template/navigation shell.
 - **Override page UI modernization**: Updated override tables and actions to match the admin design system styling used by calendar-entry management views.

@@ -1665,6 +1665,15 @@ body {
 		text-align: center;
 	}
 
+	.footer-sm .row {
+		row-gap: 8px;
+	}
+
+	.footer-sm .col-md-4,
+	.footer-sm .text-end {
+		text-align: center !important;
+	}
+
 	.footer-sm .col-md-4:nth-child(even) {
 		text-align: center;
 	}
@@ -1753,60 +1762,6 @@ body {
 		letter-spacing: 0.5px;
 		text-transform: lowercase;
 	}
-
-
-	/* -------------------------------------------------------
------------ Bact-to-Top Styling Starts Here --------------
----------------------------------------------------------*/
-
-
-	.bk-top {
-		position: fixed;
-		bottom: 30px;
-		right: 30px;
-		border-radius: 3px;
-		z-index: 90;
-		display: none;
-		width: 45px;
-		height: 45px;
-		background: #275ed8;
-		color: #f2f2f0;
-		border-radius: 50%;
-		display: table;
-		box-shadow: 0 5px 15px rgba(0, 0, 0, .1);
-	}
-
-	.bk-top-txt {
-		display: table-cell;
-		vertical-align: middle;
-		text-align: center;
-	}
-
-	.back-to-top {
-		font-family: 'Montserrat';
-		font-size: 12px;
-		font-weight: 700;
-		color: #FFFFFF;
-		text-decoration: none;
-		-webkit-transition: 200ms;
-		-moz-transition: 200ms;
-		-o-transition: 200ms;
-		transition: 200ms;
-	}
-
-	.back-to-top:hover {
-		color: #FFFFFF;
-		text-decoration: none;
-		font-size: 13px;
-	}
-
-
-	.back-to-top:focus {
-		color: #FFFFFF;
-	}
-
-
-
 
 	/*------------------------------------------
 -------------- Media Queries ---------------
@@ -1957,7 +1912,7 @@ body {
 		}
 
 		.footer-sm {
-			text-align: left;
+			text-align: center;
 		}
 
 		.footer-sm .footer-logo {
@@ -2005,6 +1960,12 @@ body {
 			margin-left: 0;
 		}
 
+	}
+}
+
+@media only screen and (max-width: 767px) {
+	.footer-sm {
+		padding-bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px));
 	}
 }
 
