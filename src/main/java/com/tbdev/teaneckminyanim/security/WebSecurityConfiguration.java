@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
@@ -46,7 +47,7 @@ public class WebSecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, LoginRecaptchaFilter loginRecaptchaFilter) throws Exception {
         // Never save static asset requests as the post-login redirect target
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setRequestMatcher(new NegatedRequestMatcher(new OrRequestMatcher(
@@ -84,6 +85,7 @@ public class WebSecurityConfiguration {
                 .requestMatchers("/{slug:[a-z0-9-]+}", "/{slug:[a-z0-9-]+}/next", "/{slug:[a-z0-9-]+}/last").permitAll()
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(loginRecaptchaFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin(form -> form
                 .loginProcessingUrl("/j_spring_security_check")
                 .loginPage("/admin/login")

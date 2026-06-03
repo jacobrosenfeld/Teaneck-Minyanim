@@ -77,9 +77,9 @@ with **Issues: Read and write** permission. The backend calls GitHub's
 clients. Created issues are labeled `user feedback`.
 
 When both reCAPTCHA keys are populated, the website uses invisible reCAPTCHA for
-feedback and newsletter subscription forms. The backend verifies each token with
-Google before creating feedback issues or forwarding subscription requests to
-Sendy.
+feedback, newsletter subscription, and admin login forms. The backend verifies
+each token with Google before creating feedback issues, forwarding subscription
+requests to Sendy, or processing admin login credentials.
 
 ## Email Behavior
 
