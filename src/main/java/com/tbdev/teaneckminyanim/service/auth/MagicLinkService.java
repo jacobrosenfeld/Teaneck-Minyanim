@@ -41,16 +41,21 @@ public class MagicLinkService {
     private final EmailService emailService;
 
     @Transactional
-    public MagicLinkRequestResult requestLoginLink(String email, HttpServletRequest request) {
-        String normalizedEmail = TNMUser.normalizeEmail(email);
-        if (normalizedEmail == null) {
+    public MagicLinkRequestResult requestLoginLink(String identifier, HttpServletRequest request) {
+        String normalizedIdentifier = TNMUser.normalizeEmail(identifier);
+        if (normalizedIdentifier == null) {
             return MagicLinkRequestResult.neutral();
         }
 
-        TNMUser user = userService.findByNormalizedEmail(normalizedEmail);
+        TNMUser user = userService.findByIdentifier(normalizedIdentifier);
         if (user == null || user.isDisabled()) {
-            log.info("Magic-link login requested for unknown or disabled account email hash {}",
-                    sha256(normalizedEmail));
+            log.info("Magic-link login requested for unknown or disabled account identifier hash {}",
+                    sha256(normalizedIdentifier));
+            return MagicLinkRequestResult.neutral();
+        }
+        String normalizedEmail = TNMUser.normalizeEmail(user.getEmail());
+        if (normalizedEmail == null) {
+            log.warn("Magic-link login requested for account {} but no email is configured", user.getId());
             return MagicLinkRequestResult.neutral();
         }
 
@@ -66,10 +71,14 @@ public class MagicLinkService {
                 .userAgent(truncate(request == null ? null : request.getHeader("User-Agent"), 500))
                 .build();
         tokenRepository.save(token);
+        log.info("Magic-link token {} created for account {} email hash {}",
+                token.getId(), user.getId(), sha256(normalizedEmail));
 
         EmailSendResult result = sendLoginLink(user, rawToken);
         if (!result.isSuccess()) {
             log.warn("Magic-link email for account {} was not sent: {}", user.getId(), result.getMessage());
+        } else {
+            log.info("Magic-link email sent for account {} via {}", user.getId(), result.getProvider());
         }
         return MagicLinkRequestResult.neutral();
     }

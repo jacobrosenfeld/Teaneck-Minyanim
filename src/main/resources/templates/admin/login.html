@@ -26,6 +26,7 @@
         crossorigin="anonymous"></script>
     <link th:rel="stylesheet" th:href="@{/styles.css}">
     <link th:rel="stylesheet" th:href="@{/admin/styles.css}">
+    <link th:rel="stylesheet" th:href="@{/admin/login.css}">
     <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/animate.css"> <!-- Resource style -->
     <link rel="stylesheet" href="/assets/css/owl.carousel.css">
@@ -44,71 +45,72 @@
             <!-- Navbar End -->
             <div class="container-fluid home-container" id="main">
                 <div class="row" style="flex-direction: column;">
-                    <main class="col main pt-5 mt-4 overflow-auto"
-                        style="flex-shrink: 3; padding-bottom: 65px!important; min-height: 70vh;">
-                        <div class="row justify-content-center">
-                            <div class="col-md-5" id="row-housing" style="padding: 1rem;">
-                                <!-- login box -->
-                                <div class="dropdown-menu center" style="position: relative; display: block;">
-                                    <div class="px-4 pt-3">
-                                        <button type="button" class="btn btn-cta w-100" id="passkey-signin-button">
-                                            Sign in with passkey
-                                        </button>
-                                        <div id="passkey-signin-status" class="form-msg-fatal pt-2" role="status" aria-live="polite"></div>
-                                    </div>
-                                    <hr>
-                                    <form id="magic-link-form" class="px-4 py-3"
-                                          th:action="@{/admin/login/magic-link}" method="post">
-                                        <div class="form-group">
-                                            <label for="magic-link-email-field" class="h5">Email sign-in link</label>
-                                            <input type="email" class="form-control" name="email" id="magic-link-email-field"
-                                                   placeholder="you@example.com" autocomplete="email" autocapitalize="off">
-                                        </div>
-                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end pt-2">
-                                            <button type="submit" class="btn btn-outline-primary">Email me a link</button>
-                                        </div>
-                                        <div class="login-msg-box" style="padding-top: 7px">
-                                            <div class="form-msg-success" th:if="${magicLinkMessage != null}"
-                                                 th:text="${magicLinkMessage}">
-                                                If this email is authorized, a sign-in link will be sent shortly.
-                                            </div>
-                                        </div>
-                                    </form>
-                                    <hr>
-                                    <form id="login-form" class="px-4 py-3" onsubmit="lowercase()"
-                                        th:action="@{/j_spring_security_check}" method="post"
-                                        data-recaptcha-action="login"
-                                        data-recaptcha-status="login-recaptcha-status">
-                                        <p class="text-muted mb-3">Password fallback</p>
-                                        <div class="form-group">
-                                            <label for="username-field" class="h5">Username</label>
-                                            <input type="username" class="form-control" name="username" id="username-field"
-                                                placeholder="Username" autocapitalize="off">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="password-field" class="h5">Password</label>
-                                            <input type="password" class="form-control" name="password"
-                                                id="password-field" placeholder="Password">
-                                        </div>
-                                        <input type="hidden" name="recaptchaToken" value="">
-                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                            <button type="submit" class="btn btn-cta" id="submit-button">Sign in</button>
-                                        </div>
-                                        <div id="login-recaptcha-status" class="form-msg-fatal" role="status" aria-live="polite"></div>
-                                        <div class="login-msg-box" style="padding-top: 7px">
-                                            <div class="form-msg-fatal" th:if="${error != null}"
-                                                th:text="${error == 'recaptcha'} ? 'Please complete the sign-in check and try again.' : 'Invalid credentials.'">
-                                                Invalid credentials.
-                                            </div>
-                                            <div class="form-msg-success" th:if="${param.logout}">
-                                                You have been logged out.
-                                            </div>
-                                        </div>
-                                    </form>
-                                    <!--            <div class="dropdown-divider"></div>-->
-                                    <!--            <a class="dropdown-item" href="#">Forgot password?</a>-->
+                    <main class="col main login-main">
+                        <div class="login-shell">
+                            <section class="login-panel" aria-labelledby="login-title">
+                                <div class="login-brand">
+                                    <img src="/assets/icons/favicon.svg" alt="" class="login-brand-mark">
+                                    <h1 id="login-title" th:text="|${siteName ?: 'Minyanim Platform'} Admin|">Minyanim Platform Admin</h1>
                                 </div>
-                            </div>
+
+                                <form id="identifier-form" class="login-identifier-form"
+                                      th:action="@{/admin/login/magic-link}" method="post"
+                                      th:attr="data-auth-methods-url=@{/admin/login/auth-methods},
+                                               data-magic-link-url=@{/admin/login/magic-link/request},
+                                               data-webauthn-options-url=@{/webauthn/authenticate/options},
+                                               data-webauthn-login-url=@{/login/webauthn}">
+                                    <label for="login-identifier-field">Email or Username</label>
+                                    <div class="login-identifier-row">
+                                        <input type="text" name="identifier" id="login-identifier-field"
+                                               autocomplete="username webauthn" autocapitalize="off" spellcheck="false">
+                                        <button type="submit" class="login-submit" id="identifier-submit" disabled
+                                                aria-label="Continue">
+                                            <span class="login-submit-arrow" aria-hidden="true">&rarr;</span>
+                                            <span class="login-loading-dots" aria-hidden="true">
+                                                <span></span><span></span><span></span>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div id="login-flow-status"
+                                     class="login-status"
+                                     th:classappend="${error != null} ? ' login-status-error' : (${magicLinkMessage != null or param.logout} ? ' login-status-success' : '')"
+                                     role="status"
+                                     aria-live="polite">
+                                    <span th:if="${magicLinkMessage != null}" th:text="${magicLinkMessage}">
+                                        If this email is authorized, a sign-in link will be sent shortly.
+                                    </span>
+                                    <span th:if="${param.logout}">You have been logged out.</span>
+                                    <span th:if="${error != null}"
+                                          th:text="${error == 'recaptcha'} ? 'Please complete the sign-in check and try again.' : 'Invalid credentials.'">
+                                        Invalid credentials.
+                                    </span>
+                                </div>
+
+                                <button type="button"
+                                        class="login-secondary-action"
+                                        id="password-toggle"
+                                        th:classappend="${error == null and magicLinkMessage == null} ? ' d-none' : ''">
+                                    Password instead
+                                </button>
+
+                                <form id="login-form"
+                                      class="login-password-panel"
+                                      th:classappend="${error != null} ? ' is-open' : ''"
+                                      onsubmit="preparePasswordLogin()"
+                                      th:action="@{/j_spring_security_check}" method="post"
+                                      data-recaptcha-action="login"
+                                      data-recaptcha-status="login-recaptcha-status">
+                                    <input type="hidden" name="username" id="password-username-field">
+                                    <label for="password-field">Password</label>
+                                    <input type="password" class="form-control" name="password"
+                                           id="password-field" placeholder="Password" autocomplete="current-password">
+                                    <input type="hidden" name="recaptchaToken" value="">
+                                    <button type="submit" class="login-password-submit">Sign in with password</button>
+                                    <div id="login-recaptcha-status" class="form-msg-fatal" role="status" aria-live="polite"></div>
+                                </form>
+                            </section>
                         </div>
                     </main>
                 </div>
@@ -134,24 +136,6 @@
       </div>
     
     <script th:src="@{/admin/login.js}"></script>
-    <script th:src="@{/spring-security-webauthn.js}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var button = document.getElementById('passkey-signin-button');
-            var status = document.getElementById('passkey-signin-status');
-            if (!button) {
-                return;
-            }
-            if (!window.PublicKeyCredential || !window.setupLogin) {
-                button.disabled = true;
-                if (status) {
-                    status.textContent = 'Passkeys are not available in this browser.';
-                }
-                return;
-            }
-            window.setupLogin({}, '', button);
-        });
-    </script>
 </body>
 
 </html>

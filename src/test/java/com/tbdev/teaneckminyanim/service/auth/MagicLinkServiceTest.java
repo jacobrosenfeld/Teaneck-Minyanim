@@ -36,7 +36,7 @@ class MagicLinkServiceTest {
         EmailService emailService = mock(EmailService.class);
         MagicLinkService service = new MagicLinkService(tokenRepository, userService, settingsService, emailService);
         TNMUser user = user(true);
-        when(userService.findByNormalizedEmail("manager@example.com")).thenReturn(user);
+        when(userService.findByIdentifier("manager@example.com")).thenReturn(user);
         when(settingsService.getSiteName()).thenReturn("Teaneck Minyanim");
         when(settingsService.getSiteRootUrl()).thenReturn("https://example.com");
         when(emailService.send(any())).thenReturn(EmailSendResult.success(null, "sent"));
@@ -75,6 +75,25 @@ class MagicLinkServiceTest {
 
         assertEquals("If this email is authorized, a sign-in link will be sent shortly.", result.message());
         verify(tokenRepository, never()).save(any());
+    }
+
+    @Test
+    void requestLoginLinkAcceptsUsernameIdentifier() {
+        MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
+        TNMUserService userService = mock(TNMUserService.class);
+        ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
+        EmailService emailService = mock(EmailService.class);
+        MagicLinkService service = new MagicLinkService(tokenRepository, userService, settingsService, emailService);
+        TNMUser user = user(true);
+        when(userService.findByIdentifier("manager")).thenReturn(user);
+        when(settingsService.getSiteName()).thenReturn("Teaneck Minyanim");
+        when(settingsService.getSiteRootUrl()).thenReturn("https://example.com");
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(null, "sent"));
+
+        service.requestLoginLink("manager", new MockHttpServletRequest());
+
+        verify(tokenRepository).save(any());
+        verify(emailService).send(any());
     }
 
     @Test

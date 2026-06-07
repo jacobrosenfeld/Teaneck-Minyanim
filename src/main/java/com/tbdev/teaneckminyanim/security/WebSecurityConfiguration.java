@@ -78,7 +78,8 @@ public class WebSecurityConfiguration {
                 .requestMatchers("/api/docs", "/api/docs.json",
                                  "/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/", "/zmanim/**", "/orgs/**", "/org/**", "/admin/login",
-                                "/admin/login/magic-link", "/admin/login/magic-link/verify", "/admin/logout",
+                                "/admin/login/auth-methods", "/admin/login/magic-link",
+                                "/admin/login/magic-link/request", "/admin/login/magic-link/verify", "/admin/logout",
                                 "/webauthn/authenticate/options", "/login/webauthn",
                                 "/webjars/**", "/**/*.css", "/**/*.js", "/static/**", "/db/**",
                                 "/assets/**", "/favicon.ico", "/test/errors/**", "/subscribe", "/subscription").permitAll()

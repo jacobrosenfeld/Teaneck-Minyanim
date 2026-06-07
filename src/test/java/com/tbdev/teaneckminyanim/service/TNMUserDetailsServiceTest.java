@@ -36,7 +36,7 @@ class TNMUserDetailsServiceTest {
     @Test
     void loadUserByUsernameMarksDisabledAccountsDisabledForSpringSecurity() {
         when(loginAttemptService.isBlocked("127.0.0.1")).thenReturn(false);
-        when(userService.findByName("manager")).thenReturn(user(false));
+        when(userService.findByIdentifier("manager")).thenReturn(user(false));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername("manager");
 
@@ -48,9 +48,19 @@ class TNMUserDetailsServiceTest {
     @Test
     void loadUserByUsernameKeepsEnabledAccountsEnabledForSpringSecurity() {
         when(loginAttemptService.isBlocked("127.0.0.1")).thenReturn(false);
-        when(userService.findByName("manager")).thenReturn(user(true));
+        when(userService.findByIdentifier("manager")).thenReturn(user(true));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername("manager");
+
+        assertTrue(userDetails.isEnabled());
+    }
+
+    @Test
+    void loadUserByUsernameAcceptsEmailIdentifier() {
+        when(loginAttemptService.isBlocked("127.0.0.1")).thenReturn(false);
+        when(userService.findByIdentifier("manager@example.com")).thenReturn(user(true));
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername("manager@example.com");
 
         assertTrue(userDetails.isEnabled());
     }

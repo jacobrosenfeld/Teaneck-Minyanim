@@ -31,6 +31,19 @@ public class TNMUserService {
         return repository.findByEmailNormalized(normalizedEmail).orElse(null);
     }
 
+    public TNMUser findByIdentifier(String identifier) {
+        String normalizedIdentifier = TNMUser.normalizeEmail(identifier);
+        if (normalizedIdentifier == null) {
+            return null;
+        }
+
+        TNMUser user = findByName(normalizedIdentifier);
+        if (user != null) {
+            return user;
+        }
+        return findByNormalizedEmail(normalizedIdentifier);
+    }
+
     public List<TNMUser> getAll() {
         return repository.findAll();
     }

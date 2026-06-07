@@ -32,7 +32,7 @@ public class TNMUserDetailsService implements UserDetailsService {
         if (loginAttemptService.isBlocked(ip)) {
             throw new RuntimeException("blocked");
         }
-        TNMUser user = this.TNMUserDAO.findByName(userName);
+        TNMUser user = this.TNMUserDAO.findByIdentifier(userName);
 
         if (user == null) {
             System.out.println("User not found! " + userName);

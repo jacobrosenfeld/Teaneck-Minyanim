@@ -49,6 +49,31 @@ class TNMUserServiceTest {
         assertNull(service.findByNormalizedEmail("   "));
     }
 
+    @Test
+    void findByIdentifierPrefersUsernameBeforeEmailLookup() {
+        TNMUserRepository repository = mock(TNMUserRepository.class);
+        TNMUserService service = new TNMUserService(repository);
+        TNMUser expected = user("manager@example.com");
+        when(repository.findByUsername("manager")).thenReturn(Optional.of(expected));
+
+        TNMUser actual = service.findByIdentifier("  Manager  ");
+
+        assertEquals(expected, actual);
+        verify(repository).findByUsername("manager");
+    }
+
+    @Test
+    void findByIdentifierFallsBackToNormalizedEmail() {
+        TNMUserRepository repository = mock(TNMUserRepository.class);
+        TNMUserService service = new TNMUserService(repository);
+        TNMUser expected = user("manager@example.com");
+        when(repository.findByEmailNormalized("manager@example.com")).thenReturn(Optional.of(expected));
+
+        TNMUser actual = service.findByIdentifier("  Manager@Example.COM  ");
+
+        assertEquals(expected, actual);
+    }
+
     private TNMUser user(String email) {
         return TNMUser.builder()
                 .id("A1")
