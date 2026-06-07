@@ -25,10 +25,12 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
             String organizationId, LocalDate date);
 
     /**
-     * Find a specific event by org/date/type/time/source.
-     * Used for manual override upsert flows.
+     * Find all events that share the coarse org/date/type/time/source key.
+     * Manual override upsert flows use this broader query and then choose the
+     * best matching row based on location/notes so same-time duplicate minyanim
+     * can coexist.
      */
-    Optional<CalendarEvent> findFirstByOrganizationIdAndDateAndMinyanTypeAndStartTimeAndSource(
+    List<CalendarEvent> findByOrganizationIdAndDateAndMinyanTypeAndStartTimeAndSourceOrderByIdAsc(
             String organizationId,
             LocalDate date,
             MinyanType minyanType,

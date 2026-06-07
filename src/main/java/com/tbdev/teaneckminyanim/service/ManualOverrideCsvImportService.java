@@ -142,8 +142,17 @@ public class ManualOverrideCsvImportService {
 
     private void upsertRow(String orgId, String username, ParsedRow row, ImportResult result) {
         Optional<CalendarEvent> existing = calendarEventRepository
-                .findFirstByOrganizationIdAndDateAndMinyanTypeAndStartTimeAndSource(
-                        orgId, row.date(), row.minyanType(), row.startTime(), EventSource.MANUAL);
+                .findByOrganizationIdAndDateAndMinyanTypeAndStartTimeAndSourceOrderByIdAsc(
+                        orgId, row.date(), row.minyanType(), row.startTime(), EventSource.MANUAL)
+                .stream()
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        candidates -> selectExistingManualEvent(
+                                candidates,
+                                row.locationId(),
+                                row.locationName(),
+                                row.notes(),
+                                row.nusach())));
 
         String sourceRefPrefix = MODE_FULL_DAY_REPLACE.equals(row.overrideMode())
                 ? EffectiveScheduleService.MANUAL_FULL_DAY_SOURCE_REF_PREFIX
@@ -177,6 +186,78 @@ public class ManualOverrideCsvImportService {
         } else {
             result.incrementCreatedCount();
         }
+    }
+
+    private Optional<CalendarEvent> selectExistingManualEvent(
+            List<CalendarEvent> candidates,
+            String locationId,
+            String locationName,
+            String notes,
+            Nusach nusach) {
+
+        if (candidates.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Optional<CalendarEvent> exactMatch = singleMatch(candidates.stream()
+                .filter(event -> sameNullableText(event.getLocationId(), locationId))
+                .filter(event -> sameNullableText(event.getLocationName(), locationName))
+                .filter(event -> sameNullableText(event.getNotes(), notes))
+                .filter(event -> Objects.equals(event.getNusach(), nusach))
+                .toList());
+        if (exactMatch.isPresent()) {
+            return exactMatch;
+        }
+
+        if (normalizeNullable(locationId) != null) {
+            Optional<CalendarEvent> locationIdMatch = singleMatch(candidates.stream()
+                    .filter(event -> sameNullableText(event.getLocationId(), locationId))
+                    .toList());
+            if (locationIdMatch.isPresent()) {
+                return locationIdMatch;
+            }
+        }
+
+        if (normalizeNullable(locationName) != null) {
+            Optional<CalendarEvent> locationNameMatch = singleMatch(candidates.stream()
+                    .filter(event -> sameNullableText(event.getLocationName(), locationName))
+                    .toList());
+            if (locationNameMatch.isPresent()) {
+                return locationNameMatch;
+            }
+        }
+
+        if (normalizeNullable(notes) != null) {
+            Optional<CalendarEvent> notesMatch = singleMatch(candidates.stream()
+                    .filter(event -> sameNullableText(event.getNotes(), notes))
+                    .toList());
+            if (notesMatch.isPresent()) {
+                return notesMatch;
+            }
+        }
+
+        if (candidates.size() == 1
+                && normalizeNullable(locationId) == null
+                && normalizeNullable(locationName) == null
+                && normalizeNullable(notes) == null) {
+            return Optional.of(candidates.get(0));
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<CalendarEvent> singleMatch(List<CalendarEvent> matches) {
+        return matches.size() == 1 ? Optional.of(matches.get(0)) : Optional.empty();
+    }
+
+    private boolean sameNullableText(String left, String right) {
+        return Objects.equals(normalizeNullable(left), normalizeNullable(right));
+    }
+
+    private String normalizeNullable(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private ParsedRow parseRow(CSVRecord record, Organization org, Map<String, Location> locationsByLowerName) {
