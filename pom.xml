@@ -10,7 +10,7 @@
   </parent>  
   <groupId>com.tbdev</groupId>  
   <artifactId>Teaneck-Minyanim</artifactId>  
-  <version>1.13.1</version>
+  <version>1.14.0</version>
   <name>Teaneck-Minyanim</name>
   <description>Teaneck-Minyanim</description>
   <properties>
@@ -100,6 +100,11 @@
       <groupId>org.springframework.boot</groupId>  
       <artifactId>spring-boot-starter-security</artifactId> 
     </dependency>  
+    <dependency>
+      <groupId>com.webauthn4j</groupId>
+      <artifactId>webauthn4j-core</artifactId>
+      <version>0.29.7.RELEASE</version>
+    </dependency>
     <dependency> 
       <groupId>org.springframework.security</groupId>  
       <artifactId>spring-security-test</artifactId>  

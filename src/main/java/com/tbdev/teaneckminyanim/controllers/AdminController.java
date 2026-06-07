@@ -221,7 +221,7 @@ public class AdminController {
 
     @GetMapping("/admin/logout")
     public ModelAndView logout(@RequestParam(value = "error", required = false) String error) {
-        return new LoginController(settingsService).login(error, true);
+        return new ModelAndView("redirect:/admin/login?logout=true");
     }
 
     @GetMapping("/admin/organizations")
@@ -826,10 +826,18 @@ public class AdminController {
             TNMUserDAO.update(
                     TNMUser.builder()
                             .id(targetUser.getId())
-                            .email(targetUser.getUsername())
-                            .encryptedPassword(targetUser.getEncryptedPassword())
+                            .username(targetUser.getUsername())
+                            .email(targetUser.getEmail())
+                            .emailNormalized(targetUser.getEmailNormalized())
+                            .encryptedPassword(Encrypter.encrytedPassword(password))
                             .organizationId(targetUser.getOrganizationId())
                             .roleId(targetUser.getRoleId())
+                            .enabled(targetUser.isEnabled())
+                            .lastLoginAt(targetUser.getLastLoginAt())
+                            .lastLoginMethod(targetUser.getLastLoginMethod())
+                            .invitedAt(targetUser.getInvitedAt())
+                            .inviteAcceptedAt(targetUser.getInviteAcceptedAt())
+                            .authMigrationRequired(targetUser.isAuthMigrationRequired())
                             .build());
 
             return account(accountId, "Successfully updated the account password.", null, null);

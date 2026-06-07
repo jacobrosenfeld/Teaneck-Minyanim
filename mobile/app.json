@@ -2,14 +2,14 @@
   "expo": {
     "name": "Teaneck Minyanim",
     "slug": "teaneck-minyanim",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "teaneckminyanim",
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.teaneckminyanim.app",
-      "buildNumber": "35",
+      "buildNumber": "36",
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Teaneck Minyanim uses your location to show nearby shuls and sort by distance.",

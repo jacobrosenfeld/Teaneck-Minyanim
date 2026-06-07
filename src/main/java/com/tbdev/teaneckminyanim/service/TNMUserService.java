@@ -4,7 +4,7 @@ import com.tbdev.teaneckminyanim.repo.TNMUserRepository;
 import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.enums.Role;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +22,15 @@ public class TNMUserService {
     public TNMUser findByName(String username) {
         return repository.findByUsername(username).orElse(null);
     }
+
+    public TNMUser findByNormalizedEmail(String email) {
+        String normalizedEmail = TNMUser.normalizeEmail(email);
+        if (normalizedEmail == null) {
+            return null;
+        }
+        return repository.findByEmailNormalized(normalizedEmail).orElse(null);
+    }
+
     public List<TNMUser> getAll() {
         return repository.findAll();
     }
@@ -32,6 +41,7 @@ public class TNMUserService {
 
     public boolean save(TNMUser tnmUser) {
         try {
+            prepareForPersistence(tnmUser);
             repository.save(tnmUser);
         } catch (Exception e) {
             return false;
@@ -41,6 +51,7 @@ public class TNMUserService {
 
     public boolean update(TNMUser tnmUser) {
         try {
+            prepareForPersistence(tnmUser);
             repository.save(tnmUser);
         } catch (Exception e) {
             return false;
@@ -60,7 +71,11 @@ public class TNMUserService {
      * Get the currently authenticated user
      */
     public TNMUser getCurrentUser() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null) {
+            return null;
+        }
+        String username = authentication.getName();
         return findByName(username);
     }
 
@@ -83,5 +98,11 @@ public class TNMUserService {
         TNMUser user = getCurrentUser();
         return user != null && organizationId.equals(user.getOrganizationId());
     }
-}
 
+    private void prepareForPersistence(TNMUser tnmUser) {
+        if (tnmUser == null) {
+            return;
+        }
+        tnmUser.normalizeAuthFields();
+    }
+}

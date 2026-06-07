@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Admin passwordless auth (#243)**: Added passkey signin via Spring Security WebAuthn, passkey registration through `/webauthn/register`, magic-link signin wired into the existing email handler, normalized account email lookup, auth migration metadata, login timestamp/method fields, and migration SQL while keeping `ACCOUNT`/`TNMUser` as the source of truth for the future user-management page planned in #246.
 - **Feedback infrastructure (#245)**: Added a public feedback API and shared Intercom-style public-site feedback popup that create GitHub issues labeled `user feedback` through server-side GitHub settings, separate minyan schedule/data issues from app/website functionality issues, replace the legacy floating top button on public pages, capture automatic debugging/PostHog metadata without exposing optional user emails in public issue content, hide the widget until GitHub settings are complete, and send private email notifications with the created issue link.
 - **Invisible reCAPTCHA protection**: Added External Services settings for reCAPTCHA site/secret keys and server-side verification for public feedback, newsletter subscription, and admin login submissions.
 - **Email handler (#35)**: Added settings-backed SMTP and AWS SES email delivery, a dedicated super-admin Email Settings page with per-field saves, masked email credential settings, a test email endpoint, and operator documentation for configuring providers.
@@ -38,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Manual override imports now preserve same-time duplicate rows**: XLSX and CSV manual override upserts now choose existing MANUAL rows using location/notes-aware matching instead of only org/date/type/time, so duplicate-time minyanim like concurrent `8:00` Shacharis rows no longer overwrite each other during import.
+- **Account password update flow (#243)**: Fixed the existing account password-change route so it preserves account fields and stores the new encrypted password instead of rebuilding the account with stale credentials.
 - **Email settings encryption startup**: Fixed the sensitive-settings crypto component constructor wiring so Spring can instantiate it during application startup.
 - **Deleted source calendar events (#240)**: Scheduled calendar imports now reconcile the successful feed coverage window, mark imported rows missing from the source calendar as source-deleted/disabled, disable stale imported `calendar_events` rows, and allow admins to manually re-enable source-removed imported rows when needed.
 - **Mobile admin panel responsiveness (#238)**: Added reusable responsive admin table primitives, migrated high-risk admin tables onto shared scroll/action wrappers, kept header actions within narrow mobile viewports, exposed super-admin navigation links in the mobile sidebar, and moved the Geocode All Organizations action to the super-admin Maintenance page.
@@ -64,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Calendar Entries admin render regression**: Removed fragile per-row `#httpServletRequest` expression from toggle form and switched redirect-state fallback to `Referer`, preventing mixed partial admin render/error-template bleed-through.
 
 ### Security
+- **Admin auth hardening (#243)**: Disabled accounts now load into Spring Security as disabled users, magic-link tokens are stored as single-use SHA-256 hashes with 15-minute expiry, and the hard-coded remember-me key was removed from admin login configuration.
 - **Email credential encryption**: Sensitive email settings, including SMTP password and SES credentials, are now stored with reversible AES-GCM encryption using `APP_SETTINGS_ENCRYPTION_KEY`, with startup migration for existing plaintext values when the key is configured.
 - **Admin organization access control (#216)**: Organization managers and users can no longer view, edit, or route into admin panels for shuls outside their account by changing organization ids in URLs or form submissions.
 
