@@ -38,19 +38,18 @@ CREATE TABLE IF NOT EXISTS MAGIC_LINK_TOKEN (
 );
 
 CREATE TABLE IF NOT EXISTS user_credentials (
-    credential_id VARCHAR(1024) PRIMARY KEY,
-    user_entity_user_id VARCHAR(1024) NOT NULL,
+    credential_id VARBINARY(2048) PRIMARY KEY,
+    user_entity_user_id VARCHAR(1000) NOT NULL,
     public_key BLOB NOT NULL,
-    signature_count BIGINT NOT NULL,
-    uv_initialized BOOLEAN NOT NULL,
+    signature_count BIGINT NULL,
+    uv_initialized BOOLEAN NULL,
     backup_eligible BOOLEAN NOT NULL,
-    authenticator_transports VARCHAR(1024) NULL,
+    authenticator_transports VARCHAR(1000) NULL,
     public_key_credential_type VARCHAR(100) NOT NULL,
     backup_state BOOLEAN NOT NULL,
     attestation_object BLOB NULL,
     attestation_client_data_json BLOB NULL,
     created TIMESTAMP NULL,
     last_used TIMESTAMP NULL,
-    label VARCHAR(255) NULL,
-    INDEX IDX_USER_CREDENTIALS_USER_ID (user_entity_user_id)
+    label VARCHAR(1000) NOT NULL
 );

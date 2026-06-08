@@ -124,7 +124,9 @@ public class WebSecurityConfiguration {
     }
 
     @Bean
-    public UserCredentialRepository userCredentialRepository(JdbcOperations jdbcOperations) {
+    public UserCredentialRepository userCredentialRepository(JdbcOperations jdbcOperations,
+                                                             WebAuthnCredentialSchemaInitializer schemaInitializer) {
+        schemaInitializer.ensureSchema();
         return new JdbcUserCredentialRepository(jdbcOperations);
     }
 
