@@ -28,20 +28,30 @@ public class TNMUserService {
         if (normalizedEmail == null) {
             return null;
         }
-        return repository.findByEmailNormalized(normalizedEmail).orElse(null);
+        return repository.findByEmailNormalized(normalizedEmail)
+                .or(() -> repository.findByEmailIgnoreCase(normalizedEmail))
+                .orElse(null);
     }
 
     public TNMUser findByIdentifier(String identifier) {
-        String normalizedIdentifier = TNMUser.normalizeEmail(identifier);
-        if (normalizedIdentifier == null) {
+        if (identifier == null) {
             return null;
         }
 
-        TNMUser user = findByName(normalizedIdentifier);
+        String trimmedIdentifier = identifier.trim();
+        if (trimmedIdentifier.isBlank()) {
+            return null;
+        }
+
+        TNMUser user = findByName(trimmedIdentifier);
         if (user != null) {
             return user;
         }
-        return findByNormalizedEmail(normalizedIdentifier);
+        user = repository.findByUsernameIgnoreCase(trimmedIdentifier).orElse(null);
+        if (user != null) {
+            return user;
+        }
+        return findByNormalizedEmail(trimmedIdentifier);
     }
 
     public List<TNMUser> getAll() {

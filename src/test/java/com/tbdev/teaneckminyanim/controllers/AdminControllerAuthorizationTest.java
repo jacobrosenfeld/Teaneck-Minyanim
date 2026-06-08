@@ -13,6 +13,7 @@ import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMSettingsService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
+import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,6 +74,7 @@ class AdminControllerAuthorizationTest {
         ReflectionTestUtils.setField(controller, "versionService", versionService);
         ReflectionTestUtils.setField(controller, "settingsService", settingsService);
         ReflectionTestUtils.setField(controller, "calendarMaterializationService", mock(CalendarMaterializationService.class));
+        ReflectionTestUtils.setField(controller, "passkeyCredentialService", mock(PasskeyCredentialService.class));
     }
 
     @AfterEach

@@ -8,145 +8,483 @@
     
     <th:block layout:fragment="styles">
         <style>
-            .account-form-section {
-                background: var(--bg-surface, #ffffff);
-                border-radius: var(--radius-lg, 0.5rem);
-                padding: var(--space-6, 1.5rem);
-                margin-bottom: var(--space-4, 1rem);
-                box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+            .settings-breadcrumb {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: var(--space-2, 0.5rem);
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin-bottom: var(--space-5, 1.25rem);
             }
-            
-            .account-action-card {
-                background: var(--bg-surface, #ffffff);
-                border-radius: var(--radius-lg, 0.5rem);
+
+            .settings-breadcrumb a {
+                color: var(--text-secondary, #6c757d);
+                text-decoration: none;
+            }
+
+            .settings-breadcrumb a:hover {
+                color: var(--text-primary, #212529);
+            }
+
+            .settings-shell {
+                max-width: 1120px;
+                margin: 0 auto;
+            }
+
+            .settings-tabs {
+                display: flex;
+                align-items: center;
+                gap: var(--space-5, 1.25rem);
+                margin-bottom: var(--space-6, 1.5rem);
+                border-bottom: 1px solid var(--border-color, #dee2e6);
+                overflow-x: auto;
+            }
+
+            .settings-tab {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                color: var(--text-secondary, #6c757d);
+                padding: 0 0 var(--space-3, 0.75rem);
+                border-bottom: 2px solid transparent;
+                white-space: nowrap;
+                text-decoration: none;
+            }
+
+            .settings-tab:first-child {
+                color: var(--text-primary, #212529);
+                border-color: var(--text-primary, #212529);
+            }
+
+            .settings-tab:hover {
+                color: var(--text-primary, #212529);
+                text-decoration: none;
+            }
+
+            .settings-status-panel {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--space-4, 1rem);
                 padding: var(--space-4, 1rem);
-                margin-bottom: var(--space-4, 1rem);
-                box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+                margin-bottom: var(--space-8, 2rem);
+                background: #eef8ff;
+                border: 1px solid #b8dff5;
+                border-left: 4px solid var(--color-info, #2196f3);
+                border-radius: var(--radius-lg, 0.5rem);
             }
-            
-            .account-action-card.warning {
-                border-left: 4px solid var(--color-warning, #ffc107);
+
+            .settings-status-copy {
+                display: flex;
+                align-items: flex-start;
+                gap: var(--space-3, 0.75rem);
+                min-width: 0;
             }
-            
-            .account-action-card.danger {
+
+            .settings-status-icon {
+                color: var(--color-info, #2196f3);
+                padding-top: 0.15rem;
+                flex: 0 0 auto;
+            }
+
+            .settings-status-title {
+                color: var(--text-primary, #212529);
+                font-weight: var(--font-weight-semibold, 600);
+                margin-bottom: var(--space-1, 0.25rem);
+            }
+
+            .settings-status-text {
+                color: var(--text-secondary, #6c757d);
+                margin: 0;
+            }
+
+            .provider-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-full, 9999px);
+                font-size: var(--font-size-sm, 0.875rem);
+                white-space: nowrap;
+            }
+
+            .settings-section {
+                display: grid;
+                grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
+                gap: var(--space-8, 2rem);
+                align-items: start;
+                margin-bottom: var(--space-6, 1.5rem);
+            }
+
+            .section-copy {
+                position: sticky;
+                top: calc(var(--navbar-height, 3.5rem) + var(--space-5, 1.25rem));
+            }
+
+            .section-title {
+                display: flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                font-size: var(--font-size-xl, 1.25rem);
+                margin-bottom: var(--space-2, 0.5rem);
+            }
+
+            .section-title i {
+                color: var(--color-primary, #275ed8);
+                width: 1.2rem;
+                text-align: center;
+            }
+
+            .section-description {
+                color: var(--text-secondary, #6c757d);
+                margin: 0;
+            }
+
+            .settings-panel {
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-lg, 0.5rem);
+                box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+                overflow: hidden;
+            }
+
+            .account-field-row {
+                display: grid;
+                grid-template-columns: minmax(180px, 280px) minmax(260px, 1fr);
+                gap: var(--space-4, 1rem);
+                align-items: center;
+                padding: var(--space-4, 1rem) var(--space-5, 1.25rem);
+                border-bottom: 1px solid var(--border-color-light, #e9ecef);
+            }
+
+            .account-field-row:last-child {
+                border-bottom: 0;
+            }
+
+            .field-label {
+                display: block;
+                color: var(--text-primary, #212529);
+                font-weight: var(--font-weight-semibold, 600);
+                margin-bottom: var(--space-1, 0.25rem);
+            }
+
+            .field-description {
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin: 0;
+            }
+
+            .field-input {
+                width: 100%;
+                height: 2.75rem;
+                padding: 0 var(--space-3, 0.75rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color-dark, #ced4da);
+                border-radius: var(--radius-md, 0.375rem);
+                font-size: var(--font-size-base, 1rem);
+            }
+
+            .field-input:focus {
+                border-color: var(--text-primary, #212529);
+                box-shadow: 0 0 0 2px rgba(33, 37, 41, 0.08);
+                outline: none;
+            }
+
+            .account-card {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--space-4, 1rem);
+                padding: var(--space-5, 1.25rem);
+                border-bottom: 1px solid var(--border-color-light, #e9ecef);
+            }
+
+            .account-card:last-child {
+                border-bottom: 0;
+            }
+
+            .account-card-title {
+                font-weight: var(--font-weight-semibold, 600);
+                margin-bottom: var(--space-1, 0.25rem);
+            }
+
+            .account-card-description {
+                color: var(--text-secondary, #6c757d);
+                margin: 0;
+            }
+
+            .account-actions {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: var(--space-2, 0.5rem);
+                flex: 0 0 auto;
+            }
+
+            .account-danger-panel {
                 border-left: 4px solid var(--color-danger, #dc3545);
             }
-            
-            .sidebar-card {
-                background: var(--bg-surface, #ffffff);
-                border-radius: var(--radius-lg, 0.5rem);
-                padding: var(--space-4, 1rem);
-                margin-bottom: var(--space-4, 1rem);
-                box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+
+            @media (max-width: 900px) {
+                .settings-section,
+                .account-field-row {
+                    grid-template-columns: 1fr;
+                    gap: var(--space-3, 0.75rem);
+                }
+
+                .section-copy {
+                    position: static;
+                }
+            }
+
+            @media (max-width: 560px) {
+                .settings-status-panel,
+                .account-card {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
             }
         </style>
     </th:block>
 </head>
 <body>
     <div layout:fragment="content">
-        <!-- Page Header -->
-        <div class="page-header">
-            <div>
-                <div class="d-flex align-items-center flex-wrap">
-                    <h1 class="page-title mr-2" th:text="${queriedaccount.username}">Account Username</h1>
-                    <span class="badge" th:classappend="${queriedaccount.isEnabled()} ? ' badge-success' : ' badge-secondary'"
-                          th:text="${queriedaccount.isEnabled()} ? 'Enabled' : 'Disabled'">Enabled</span>
-                </div>
-                <p class="page-description">Edit account profile and settings.</p>
+        <div class="settings-shell">
+            <div class="settings-breadcrumb">
+                <a th:href="@{/admin}">Dashboard</a>
+                <span>/</span>
+                <a th:if="${user.isSuperAdmin()}" th:href="@{/admin/accounts}">Accounts</a>
+                <span th:if="${user.isSuperAdmin()}">/</span>
+                <span th:text="${queriedaccount.username}">Account</span>
             </div>
-        </div>
 
-        <!-- Success Message -->
-        <div th:if="${successMessage}" class="alert-modern alert-success mb-4" th:text="${successMessage}"></div>
-        <div th:if="${mainErrorMessage}" class="alert-modern alert-danger mb-4" th:text="${mainErrorMessage}"></div>
+            <div class="page-header">
+                <div>
+                    <div class="d-flex align-items-center flex-wrap">
+                        <h1 class="page-title mr-2" th:text="${queriedaccount.username}">Account Username</h1>
+                        <span class="badge" th:classappend="${queriedaccount.isEnabled()} ? ' badge-success' : ' badge-secondary'"
+                              th:text="${queriedaccount.isEnabled()} ? 'Enabled' : 'Disabled'">Enabled</span>
+                    </div>
+                    <p class="page-description">Manage account profile, access, and sign-in methods.</p>
+                </div>
+            </div>
 
-        <div class="row">
-            <div class="col-lg-8 col-md-7">
-                <!-- Account Information Form -->
-                <div class="account-form-section">
-                    <h3 class="mb-4" style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold);">Account Information</h3>
-                    <form th:action="@{/admin/update-account}" method="post">
-                        <input type="hidden" name="id" th:value="${queriedaccount.id}">
-                        
-                        <div class="form-group mb-4">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" name="username" id="username" 
-                                   th:value="${queriedaccount.username}" required>
-                            <small class="form-text text-muted">This is used for account sign-in.</small>
+            <div th:if="${successMessage}" class="alert-modern alert-success mb-4" th:text="${successMessage}"></div>
+            <div th:if="${mainErrorMessage}" class="alert-modern alert-danger mb-4" th:text="${mainErrorMessage}"></div>
+
+            <div class="settings-status-panel" th:if="${queriedaccount.id == user.id and (!hasPasskeys or showPasskeySetupPrompt)}">
+                <div class="settings-status-copy">
+                    <i class="fas fa-key settings-status-icon"></i>
+                    <div>
+                        <div class="settings-status-title">Set up a passkey</div>
+                        <p class="settings-status-text">
+                            Add a passkey to make admin sign-in faster and avoid relying on email or password fallback.
+                        </p>
+                    </div>
+                </div>
+                <a th:href="@{/webauthn/register}" class="btn-modern btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Set Up Passkey
+                </a>
+            </div>
+
+            <nav class="settings-tabs" aria-label="Account sections">
+                <a class="settings-tab" href="#security">Security</a>
+                <a class="settings-tab" href="#profile">Profile</a>
+                <a class="settings-tab" href="#access">Access</a>
+                <a class="settings-tab" th:if="${user.isAdmin()}" href="#account-status">Status</a>
+            </nav>
+
+            <section class="settings-section" id="security">
+                <div class="section-copy">
+                    <h2 class="section-title">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Security</span>
+                    </h2>
+                    <p class="section-description">Manage password fallback and passkey sign-in for this account.</p>
+                </div>
+
+                <div class="settings-panel">
+                    <div class="account-card" th:if="${queriedaccount.id == user.id}">
+                        <div>
+                            <div class="account-card-title">Passkeys</div>
+                            <p class="account-card-description"
+                               th:text="${hasPasskeys} ? |${passkeyCount} passkey(s) registered for this account.| : 'No passkeys are registered yet.'">
+                                No passkeys are registered yet.
+                            </p>
                         </div>
-                        
-                        <div class="form-group mb-4">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email" id="email" 
-                                   th:value="${queriedaccount.email}" required>
-                            <small class="form-text text-muted">This email will be used for password recovery.</small>
+                        <div class="account-actions">
+                            <a th:href="@{/webauthn/register}" class="btn-modern btn-primary">
+                                <i class="fas fa-key"></i>
+                                Manage Passkeys
+                            </a>
                         </div>
-                        
-                        <div class="form-group mb-4">
-                            <label class="form-label">Password</label>
-                            <div>
-                                <button type="button" class="btn-modern btn-secondary" 
-                                        data-toggle="modal" data-target="#change-password-modal">
-                                    Change Password
-                                </button>
-                            </div>
+                    </div>
+
+                    <div class="account-card">
+                        <div>
+                            <div class="account-card-title">Password fallback</div>
+                            <p class="account-card-description">Change the password used when passkey or email sign-in is unavailable.</p>
                         </div>
-                        
-                        <div class="form-group mb-4" th:if="${user.isAdmin() && !queriedaccount.isSuperAdmin()}">
-                            <label class="form-label">Privileges</label>
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label th:class="${'btn btn-outline-primary' + (queriedaccount.isAdmin() ? ' active' : '')}">
-                                    <input type="radio" name="privileges" value="1" th:checked="${queriedaccount.isAdmin()}"> Manager
-                                </label>
-                                <label th:class="${'btn btn-outline-primary' + ((queriedaccount.isUser() && !queriedaccount.isAdmin()) ? ' active' : '')}">
-                                    <input type="radio" name="privileges" value="2" th:checked="${queriedaccount.isUser() && !queriedaccount.isAdmin()}"> User
-                                </label>
-                            </div>
-                            <small class="form-text text-muted">Manager permissions allow the user to add and edit other accounts.</small>
+                        <div class="account-actions">
+                            <button type="button" class="btn-modern btn-secondary"
+                                    data-toggle="modal" data-target="#change-password-modal">
+                                Change Password
+                            </button>
                         </div>
-                        
-                        <!-- Hidden privileges field for non-admin users -->
-                        <div class="form-group" hidden th:if="${!(user.isAdmin() && !queriedaccount.isSuperAdmin())}">
-                            <input type="radio" name="privileges" value="1" th:checked="${queriedaccount.isAdmin()}">
-                            <input type="radio" name="privileges" value="2" th:checked="${queriedaccount.isUser() && !queriedaccount.isAdmin()}">
+                    </div>
+                </div>
+            </section>
+
+            <section class="settings-section" id="profile">
+                <div class="section-copy">
+                    <h2 class="section-title">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </h2>
+                    <p class="section-description">Edit the account identifier and delivery email.</p>
+                </div>
+
+                <form class="settings-panel" th:action="@{/admin/update-account}" method="post">
+                    <input type="hidden" name="id" th:value="${queriedaccount.id}">
+
+                    <div class="account-field-row">
+                        <div>
+                            <label for="username" class="field-label">Username</label>
+                            <p class="field-description">Used as a stable account sign-in identifier.</p>
                         </div>
-                        
-                        <div th:if="${updateError}" class="alert-modern alert-danger mb-3" th:text="${updateError}"></div>
-                        
+                        <input type="text" class="field-input" name="username" id="username"
+                               th:value="${queriedaccount.username}" required>
+                    </div>
+
+                    <div class="account-field-row">
+                        <div>
+                            <label for="email" class="field-label">Email</label>
+                            <p class="field-description">Used for magic-link sign-in and account communication.</p>
+                        </div>
+                        <input type="email" class="field-input" name="email" id="email"
+                               th:value="${queriedaccount.email}" required>
+                    </div>
+
+                    <div class="account-field-row" th:if="${user.isAdmin() && !queriedaccount.isSuperAdmin()}">
+                        <div>
+                            <span class="field-label">Privileges</span>
+                            <p class="field-description">Manager permissions allow the user to add and edit other accounts.</p>
+                        </div>
+                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                            <label th:class="${'btn btn-outline-primary' + (queriedaccount.isAdmin() ? ' active' : '')}">
+                                <input type="radio" name="privileges" value="1" th:checked="${queriedaccount.isAdmin()}"> Manager
+                            </label>
+                            <label th:class="${'btn btn-outline-primary' + ((queriedaccount.isUser() && !queriedaccount.isAdmin()) ? ' active' : '')}">
+                                <input type="radio" name="privileges" value="2" th:checked="${queriedaccount.isUser() && !queriedaccount.isAdmin()}"> User
+                            </label>
+                        </div>
+                    </div>
+
+                    <div hidden th:if="${!(user.isAdmin() && !queriedaccount.isSuperAdmin())}">
+                        <input type="radio" name="privileges" value="1" th:checked="${queriedaccount.isAdmin()}">
+                        <input type="radio" name="privileges" value="2" th:checked="${queriedaccount.isUser() && !queriedaccount.isAdmin()}">
+                    </div>
+
+                    <div th:if="${updateError}" class="alert-modern alert-danger m-3" th:text="${updateError}"></div>
+
+                    <div class="account-field-row">
+                        <div></div>
                         <button type="submit" class="btn-modern btn-primary">
                             <i class="fas fa-save"></i>
                             Update Account
                         </button>
-                    </form>
+                    </div>
+                </form>
+            </section>
+
+            <section class="settings-section" id="access">
+                <div class="section-copy">
+                    <h2 class="section-title">
+                        <i class="fas fa-link"></i>
+                        <span>Access</span>
+                    </h2>
+                    <p class="section-description">Review the organization and admin areas connected to this account.</p>
                 </div>
 
-                <!-- Account Actions -->
-                <div class="row mt-4" th:if="${user.isAdmin()}">
-                    <div class="col-sm-6">
-                        <div class="account-action-card warning">
-                            <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2);">Account status</h5>
-                            <div th:if="${queriedaccount.isEnabled()}">
-                                <p class="text-muted mb-3" th:text="|Disable login access to ${siteName ?: 'Minyan Manager'} from this account. This will not erase any of its data.|">
-                                    Disable login access. This will not erase any data.
-                                </p>
-                                <button id="open-disable-account-modal" type="button" class="btn-modern btn-warning" data-toggle="modal" data-target="#disable-account-modal">
-                                    <i class="fas fa-ban"></i>
-                                    Disable Account
-                                </button>
-                            </div>
-                            <div th:if="${queriedaccount.isDisabled()}">
-                                <p class="text-muted mb-3">This account is disabled. Enable it to restore access.</p>
-                                <button id="open-enable-account-modal" type="button" class="btn-modern btn-success" data-toggle="modal" data-target="#enable-account-modal">
-                                    <i class="fas fa-check"></i>
-                                    Enable Account
-                                </button>
-                            </div>
+                <div class="settings-panel">
+                    <div class="account-card" th:if="${associatedorganization != null and associatedorganization.id != null}">
+                        <div>
+                            <div class="account-card-title">Associated Organization</div>
+                            <p class="account-card-description" th:text="|View and manage ${associatedorganization.name}.|">
+                                View and manage organization details.
+                            </p>
+                        </div>
+                        <div class="account-actions">
+                            <a th:href="@{/admin/organization(id=${associatedorganization.id})}" class="btn-modern btn-primary">
+                                <i class="fas fa-building"></i>
+                                Go to Organization
+                            </a>
                         </div>
                     </div>
-                    <div class="col-sm-6" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
-                        <div class="account-action-card danger">
-                            <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-2);">Delete this account</h5>
-                            <p class="text-muted mb-3">Permanently delete all data for this account.</p>
+
+                    <div class="account-card" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+                        <div>
+                            <div class="account-card-title">Organizations</div>
+                            <p class="account-card-description">See all organizations and manage their data and details.</p>
+                        </div>
+                        <div class="account-actions">
+                            <a href="/admin/organizations" class="btn-modern btn-primary">
+                                <i class="fas fa-building"></i>
+                                View All Organizations
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="settings-section" id="account-status" th:if="${user.isAdmin()}">
+                <div class="section-copy">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-lock"></i>
+                        <span>Status</span>
+                    </h2>
+                    <p class="section-description">Disable, re-enable, or permanently delete this account.</p>
+                </div>
+
+                <div class="settings-panel account-danger-panel">
+                    <div class="account-card">
+                        <div>
+                            <div class="account-card-title">Account status</div>
+                            <p class="account-card-description" th:if="${queriedaccount.isEnabled()}"
+                               th:text="|Disable login access to ${siteName ?: 'Minyan Manager'} from this account. This will not erase any of its data.|">
+                                Disable login access. This will not erase any data.
+                            </p>
+                            <p class="account-card-description" th:if="${queriedaccount.isDisabled()}">
+                                This account is disabled. Enable it to restore access.
+                            </p>
+                        </div>
+                        <div class="account-actions">
+                            <button th:if="${queriedaccount.isEnabled()}" id="open-disable-account-modal" type="button"
+                                    class="btn-modern btn-warning" data-toggle="modal" data-target="#disable-account-modal">
+                                <i class="fas fa-ban"></i>
+                                Disable Account
+                            </button>
+                            <button th:if="${queriedaccount.isDisabled()}" id="open-enable-account-modal" type="button"
+                                    class="btn-modern btn-success" data-toggle="modal" data-target="#enable-account-modal">
+                                <i class="fas fa-check"></i>
+                                Enable Account
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="account-card" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+                        <div>
+                            <div class="account-card-title">Delete this account</div>
+                            <p class="account-card-description">Permanently delete all data for this account.</p>
+                            <small class="text-muted d-block mt-2" th:if="${queriedaccount.isEnabled()}">Disable this account before deleting.</small>
+                        </div>
+                        <div class="account-actions">
                             <span th:attr="data-toggle=${queriedaccount.isEnabled()} ? 'tooltip' : null, title=${queriedaccount.isEnabled()} ? 'Disable the account before deleting' : null">
                                 <button id="open-delete-account-modal" type="button" class="btn-modern btn-danger"
                                         th:classappend="${queriedaccount.isEnabled()} ? ' disabled' : ''"
@@ -156,44 +494,10 @@
                                     Delete Account
                                 </button>
                             </span>
-                            <small class="text-muted d-block mt-2" th:if="${queriedaccount.isEnabled()}">Disable this account before deleting.</small>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-lg-4 col-md-5">
-                <!-- Associated Organization Card -->
-                <div class="sidebar-card" th:if="${associatedorganization != null}"> 
-                    <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-3);">Associated Organization</h5>
-                    <p class="text-muted mb-3" th:text="|View and manage the organization details for ${associatedorganization.name}.|">
-                        View and manage organization details.
-                    </p>
-                    <a th:href="@{/admin/organization(id=${associatedorganization.id})}" class="btn-modern btn-primary">
-                        <i class="fas fa-building"></i>
-                        Go to Organization
-                    </a>
-                </div>
-
-                <div class="sidebar-card" th:if="${queriedaccount.id == user.id}">
-                    <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-3);">Passkeys</h5>
-                    <p class="text-muted mb-3">Register or remove passkeys for faster admin sign-in.</p>
-                    <a th:href="@{/webauthn/register}" class="btn-modern btn-primary">
-                        <i class="fas fa-key"></i>
-                        Manage Passkeys
-                    </a>
-                </div>
-                
-                <!-- Organizations Link (Super Admin Only) -->
-                <div class="sidebar-card" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
-                    <h5 style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-3);">Organizations</h5>
-                    <p class="text-muted mb-3">See a list of all organizations and manage their data and details.</p>
-                    <a href="/admin/organizations" class="btn-modern btn-primary">
-                        <i class="fas fa-building"></i>
-                        View All Organizations
-                    </a>
-                </div>
-            </div>
+            </section>
         </div>
     </div>
 

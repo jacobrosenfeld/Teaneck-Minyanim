@@ -55,6 +55,7 @@ public class WebSecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            LoginRecaptchaFilter loginRecaptchaFilter,
+                                           AdminLoginSuccessHandler adminLoginSuccessHandler,
                                            ApplicationSettingsService settingsService) throws Exception {
         // Never save static asset requests as the post-login redirect target
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
@@ -101,6 +102,7 @@ public class WebSecurityConfiguration {
                 .loginProcessingUrl("/j_spring_security_check")
                 .loginPage("/admin/login")
                 .defaultSuccessUrl("/admin")
+                .successHandler(adminLoginSuccessHandler)
                 .failureUrl("/admin/login?error=true")
                 .usernameParameter("username")
                 .passwordParameter("password")
@@ -115,6 +117,7 @@ public class WebSecurityConfiguration {
                 .rpId(webAuthnRpId(settingsService))
                 .rpName(settingsService.getSiteName())
                 .allowedOrigins(webAuthnAllowedOrigin(settingsService))
+                .disableDefaultRegistrationPage(true)
             );
 
         return http.build();

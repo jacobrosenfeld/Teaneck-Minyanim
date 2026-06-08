@@ -54,12 +54,25 @@ class TNMUserServiceTest {
         TNMUserRepository repository = mock(TNMUserRepository.class);
         TNMUserService service = new TNMUserService(repository);
         TNMUser expected = user("manager@example.com");
-        when(repository.findByUsername("manager")).thenReturn(Optional.of(expected));
+        when(repository.findByUsername("Manager")).thenReturn(Optional.of(expected));
 
         TNMUser actual = service.findByIdentifier("  Manager  ");
 
         assertEquals(expected, actual);
-        verify(repository).findByUsername("manager");
+        verify(repository).findByUsername("Manager");
+    }
+
+    @Test
+    void findByIdentifierFallsBackToCaseInsensitiveUsername() {
+        TNMUserRepository repository = mock(TNMUserRepository.class);
+        TNMUserService service = new TNMUserService(repository);
+        TNMUser expected = user("manager@example.com");
+        when(repository.findByUsernameIgnoreCase("Manager")).thenReturn(Optional.of(expected));
+
+        TNMUser actual = service.findByIdentifier("  Manager  ");
+
+        assertEquals(expected, actual);
+        verify(repository).findByUsernameIgnoreCase("Manager");
     }
 
     @Test
@@ -68,6 +81,18 @@ class TNMUserServiceTest {
         TNMUserService service = new TNMUserService(repository);
         TNMUser expected = user("manager@example.com");
         when(repository.findByEmailNormalized("manager@example.com")).thenReturn(Optional.of(expected));
+
+        TNMUser actual = service.findByIdentifier("  Manager@Example.COM  ");
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void findByIdentifierFallsBackToCaseInsensitiveEmailWhenNormalizedEmailMissing() {
+        TNMUserRepository repository = mock(TNMUserRepository.class);
+        TNMUserService service = new TNMUserService(repository);
+        TNMUser expected = user("manager@example.com");
+        when(repository.findByEmailIgnoreCase("manager@example.com")).thenReturn(Optional.of(expected));
 
         TNMUser actual = service.findByIdentifier("  Manager@Example.COM  ");
 

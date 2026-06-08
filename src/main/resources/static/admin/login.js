@@ -9,7 +9,7 @@ function preparePasswordLogin() {
 }
 
 function normalizedIdentifier(value) {
-    return (value || '').trim().toLowerCase();
+    return (value || '').trim();
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (passwordPanel && passwordPanel.classList.contains('is-open')) {
         passwordToggle && passwordToggle.classList.remove('d-none');
+    } else if (passwordField) {
+        passwordField.disabled = true;
     }
 
     identifierForm.addEventListener('submit', async function (event) {
@@ -96,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
             passwordPanel.classList.add('is-open');
         }
         if (passwordField) {
+            passwordField.disabled = false;
             passwordField.focus();
         }
     }

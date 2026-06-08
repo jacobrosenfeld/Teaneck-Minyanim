@@ -5,18 +5,12 @@ import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.auth.MagicLinkService;
+import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.web.webauthn.api.Bytes;
-import org.springframework.security.web.webauthn.api.CredentialRecord;
-import org.springframework.security.web.webauthn.management.UserCredentialRepository;
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class LoginControllerTest {
@@ -24,26 +18,24 @@ class LoginControllerTest {
     @Test
     void loginMethodsReportsPasskeyWhenCredentialExistsForIdentifier() {
         TNMUserService userService = mock(TNMUserService.class);
-        UserCredentialRepository credentialRepository = mock(UserCredentialRepository.class);
-        LoginController controller = controller(userService, credentialRepository);
+        PasskeyCredentialService passkeyCredentialService = mock(PasskeyCredentialService.class);
+        LoginController controller = controller(userService, passkeyCredentialService);
         TNMUser user = user(true);
         when(userService.findByIdentifier("manager@example.com")).thenReturn(user);
-        Bytes userId = new Bytes("A1".getBytes(StandardCharsets.UTF_8));
-        when(credentialRepository.findByUserId(userId)).thenReturn(List.of(mock(CredentialRecord.class)));
+        when(passkeyCredentialService.hasPasskeys(user)).thenReturn(true);
 
         LoginController.LoginMethodsResponse response =
                 controller.loginMethods(new LoginController.LoginIdentifierRequest("manager@example.com"));
 
         assertTrue(response.passkeyAvailable());
         assertTrue(response.magicLinkAvailable());
-        verify(credentialRepository).findByUserId(userId);
     }
 
     @Test
     void loginMethodsDoesNotExposeDisabledAccountPasskeys() {
         TNMUserService userService = mock(TNMUserService.class);
-        UserCredentialRepository credentialRepository = mock(UserCredentialRepository.class);
-        LoginController controller = controller(userService, credentialRepository);
+        PasskeyCredentialService passkeyCredentialService = mock(PasskeyCredentialService.class);
+        LoginController controller = controller(userService, passkeyCredentialService);
         when(userService.findByIdentifier("manager")).thenReturn(user(false));
 
         LoginController.LoginMethodsResponse response =
@@ -54,12 +46,12 @@ class LoginControllerTest {
     }
 
     private LoginController controller(TNMUserService userService,
-                                       UserCredentialRepository credentialRepository) {
+                                       PasskeyCredentialService passkeyCredentialService) {
         return new LoginController(
                 mock(ApplicationSettingsService.class),
                 mock(MagicLinkService.class),
                 userService,
-                credentialRepository);
+                passkeyCredentialService);
     }
 
     private TNMUser user(boolean enabled) {

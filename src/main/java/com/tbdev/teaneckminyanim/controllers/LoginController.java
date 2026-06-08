@@ -3,6 +3,7 @@ package com.tbdev.teaneckminyanim.controllers;
 import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.service.auth.MagicLinkAuthenticationException;
 import com.tbdev.teaneckminyanim.service.auth.MagicLinkService;
+import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,8 +13,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.webauthn.api.Bytes;
-import org.springframework.security.web.webauthn.management.UserCredentialRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Date;
@@ -35,7 +33,7 @@ public class LoginController {
     private final ApplicationSettingsService settingsService;
     private final MagicLinkService magicLinkService;
     private final TNMUserService userService;
-    private final UserCredentialRepository userCredentialRepository;
+    private final PasskeyCredentialService passkeyCredentialService;
     
     @ModelAttribute("siteName")
     public String siteName() {
@@ -117,10 +115,7 @@ public class LoginController {
         if (user == null || user.isDisabled()) {
             return new LoginMethodsResponse(false, true);
         }
-        List<?> credentials = userCredentialRepository.findByUserId(
-                new Bytes(user.getId().getBytes(StandardCharsets.UTF_8)));
-        boolean hasPasskey = credentials != null && !credentials.isEmpty();
-        return new LoginMethodsResponse(hasPasskey, true);
+        return new LoginMethodsResponse(passkeyCredentialService.hasPasskeys(user), true);
     }
 
     @GetMapping("/admin/login/magic-link/verify")
@@ -136,6 +131,9 @@ public class LoginController {
             request.getSession(true).setAttribute(
                     HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                     SecurityContextHolder.getContext());
+            if (!passkeyCredentialService.hasPasskeys(user)) {
+                return new ModelAndView("redirect:" + passkeyCredentialService.setupPromptUrl(user));
+            }
             return new ModelAndView("redirect:/admin");
         } catch (MagicLinkAuthenticationException e) {
             return login(e.getMessage(), false);
