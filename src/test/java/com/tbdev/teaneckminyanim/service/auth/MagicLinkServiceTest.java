@@ -60,6 +60,54 @@ class MagicLinkServiceTest {
     }
 
     @Test
+    void requestLoginLinkUsesCurrentDevHostWhenSiteRootIsProd() {
+        MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
+        TNMUserService userService = mock(TNMUserService.class);
+        ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
+        EmailService emailService = mock(EmailService.class);
+        MagicLinkService service = new MagicLinkService(tokenRepository, userService, settingsService, emailService);
+        TNMUser user = user(true);
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/admin/login/magic-link/request");
+        request.addHeader("X-Forwarded-Proto", "https");
+        request.addHeader("X-Forwarded-Host", "dev.teaneckminyanim.com");
+        when(userService.findByIdentifier("manager@example.com")).thenReturn(user);
+        when(settingsService.getSiteName()).thenReturn("Teaneck Minyanim");
+        when(settingsService.getSiteRootUrl()).thenReturn("https://teaneckminyanim.com");
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(null, "sent"));
+
+        service.requestLoginLink("manager@example.com", request);
+
+        ArgumentCaptor<EmailMessage> messageCaptor = ArgumentCaptor.forClass(EmailMessage.class);
+        verify(emailService).send(messageCaptor.capture());
+        assertTrue(messageCaptor.getValue().getTextBody()
+                .contains("https://dev.teaneckminyanim.com/admin/login/magic-link/verify?token="));
+    }
+
+    @Test
+    void requestLoginLinkRejectsUntrustedHostHeaderForEmailUrl() {
+        MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
+        TNMUserService userService = mock(TNMUserService.class);
+        ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
+        EmailService emailService = mock(EmailService.class);
+        MagicLinkService service = new MagicLinkService(tokenRepository, userService, settingsService, emailService);
+        TNMUser user = user(true);
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/admin/login/magic-link/request");
+        request.addHeader("X-Forwarded-Proto", "https");
+        request.addHeader("X-Forwarded-Host", "example.net");
+        when(userService.findByIdentifier("manager@example.com")).thenReturn(user);
+        when(settingsService.getSiteName()).thenReturn("Teaneck Minyanim");
+        when(settingsService.getSiteRootUrl()).thenReturn("https://teaneckminyanim.com");
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(null, "sent"));
+
+        service.requestLoginLink("manager@example.com", request);
+
+        ArgumentCaptor<EmailMessage> messageCaptor = ArgumentCaptor.forClass(EmailMessage.class);
+        verify(emailService).send(messageCaptor.capture());
+        assertTrue(messageCaptor.getValue().getTextBody()
+                .contains("https://teaneckminyanim.com/admin/login/magic-link/verify?token="));
+    }
+
+    @Test
     void requestLoginLinkDoesNotSendEmailForUnknownAccount() {
         MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
         TNMUserService userService = mock(TNMUserService.class);

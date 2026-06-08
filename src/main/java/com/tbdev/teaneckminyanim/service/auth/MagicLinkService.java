@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.HtmlUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -74,7 +76,7 @@ public class MagicLinkService {
         log.info("Magic-link token {} created for account {} email hash {}",
                 token.getId(), user.getId(), sha256(normalizedEmail));
 
-        EmailSendResult result = sendLoginLink(user, rawToken);
+        EmailSendResult result = sendLoginLink(user, rawToken, request);
         if (!result.isSuccess()) {
             log.warn("Magic-link email for account {} was not sent: {}", user.getId(), result.getMessage());
         } else {
@@ -119,14 +121,10 @@ public class MagicLinkService {
         return sha256(token);
     }
 
-    private EmailSendResult sendLoginLink(TNMUser user, String rawToken) {
+    private EmailSendResult sendLoginLink(TNMUser user, String rawToken, HttpServletRequest request) {
         String siteName = settingsService.getSiteName();
         String escapedSiteName = HtmlUtils.htmlEscape(siteName);
-        String loginUrl = UriComponentsBuilder
-                .fromHttpUrl(settingsService.getSiteRootUrl())
-                .path("/admin/login/magic-link/verify")
-                .queryParam("token", rawToken)
-                .toUriString();
+        String loginUrl = buildLoginUrl(rawToken, request);
 
         EmailMessage message = EmailMessage.builder()
                 .to(user.getEmail())
@@ -141,6 +139,131 @@ public class MagicLinkService {
                 .metadata("source", "admin-magic-link")
                 .build();
         return emailService.send(message);
+    }
+
+    String buildLoginUrl(String rawToken, HttpServletRequest request) {
+        return UriComponentsBuilder
+                .fromHttpUrl(resolveMagicLinkRootUrl(request))
+                .path("/admin/login/magic-link/verify")
+                .queryParam("token", rawToken)
+                .toUriString();
+    }
+
+    private String resolveMagicLinkRootUrl(HttpServletRequest request) {
+        String configuredRootUrl = normalizeRootUrl(settingsService.getSiteRootUrl(), "http://localhost:8080");
+        String requestRootUrl = requestRootUrl(request);
+        if (requestRootUrl != null && isAllowedRequestRoot(requestRootUrl, configuredRootUrl)) {
+            return requestRootUrl;
+        }
+        return configuredRootUrl;
+    }
+
+    private String requestRootUrl(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        String forwardedHost = firstHeaderValue(request.getHeader("X-Forwarded-Host"));
+        String host = forwardedHost != null ? forwardedHost : firstHeaderValue(request.getHeader("Host"));
+        boolean explicitHostHeader = host != null;
+        if (!explicitHostHeader) {
+            host = request.getServerName();
+        }
+        if (host == null || host.isBlank() || !isSafeAuthority(host)) {
+            return null;
+        }
+        if (!explicitHostHeader && isLocalhost(host)) {
+            return null;
+        }
+
+        String scheme = firstHeaderValue(request.getHeader("X-Forwarded-Proto"));
+        if (scheme == null || !isSafeScheme(scheme)) {
+            scheme = request.getScheme() == null ? "http" : request.getScheme();
+        }
+
+        String authority = host;
+        String forwardedPort = firstHeaderValue(request.getHeader("X-Forwarded-Port"));
+        if (!authorityHasPort(authority) && forwardedPort != null && isSafePort(forwardedPort)
+                && !isDefaultPort(scheme, forwardedPort)) {
+            authority += ":" + forwardedPort;
+        } else if (!explicitHostHeader && !authorityHasPort(authority) && request.getServerPort() > 0
+                && !isDefaultPort(scheme, String.valueOf(request.getServerPort()))) {
+            authority += ":" + request.getServerPort();
+        }
+
+        return normalizeRootUrl(scheme + "://" + authority, null);
+    }
+
+    private boolean isAllowedRequestRoot(String requestRootUrl, String configuredRootUrl) {
+        URI requestUri = URI.create(requestRootUrl);
+        URI configuredUri = URI.create(configuredRootUrl);
+        String requestHost = requestUri.getHost();
+        String configuredHost = configuredUri.getHost();
+        if (requestHost == null) {
+            return false;
+        }
+        if (configuredHost != null && requestHost.equalsIgnoreCase(configuredHost)) {
+            return true;
+        }
+        String normalizedHost = requestHost.toLowerCase();
+        return isLocalhost(normalizedHost)
+                || normalizedHost.equals("teaneckminyanim.com")
+                || normalizedHost.endsWith(".teaneckminyanim.com");
+    }
+
+    private static String normalizeRootUrl(String rootUrl, String fallback) {
+        if (rootUrl == null || rootUrl.isBlank()) {
+            return fallback;
+        }
+        try {
+            URI uri = new URI(rootUrl.trim());
+            if (uri.getScheme() == null || uri.getHost() == null || !isSafeScheme(uri.getScheme())) {
+                return fallback;
+            }
+            String port = uri.getPort() == -1 ? "" : ":" + uri.getPort();
+            return uri.getScheme().toLowerCase() + "://" + uri.getHost().toLowerCase() + port;
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            return fallback;
+        }
+    }
+
+    private static String firstHeaderValue(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        String firstValue = value.split(",", 2)[0].trim();
+        return firstValue.isBlank() ? null : firstValue;
+    }
+
+    private static boolean isSafeScheme(String scheme) {
+        return "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
+    }
+
+    private static boolean isSafeAuthority(String authority) {
+        return authority.matches("[A-Za-z0-9.\\-:\\[\\]]+");
+    }
+
+    private static boolean authorityHasPort(String authority) {
+        int lastColon = authority.lastIndexOf(':');
+        if (lastColon < 0) {
+            return false;
+        }
+        return authority.indexOf(']') < lastColon;
+    }
+
+    private static boolean isSafePort(String port) {
+        return port.matches("\\d{1,5}");
+    }
+
+    private static boolean isDefaultPort(String scheme, String port) {
+        return ("http".equalsIgnoreCase(scheme) && "80".equals(port))
+                || ("https".equalsIgnoreCase(scheme) && "443".equals(port));
+    }
+
+    private static boolean isLocalhost(String host) {
+        return "localhost".equalsIgnoreCase(host)
+                || "127.0.0.1".equals(host)
+                || "::1".equals(host);
     }
 
     private static String generateToken() {
