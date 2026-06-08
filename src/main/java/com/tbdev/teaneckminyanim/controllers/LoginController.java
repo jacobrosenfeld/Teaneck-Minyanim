@@ -8,6 +8,7 @@ import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,6 +29,7 @@ import java.util.Date;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class LoginController {
     
     private final ApplicationSettingsService settingsService;
@@ -111,11 +113,17 @@ public class LoginController {
     @ResponseBody
     public LoginMethodsResponse loginMethods(@RequestBody LoginIdentifierRequest loginRequest) {
         String identifier = loginRequest == null ? null : loginRequest.identifier();
-        TNMUser user = userService.findByIdentifier(identifier);
-        if (user == null || user.isDisabled()) {
+        try {
+            TNMUser user = userService.findByIdentifier(identifier);
+            if (user == null || user.isDisabled()) {
+                return new LoginMethodsResponse(false, true);
+            }
+            return new LoginMethodsResponse(passkeyCredentialService.hasPasskeys(user), true);
+        } catch (RuntimeException e) {
+            log.warn("Could not resolve passwordless login methods; falling back to magic-link/password options: {}",
+                    e.getMessage());
             return new LoginMethodsResponse(false, true);
         }
-        return new LoginMethodsResponse(passkeyCredentialService.hasPasskeys(user), true);
     }
 
     @GetMapping("/admin/login/magic-link/verify")

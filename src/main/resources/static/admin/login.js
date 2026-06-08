@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setStatus('Checking sign-in methods...', '');
 
         try {
-            var methods = await fetchJson(identifierForm.dataset.authMethodsUrl, { identifier: identifier });
+            var methods = await loginMethods(identifierForm, identifier);
             if (methods.passkeyAvailable && passkeysCanRunHere()) {
                 try {
                     setStatus('Use your passkey to continue.', '');
@@ -78,6 +78,13 @@ document.addEventListener('DOMContentLoaded', function () {
             setLoading(false);
         }
     });
+
+    function loginMethods(form, identifier) {
+        return fetchJson(form.dataset.authMethodsUrl, { identifier: identifier }).catch(function (error) {
+            console.warn('Login method check failed. Falling back to magic link.', error);
+            return { passkeyAvailable: false, magicLinkAvailable: true };
+        });
+    }
 
     function requestMagicLink(form, identifier) {
         return fetchJson(form.dataset.magicLinkUrl, { identifier: identifier }).then(function (response) {

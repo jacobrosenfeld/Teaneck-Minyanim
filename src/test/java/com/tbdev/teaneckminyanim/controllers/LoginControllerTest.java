@@ -45,6 +45,22 @@ class LoginControllerTest {
         assertTrue(response.magicLinkAvailable());
     }
 
+    @Test
+    void loginMethodsFallsBackToMagicLinkWhenPasskeyLookupFails() {
+        TNMUserService userService = mock(TNMUserService.class);
+        PasskeyCredentialService passkeyCredentialService = mock(PasskeyCredentialService.class);
+        LoginController controller = controller(userService, passkeyCredentialService);
+        TNMUser user = user(true);
+        when(userService.findByIdentifier("manager")).thenReturn(user);
+        when(passkeyCredentialService.hasPasskeys(user)).thenThrow(new RuntimeException("missing user_credentials"));
+
+        LoginController.LoginMethodsResponse response =
+                controller.loginMethods(new LoginController.LoginIdentifierRequest("manager"));
+
+        assertFalse(response.passkeyAvailable());
+        assertTrue(response.magicLinkAvailable());
+    }
+
     private LoginController controller(TNMUserService userService,
                                        PasskeyCredentialService passkeyCredentialService) {
         return new LoginController(
