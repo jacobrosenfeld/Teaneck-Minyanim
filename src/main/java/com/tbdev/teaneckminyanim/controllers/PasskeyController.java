@@ -18,12 +18,16 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
 public class PasskeyController {
+    private static final DateTimeFormatter PAGE_DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("MMMM d, yyyy | hh:mm a");
+    private static final DateTimeFormatter PASSKEY_DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a");
+
     private final TNMUserService userService;
     private final PasskeyCredentialService passkeyCredentialService;
     private final ApplicationSettingsService settingsService;
@@ -43,13 +47,14 @@ public class PasskeyController {
     @GetMapping("/webauthn/register")
     public ModelAndView passkeys() {
         TNMUser user = userService.getCurrentUser();
+        List<PasskeyRow> passkeys = passkeyRows(user);
         ModelAndView mv = new ModelAndView("admin/passkeys");
         mv.addObject("user", user);
-        mv.addObject("passkeys", passkeyRows(user));
-        mv.addObject("passkeyCount", passkeyCredentialService.countPasskeys(user));
-        mv.addObject("date", DateTimeFormatter.ofPattern("MMMM d, yyyy | hh:mm aa")
+        mv.addObject("passkeys", passkeys);
+        mv.addObject("passkeyCount", passkeys.size());
+        mv.addObject("date", PAGE_DATE_FORMATTER
                 .withZone(settingsService.getTimeZone().toZoneId())
-                .format(new Date().toInstant()));
+                .format(Instant.now()));
         mv.addObject("appVersion", versionService.getVersion());
 
         if (user != null && user.isSuperAdmin()) {
@@ -85,7 +90,7 @@ public class PasskeyController {
         if (instant == null) {
             return "Never";
         }
-        return DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")
+        return PASSKEY_DATE_FORMATTER
                 .withZone(zoneId)
                 .format(instant);
     }
