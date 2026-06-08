@@ -32,7 +32,7 @@ public class TNMUserDetailsService implements UserDetailsService {
         if (loginAttemptService.isBlocked(ip)) {
             throw new RuntimeException("blocked");
         }
-        TNMUser user = this.TNMUserDAO.findByName(userName);
+        TNMUser user = this.TNMUserDAO.findByIdentifier(userName);
 
         if (user == null) {
             System.out.println("User not found! " + userName);
@@ -53,11 +53,18 @@ public class TNMUserDetailsService implements UserDetailsService {
 //            }
 //        }
 
-        UserDetails userDetails = (UserDetails) new User(user.getUsername(), user.getEncryptedPassword(), grantList);
+        UserDetails userDetails = new User(
+                user.getUsername(),
+                user.getEncryptedPassword(),
+                user.isEnabled(),
+                true,
+                true,
+                true,
+                grantList);
 
         return userDetails;
     }
- private String getClientIP() {
+    private String getClientIP() {
         final String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader != null) {
             return xfHeader.split(",")[0];

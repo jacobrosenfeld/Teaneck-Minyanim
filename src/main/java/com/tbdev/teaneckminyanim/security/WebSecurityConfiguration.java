@@ -1,9 +1,11 @@
 package com.tbdev.teaneckminyanim.security;
 
 import com.tbdev.teaneckminyanim.service.TNMUserDetailsService;
+import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -13,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.webauthn.management.JdbcUserCredentialRepository;
+import org.springframework.security.web.webauthn.management.UserCredentialRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
@@ -20,6 +24,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 @Configuration
@@ -47,7 +53,10 @@ public class WebSecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, LoginRecaptchaFilter loginRecaptchaFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           LoginRecaptchaFilter loginRecaptchaFilter,
+                                           AdminLoginSuccessHandler adminLoginSuccessHandler,
+                                           ApplicationSettingsService settingsService) throws Exception {
         // Never save static asset requests as the post-login redirect target
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setRequestMatcher(new NegatedRequestMatcher(new OrRequestMatcher(
@@ -69,7 +78,10 @@ public class WebSecurityConfiguration {
                 .requestMatchers("/api/v1/**").permitAll()
                 .requestMatchers("/api/docs", "/api/docs.json",
                                  "/v3/api-docs", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/", "/zmanim/**", "/orgs/**", "/org/**", "/admin/login", "/admin/logout",
+                .requestMatchers("/", "/zmanim/**", "/orgs/**", "/org/**", "/admin/login",
+                                "/admin/login/auth-methods", "/admin/login/magic-link",
+                                "/admin/login/magic-link/request", "/admin/login/magic-link/verify", "/admin/logout",
+                                "/webauthn/authenticate/options", "/login/webauthn",
                                 "/webjars/**", "/**/*.css", "/**/*.js", "/static/**", "/db/**",
                                 "/assets/**", "/favicon.ico", "/test/errors/**", "/subscribe", "/subscription").permitAll()
                 .requestMatchers("/admin", "/admin/dashboard", "/admin/organization", "/admin/account", 
@@ -90,6 +102,7 @@ public class WebSecurityConfiguration {
                 .loginProcessingUrl("/j_spring_security_check")
                 .loginPage("/admin/login")
                 .defaultSuccessUrl("/admin")
+                .successHandler(adminLoginSuccessHandler)
                 .failureUrl("/admin/login?error=true")
                 .usernameParameter("username")
                 .passwordParameter("password")
@@ -100,11 +113,21 @@ public class WebSecurityConfiguration {
                 .logoutSuccessUrl("/admin/login?logout=true")
                 .permitAll()
             )
-            .rememberMe(rememberMe -> rememberMe
-                .key("uniqueAndSecret")
+            .webAuthn(webAuthn -> webAuthn
+                .rpId(webAuthnRpId(settingsService))
+                .rpName(settingsService.getSiteName())
+                .allowedOrigins(webAuthnAllowedOrigin(settingsService))
+                .disableDefaultRegistrationPage(true)
             );
 
         return http.build();
+    }
+
+    @Bean
+    public UserCredentialRepository userCredentialRepository(JdbcOperations jdbcOperations,
+                                                             WebAuthnCredentialSchemaInitializer schemaInitializer) {
+        schemaInitializer.ensureSchema();
+        return new JdbcUserCredentialRepository(jdbcOperations);
     }
 
     /**
@@ -122,5 +145,27 @@ public class WebSecurityConfiguration {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/v1/**", config);
         return source;
+    }
+
+    private String webAuthnRpId(ApplicationSettingsService settingsService) {
+        return siteRootUri(settingsService).getHost();
+    }
+
+    private String webAuthnAllowedOrigin(ApplicationSettingsService settingsService) {
+        URI uri = siteRootUri(settingsService);
+        String port = uri.getPort() == -1 ? "" : ":" + uri.getPort();
+        return uri.getScheme() + "://" + uri.getHost() + port;
+    }
+
+    private URI siteRootUri(ApplicationSettingsService settingsService) {
+        try {
+            URI uri = new URI(settingsService.getSiteRootUrl());
+            if (uri.getScheme() == null || uri.getHost() == null) {
+                return URI.create("http://localhost:8080");
+            }
+            return uri;
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            return URI.create("http://localhost:8080");
+        }
     }
 }

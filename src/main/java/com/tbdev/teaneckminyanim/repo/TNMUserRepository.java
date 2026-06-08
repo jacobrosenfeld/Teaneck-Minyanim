@@ -9,4 +9,7 @@ import java.util.Optional;
 @Repository
 public interface TNMUserRepository extends JpaRepository<TNMUser, String> {
     Optional<TNMUser> findByUsername(String username);
+    Optional<TNMUser> findByUsernameIgnoreCase(String username);
+    Optional<TNMUser> findByEmailNormalized(String emailNormalized);
+    Optional<TNMUser> findByEmailIgnoreCase(String email);
 }

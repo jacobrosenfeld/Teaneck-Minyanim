@@ -13,6 +13,7 @@ import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMSettingsService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
+import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -35,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -71,6 +74,7 @@ class AdminControllerAuthorizationTest {
         ReflectionTestUtils.setField(controller, "versionService", versionService);
         ReflectionTestUtils.setField(controller, "settingsService", settingsService);
         ReflectionTestUtils.setField(controller, "calendarMaterializationService", mock(CalendarMaterializationService.class));
+        ReflectionTestUtils.setField(controller, "passkeyCredentialService", mock(PasskeyCredentialService.class));
     }
 
     @AfterEach
@@ -193,6 +197,33 @@ class AdminControllerAuthorizationTest {
                 () -> controller.updateSettingsField(SettingKey.SITE_NAME.getKey(), "New Site Name"));
 
         verify(settingsService, never()).updateSetting(any(), any());
+    }
+
+    @Test
+    void changeAccountPasswordPreservesAccountFieldsAndStoresNewHash() {
+        authenticate("super", ADMIN);
+        TNMUser superAdmin = user("A0", "super", null, ADMIN);
+        TNMUser target = user("A1", "manager", "org-a", ADMIN);
+        target.setEmail("manager@example.com");
+        target.setEmailNormalized("manager@example.com");
+        target.setEncryptedPassword(new BCryptPasswordEncoder().encode("OldPass123"));
+
+        when(userService.findByName("super")).thenReturn(superAdmin);
+        when(userService.findById("A1")).thenReturn(target);
+        when(userService.update(any())).thenReturn(true);
+        Organization organization = organization("org-a");
+        when(organizationService.findById("org-a")).thenReturn(Optional.of(organization));
+        when(organizationService.getAll()).thenReturn(new java.util.ArrayList<>(List.of(organization)));
+
+        ModelAndView mv = controller.changeAccountPassword("A1", "NewPass123", "NewPass123");
+
+        assertEquals("account", mv.getViewName());
+        verify(userService).update(argThat(updated ->
+                "A1".equals(updated.getId())
+                        && "manager".equals(updated.getUsername())
+                        && "manager@example.com".equals(updated.getEmail())
+                        && updated.isEnabled()
+                        && new BCryptPasswordEncoder().matches("NewPass123", updated.getEncryptedPassword())));
     }
 
     @Test

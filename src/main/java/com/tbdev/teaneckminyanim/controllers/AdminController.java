@@ -10,6 +10,7 @@ import com.tbdev.teaneckminyanim.minyan.MinyanDay;
 import com.tbdev.teaneckminyanim.minyan.MinyanTime;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.minyan.Schedule;
+import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,9 @@ public class AdminController {
 
     @Autowired
     private CalendarMaterializationService calendarMaterializationService;
+
+    @Autowired
+    private PasskeyCredentialService passkeyCredentialService;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -221,7 +225,7 @@ public class AdminController {
 
     @GetMapping("/admin/logout")
     public ModelAndView logout(@RequestParam(value = "error", required = false) String error) {
-        return new LoginController(settingsService).login(error, true);
+        return new ModelAndView("redirect:/admin/login?logout=true");
     }
 
     @GetMapping("/admin/organizations")
@@ -728,14 +732,29 @@ public class AdminController {
         return mv;
     }
 
+    public ModelAndView account(String id, String successMessage, String errorMessage, String changePasswordError) {
+        return accountView(id, successMessage, errorMessage, changePasswordError, false);
+    }
+
     @GetMapping("/admin/account")
-    public ModelAndView account(@RequestParam(value = "id", required = true) String id,
-                                String successMessage,
-                                String errorMessage, String changePasswordError) {
+    public ModelAndView accountRoute(@RequestParam(value = "id", required = true) String id,
+                                     @RequestParam(value = "successMessage", required = false) String successMessage,
+                                     @RequestParam(value = "errorMessage", required = false) String errorMessage,
+                                     @RequestParam(value = "changePasswordError", required = false) String changePasswordError,
+                                     @RequestParam(value = "setupPasskey", required = false, defaultValue = "false") boolean setupPasskey) {
+        return accountView(id, successMessage, errorMessage, changePasswordError, setupPasskey);
+    }
+
+    private ModelAndView accountView(String id,
+                                     String successMessage,
+                                     String errorMessage,
+                                     String changePasswordError,
+                                     boolean setupPasskey) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("account");
+        TNMUser queriedUser;
         if (isSuperAdmin()) {
-            TNMUser queriedUser = this.TNMUserDAO.findById(id);
+            queriedUser = this.TNMUserDAO.findById(id);
             mv.addObject("queriedaccount", queriedUser);
 
             if (queriedUser.isSuperAdmin() && !queriedUser.getId().equals(getCurrentUser().getId())) {
@@ -748,7 +767,7 @@ public class AdminController {
             }
         } else if (isAdmin()) {
             TNMUser user = getCurrentUser();
-            TNMUser queriedUser = this.TNMUserDAO.findById(id);
+            queriedUser = this.TNMUserDAO.findById(id);
 
             if (user != null && user.getOrganizationId().equals(queriedUser.getOrganizationId()) && !(queriedUser.isAdmin() && !queriedUser.getId().equals(user.getId()))) {
 
@@ -766,7 +785,7 @@ public class AdminController {
                 throw new AccessDeniedException("You are not authorized to view this account.");
             }
 
-            TNMUser queriedUser = this.TNMUserDAO.findById(id);
+            queriedUser = this.TNMUserDAO.findById(id);
 
             if (user.getId().equals(queriedUser.getId())) {
                 mv.setViewName("account");
@@ -784,6 +803,11 @@ public class AdminController {
 
         addStandardPageData(mv);
 
+        int passkeyCount = passkeyCredentialService.countPasskeys(queriedUser);
+        mv.addObject("passkeyCount", passkeyCount);
+        mv.addObject("hasPasskeys", passkeyCount > 0);
+        mv.addObject("showPasskeySetupPrompt",
+                setupPasskey && getCurrentUser() != null && Objects.equals(queriedUser.getId(), getCurrentUser().getId()));
         mv.addObject("changePasswordError", changePasswordError);
         mv.addObject("successMessage", successMessage);
         mv.addObject("mainErrorMessage", errorMessage);
@@ -826,10 +850,18 @@ public class AdminController {
             TNMUserDAO.update(
                     TNMUser.builder()
                             .id(targetUser.getId())
-                            .email(targetUser.getUsername())
-                            .encryptedPassword(targetUser.getEncryptedPassword())
+                            .username(targetUser.getUsername())
+                            .email(targetUser.getEmail())
+                            .emailNormalized(targetUser.getEmailNormalized())
+                            .encryptedPassword(Encrypter.encrytedPassword(password))
                             .organizationId(targetUser.getOrganizationId())
                             .roleId(targetUser.getRoleId())
+                            .enabled(targetUser.isEnabled())
+                            .lastLoginAt(targetUser.getLastLoginAt())
+                            .lastLoginMethod(targetUser.getLastLoginMethod())
+                            .invitedAt(targetUser.getInvitedAt())
+                            .inviteAcceptedAt(targetUser.getInviteAcceptedAt())
+                            .authMigrationRequired(targetUser.isAuthMigrationRequired())
                             .build());
 
             return account(accountId, "Successfully updated the account password.", null, null);

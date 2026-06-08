@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+<head>
+    <title layout:fragment="title" th:text="|Passkeys - ${siteName ?: 'Minyanim Platform'}|">Passkeys</title>
+
+    <th:block layout:fragment="styles">
+        <style>
+            .settings-breadcrumb {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: var(--space-2, 0.5rem);
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin-bottom: var(--space-5, 1.25rem);
+            }
+
+            .settings-breadcrumb a {
+                color: var(--text-secondary, #6c757d);
+                text-decoration: none;
+            }
+
+            .settings-breadcrumb a:hover {
+                color: var(--text-primary, #212529);
+            }
+
+            .settings-shell {
+                max-width: 1120px;
+                margin: 0 auto;
+            }
+
+            .settings-section {
+                display: grid;
+                grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
+                gap: var(--space-8, 2rem);
+                align-items: start;
+                margin-bottom: var(--space-6, 1.5rem);
+            }
+
+            .section-title {
+                display: flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                font-size: var(--font-size-xl, 1.25rem);
+                margin-bottom: var(--space-2, 0.5rem);
+            }
+
+            .section-title i {
+                color: var(--color-primary, #275ed8);
+                width: 1.2rem;
+                text-align: center;
+            }
+
+            .section-description {
+                color: var(--text-secondary, #6c757d);
+                margin: 0;
+            }
+
+            .settings-panel {
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-lg, 0.5rem);
+                box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+                overflow: hidden;
+            }
+
+            .passkey-register-form {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: var(--space-3, 0.75rem);
+                padding: var(--space-5, 1.25rem);
+                border-bottom: 1px solid var(--border-color-light, #e9ecef);
+            }
+
+            .passkey-input {
+                width: 100%;
+                height: 2.75rem;
+                padding: 0 var(--space-3, 0.75rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color-dark, #ced4da);
+                border-radius: var(--radius-md, 0.375rem);
+            }
+
+            .passkey-input:focus {
+                border-color: var(--text-primary, #212529);
+                box-shadow: 0 0 0 2px rgba(33, 37, 41, 0.08);
+                outline: none;
+            }
+
+            .passkey-status {
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                min-height: 1.5rem;
+                padding: 0 var(--space-5, 1.25rem) var(--space-4, 1rem);
+            }
+
+            .passkey-status.success {
+                color: var(--color-accent-dark, #388e3c);
+            }
+
+            .passkey-status.error {
+                color: var(--color-danger, #f44336);
+            }
+
+            .passkey-list {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+
+            .passkey-row {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: var(--space-4, 1rem);
+                align-items: center;
+                padding: var(--space-5, 1.25rem);
+                border-top: 1px solid var(--border-color-light, #e9ecef);
+            }
+
+            .passkey-row:first-child {
+                border-top: 0;
+            }
+
+            .passkey-title {
+                font-weight: var(--font-weight-semibold, 600);
+                margin-bottom: var(--space-1, 0.25rem);
+            }
+
+            .passkey-meta {
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin: 0;
+            }
+
+            .passkey-empty {
+                color: var(--text-secondary, #6c757d);
+                padding: var(--space-5, 1.25rem);
+            }
+
+            @media (max-width: 900px) {
+                .settings-section {
+                    grid-template-columns: 1fr;
+                    gap: var(--space-3, 0.75rem);
+                }
+            }
+
+            @media (max-width: 560px) {
+                .passkey-register-form,
+                .passkey-row {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="settings-shell">
+        <div class="settings-breadcrumb">
+            <a th:href="@{/admin}">Dashboard</a>
+            <span>/</span>
+            <a th:href="@{/admin/account(id=${user.id})}">Account</a>
+            <span>/</span>
+            <span>Passkeys</span>
+        </div>
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Passkeys</h1>
+                <p class="page-description">Register and remove passkeys for faster admin sign-in.</p>
+            </div>
+        </div>
+
+        <section class="settings-section">
+            <div class="section-copy">
+                <h2 class="section-title">
+                    <i class="fas fa-key"></i>
+                    <span>Security Keys</span>
+                </h2>
+                <p class="section-description">
+                    Passkeys use your device, browser profile, or security key instead of a typed password.
+                </p>
+            </div>
+
+            <div class="settings-panel"
+                 id="passkey-manager"
+                 th:attr="data-register-options-url=@{/webauthn/register/options},
+                          data-register-url=@{/webauthn/register},
+                          data-delete-base-url=@{/webauthn/register/}">
+                <form class="passkey-register-form" id="passkey-register-form">
+                    <label class="sr-only" for="passkey-label">Passkey label</label>
+                    <input class="passkey-input" id="passkey-label" name="label" type="text"
+                           placeholder="MacBook, iPhone, YubiKey, etc." autocomplete="off" required>
+                    <button class="btn-modern btn-primary" id="passkey-register-button" type="submit">
+                        <i class="fas fa-plus"></i>
+                        Add Passkey
+                    </button>
+                </form>
+
+                <div class="passkey-status" id="passkey-status" role="status" aria-live="polite"></div>
+
+                <div th:if="${passkeyCount == 0}" class="passkey-empty">
+                    No passkeys are registered yet.
+                </div>
+
+                <ul th:if="${passkeyCount > 0}" class="passkey-list">
+                    <li class="passkey-row" th:each="passkey : ${passkeys}">
+                        <div>
+                            <div class="passkey-title" th:text="${passkey.label}">Passkey</div>
+                            <p class="passkey-meta">
+                                Created <span th:text="${passkey.created}">Never</span>
+                                <span> · Last used </span>
+                                <span th:text="${passkey.lastUsed}">Never</span>
+                            </p>
+                        </div>
+                        <button class="btn-modern btn-danger passkey-delete-button"
+                                type="button"
+                                th:attr="data-credential-id=${passkey.credentialId}">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </section>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/admin/passkeys.js}"></script>
+</th:block>
+</body>
+</html>
