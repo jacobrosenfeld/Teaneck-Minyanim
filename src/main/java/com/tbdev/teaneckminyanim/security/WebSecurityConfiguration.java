@@ -26,11 +26,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfiguration {
+    static final String PASSKEY_RP_ID = "teaneckminyanim.com";
+    static final String PASSKEY_PROD_ORIGIN = "https://teaneckminyanim.com";
+    static final String PASSKEY_DEV_ORIGIN = "https://dev.teaneckminyanim.com";
+
     @Autowired
     TNMUserDetailsService userDetailsService;
 
@@ -116,7 +123,7 @@ public class WebSecurityConfiguration {
             .webAuthn(webAuthn -> webAuthn
                 .rpId(webAuthnRpId(settingsService))
                 .rpName(settingsService.getSiteName())
-                .allowedOrigins(webAuthnAllowedOrigin(settingsService))
+                .allowedOrigins(webAuthnAllowedOrigins(settingsService))
                 .disableDefaultRegistrationPage(true)
             );
 
@@ -147,14 +154,38 @@ public class WebSecurityConfiguration {
         return source;
     }
 
-    private String webAuthnRpId(ApplicationSettingsService settingsService) {
-        return siteRootUri(settingsService).getHost();
+    String webAuthnRpId(ApplicationSettingsService settingsService) {
+        String host = normalizedHost(siteRootUri(settingsService));
+        if (isTeaneckMinyanimHost(host)) {
+            return PASSKEY_RP_ID;
+        }
+        return host;
     }
 
-    private String webAuthnAllowedOrigin(ApplicationSettingsService settingsService) {
+    Set<String> webAuthnAllowedOrigins(ApplicationSettingsService settingsService) {
         URI uri = siteRootUri(settingsService);
+        Set<String> origins = new LinkedHashSet<>();
+        if (isTeaneckMinyanimHost(normalizedHost(uri))) {
+            origins.add(PASSKEY_PROD_ORIGIN);
+            origins.add(PASSKEY_DEV_ORIGIN);
+        }
+        origins.add(origin(uri));
+        return origins;
+    }
+
+    private String origin(URI uri) {
+        String scheme = uri.getScheme().toLowerCase(Locale.ROOT);
+        String host = normalizedHost(uri);
         String port = uri.getPort() == -1 ? "" : ":" + uri.getPort();
-        return uri.getScheme() + "://" + uri.getHost() + port;
+        return scheme + "://" + host + port;
+    }
+
+    private boolean isTeaneckMinyanimHost(String host) {
+        return PASSKEY_RP_ID.equals(host) || host.endsWith("." + PASSKEY_RP_ID);
+    }
+
+    private String normalizedHost(URI uri) {
+        return uri.getHost().toLowerCase(Locale.ROOT);
     }
 
     private URI siteRootUri(ApplicationSettingsService settingsService) {
