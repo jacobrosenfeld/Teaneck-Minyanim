@@ -75,13 +75,13 @@
 
                                 <div id="login-flow-status"
                                      class="login-status"
-                                     th:classappend="${error != null} ? ' login-status-error' : (${magicLinkMessage != null or param.logout} ? ' login-status-success' : '')"
+                                     th:classappend="${error != null} ? ' login-status-error' : (${magicLinkMessage != null or logout == true} ? ' login-status-success' : '')"
                                      role="status"
                                      aria-live="polite">
                                     <span th:if="${magicLinkMessage != null}" th:text="${magicLinkMessage}">
                                         If this email is authorized, a sign-in link will be sent shortly.
                                     </span>
-                                    <span th:if="${param.logout}">You have been logged out.</span>
+                                    <span th:if="${logout == true}">You have been logged out.</span>
                                     <span th:if="${error != null}"
                                           th:text="${error == 'recaptcha'} ? 'Please complete the sign-in check and try again.' : 'Invalid credentials.'">
                                         Invalid credentials.
