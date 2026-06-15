@@ -7,9 +7,15 @@ import com.tbdev.teaneckminyanim.enums.Nusach;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 public class MinyanEvent {
     // Timezone is set globally in TeaneckMinyanimApplication from settings
+    public static final String PLAG_GUIDANCE_TEXT =
+            "Plag Mincha-Maariv is intended exclusively for those under the pressing circumstances of she'at ha-dechak (Sh\"A O\"Ch 233:1).";
+
+    private static final Pattern GENERATED_PLAG_NOTE_PATTERN = Pattern.compile(
+            "(?i)(^|\\s*\\|\\s*|\\.\\s*)\\bPlag:\\s*\\d{1,2}:\\d{2}\\s*[AP]M\\b\\.?\\s*");
     
     private String parentMinyanId;
 
@@ -127,6 +133,14 @@ public class MinyanEvent {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public boolean hasPlagGuidance() {
+        return notes != null && GENERATED_PLAG_NOTE_PATTERN.matcher(notes).find();
+    }
+
+    public String getPlagGuidanceText() {
+        return PLAG_GUIDANCE_TEXT;
     }
 
     public String getOrgColor() {

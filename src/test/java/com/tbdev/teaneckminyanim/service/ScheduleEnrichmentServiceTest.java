@@ -77,6 +77,30 @@ class ScheduleEnrichmentServiceTest {
     }
 
     @Test
+    void annotateZmanim_keepsShkiyaWhenMinchaMaarivEventIsNotNearPlag() {
+        when(zmanimHandler.getZmanim(DATE))
+                .thenReturn(zmanim(DATE, LocalTime.of(19, 10), LocalTime.of(17, 45)));
+
+        ScheduleEventDto dto = dto("manual-1", DATE, "18:30", "MINCHA_MAARIV", "Teen Minyan", null);
+
+        List<ScheduleEventDto> enriched = service.annotateZmanim(List.of(dto));
+
+        assertEquals("Teen Minyan | Shkiya: 7:10 PM", enriched.get(0).notes());
+    }
+
+    @Test
+    void annotateZmanim_doesNotAddPlagToMinchaEvents() {
+        when(zmanimHandler.getZmanim(DATE))
+                .thenReturn(zmanim(DATE, LocalTime.of(19, 10), LocalTime.of(17, 45)));
+
+        ScheduleEventDto dto = dto("manual-1", DATE, "17:43", "MINCHA", "Teen Minyan", null);
+
+        List<ScheduleEventDto> enriched = service.annotateZmanim(List.of(dto));
+
+        assertEquals("Teen Minyan", enriched.get(0).notes());
+    }
+
+    @Test
     void annotateZmanim_addsShkiyaToWebMinchaMaarivEvents() {
         Dictionary<Zman, Date> zmanim = zmanim(DATE, LocalTime.of(19, 10), null);
         MinyanEvent event = new MinyanEvent(
