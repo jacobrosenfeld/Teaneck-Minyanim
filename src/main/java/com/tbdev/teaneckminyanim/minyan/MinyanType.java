@@ -4,7 +4,7 @@ package com.tbdev.teaneckminyanim.minyan;
  * Type of minyan (prayer service) or calendar event.
  * Used for both rule-based minyanim and imported calendar entries.
  * 
- * Prayer service types: SHACHARIS, MINCHA, MAARIV, MINCHA_MAARIV, SELICHOS, MEGILA_READING
+ * Prayer service types: SHACHARIS, MINCHA, MAARIV, MINCHA_MAARIV, SELICHOS, SELICHOS_SHACHARIS, MEGILA_READING
  * Non-prayer types: NON_MINYAN (learning/social events), OTHER (unclassified events)
  * Legacy: MINYAN (generic prayer service - for backward compatibility only)
  */
@@ -14,6 +14,7 @@ public enum MinyanType {
     MAARIV("MAARIV"),
     MINCHA_MAARIV("MINCHA_MAARIV"),
     SELICHOS("SELICHOS"),
+    SELICHOS_SHACHARIS("SELICHOS_SHACHARIS"),
     MEGILA_READING("MEGILAREADING"),
     NON_MINYAN("NON_MINYAN"),
     OTHER("OTHER"),
@@ -56,6 +57,8 @@ public enum MinyanType {
                 return "MINCHA_MAARIV";
             case SELICHOS:
                 return "SELICHOS";
+            case SELICHOS_SHACHARIS:
+                return "SELICHOS_SHACHARIS";
             case MEGILA_READING:
                 return "MEGILAREADING";
             case NON_MINYAN:
@@ -81,6 +84,8 @@ public enum MinyanType {
                 return "Mincha/Maariv";
             case SELICHOS:
                 return "Selichos";
+            case SELICHOS_SHACHARIS:
+                return "Selichos/Shacharis";
             case MEGILA_READING:
                 return "Megila Reading";
             case NON_MINYAN:
@@ -100,7 +105,7 @@ public enum MinyanType {
      */
     public boolean isMinyan() {
         return this == SHACHARIS || this == MINCHA || this == MAARIV || 
-               this == MINCHA_MAARIV || this == SELICHOS || this == MEGILA_READING ||
+               this == MINCHA_MAARIV || this == SELICHOS || this == SELICHOS_SHACHARIS || this == MEGILA_READING ||
                this == MINYAN;  // Legacy support
     }
 
@@ -112,7 +117,7 @@ public enum MinyanType {
     }
 
     public boolean isShacharis() {
-        return this == SHACHARIS;
+        return this == SHACHARIS || this == SELICHOS_SHACHARIS;
     }
 
     public boolean isMincha() {
@@ -129,6 +134,24 @@ public enum MinyanType {
 
     public boolean isSelichos() {
         return this == SELICHOS;
+    }
+
+    public boolean isSelichosShacharis() {
+        return this == SELICHOS_SHACHARIS;
+    }
+
+    public String publicGroupName() {
+        if (this == SELICHOS_SHACHARIS) {
+            return SHACHARIS.name();
+        }
+        return name();
+    }
+
+    public String publicGroupDisplayName() {
+        if (this == SELICHOS_SHACHARIS) {
+            return SHACHARIS.displayName();
+        }
+        return displayName();
     }
 
     public boolean isMegilaReading() {

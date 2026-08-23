@@ -39,11 +39,19 @@
     if (filter === 'shacharis') return rowType === 'SHACHARIS';
     if (filter === 'mincha') return rowType === 'MINCHA' || rowType === 'MINCHA_MAARIV';
     if (filter === 'maariv') return rowType === 'MAARIV';
+    if (filter === 'night_selichos') return rowType === 'NIGHT_SELICHOS';
+    if (filter === 'selichos') return rowType === 'SELICHOS';
     return true;
   }
 
   function buildEmptyMessage() {
-    var typeLabels = { shacharis: 'Shacharis', mincha: 'Mincha', maariv: 'Maariv' };
+    var typeLabels = {
+      shacharis: 'Shacharis',
+      mincha: 'Mincha',
+      maariv: 'Maariv',
+      night_selichos: 'Night Selichos',
+      selichos: 'Selichos',
+    };
     var typeLabel = typeLabels[activeType] || null;
     var orgLabel = activeOrg !== 'all' ? activeOrg : null;
 

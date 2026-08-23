@@ -25,6 +25,9 @@ public class MinyanClassifier {
     private final ZmanimHandler zmanimHandler;
     private final com.tbdev.teaneckminyanim.service.ApplicationSettingsService settingsService;
 
+    private static final String SELICHOS_WORD = "(?:selichos|selichot|slichos|slichot|selihos|selihot)";
+    private static final String SHACHARIS_WORD = "(?:shacharis|shacharit|shaharit|shachris|shachrith)";
+
     // Denylist: Patterns that indicate non-minyan events
     private static final Set<Pattern> NON_MINYAN_PATTERNS = new HashSet<>();
     
@@ -42,6 +45,8 @@ public class MinyanClassifier {
     
     // Selichos patterns
     private static final Set<Pattern> SELICHOS_PATTERNS = new HashSet<>();
+
+    private static final Set<Pattern> SELICHOS_SHACHARIS_PATTERNS = new HashSet<>();
     
     // Netz Hachama patterns (sunrise minyanim with special zman note)
     private static final Set<Pattern> NETZ_PATTERNS = new HashSet<>();
@@ -111,8 +116,11 @@ public class MinyanClassifier {
         MAARIV_PATTERNS.add(Pattern.compile("\\barvis\\b", Pattern.CASE_INSENSITIVE));
         
         // Selichos patterns
-        SELICHOS_PATTERNS.add(Pattern.compile("\\bselichos\\b", Pattern.CASE_INSENSITIVE));
-        SELICHOS_PATTERNS.add(Pattern.compile("\\bselichot\\b", Pattern.CASE_INSENSITIVE));
+        SELICHOS_SHACHARIS_PATTERNS.add(Pattern.compile("\\b" + SELICHOS_WORD + "\\s*[/&+-]\\s*" + SHACHARIS_WORD + "\\b", Pattern.CASE_INSENSITIVE));
+        SELICHOS_SHACHARIS_PATTERNS.add(Pattern.compile("\\b" + SHACHARIS_WORD + "\\s*[/&+-]\\s*" + SELICHOS_WORD + "\\b", Pattern.CASE_INSENSITIVE));
+        SELICHOS_SHACHARIS_PATTERNS.add(Pattern.compile("\\b" + SELICHOS_WORD + "\\s+(?:followed\\s+by|before|then|and|with)\\s+" + SHACHARIS_WORD + "\\b", Pattern.CASE_INSENSITIVE));
+        SELICHOS_SHACHARIS_PATTERNS.add(Pattern.compile("\\b" + SHACHARIS_WORD + "\\s+(?:with|following|after|and)\\s+" + SELICHOS_WORD + "\\b", Pattern.CASE_INSENSITIVE));
+        SELICHOS_PATTERNS.add(Pattern.compile("\\b" + SELICHOS_WORD + "\\b", Pattern.CASE_INSENSITIVE));
         
         // Netz Hachama patterns (sunrise minyanim - classified as Shacharis with Netz time in notes)
         NETZ_PATTERNS.add(Pattern.compile("\\bvasikin\\b", Pattern.CASE_INSENSITIVE));
@@ -163,7 +171,69 @@ public class MinyanClassifier {
         boolean hasAshkenaz = title != null && title.matches("(?i).*\\bAshkenaz\\b.*");
         boolean hasSephardic = title != null && title.matches("(?i).*\\bsephardic?\\b.*");
         
-        // Check for Netz Hachama patterns (sunrise minyanim) - should run before other Shacharis shortcuts
+        // Check for combined Mincha/Maariv first (most specific)
+        for (Pattern pattern : MINCHA_MAARIV_PATTERNS) {
+            if (pattern.matcher(combinedText).find()) {
+                String notes = extractTitleQualifier(title);
+                return new ClassificationResult(
+                    MinyanType.MINCHA_MAARIV,
+                    "Matched combined Mincha/Maariv pattern: " + pattern.pattern(),
+                    notes
+                );
+            }
+        }
+
+        if (title != null && TEEN_MINYAN_TITLE_PATTERN.matcher(title).find()) {
+            String notes = extractTitleQualifier(title);
+            return new ClassificationResult(
+                MinyanType.SHACHARIS,
+                "Matched explicit Teen Minyan title pattern: " + TEEN_MINYAN_TITLE_PATTERN.pattern(),
+                notes
+            );
+        }
+        
+        // Check denylist (explicit non-minyan events)
+        for (Pattern pattern : NON_MINYAN_PATTERNS) {
+            if (pattern.matcher(combinedText).find()) {
+                return new ClassificationResult(
+                    MinyanType.NON_MINYAN,
+                    "Matched non-minyan pattern: " + pattern.pattern()
+                );
+            }
+        }
+
+        // Check specific minyan types (in order of specificity)
+        
+        // Check linked Selichos/Shacharis before plain Selichos or Shacharis.
+        for (Pattern pattern : SELICHOS_SHACHARIS_PATTERNS) {
+            if (pattern.matcher(combinedText).find()) {
+                String notes = extractTitleQualifier(title);
+                return new ClassificationResult(
+                    MinyanType.SELICHOS_SHACHARIS,
+                    "Matched linked Selichos/Shacharis pattern: " + pattern.pattern(),
+                    notes
+                );
+            }
+        }
+
+        // Check Selichos
+        for (Pattern pattern : SELICHOS_PATTERNS) {
+            if (pattern.matcher(combinedText).find()) {
+                String titleQualifier = extractTitleQualifier(title);
+                String notes = null;
+                if (titleQualifier != null && !titleQualifier.isEmpty()) {
+                    notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
+                }
+                return new ClassificationResult(
+                    MinyanType.SELICHOS,
+                    "Matched Selichos pattern: " + pattern.pattern(),
+                    notes
+                );
+            }
+        }
+
+        // Check for Netz Hachama patterns (sunrise minyanim) after Selichos so
+        // Vasikin Selichos imports are not collapsed into plain Shacharis.
         for (Pattern pattern : NETZ_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
                 String netzNote = generateNetzHachamaNote(date);
@@ -210,55 +280,6 @@ public class MinyanClassifier {
                 "Matched Sephardic before 12pm - classified as Shacharis",
                 null
             );
-        }
-        
-        // Check for combined Mincha/Maariv first (most specific)
-        for (Pattern pattern : MINCHA_MAARIV_PATTERNS) {
-            if (pattern.matcher(combinedText).find()) {
-                String notes = extractTitleQualifier(title);
-                return new ClassificationResult(
-                    MinyanType.MINCHA_MAARIV,
-                    "Matched combined Mincha/Maariv pattern: " + pattern.pattern(),
-                    notes
-                );
-            }
-        }
-
-        if (title != null && TEEN_MINYAN_TITLE_PATTERN.matcher(title).find()) {
-            String notes = extractTitleQualifier(title);
-            return new ClassificationResult(
-                MinyanType.SHACHARIS,
-                "Matched explicit Teen Minyan title pattern: " + TEEN_MINYAN_TITLE_PATTERN.pattern(),
-                notes
-            );
-        }
-        
-        // Check denylist (explicit non-minyan events)
-        for (Pattern pattern : NON_MINYAN_PATTERNS) {
-            if (pattern.matcher(combinedText).find()) {
-                return new ClassificationResult(
-                    MinyanType.NON_MINYAN,
-                    "Matched non-minyan pattern: " + pattern.pattern()
-                );
-            }
-        }
-        
-        // Check specific minyan types (in order of specificity)
-        
-        // Check Selichos
-        for (Pattern pattern : SELICHOS_PATTERNS) {
-            if (pattern.matcher(combinedText).find()) {
-                String titleQualifier = extractTitleQualifier(title);
-                String notes = null;
-                if (titleQualifier != null && !titleQualifier.isEmpty()) {
-                    notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
-                }
-                return new ClassificationResult(
-                    MinyanType.SELICHOS,
-                    "Matched Selichos pattern: " + pattern.pattern(),
-                    notes
-                );
-            }
         }
         
         // Check Shacharis (including sunrise minyanim)
@@ -471,7 +492,8 @@ public class MinyanClassifier {
         // Remove redundant classification words for minyan types
         if (classification.isMinyan()) {
             // Remove standalone minyan type words if they duplicate the classification
-            normalized = normalized.replaceAll("(?i)\\b(shacharis?|shacharit|mincha|ma'?ariv|selichos?)\\b", "");
+            normalized = normalized.replaceAll("(?i)\\b(shacharis?|shacharit|shaharit|shachris|shachrith|mincha|ma'?ariv|selichos?|selichot|slichos|slichot|selihos|selihot)\\b", "");
+            normalized = normalized.replaceAll("(?i)\\b(followed\\s+by|before|then|and|with|following|after)\\b", "");
         }
         
         // Collapse multiple spaces

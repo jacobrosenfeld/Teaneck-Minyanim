@@ -439,10 +439,65 @@ class MinyanClassifierTest {
     
     @Test
     void testClassify_Selichot_Variant() {
-        MinyanClassifier.ClassificationResult result = 
-            classifier.classify("Selichot", null, null, LocalDate.now());
-        
-        assertEquals(MinyanType.SELICHOS, result.classification);
+        String[] variants = {"Selichos", "Selichot", "Slichos", "Slichot", "Selihos", "Selihot"};
+
+        for (String variant : variants) {
+            MinyanClassifier.ClassificationResult result =
+                classifier.classify(variant, null, null, LocalDate.now());
+
+            assertEquals(MinyanType.SELICHOS, result.classification,
+                "Variant '" + variant + "' should classify as Selichos");
+        }
+    }
+
+    @Test
+    void testClassify_LinkedSelichosShacharis() {
+        String[] linkedTitles = {
+            "Selichos/Shacharis",
+            "Selichot/Shacharit",
+            "Slichos & Shachris",
+            "Selichos followed by Shacharis",
+            "Selichos before Shacharis",
+            "Shacharis with Selichos",
+            "Shacharit after Selichot"
+        };
+
+        for (String title : linkedTitles) {
+            MinyanClassifier.ClassificationResult result =
+                classifier.classify(title, null, null, LocalDate.now(), LocalTime.of(6, 0));
+
+            assertEquals(MinyanType.SELICHOS_SHACHARIS, result.classification,
+                "Title '" + title + "' should classify as linked Selichos/Shacharis");
+            assertTrue(result.reason.contains("Selichos/Shacharis"));
+        }
+    }
+
+    @Test
+    void testClassify_SelichosWithNusachSefardBeforeNoon() {
+        MinyanClassifier.ClassificationResult result =
+            classifier.classify("Nusach Sefard Selichos", null, null, LocalDate.now(), LocalTime.of(5, 30));
+
+        assertEquals(MinyanType.SELICHOS, result.classification,
+            "Selichos should not be overridden by the Nusach Sefard morning shortcut");
+    }
+
+    @Test
+    void testClassify_VasikinSelichosPrefersSelichos() {
+        MinyanClassifier.ClassificationResult result =
+            classifier.classify("Vasikin Selichos", null, null, LocalDate.now(), LocalTime.of(5, 45));
+
+        assertEquals(MinyanType.SELICHOS, result.classification,
+            "Selichos should not be overridden by the Netz/Vasikin Shacharis shortcut");
+    }
+
+    @Test
+    void testNormalizeTitle_LinkedSelichosShacharis() {
+        assertEquals(
+            "Main Sanctuary",
+            classifier.normalizeTitle("Selichos/Shacharis Main Sanctuary", MinyanType.SELICHOS_SHACHARIS));
+        assertEquals(
+            "Selichos followed by Shacharis",
+            classifier.normalizeTitle("Selichos followed by Shacharis", MinyanType.SELICHOS_SHACHARIS));
     }
     
     /**
@@ -488,6 +543,7 @@ class MinyanClassifierTest {
             "Maariv",
             "Mincha/Maariv",
             "Selichos",
+            "Selichos followed by Shacharis",
             "Neitz",
             "Sunrise Minyan"
         };
@@ -501,7 +557,8 @@ class MinyanClassifierTest {
                 result.classification == MinyanType.MINCHA ||
                 result.classification == MinyanType.MAARIV ||
                 result.classification == MinyanType.MINCHA_MAARIV ||
-                result.classification == MinyanType.SELICHOS,
+                result.classification == MinyanType.SELICHOS ||
+                result.classification == MinyanType.SELICHOS_SHACHARIS,
                 "Event '" + event + "' should be classified as a specific minyan type");
             
             // Note: The actual enabled/disabled logic is in CalendarImportService.createEntry()

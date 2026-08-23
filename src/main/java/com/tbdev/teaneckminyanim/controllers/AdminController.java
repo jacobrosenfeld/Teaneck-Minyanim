@@ -1696,7 +1696,7 @@ public class AdminController {
 //                shacharisMinyanim.add(m);
 //            }
 //        }
-        List<Minyan> shacharisMinyanim = minyanim.stream().filter(m -> m.getType().equals(MinyanType.SHACHARIS)).collect(Collectors.toList());
+        List<Minyan> shacharisMinyanim = minyanim.stream().filter(m -> m.getType().isShacharis()).collect(Collectors.toList());
         mv.addObject("shacharisminyanim", shacharisMinyanim);
         Map<String, HashMap<MinyanDay, MinyanTime>> shacharisTimes = new HashMap<>();
         for (Minyan m : shacharisMinyanim) {
@@ -1804,7 +1804,7 @@ public class AdminController {
 
         // Group minyanim by type for organized display
         List<Minyan> shacharisMinyanim = filteredMinyanim.stream()
-            .filter(m -> m.getType().equals(MinyanType.SHACHARIS))
+            .filter(m -> m.getType().isShacharis())
             .collect(Collectors.toList());
         List<Minyan> minchaMinyanim = filteredMinyanim.stream()
             .filter(m -> m.getType().equals(MinyanType.MINCHA))

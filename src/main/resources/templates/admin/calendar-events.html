@@ -315,7 +315,8 @@
                                           (${event.minyanType.name() == 'MINCHA'} ? 'event-pill-mincha' :
                                           (${event.minyanType.name() == 'MAARIV'} ? 'event-pill-maariv' :
                                           (${event.minyanType.name() == 'MINCHA_MAARIV'} ? 'event-pill-mincha-maariv' :
-                                          (${event.minyanType.name() == 'SELICHOS'} ? 'event-pill-selichos' : 'event-pill-other'))))">
+                                          (${event.minyanType.name() == 'SELICHOS'} ? 'event-pill-selichos' :
+                                          (${event.minyanType.name() == 'SELICHOS_SHACHARIS'} ? 'event-pill-shacharis' : 'event-pill-other')))))">
                         <span class="event-pill-time" th:text="${#temporals.format(event.startTime, 'h:mm a')}">7:00 AM</span>
                         <span th:text="${event.minyanType.displayName()}">Shacharis</span>
                         <span class="manual-pill-tag" th:if="${event.source.name() == 'MANUAL'}">Manual</span>

@@ -39,7 +39,7 @@
   </script>
   <script th:if="${upcoming != null}" th:inline="javascript">
     /*<![CDATA[*/
-    var minyantype = /*[[${upcoming.getType().displayName()}]]*/ "";
+    var minyantype = /*[[${upcoming.getDisplayTypeName()}]]*/ "";
     var minyantime = /*[[${upcoming.getFormattedStartTime()}]]*/ "";
       /*]]>*/
   </script>
@@ -108,7 +108,7 @@
                             </ul>
                             <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
                               th:if="${upcoming != null}"
-                              th:text="@{|Next Minyan Today: ${upcoming.getType().displayName()} at ${upcoming.getFormattedStartTime()}|}"></button>
+                              th:text="@{|Next Minyan Today: ${upcoming.getDisplayTypeName()} at ${upcoming.getFormattedStartTime()}|}"></button>
                             <button type="button" class="btn-next" th:style="'background: ' + ${org.getOrgColor()}"
                               th:if="${upcoming == null}">There are no upcoming minyanim today.
                             </button>
@@ -151,7 +151,7 @@
                                     <tr>
                                       <td class="middle table-nested">
                                         <h5 th:style="'color: ' + ${org.getOrgColor()}"
-                                          th:utext="${minyan.getType().displayName()} "></h5>
+                                          th:utext="${minyan.getDisplayTypeName()} "></h5>
                                         <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
                                       </td>
                                       <td class="middle table-nested">
@@ -192,7 +192,7 @@
                                     <tr>
                                       <td class="middle table-nested">
                                         <h5 th:style="'color: ' + ${org.getOrgColor()}"
-                                          th:utext="${minyan.getType().displayName()} "></h5>
+                                          th:utext="${minyan.getDisplayTypeName()} "></h5>
                                         <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
                                       </td>
                                       <td class="middle table-nested">
@@ -233,7 +233,7 @@
                                     <tr>
                                       <td class="middle table-nested">
                                         <h5 th:style="'color: ' + ${org.getOrgColor()}"
-                                          th:utext="${minyan.getType().displayName()} "></h5>
+                                          th:utext="${minyan.getDisplayTypeName()} "></h5>
                                         <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
                                       </td>
                                       <td class="middle table-nested">
@@ -262,6 +262,62 @@
                           </h5>
                           </div>
                         </div>
+                      <div class="col-lg" th:if="${nightSelichosMinyanim != null and !nightSelichosMinyanim.isEmpty()}">
+                        <h4 id="night-selichos">Night Selichos</h4>
+                        <table class="table table-org">
+                          <tbody>
+                            <tr th:each="minyan: ${nightSelichosMinyanim}">
+                              <td class="middle">
+                                <table class="table table-org table-nested">
+                                  <tbody>
+                                    <tr>
+                                      <td class="middle table-nested">
+                                        <h5 th:style="'color: ' + ${org.getOrgColor()}"
+                                          th:utext="${minyan.getDisplayTypeName()} "></h5>
+                                        <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
+                                      </td>
+                                      <td class="middle table-nested">
+                                        <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
+                                        <p class="p-dts" th:utext="${minyan.getInformation()}"></p>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                                <p class="mobile-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
+                                <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getNotes())}" th:utext="${minyan.getNotes()}"></p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="col-lg" th:if="${selichosMinyanim != null and !selichosMinyanim.isEmpty()}">
+                        <h4 id="selichos">Selichos</h4>
+                        <table class="table table-org">
+                          <tbody>
+                            <tr th:each="minyan: ${selichosMinyanim}">
+                              <td class="middle">
+                                <table class="table table-org table-nested">
+                                  <tbody>
+                                    <tr>
+                                      <td class="middle table-nested">
+                                        <h5 th:style="'color: ' + ${org.getOrgColor()}"
+                                          th:utext="${minyan.getDisplayTypeName()} "></h5>
+                                        <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
+                                      </td>
+                                      <td class="middle table-nested">
+                                        <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
+                                        <p class="p-dts" th:utext="${minyan.getInformation()}"></p>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                                <p class="mobile-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
+                                <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getNotes())}" th:utext="${minyan.getNotes()}"></p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       </div>
                     </div>
                   </div>

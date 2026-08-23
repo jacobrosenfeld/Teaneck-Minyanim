@@ -445,7 +445,7 @@
                     <div>
                         <div class="minyan-location" th:text="${locationnames.get(minyan.getId())}">Location</div>
                         <div class="minyan-meta">
-                            <span class="type-badge type-badge-shacharis"><i class="fas fa-sun"></i> Shacharis</span>
+                            <span class="type-badge type-badge-shacharis"><i class="fas fa-sun"></i> <span th:text="${minyan.getType().displayName()}">Shacharis</span></span>
                             <span class="nusach-badge" th:text="${minyan.getNusach().displayName()}">Nusach</span>
                             <span class="disabled-badge" th:if="${!minyan.isEnabled()}"><i class="fas fa-ban"></i> Disabled</span>
                         </div>

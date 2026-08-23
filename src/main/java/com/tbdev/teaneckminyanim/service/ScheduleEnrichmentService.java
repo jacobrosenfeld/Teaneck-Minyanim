@@ -3,6 +3,7 @@ package com.tbdev.teaneckminyanim.service;
 import com.tbdev.teaneckminyanim.api.dto.ScheduleEventDto;
 import com.tbdev.teaneckminyanim.enums.Zman;
 import com.tbdev.teaneckminyanim.front.MinyanEvent;
+import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -51,18 +52,27 @@ public class ScheduleEnrichmentService {
         // Compute zmanim once per distinct date
         Map<String, Date> shkiyaByDate = new HashMap<>();
         Map<String, Date> plagByDate = new HashMap<>();
+        Map<String, Date> alosByDate = new HashMap<>();
+        Map<String, Date> tzesByDate = new HashMap<>();
         for (ScheduleEventDto dto : dtos) {
             shkiyaByDate.computeIfAbsent(dto.date(), d -> getZman(LocalDate.parse(d), Zman.SHEKIYA));
             plagByDate.computeIfAbsent(dto.date(), d -> getZman(LocalDate.parse(d), Zman.PLAG_HAMINCHA));
+            alosByDate.computeIfAbsent(dto.date(), d -> getZman(LocalDate.parse(d), Zman.ALOS_HASHACHAR));
+            tzesByDate.computeIfAbsent(dto.date(), d -> getZman(LocalDate.parse(d), Zman.TZES));
         }
 
         SimpleDateFormat fmt = buildFmt();
         ZoneId zoneId = settingsService.getZoneId();
         long thirtyMinutes = 30L * 60 * 1000;
 
-        return dtos.stream().map(dto -> {
+        List<ScheduleEventDto> enriched = dtos.stream().map(dto -> {
             ScheduleEventDto result = dto;
             String type = dto.minyanType();
+            result = annotateSelichosDisplay(
+                    result,
+                    alosByDate.get(result.date()),
+                    tzesByDate.get(result.date()),
+                    zoneId);
 
             if ("MINCHA_MAARIV".equals(type)) {
                 Date shkiyaTime = shkiyaByDate.get(dto.date());
@@ -88,6 +98,8 @@ public class ScheduleEnrichmentService {
                 return result;
             }
         }).collect(Collectors.toList());
+
+        return attachLinkedShacharisTimes(enriched);
     }
 
     /**
@@ -111,13 +123,16 @@ public class ScheduleEnrichmentService {
     public void annotateZmanim(List<MinyanEvent> events, Dictionary<Zman, Date> zmanim) {
         Date shkiyaTime = zmanim != null ? zmanim.get(Zman.SHEKIYA) : null;
         Date plagTime = zmanim != null ? zmanim.get(Zman.PLAG_HAMINCHA) : null;
-        if (shkiyaTime == null && plagTime == null) return;
+        Date alosTime = zmanim != null ? zmanim.get(Zman.ALOS_HASHACHAR) : null;
+        Date tzesTime = zmanim != null ? zmanim.get(Zman.TZES) : null;
+        if (shkiyaTime == null && plagTime == null && alosTime == null && tzesTime == null) return;
 
         SimpleDateFormat fmt = buildFmt();
         long thirtyMinutes = 30L * 60 * 1000;
 
         for (MinyanEvent event : events) {
             if (event.getStartTime() == null) continue;
+            annotateSelichosDisplay(event, alosTime, tzesTime);
 
             if (event.getType().isMinchaMariv() && shkiyaTime != null) {
                 event.setNotes(buildShkiyaNotes(event.getNotes(), fmt.format(shkiyaTime)));
@@ -153,6 +168,101 @@ public class ScheduleEnrichmentService {
             log.warn("Could not compute {} for {}: {}", zman, date, e.getMessage());
             return null;
         }
+    }
+
+    private ScheduleEventDto annotateSelichosDisplay(
+            ScheduleEventDto dto,
+            Date alosTime,
+            Date tzesTime,
+            ZoneId zoneId) {
+        if (!MinyanType.SELICHOS.name().equals(dto.minyanType())) {
+            return dto;
+        }
+        if (!isNightSelichos(dto.date(), dto.startTime(), alosTime, tzesTime, zoneId)) {
+            return dto;
+        }
+        return dto.withDisplayContext(
+                "NIGHT_SELICHOS",
+                "Night Selichos",
+                "NIGHT_SELICHOS",
+                "Night Selichos");
+    }
+
+    private void annotateSelichosDisplay(MinyanEvent event, Date alosTime, Date tzesTime) {
+        if (event.getType().isSelichosShacharis()) {
+            event.setPublicGroup(MinyanType.SHACHARIS.name());
+            event.setPublicGroupDisplayName(MinyanType.SHACHARIS.displayName());
+            return;
+        }
+        if (!event.getType().isSelichos()) {
+            return;
+        }
+        if (isNightSelichos(event.getStartTime(), alosTime, tzesTime)) {
+            event.setDisplayTypeName("Night Selichos");
+            event.setPublicGroup("NIGHT_SELICHOS");
+            event.setPublicGroupDisplayName("Night Selichos");
+        }
+    }
+
+    private boolean isNightSelichos(
+            String date,
+            String startTime,
+            Date alosTime,
+            Date tzesTime,
+            ZoneId zoneId) {
+        try {
+            Date eventTime = Date.from(
+                    LocalDate.parse(date).atTime(LocalTime.parse(startTime)).atZone(zoneId).toInstant());
+            return isNightSelichos(eventTime, alosTime, tzesTime);
+        } catch (Exception e) {
+            log.warn("Could not classify Selichos display period for {} {}: {}", date, startTime, e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean isNightSelichos(Date eventTime, Date alosTime, Date tzesTime) {
+        boolean beforeAlos = alosTime != null && eventTime.before(alosTime);
+        boolean afterTzes = tzesTime != null && eventTime.after(tzesTime);
+        return beforeAlos || afterTzes;
+    }
+
+    private List<ScheduleEventDto> attachLinkedShacharisTimes(List<ScheduleEventDto> dtos) {
+        return dtos.stream()
+                .map(dto -> {
+                    if (!MinyanType.SELICHOS_SHACHARIS.name().equals(dto.minyanType())) {
+                        return dto;
+                    }
+                    return findLinkedShacharisTime(dto, dtos)
+                            .map(dto::withLinkedStartTime)
+                            .orElse(dto);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private Optional<String> findLinkedShacharisTime(ScheduleEventDto linked, List<ScheduleEventDto> dtos) {
+        return dtos.stream()
+                .filter(candidate -> MinyanType.SHACHARIS.name().equals(candidate.minyanType()))
+                .filter(candidate -> Objects.equals(candidate.date(), linked.date()))
+                .filter(candidate -> sameOrganization(candidate, linked))
+                .filter(candidate -> sameLocationWhenPresent(candidate, linked))
+                .filter(candidate -> candidate.startTime().compareTo(linked.startTime()) > 0)
+                .sorted(Comparator.comparing(ScheduleEventDto::startTime))
+                .map(ScheduleEventDto::startTime)
+                .findFirst();
+    }
+
+    private boolean sameOrganization(ScheduleEventDto a, ScheduleEventDto b) {
+        return a.organization() != null
+                && b.organization() != null
+                && Objects.equals(a.organization().id(), b.organization().id());
+    }
+
+    private boolean sameLocationWhenPresent(ScheduleEventDto a, ScheduleEventDto b) {
+        if (a.locationName() == null || a.locationName().isBlank()
+                || b.locationName() == null || b.locationName().isBlank()) {
+            return true;
+        }
+        return a.locationName().trim().equalsIgnoreCase(b.locationName().trim());
     }
 
     /** Strip existing Shkiya:/Plag: fragments and append "Shkiya: <time>". */

@@ -21,6 +21,12 @@ public class MinyanEvent {
 
     private MinyanType type;
 
+    private String displayTypeName;
+
+    private String publicGroup;
+
+    private String publicGroupDisplayName;
+
     private String organizationName;
 
     private Nusach organizationNusach;
@@ -74,6 +80,30 @@ public class MinyanEvent {
 
     public MinyanType getType() {
         return type;
+    }
+
+    public String getDisplayTypeName() {
+        return displayTypeName != null ? displayTypeName : type.displayName();
+    }
+
+    public void setDisplayTypeName(String displayTypeName) {
+        this.displayTypeName = displayTypeName;
+    }
+
+    public String getPublicGroup() {
+        return publicGroup != null ? publicGroup : type.publicGroupName();
+    }
+
+    public void setPublicGroup(String publicGroup) {
+        this.publicGroup = publicGroup;
+    }
+
+    public String getPublicGroupDisplayName() {
+        return publicGroupDisplayName != null ? publicGroupDisplayName : type.publicGroupDisplayName();
+    }
+
+    public void setPublicGroupDisplayName(String publicGroupDisplayName) {
+        this.publicGroupDisplayName = publicGroupDisplayName;
     }
 
 //    add getters

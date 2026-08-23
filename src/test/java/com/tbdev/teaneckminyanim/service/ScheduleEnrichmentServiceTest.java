@@ -121,6 +121,34 @@ class ScheduleEnrichmentServiceTest {
         assertEquals("Shkiya: 7:10 PM", event.getNotes());
     }
 
+    @Test
+    void annotateZmanim_marksLateStandaloneSelichosAsNightSelichos() {
+        when(zmanimHandler.getZmanim(DATE))
+                .thenReturn(zmanim(DATE, null, null, LocalTime.of(5, 20), LocalTime.of(20, 10)));
+
+        ScheduleEventDto dto = dto("sel-1", DATE, "00:45", "SELICHOS", null, null);
+
+        List<ScheduleEventDto> enriched = service.annotateZmanim(List.of(dto));
+
+        assertEquals("NIGHT_SELICHOS", enriched.get(0).displayMinyanType());
+        assertEquals("Night Selichos", enriched.get(0).displayMinyanTypeDisplay());
+        assertEquals("NIGHT_SELICHOS", enriched.get(0).groupMinyanType());
+    }
+
+    @Test
+    void annotateZmanim_attachesFollowingShacharisTimeToLinkedSelichos() {
+        when(zmanimHandler.getZmanim(DATE))
+                .thenReturn(zmanim(DATE, null, null));
+
+        ScheduleEventDto linked = dto("sel-sh-1", DATE, "06:00", "SELICHOS_SHACHARIS", null, null);
+        ScheduleEventDto shacharis = dto("sh-1", DATE, "06:45", "SHACHARIS", null, null);
+
+        List<ScheduleEventDto> enriched = service.annotateZmanim(List.of(linked, shacharis));
+
+        assertEquals("06:45", enriched.get(0).linkedStartTime());
+        assertEquals("SHACHARIS", enriched.get(0).linkedMinyanType());
+    }
+
     private ScheduleEventDto dto(
             String id,
             LocalDate date,
@@ -130,12 +158,29 @@ class ScheduleEnrichmentServiceTest {
             String dynamicTimeString) {
         ScheduleEventDto.OrgSummary org = new ScheduleEventDto.OrgSummary(
                 "org-1", "Org", "org", "#000000", null);
+        String display = switch (minyanType) {
+            case "SELICHOS" -> "Selichos";
+            case "SELICHOS_SHACHARIS" -> "Selichos/Shacharis";
+            case "SHACHARIS" -> "Shacharis";
+            case "MINCHA" -> "Mincha";
+            case "MAARIV" -> "Maariv";
+            default -> "Mincha/Maariv";
+        };
+        String group = "SELICHOS_SHACHARIS".equals(minyanType) ? "SHACHARIS" : minyanType;
+        String groupDisplay = "SELICHOS_SHACHARIS".equals(minyanType) ? "Shacharis" : display;
         return new ScheduleEventDto(
                 id,
                 date.toString(),
                 startTime,
                 minyanType,
-                "Mincha/Maariv",
+                display,
+                minyanType,
+                display,
+                group,
+                groupDisplay,
+                "SELICHOS_SHACHARIS".equals(minyanType) ? "SHACHARIS" : null,
+                "SELICHOS_SHACHARIS".equals(minyanType) ? "Shacharis" : null,
+                null,
                 org,
                 "Main",
                 notes,
@@ -147,12 +192,27 @@ class ScheduleEnrichmentServiceTest {
     }
 
     private Dictionary<Zman, Date> zmanim(LocalDate date, LocalTime shkiya, LocalTime plag) {
+        return zmanim(date, shkiya, plag, null, null);
+    }
+
+    private Dictionary<Zman, Date> zmanim(
+            LocalDate date,
+            LocalTime shkiya,
+            LocalTime plag,
+            LocalTime alos,
+            LocalTime tzes) {
         Hashtable<Zman, Date> zmanim = new Hashtable<>();
         if (shkiya != null) {
             zmanim.put(Zman.SHEKIYA, dateAt(date, shkiya));
         }
         if (plag != null) {
             zmanim.put(Zman.PLAG_HAMINCHA, dateAt(date, plag));
+        }
+        if (alos != null) {
+            zmanim.put(Zman.ALOS_HASHACHAR, dateAt(date, alos));
+        }
+        if (tzes != null) {
+            zmanim.put(Zman.TZES, dateAt(date, tzes));
         }
         return zmanim;
     }

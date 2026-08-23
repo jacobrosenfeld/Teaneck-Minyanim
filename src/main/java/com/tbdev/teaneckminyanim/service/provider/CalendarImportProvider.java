@@ -161,7 +161,7 @@ public class CalendarImportProvider implements OrgScheduleProvider {
             return Nusach.EDOT_HAMIZRACH;
         }
 
-        if (combined.matches(".*\\bsefard\\b.*") || combined.matches(".*\\bnusach\\s+sefard\\b.*") || combined.matches(".*\\bNS\\b.*")) {
+        if (combined.matches(".*\\bsefard\\b.*") || combined.matches(".*\\bnusach\\s+sefard\\b.*") || combined.matches(".*\\bns\\b.*")) {
             return Nusach.SEFARD;
         }
 
@@ -187,7 +187,9 @@ public class CalendarImportProvider implements OrgScheduleProvider {
         String combined = (entry.getTitle() + " " + (entry.getType() != null ? entry.getType() : "")).toLowerCase();
 
         // Check for combined Mincha/Maariv first (most specific)
-        if (combined.contains("mincha") && (combined.contains("maariv") || combined.contains("ma'ariv") || combined.contains("arvit"))) {
+        if (containsSelichos(combined) && containsShacharis(combined)) {
+            return MinyanType.SELICHOS_SHACHARIS;
+        } else if (combined.contains("mincha") && (combined.contains("maariv") || combined.contains("ma'ariv") || combined.contains("arvit"))) {
             return MinyanType.MINCHA_MAARIV;
         } else if (combined.contains("shacharis") || combined.contains("shacharit") || combined.contains("morning")) {
             return MinyanType.SHACHARIS;
@@ -195,7 +197,7 @@ public class CalendarImportProvider implements OrgScheduleProvider {
             return MinyanType.MINCHA;
         } else if (combined.contains("maariv") || combined.contains("ma'ariv") || combined.contains("arvit") || combined.contains("evening")) {
             return MinyanType.MAARIV;
-        } else if (combined.contains("selichos") || combined.contains("selichot")) {
+        } else if (containsSelichos(combined)) {
             return MinyanType.SELICHOS;
         } else if (combined.contains("megila") || combined.contains("megillah")) {
             return MinyanType.MEGILA_READING;
@@ -204,5 +206,22 @@ public class CalendarImportProvider implements OrgScheduleProvider {
         // Default to SHACHARIS if unable to determine
         log.debug("Unable to infer MinyanType from '{}', defaulting to SHACHARIS", combined);
         return MinyanType.SHACHARIS;
+    }
+
+    private boolean containsSelichos(String text) {
+        return text.contains("selichos")
+                || text.contains("selichot")
+                || text.contains("slichos")
+                || text.contains("slichot")
+                || text.contains("selihos")
+                || text.contains("selihot");
+    }
+
+    private boolean containsShacharis(String text) {
+        return text.contains("shacharis")
+                || text.contains("shacharit")
+                || text.contains("shaharit")
+                || text.contains("shachris")
+                || text.contains("shachrith");
     }
 }

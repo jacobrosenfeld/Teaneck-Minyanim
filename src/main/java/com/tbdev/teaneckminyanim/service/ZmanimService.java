@@ -224,6 +224,8 @@ public class ZmanimService {
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
+        List<MinyanEvent> selichosMinyanim = new ArrayList<>();
+        List<MinyanEvent> nightSelichosMinyanim = new ArrayList<>();
         
         // Add final zman notes, including Shkiya for Mincha/Maariv and Plag replacements.
         scheduleEnrichmentService.annotateZmanim(minyanEvents, zmanim);
@@ -238,11 +240,17 @@ public class ZmanimService {
                 minchaMinyanim.add(me);
             } else if (me.getType().isMaariv()) {
                 maarivMinyanim.add(me);
+            } else if ("NIGHT_SELICHOS".equals(me.getPublicGroup())) {
+                nightSelichosMinyanim.add(me);
+            } else if (me.getType().isSelichos()) {
+                selichosMinyanim.add(me);
             }
         }
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
+        mv.getModel().put("selichosMinyanim", selichosMinyanim);
+        mv.getModel().put("nightSelichosMinyanim", nightSelichosMinyanim);
 
         return mv;
     }
@@ -332,6 +340,8 @@ public class ZmanimService {
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
+        List<MinyanEvent> selichosMinyanim = new ArrayList<>();
+        List<MinyanEvent> nightSelichosMinyanim = new ArrayList<>();
         for (MinyanEvent me : minyanEvents) {
             if (me.getType().isShacharis()) {
                 shacharisMinyanim.add(me);
@@ -339,6 +349,10 @@ public class ZmanimService {
                 minchaMinyanim.add(me);
             } else if (me.getType().isMaariv()) {
                 maarivMinyanim.add(me);
+            } else if ("NIGHT_SELICHOS".equals(me.getPublicGroup())) {
+                nightSelichosMinyanim.add(me);
+            } else if (me.getType().isSelichos()) {
+                selichosMinyanim.add(me);
             }
         }
 
@@ -353,6 +367,7 @@ public class ZmanimService {
             effectiveScheduleService.getEffectiveEventsForDate(orgId, todayLocalDate);
         
         List<MinyanEvent> todayEvents = calendarEventAdapter.toMinyanEvents(todayCalendarEvents);
+        scheduleEnrichmentService.annotateZmanim(todayEvents, zmanimtoday);
         
         Date now = new Date();
         Date terminationDate = new Date(now.getTime() - (60000 * 3)); // 3 minutes ago
@@ -383,6 +398,8 @@ public class ZmanimService {
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
+        mv.getModel().put("selichosMinyanim", selichosMinyanim);
+        mv.getModel().put("nightSelichosMinyanim", nightSelichosMinyanim);
 
         // Add application settings for frontend use
         mv.getModel().put("mapboxAccessToken", settingsService.getMapboxAccessToken());
@@ -517,6 +534,11 @@ public class ZmanimService {
         if (type.equals(MinyanType.SHACHARIS)) {
             return startTime.before(zmanim.get(Zman.SZT)) && 
                    startTime.after(zmanim.get(Zman.ALOS_HASHACHAR));
+        }
+
+        // Linked Selichos/Shacharis: display during Selichos season under Shacharis.
+        if (type.equals(MinyanType.SELICHOS_SHACHARIS)) {
+            return isSelichosRecited && startTime.before(zmanim.get(Zman.SZT));
         }
         
         // Mincha: Between Mincha Gedola and Shekiya

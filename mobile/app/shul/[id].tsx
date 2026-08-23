@@ -47,7 +47,7 @@ const BOTTOM_TABS = [
   { key: 'zmanim',   label: 'Zmanim',   icon: 'clock',            iconFocused: 'clock.fill',         path: '/(tabs)/zmanim'},
 ] as const;
 
-const TYPE_ORDER = ['SHACHARIS', 'MINCHA', 'MINCHA_MAARIV', 'MAARIV', 'SELICHOS', 'MEGILA_READING'];
+const TYPE_ORDER = ['SHACHARIS', 'MINCHA', 'MINCHA_MAARIV', 'MAARIV', 'NIGHT_SELICHOS', 'SELICHOS', 'MEGILA_READING'];
 function sortKey(t: string) { return TYPE_ORDER.indexOf(t) === -1 ? 99 : TYPE_ORDER.indexOf(t); }
 
 interface Section { title: string; date: string; data: ScheduleEvent[] }
@@ -64,7 +64,7 @@ function buildSections(events: ScheduleEvent[]): Section[] {
       title: format(parseISO(date), 'EEEE, MMM d'),
       date,
       data: items.sort((a, b) => {
-        const td = sortKey(a.minyanType) - sortKey(b.minyanType);
+        const td = sortKey(a.groupMinyanType || a.minyanType) - sortKey(b.groupMinyanType || b.minyanType);
         return td !== 0 ? td : a.startTime.localeCompare(b.startTime);
       }),
     }))

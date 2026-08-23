@@ -15,6 +15,13 @@ public record ScheduleEventDto(
         String startTime,          // "HH:mm" e.g. "07:00"
         String minyanType,         // enum name: "SHACHARIS"
         String minyanTypeDisplay,  // human label: "Shacharis"
+        String displayMinyanType,  // presentation enum/group label, e.g. "NIGHT_SELICHOS"
+        String displayMinyanTypeDisplay,
+        String groupMinyanType,    // section/filter group, e.g. "SHACHARIS" for SELICHOS_SHACHARIS
+        String groupMinyanTypeDisplay,
+        String linkedMinyanType,   // e.g. "SHACHARIS" for SELICHOS_SHACHARIS
+        String linkedMinyanTypeDisplay,
+        String linkedStartTime,    // "HH:mm" when known
         OrgSummary organization,
         String locationName,
         String notes,
@@ -33,6 +40,28 @@ public record ScheduleEventDto(
     /** Return a copy with a different notes value (used for plag annotation at API response time). */
     public ScheduleEventDto withNotes(String notes) {
         return new ScheduleEventDto(id, date, startTime, minyanType, minyanTypeDisplay,
+                displayMinyanType, displayMinyanTypeDisplay, groupMinyanType, groupMinyanTypeDisplay,
+                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime,
+                organization, locationName, notes, nusach, nusachDisplay,
+                dynamicTimeString, source, whatsapp);
+    }
+
+    public ScheduleEventDto withDisplayContext(
+            String displayMinyanType,
+            String displayMinyanTypeDisplay,
+            String groupMinyanType,
+            String groupMinyanTypeDisplay) {
+        return new ScheduleEventDto(id, date, startTime, minyanType, minyanTypeDisplay,
+                displayMinyanType, displayMinyanTypeDisplay, groupMinyanType, groupMinyanTypeDisplay,
+                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime,
+                organization, locationName, notes, nusach, nusachDisplay,
+                dynamicTimeString, source, whatsapp);
+    }
+
+    public ScheduleEventDto withLinkedStartTime(String linkedStartTime) {
+        return new ScheduleEventDto(id, date, startTime, minyanType, minyanTypeDisplay,
+                displayMinyanType, displayMinyanTypeDisplay, groupMinyanType, groupMinyanTypeDisplay,
+                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime,
                 organization, locationName, notes, nusach, nusachDisplay,
                 dynamicTimeString, source, whatsapp);
     }
@@ -54,6 +83,13 @@ public record ScheduleEventDto(
                 event.getStartTime().toString().substring(0, 5), // "HH:mm"
                 event.getMinyanType().name(),
                 event.getMinyanType().displayName(),
+                event.getMinyanType().name(),
+                event.getMinyanType().displayName(),
+                event.getMinyanType().publicGroupName(),
+                event.getMinyanType().publicGroupDisplayName(),
+                event.getMinyanType().isSelichosShacharis() ? "SHACHARIS" : null,
+                event.getMinyanType().isSelichosShacharis() ? "Shacharis" : null,
+                null,
                 orgSummary,
                 event.getLocationName(),
                 event.getNotes(),

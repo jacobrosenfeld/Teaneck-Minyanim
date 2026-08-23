@@ -962,7 +962,10 @@ public class SuperAdminOverrideXlsxService {
         if ("SHACHARIS".equals(normalized)) return MinyanType.SHACHARIS;
         if ("MINCHA".equals(normalized)) return MinyanType.MINCHA;
         if ("MAARIV".equals(normalized)) return MinyanType.MAARIV;
-        throw new RowParseException("Invalid minyan_type: " + raw + ". Allowed: SHACHARIS, MINCHA, MAARIV, MINCHA/MAARIV.");
+        if ("SELICHOS".equals(normalized)) return MinyanType.SELICHOS;
+        if ("SELICHOS_SHACHARIS".equals(normalized)) return MinyanType.SELICHOS_SHACHARIS;
+        if ("MEGILA_READING".equals(normalized)) return MinyanType.MEGILA_READING;
+        throw new RowParseException("Invalid minyan_type: " + raw + ". Allowed: SHACHARIS, MINCHA, MAARIV, MINCHA/MAARIV, SELICHOS, SELICHOS/SHACHARIS, MEGILA_READING.");
     }
 
     private String parseOverrideMode(String raw) {
