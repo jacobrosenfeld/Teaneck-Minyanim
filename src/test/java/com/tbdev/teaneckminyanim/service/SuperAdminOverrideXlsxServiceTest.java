@@ -71,8 +71,9 @@ class SuperAdminOverrideXlsxServiceTest {
              Workbook orgWorkbook = WorkbookFactory.create(new ByteArrayInputStream(
                      service.buildOrganizationTemplate(organization, List.of(location))))) {
 
-            assertTrue(columnValues(superWorkbook.getSheet("Lists"), 1).contains("SELICHOS"));
-            assertTrue(columnValues(orgWorkbook.getSheet("Lists"), 0).contains("SELICHOS"));
+            List<String> expectedTypes = List.of("SHACHARIS", "MINCHA", "MAARIV", "MINCHA/MAARIV", "SELICHOS");
+            assertEquals(expectedTypes, columnValues(superWorkbook.getSheet("Lists"), 1));
+            assertEquals(expectedTypes, columnValues(orgWorkbook.getSheet("Lists"), 0));
         }
     }
 
@@ -114,7 +115,7 @@ class SuperAdminOverrideXlsxServiceTest {
     }
 
     @Test
-    void importSuperAdminWorkbook_acceptsSelichosRows() throws Exception {
+    void importSuperAdminWorkbook_acceptsSelichotRowsAsSelichos() throws Exception {
         Organization organization = organization();
         when(organizationService.getAll()).thenReturn(List.of(organization));
         when(locationService.findMatching(ORG_ID)).thenReturn(List.of(new Location("Ogden Lower Level", ORG_ID)));
@@ -124,7 +125,7 @@ class SuperAdminOverrideXlsxServiceTest {
 
         SuperAdminOverrideXlsxService.ImportResult result = service.importSuperAdminWorkbook(
                 multipartFile(superWorkbook(
-                        new String[]{ORG_NAME, "2026-06-07", "5:05 AM", "SELICHOS", "ADDITIVE", "Ogden Lower Level", "Sephardic Selichot", "SEFARD", "true"})),
+                        new String[]{ORG_NAME, "2026-06-07", "5:05 AM", "Selichot", "ADDITIVE", "Ogden Lower Level", "Sephardic Selichot", "SEFARD", "true"})),
                 "tester");
 
         ArgumentCaptor<CalendarEvent> captor = ArgumentCaptor.forClass(CalendarEvent.class);
