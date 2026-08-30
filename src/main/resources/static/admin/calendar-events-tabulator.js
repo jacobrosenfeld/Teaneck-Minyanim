@@ -42,6 +42,8 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'MINCHA': return 'badge-mincha';
             case 'MAARIV': return 'badge-maariv';
             case 'MINCHA_MAARIV': return 'badge-mincha-maariv';
+            case 'SELICHOS': return 'badge-selichos';
+            case 'SELICHOS_SHACHARIS': return 'badge-shacharis';
             default: return 'badge-other';
         }
     }
@@ -123,7 +125,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         "MINCHA": "Mincha",
                         "MAARIV": "Maariv",
                         "MINCHA_MAARIV": "Mincha/Maariv",
-                        "SELICHOS": "Selichos"
+                        "SELICHOS": "Selichos",
+                        "SELICHOS_SHACHARIS": "Selichos/Shacharis"
                     }
                 },
                 headerFilterFunc: function(headerValue, rowValue, rowData) {

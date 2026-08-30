@@ -524,7 +524,8 @@
                                                   (${event.minyanType.name() == 'MINCHA'}       ? 'mb-mincha' :
                                                   (${event.minyanType.name() == 'MAARIV'}       ? 'mb-maariv' :
                                                   (${event.minyanType.name() == 'MINCHA_MAARIV'}? 'mb-mincha-maariv' :
-                                                  (${event.minyanType.name() == 'SELICHOS'}     ? 'mb-selichos' : 'mb-other'))))"
+                                                  (${event.minyanType.name() == 'SELICHOS'}     ? 'mb-selichos' :
+                                                  (${event.minyanType.name() == 'SELICHOS_SHACHARIS'} ? 'mb-shacharis' : 'mb-other')))))"
                                   th:text="${event.minyanType.displayName()}">Type</span>
                         </td>
 

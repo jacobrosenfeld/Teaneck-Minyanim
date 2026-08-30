@@ -36,7 +36,11 @@ import type { ScheduleEvent } from '@/api/types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const TYPE_ORDER = ['SHACHARIS', 'MINCHA', 'MINCHA_MAARIV', 'MAARIV', 'SELICHOS', 'MEGILA_READING'];
+const TYPE_ORDER = ['SHACHARIS', 'MINCHA', 'MINCHA_MAARIV', 'MAARIV', 'NIGHT_SELICHOS', 'SELICHOS', 'MEGILA_READING'];
+function shulDetailSortType(event: ScheduleEvent) {
+  const type = event.groupMinyanType || event.minyanType;
+  return type === 'SELICHOS_SHACHARIS' ? 'SHACHARIS' : type;
+}
 function sortKey(t: string) { return TYPE_ORDER.indexOf(t) === -1 ? 99 : TYPE_ORDER.indexOf(t); }
 
 interface Section { title: string; date: string; data: ScheduleEvent[] }
@@ -44,6 +48,7 @@ interface Section { title: string; date: string; data: ScheduleEvent[] }
 function buildSections(events: ScheduleEvent[]): Section[] {
   const byDate: Record<string, ScheduleEvent[]> = {};
   for (const e of events) {
+    if (e.linkedTarget) continue;
     if (!byDate[e.date]) byDate[e.date] = [];
     byDate[e.date].push(e);
   }
@@ -53,7 +58,7 @@ function buildSections(events: ScheduleEvent[]): Section[] {
       title: format(parseISO(date), 'EEEE, MMM d'),
       date,
       data: items.sort((a, b) => {
-        const td = sortKey(a.minyanType) - sortKey(b.minyanType);
+        const td = sortKey(shulDetailSortType(a)) - sortKey(shulDetailSortType(b));
         return td !== 0 ? td : a.startTime.localeCompare(b.startTime);
       }),
     }))
@@ -273,8 +278,8 @@ export default function ShulDetailScreen() {
   const weeklySections = buildSections(weeklyEvents ?? []);
   const orgColor = org?.color ?? colors.tint;
   const orgSlug = org?.slug ?? org?.id ?? id ?? '';
-  const dailySorted = [...(dailyEvents ?? [])].sort((a, b) => {
-    const td = sortKey(a.minyanType) - sortKey(b.minyanType);
+  const dailySorted = [...(dailyEvents ?? [])].filter((event) => !event.linkedTarget).sort((a, b) => {
+    const td = sortKey(shulDetailSortType(a)) - sortKey(shulDetailSortType(b));
     return td !== 0 ? td : a.startTime.localeCompare(b.startTime);
   });
 

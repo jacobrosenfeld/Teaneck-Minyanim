@@ -1,6 +1,7 @@
 package com.tbdev.teaneckminyanim.service;
 
 import com.kosherjava.zmanim.util.GeoLocation;
+import com.tbdev.teaneckminyanim.enums.EventSource;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.model.Location;
 import com.tbdev.teaneckminyanim.model.Minyan;
@@ -139,6 +140,7 @@ public class ZmanimService {
 
             // Convert to MinyanEvent objects
             List<MinyanEvent> orgEvents = calendarEventAdapter.toMinyanEvents(calendarEvents);
+            scheduleEnrichmentService.annotateZmanim(orgEvents, zmanim);
 
             // Apply time-based filtering and termination date logic
             boolean isSelichosRecited = zmanimHandler.isSelichosRecited(localDateRef);
@@ -219,30 +221,43 @@ public class ZmanimService {
         // end kol
 
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
-        mv.getModel().put("allminyanim", minyanEvents);
 
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
+        List<MinyanEvent> selichosShacharisMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
+        List<MinyanEvent> selichosMinyanim = new ArrayList<>();
+        List<MinyanEvent> nightSelichosMinyanim = new ArrayList<>();
         
-        // Add final zman notes, including Shkiya for Mincha/Maariv and Plag replacements.
-        scheduleEnrichmentService.annotateZmanim(minyanEvents, zmanim);
-
         // Populate organization slugs for all minyan events
         populateOrganizationSlugs(minyanEvents);
 
-        for (MinyanEvent me : minyanEvents) {
-            if (me.getType().isShacharis()) {
+        List<MinyanEvent> visibleMinyanEvents = minyanEvents.stream()
+                .filter(me -> !me.isLinkedTarget())
+                .collect(Collectors.toList());
+        mv.getModel().put("allminyanim", visibleMinyanEvents);
+
+        for (MinyanEvent me : visibleMinyanEvents) {
+            if (MinyanType.SELICHOS_SHACHARIS.name().equals(me.getPublicGroup())) {
+                selichosShacharisMinyanim.add(me);
+            } else if (MinyanType.SHACHARIS.name().equals(me.getPublicGroup())) {
                 shacharisMinyanim.add(me);
             } else if (me.getType().isMincha()) {
                 minchaMinyanim.add(me);
             } else if (me.getType().isMaariv()) {
                 maarivMinyanim.add(me);
+            } else if ("NIGHT_SELICHOS".equals(me.getPublicGroup())) {
+                nightSelichosMinyanim.add(me);
+            } else if (me.getType().isSelichos()) {
+                selichosMinyanim.add(me);
             }
         }
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
+        mv.getModel().put("selichosShacharisMinyanim", selichosShacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
+        mv.getModel().put("selichosMinyanim", selichosMinyanim);
+        mv.getModel().put("nightSelichosMinyanim", nightSelichosMinyanim);
 
         return mv;
     }
@@ -327,18 +342,29 @@ public class ZmanimService {
         // Add final zman notes, including Shkiya for Mincha/Maariv and Plag replacements.
         scheduleEnrichmentService.annotateZmanim(minyanEvents, zmanim);
 
-        mv.getModel().put("allminyanim", minyanEvents);
+        List<MinyanEvent> visibleMinyanEvents = minyanEvents.stream()
+                .filter(me -> !me.isLinkedTarget())
+                .collect(Collectors.toList());
+        mv.getModel().put("allminyanim", visibleMinyanEvents);
 
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
-        for (MinyanEvent me : minyanEvents) {
-            if (me.getType().isShacharis()) {
+        List<MinyanEvent> selichosMinyanim = new ArrayList<>();
+        List<MinyanEvent> nightSelichosMinyanim = new ArrayList<>();
+        for (MinyanEvent me : visibleMinyanEvents) {
+            if (MinyanType.SELICHOS_SHACHARIS.name().equals(me.getPublicGroup())) {
+                shacharisMinyanim.add(me);
+            } else if (MinyanType.SHACHARIS.name().equals(me.getPublicGroup())) {
                 shacharisMinyanim.add(me);
             } else if (me.getType().isMincha() || me.getType().isMinchaMariv()) {
                 minchaMinyanim.add(me);
             } else if (me.getType().isMaariv()) {
                 maarivMinyanim.add(me);
+            } else if ("NIGHT_SELICHOS".equals(me.getPublicGroup())) {
+                nightSelichosMinyanim.add(me);
+            } else if (me.getType().isSelichos()) {
+                selichosMinyanim.add(me);
             }
         }
 
@@ -353,13 +379,14 @@ public class ZmanimService {
             effectiveScheduleService.getEffectiveEventsForDate(orgId, todayLocalDate);
         
         List<MinyanEvent> todayEvents = calendarEventAdapter.toMinyanEvents(todayCalendarEvents);
+        scheduleEnrichmentService.annotateZmanim(todayEvents, zmanimtoday);
         
         Date now = new Date();
         Date terminationDate = new Date(now.getTime() - (60000 * 3)); // 3 minutes ago
         
         // Filter today's events to find upcoming ones
         for (MinyanEvent event : todayEvents) {
-            if (event.getStartTime() != null && event.getStartTime().after(terminationDate)) {
+            if (event.getStartTime() != null && event.getStartTime().after(terminationDate) && !event.isLinkedTarget()) {
                 nextMinyan.add(event);
             }
         }
@@ -383,6 +410,8 @@ public class ZmanimService {
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
+        mv.getModel().put("selichosMinyanim", selichosMinyanim);
+        mv.getModel().put("nightSelichosMinyanim", nightSelichosMinyanim);
 
         // Add application settings for frontend use
         mv.getModel().put("mapboxAccessToken", settingsService.getMapboxAccessToken());
@@ -513,12 +542,24 @@ public class ZmanimService {
         mgMinusOne.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
         mgMinusOne.add(Calendar.MINUTE, -1);
         
+        String publicGroup = event.getPublicGroup();
+        boolean explicitScheduleEvent = event.getSource() == EventSource.IMPORTED
+                || event.getSource() == EventSource.MANUAL;
+
+        if (MinyanType.SELICHOS_SHACHARIS.name().equals(publicGroup)) {
+            return (explicitScheduleEvent || isSelichosRecited) && startTime.before(zmanim.get(Zman.SZT));
+        }
+
+        if ("NIGHT_SELICHOS".equals(publicGroup)) {
+            return explicitScheduleEvent || isSelichosRecited;
+        }
+
         // Shacharis: Between Alos Hashachar and SZT
         if (type.equals(MinyanType.SHACHARIS)) {
             return startTime.before(zmanim.get(Zman.SZT)) && 
                    startTime.after(zmanim.get(Zman.ALOS_HASHACHAR));
         }
-        
+
         // Mincha: Between Mincha Gedola and Shekiya
         if (type.equals(MinyanType.MINCHA)) {
             return startTime.before(zmanim.get(Zman.SHEKIYA)) &&

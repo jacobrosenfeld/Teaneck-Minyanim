@@ -36,6 +36,14 @@ export interface ScheduleEvent {
   startTime: string;      // "HH:mm"
   minyanType: string;     // "SHACHARIS" | "MINCHA" | "MAARIV" | etc.
   minyanTypeDisplay: string;
+  displayMinyanType: string;
+  displayMinyanTypeDisplay: string;
+  groupMinyanType: string;
+  groupMinyanTypeDisplay: string;
+  linkedMinyanType: string | null;
+  linkedMinyanTypeDisplay: string | null;
+  linkedStartTime: string | null;
+  linkedTarget: boolean;
   organization: OrgSummary;
   locationName: string | null;
   notes: string | null;

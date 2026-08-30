@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.front;
 
+import com.tbdev.teaneckminyanim.enums.EventSource;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.enums.Nusach;
 
@@ -7,13 +8,33 @@ import com.tbdev.teaneckminyanim.enums.Nusach;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 public class MinyanEvent {
     // Timezone is set globally in TeaneckMinyanimApplication from settings
+    public static final String PLAG_GUIDANCE_TEXT =
+            "Plag Mincha-Maariv is intended exclusively for those under the pressing circumstances of she'at ha-dechak (Sh\"A O\"Ch 233:1).";
+
+    private static final Pattern GENERATED_PLAG_NOTE_PATTERN = Pattern.compile(
+            "(?i)(^|\\s*\\|\\s*|\\.\\s*)\\bPlag:\\s*\\d{1,2}:\\d{2}\\s*[AP]M\\b\\.?\\s*");
     
     private String parentMinyanId;
 
     private MinyanType type;
+
+    private String displayTypeName;
+
+    private String publicGroup;
+
+    private String publicGroupDisplayName;
+
+    private MinyanType linkedMinyanType;
+
+    private Date linkedStartTime;
+
+    private boolean linkedTarget;
+
+    private EventSource source;
 
     private String organizationName;
 
@@ -68,6 +89,74 @@ public class MinyanEvent {
 
     public MinyanType getType() {
         return type;
+    }
+
+    public String getDisplayTypeName() {
+        return displayTypeName != null ? displayTypeName : type.displayName();
+    }
+
+    public void setDisplayTypeName(String displayTypeName) {
+        this.displayTypeName = displayTypeName;
+    }
+
+    public String getPublicGroup() {
+        return publicGroup != null ? publicGroup : type.publicGroupName();
+    }
+
+    public void setPublicGroup(String publicGroup) {
+        this.publicGroup = publicGroup;
+    }
+
+    public String getPublicGroupDisplayName() {
+        return publicGroupDisplayName != null ? publicGroupDisplayName : type.publicGroupDisplayName();
+    }
+
+    public void setPublicGroupDisplayName(String publicGroupDisplayName) {
+        this.publicGroupDisplayName = publicGroupDisplayName;
+    }
+
+    public MinyanType getLinkedMinyanType() {
+        return linkedMinyanType;
+    }
+
+    public void setLinkedMinyanType(MinyanType linkedMinyanType) {
+        this.linkedMinyanType = linkedMinyanType;
+    }
+
+    public String getLinkedMinyanTypeDisplayName() {
+        return linkedMinyanType != null ? linkedMinyanType.displayName() : null;
+    }
+
+    public Date getLinkedStartTime() {
+        return linkedStartTime;
+    }
+
+    public void setLinkedStartTime(Date linkedStartTime) {
+        this.linkedStartTime = linkedStartTime;
+    }
+
+    public String getFormattedLinkedStartTimeOnly() {
+        if (linkedStartTime == null) {
+            return null;
+        }
+        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
+        return timeFormat.format(linkedStartTime);
+    }
+
+    public boolean isLinkedTarget() {
+        return linkedTarget;
+    }
+
+    public void setLinkedTarget(boolean linkedTarget) {
+        this.linkedTarget = linkedTarget;
+    }
+
+    public EventSource getSource() {
+        return source;
+    }
+
+    public void setSource(EventSource source) {
+        this.source = source;
     }
 
 //    add getters
@@ -127,6 +216,14 @@ public class MinyanEvent {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public boolean hasPlagGuidance() {
+        return notes != null && GENERATED_PLAG_NOTE_PATTERN.matcher(notes).find();
+    }
+
+    public String getPlagGuidanceText() {
+        return PLAG_GUIDANCE_TEXT;
     }
 
     public String getOrgColor() {

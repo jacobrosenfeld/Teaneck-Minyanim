@@ -90,6 +90,7 @@ public class CalendarEventAdapter {
             );
         }
         minyanEvent.setOrganizationSlug(org.getUrlSlug());
+        minyanEvent.setSource(event.getSource());
         return minyanEvent;
     }
 

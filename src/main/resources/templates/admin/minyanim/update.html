@@ -35,10 +35,11 @@
                                         <label for="type">Minyan Type</label>
                                         <select class="custom-select" name="type" id="type" required>
                                             <option value="" disabled>Choose a type</option>
-                                            <option value="shacharis" th:selected="${minyan.type.isShacharis()}">Shacharis</option>
+                                            <option value="shacharis" th:selected="${minyan.type.name() == 'SHACHARIS'}">Shacharis</option>
                                             <option value="mincha" th:selected="${minyan.type.isMincha()}">Mincha</option>
                                             <option value="maariv" th:selected="${minyan.type.isMaariv()}">Maariv</option>
                                             <option value="selichos" th:selected="${minyan.type.isSelichos()}">Selichos</option>
+                                            <option value="selichos_shacharis" th:selected="${minyan.type.isSelichosShacharis()}">Selichos/Shacharis</option>
                                             <option value="megilareading" th:selected="${minyan.type.isMegilaReading()}">Megila Reading</option>
                                         </select>
                                     </div>

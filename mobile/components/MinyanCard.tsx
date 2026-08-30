@@ -14,6 +14,8 @@ const TYPE_COLORS: Record<string, { text: string; darkText: string }> = {
   MAARIV:        { text: '#5B21B6', darkText: '#C4B5FD' },
   MINCHA_MAARIV: { text: '#92650A', darkText: '#FCD34D' },
   SELICHOS:      { text: '#9B1C1C', darkText: '#FCA5A5' },
+  SELICHOS_SHACHARIS: { text: '#1A4FAD', darkText: '#93B8FF' },
+  NIGHT_SELICHOS: { text: '#166534', darkText: '#86EFAC' },
   default:       { text: '#374151', darkText: '#D1D5DB' },
 };
 
@@ -36,7 +38,10 @@ export default function MinyanCard({
   const colors = Colors[scheme];
   const orgColor = event.organization?.color ?? colors.tint;
 
-  const typeColor = (TYPE_COLORS[event.minyanType] ?? TYPE_COLORS.default)[
+  const displayType = event.displayMinyanType || event.minyanType;
+  const displayTypeLabel = event.displayMinyanTypeDisplay || event.minyanTypeDisplay;
+  const linkedMinyanLabel = event.linkedMinyanTypeDisplay || event.linkedMinyanType;
+  const typeColor = (TYPE_COLORS[displayType] ?? TYPE_COLORS.default)[
     scheme === 'dark' ? 'darkText' : 'text'
   ];
 
@@ -81,7 +86,7 @@ export default function MinyanCard({
         eventId: event.id,
         orgName: event.organization?.name ?? '',
         orgSlug: event.organization?.slug ?? event.organization?.id ?? '',
-        minyanType: event.minyanTypeDisplay,
+        minyanType: displayTypeLabel,
         startTime: event.startTime,
         date: event.date,
         minutesBefore: 10,
@@ -117,8 +122,8 @@ export default function MinyanCard({
       <View style={styles.inner}>
         {/* Type + Time row */}
         <View style={styles.typeTimeRow}>
-          <Text style={[styles.type, { color: typeColor }]} numberOfLines={1}>
-            {event.minyanTypeDisplay}
+          <Text style={[styles.type, { color: typeColor }]} numberOfLines={2}>
+            {displayTypeLabel}
           </Text>
           <View style={styles.timeRow}>
             <Text style={[styles.time, { color: colors.text }]}>
@@ -136,6 +141,13 @@ export default function MinyanCard({
             )}
           </View>
         </View>
+
+        {/* Linked minyan time */}
+        {event.linkedStartTime && linkedMinyanLabel ? (
+          <Text style={[styles.linkedTime, { color: typeColor }]}>
+            {linkedMinyanLabel} at approx. {formatTime(event.linkedStartTime)}
+          </Text>
+        ) : null}
 
         {/* Nusach */}
         {event.nusachDisplay ? (
@@ -210,25 +222,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
+    flexWrap: 'wrap',
     marginBottom: 3,
     gap: 8,
   },
   type: {
     fontSize: 20,
     fontWeight: '800',
-    letterSpacing: -0.3,
     flex: 1,
+    minWidth: 0,
   },
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginLeft: 'auto',
     flexShrink: 0,
   },
   time: {
     fontSize: 18,
     fontWeight: '700',
-    letterSpacing: -0.3,
+  },
+  linkedTime: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: -1,
+    marginBottom: 3,
   },
   bellBtn: {
     padding: 2,

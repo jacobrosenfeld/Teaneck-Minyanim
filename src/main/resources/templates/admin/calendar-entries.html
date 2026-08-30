@@ -430,6 +430,7 @@
                         <option value="MAARIV"        th:selected="${filterClassification == 'MAARIV'}">Maariv</option>
                         <option value="MINCHA_MAARIV" th:selected="${filterClassification == 'MINCHA_MAARIV'}">Mincha/Maariv</option>
                         <option value="SELICHOS"      th:selected="${filterClassification == 'SELICHOS'}">Selichos</option>
+                        <option value="SELICHOS_SHACHARIS" th:selected="${filterClassification == 'SELICHOS_SHACHARIS'}">Selichos/Shacharis</option>
                         <option value="NON_MINYAN"    th:selected="${filterClassification == 'NON_MINYAN'}">Non-Minyan</option>
                         <option value="OTHER"         th:selected="${filterClassification == 'OTHER'}">Other</option>
                     </select>
@@ -547,7 +548,8 @@
                                                       (${entry.classification.name() == 'MAARIV'}       ? 'cb-maariv' :
                                                       (${entry.classification.name() == 'MINCHA_MAARIV'}? 'cb-mincha-maariv' :
                                                       (${entry.classification.name() == 'SELICHOS'}     ? 'cb-selichos' :
-                                                      (${entry.classification.name() == 'NON_MINYAN'}   ? 'cb-non-minyan' : 'cb-other')))))"
+                                                      (${entry.classification.name() == 'SELICHOS_SHACHARIS'} ? 'cb-shacharis' :
+                                                      (${entry.classification.name() == 'NON_MINYAN'}   ? 'cb-non-minyan' : 'cb-other'))))))"
                                       th:text="${entry.classification.displayName()}">Type</span>
                             </th:block>
                             <span th:unless="${entry.classification != null}" class="ce-badge cb-other">—</span>
