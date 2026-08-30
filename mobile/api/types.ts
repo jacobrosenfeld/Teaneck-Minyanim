@@ -43,6 +43,7 @@ export interface ScheduleEvent {
   linkedMinyanType: string | null;
   linkedMinyanTypeDisplay: string | null;
   linkedStartTime: string | null;
+  linkedTarget: boolean;
   organization: OrgSummary;
   locationName: string | null;
   notes: string | null;

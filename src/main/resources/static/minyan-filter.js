@@ -37,6 +37,7 @@
     if (filter === 'all') return true;
     rowType = (rowType || '').toUpperCase();
     if (filter === 'shacharis') return rowType === 'SHACHARIS';
+    if (filter === 'selichos_shacharis') return rowType === 'SELICHOS_SHACHARIS';
     if (filter === 'mincha') return rowType === 'MINCHA' || rowType === 'MINCHA_MAARIV';
     if (filter === 'maariv') return rowType === 'MAARIV';
     if (filter === 'night_selichos') return rowType === 'NIGHT_SELICHOS';
@@ -47,6 +48,7 @@
   function buildEmptyMessage() {
     var typeLabels = {
       shacharis: 'Shacharis',
+      selichos_shacharis: 'Selichos & Shacharis',
       mincha: 'Mincha',
       maariv: 'Maariv',
       night_selichos: 'Night Selichos',

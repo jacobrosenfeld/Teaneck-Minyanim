@@ -219,9 +219,9 @@ public class ZmanimService {
         // end kol
 
         minyanEvents.sort(Comparator.comparing(MinyanEvent::getStartTime));
-        mv.getModel().put("allminyanim", minyanEvents);
 
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
+        List<MinyanEvent> selichosShacharisMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
         List<MinyanEvent> selichosMinyanim = new ArrayList<>();
@@ -233,8 +233,15 @@ public class ZmanimService {
         // Populate organization slugs for all minyan events
         populateOrganizationSlugs(minyanEvents);
 
-        for (MinyanEvent me : minyanEvents) {
-            if (me.getType().isShacharis()) {
+        List<MinyanEvent> visibleMinyanEvents = minyanEvents.stream()
+                .filter(me -> !me.isLinkedTarget())
+                .collect(Collectors.toList());
+        mv.getModel().put("allminyanim", visibleMinyanEvents);
+
+        for (MinyanEvent me : visibleMinyanEvents) {
+            if (MinyanType.SELICHOS_SHACHARIS.name().equals(me.getPublicGroup())) {
+                selichosShacharisMinyanim.add(me);
+            } else if (MinyanType.SHACHARIS.name().equals(me.getPublicGroup())) {
                 shacharisMinyanim.add(me);
             } else if (me.getType().isMincha()) {
                 minchaMinyanim.add(me);
@@ -247,6 +254,7 @@ public class ZmanimService {
             }
         }
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
+        mv.getModel().put("selichosShacharisMinyanim", selichosShacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
         mv.getModel().put("selichosMinyanim", selichosMinyanim);
@@ -335,15 +343,21 @@ public class ZmanimService {
         // Add final zman notes, including Shkiya for Mincha/Maariv and Plag replacements.
         scheduleEnrichmentService.annotateZmanim(minyanEvents, zmanim);
 
-        mv.getModel().put("allminyanim", minyanEvents);
+        List<MinyanEvent> visibleMinyanEvents = minyanEvents.stream()
+                .filter(me -> !me.isLinkedTarget())
+                .collect(Collectors.toList());
+        mv.getModel().put("allminyanim", visibleMinyanEvents);
 
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
+        List<MinyanEvent> selichosShacharisMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
         List<MinyanEvent> selichosMinyanim = new ArrayList<>();
         List<MinyanEvent> nightSelichosMinyanim = new ArrayList<>();
-        for (MinyanEvent me : minyanEvents) {
-            if (me.getType().isShacharis()) {
+        for (MinyanEvent me : visibleMinyanEvents) {
+            if (MinyanType.SELICHOS_SHACHARIS.name().equals(me.getPublicGroup())) {
+                selichosShacharisMinyanim.add(me);
+            } else if (MinyanType.SHACHARIS.name().equals(me.getPublicGroup())) {
                 shacharisMinyanim.add(me);
             } else if (me.getType().isMincha() || me.getType().isMinchaMariv()) {
                 minchaMinyanim.add(me);
@@ -396,6 +410,7 @@ public class ZmanimService {
         // end upcoming
 
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
+        mv.getModel().put("selichosShacharisMinyanim", selichosShacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
         mv.getModel().put("selichosMinyanim", selichosMinyanim);

@@ -141,15 +141,12 @@ public enum MinyanType {
     }
 
     public String publicGroupName() {
-        if (this == SELICHOS_SHACHARIS) {
-            return SHACHARIS.name();
-        }
         return name();
     }
 
     public String publicGroupDisplayName() {
         if (this == SELICHOS_SHACHARIS) {
-            return SHACHARIS.displayName();
+            return "Selichos & Shacharis";
         }
         return displayName();
     }

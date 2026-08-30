@@ -22,6 +22,7 @@ public record ScheduleEventDto(
         String linkedMinyanType,   // e.g. "SHACHARIS" for SELICHOS_SHACHARIS
         String linkedMinyanTypeDisplay,
         String linkedStartTime,    // "HH:mm" when known
+        boolean linkedTarget,
         OrgSummary organization,
         String locationName,
         String notes,
@@ -41,7 +42,7 @@ public record ScheduleEventDto(
     public ScheduleEventDto withNotes(String notes) {
         return new ScheduleEventDto(id, date, startTime, minyanType, minyanTypeDisplay,
                 displayMinyanType, displayMinyanTypeDisplay, groupMinyanType, groupMinyanTypeDisplay,
-                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime,
+                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime, linkedTarget,
                 organization, locationName, notes, nusach, nusachDisplay,
                 dynamicTimeString, source, whatsapp);
     }
@@ -53,7 +54,7 @@ public record ScheduleEventDto(
             String groupMinyanTypeDisplay) {
         return new ScheduleEventDto(id, date, startTime, minyanType, minyanTypeDisplay,
                 displayMinyanType, displayMinyanTypeDisplay, groupMinyanType, groupMinyanTypeDisplay,
-                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime,
+                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime, linkedTarget,
                 organization, locationName, notes, nusach, nusachDisplay,
                 dynamicTimeString, source, whatsapp);
     }
@@ -61,7 +62,15 @@ public record ScheduleEventDto(
     public ScheduleEventDto withLinkedStartTime(String linkedStartTime) {
         return new ScheduleEventDto(id, date, startTime, minyanType, minyanTypeDisplay,
                 displayMinyanType, displayMinyanTypeDisplay, groupMinyanType, groupMinyanTypeDisplay,
-                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime,
+                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime, linkedTarget,
+                organization, locationName, notes, nusach, nusachDisplay,
+                dynamicTimeString, source, whatsapp);
+    }
+
+    public ScheduleEventDto withLinkedTarget(boolean linkedTarget) {
+        return new ScheduleEventDto(id, date, startTime, minyanType, minyanTypeDisplay,
+                displayMinyanType, displayMinyanTypeDisplay, groupMinyanType, groupMinyanTypeDisplay,
+                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime, linkedTarget,
                 organization, locationName, notes, nusach, nusachDisplay,
                 dynamicTimeString, source, whatsapp);
     }
@@ -90,6 +99,7 @@ public record ScheduleEventDto(
                 event.getMinyanType().isSelichosShacharis() ? "SHACHARIS" : null,
                 event.getMinyanType().isSelichosShacharis() ? "Shacharis" : null,
                 null,
+                false,
                 orgSummary,
                 event.getLocationName(),
                 event.getNotes(),

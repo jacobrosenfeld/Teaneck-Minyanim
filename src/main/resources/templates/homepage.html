@@ -98,6 +98,7 @@
                               <option value="all">All Shuls</option>
                             </select>
                             <button class="filter-pill" data-filter-type="shacharis">Shacharis</button>
+                            <button class="filter-pill" data-filter-type="selichos_shacharis" th:if="${selichosShacharisMinyanim != null and !selichosShacharisMinyanim.isEmpty()}">Selichos &amp; Shacharis</button>
                             <button class="filter-pill" data-filter-type="mincha">Mincha</button>
                             <button class="filter-pill" data-filter-type="maariv">Maariv</button>
                             <button class="filter-pill" data-filter-type="night_selichos" th:if="${nightSelichosMinyanim != null and !nightSelichosMinyanim.isEmpty()}">Night Selichos</button>

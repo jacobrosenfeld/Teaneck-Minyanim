@@ -54,6 +54,7 @@
   <link rel="stylesheet" href="/assets/css/animate.css"> <!-- Resource style -->
   <link rel="stylesheet" href="/assets/css/ionicons.min.css"> <!-- Resource style -->
   <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
+  <link href="/org.css" rel="stylesheet" type="text/css" media="all" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6026762329140546"
      crossorigin="anonymous"></script>
 </head>
@@ -161,6 +162,8 @@
                                     </tr>
                                   </tbody>
                                 </table>
+                                <p class="linked-minyan" th:if="${minyan.getLinkedStartTime() != null}"
+                                  th:text="@{|${minyan.getLinkedMinyanTypeDisplayName()} at ${minyan.getFormattedLinkedStartTimeOnly()}|}"></p>
                                 <p class="mobile-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
                                 <div class="d-flex justify-content-center align-items-center">
                                   <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.getNotes()}"
@@ -179,6 +182,36 @@
                               today.</small>
                           </h5>
                         </div>
+                      </div>
+                      <div class="col-lg" th:if="${selichosShacharisMinyanim != null and !selichosShacharisMinyanim.isEmpty()}">
+                        <h4 id="selichos-shacharis">Selichos &amp; Shacharis</h4>
+                        <table class="table table-org">
+                          <tbody>
+                            <tr th:each="minyan: ${selichosShacharisMinyanim}">
+                              <td class="middle">
+                                <table class="table table-org table-nested">
+                                  <tbody>
+                                    <tr>
+                                      <td class="middle table-nested">
+                                        <h5 th:style="'color: ' + ${org.getOrgColor()}"
+                                          th:utext="${minyan.getDisplayTypeName()} "></h5>
+                                        <p class="mobile-nusach" th:utext="${minyan.getNusach().displayName()}"></p>
+                                      </td>
+                                      <td class="middle table-nested">
+                                        <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
+                                        <p class="p-dts" th:utext="${minyan.getInformation()}"></p>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                                <p class="linked-minyan" th:if="${minyan.getLinkedStartTime() != null}"
+                                  th:text="@{|${minyan.getLinkedMinyanTypeDisplayName()} at ${minyan.getFormattedLinkedStartTimeOnly()}|}"></p>
+                                <p class="mobile-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
+                                <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getNotes())}" th:utext="${minyan.getNotes()}"></p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                       <!-- Mincha Table -->
                       <div class="col-lg">

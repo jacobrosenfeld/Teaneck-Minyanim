@@ -147,6 +147,9 @@ class ScheduleEnrichmentServiceTest {
 
         assertEquals("06:45", enriched.get(0).linkedStartTime());
         assertEquals("SHACHARIS", enriched.get(0).linkedMinyanType());
+        assertEquals("SELICHOS_SHACHARIS", enriched.get(0).groupMinyanType());
+        assertEquals("Selichos & Shacharis", enriched.get(0).groupMinyanTypeDisplay());
+        assertEquals(true, enriched.get(1).linkedTarget());
     }
 
     private ScheduleEventDto dto(
@@ -166,8 +169,8 @@ class ScheduleEnrichmentServiceTest {
             case "MAARIV" -> "Maariv";
             default -> "Mincha/Maariv";
         };
-        String group = "SELICHOS_SHACHARIS".equals(minyanType) ? "SHACHARIS" : minyanType;
-        String groupDisplay = "SELICHOS_SHACHARIS".equals(minyanType) ? "Shacharis" : display;
+        String group = "SELICHOS_SHACHARIS".equals(minyanType) ? "SELICHOS_SHACHARIS" : minyanType;
+        String groupDisplay = "SELICHOS_SHACHARIS".equals(minyanType) ? "Selichos & Shacharis" : display;
         return new ScheduleEventDto(
                 id,
                 date.toString(),
@@ -181,6 +184,7 @@ class ScheduleEnrichmentServiceTest {
                 "SELICHOS_SHACHARIS".equals(minyanType) ? "SHACHARIS" : null,
                 "SELICHOS_SHACHARIS".equals(minyanType) ? "Shacharis" : null,
                 null,
+                false,
                 org,
                 "Main",
                 notes,

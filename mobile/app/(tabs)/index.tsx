@@ -42,7 +42,7 @@ import type { SheetTarget } from '@/utils/tabEvents';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type TypeFilter = 'ALL' | 'SHACHARIS' | 'MINCHA' | 'MAARIV' | 'NIGHT_SELICHOS' | 'SELICHOS';
+type TypeFilter = 'ALL' | 'SHACHARIS' | 'SELICHOS_SHACHARIS' | 'MINCHA' | 'MAARIV' | 'NIGHT_SELICHOS' | 'SELICHOS';
 
 type ListItem =
   | { _type: 'event'; event: ScheduleEvent; key: string }
@@ -56,6 +56,7 @@ const MINCHA_GROUP = new Set(['MINCHA', 'MINCHA_MAARIV']);
 const TYPE_FILTERS: { key: TypeFilter; label: string }[] = [
   { key: 'ALL', label: 'All' },
   { key: 'SHACHARIS', label: 'Shacharis' },
+  { key: 'SELICHOS_SHACHARIS', label: 'Selichos & Shacharis' },
   { key: 'MINCHA', label: 'Mincha' },
   { key: 'MAARIV', label: 'Maariv' },
   { key: 'NIGHT_SELICHOS', label: 'Night Selichos' },
@@ -252,6 +253,7 @@ export default function MinyanimScreen() {
   const filtered = useMemo(() => {
     if (!events) return [];
     return events.filter((e) => {
+      if (e.linkedTarget) return false;
       if (!matchesTypeFilter(e.groupMinyanType || e.minyanType, typeFilter)) return false;
       if (orgFilter && e.organization?.id !== orgFilter) return false;
       return true;
@@ -330,6 +332,7 @@ export default function MinyanimScreen() {
         linkedMinyanType: null,
         linkedMinyanTypeDisplay: null,
         linkedStartTime: null,
+        linkedTarget: false,
         locationName: null,
         notes: null,
         nusach: null,

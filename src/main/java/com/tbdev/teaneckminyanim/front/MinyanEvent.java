@@ -27,6 +27,12 @@ public class MinyanEvent {
 
     private String publicGroupDisplayName;
 
+    private MinyanType linkedMinyanType;
+
+    private Date linkedStartTime;
+
+    private boolean linkedTarget;
+
     private String organizationName;
 
     private Nusach organizationNusach;
@@ -104,6 +110,42 @@ public class MinyanEvent {
 
     public void setPublicGroupDisplayName(String publicGroupDisplayName) {
         this.publicGroupDisplayName = publicGroupDisplayName;
+    }
+
+    public MinyanType getLinkedMinyanType() {
+        return linkedMinyanType;
+    }
+
+    public void setLinkedMinyanType(MinyanType linkedMinyanType) {
+        this.linkedMinyanType = linkedMinyanType;
+    }
+
+    public String getLinkedMinyanTypeDisplayName() {
+        return linkedMinyanType != null ? linkedMinyanType.displayName() : null;
+    }
+
+    public Date getLinkedStartTime() {
+        return linkedStartTime;
+    }
+
+    public void setLinkedStartTime(Date linkedStartTime) {
+        this.linkedStartTime = linkedStartTime;
+    }
+
+    public String getFormattedLinkedStartTimeOnly() {
+        if (linkedStartTime == null) {
+            return null;
+        }
+        SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm aa");
+        return timeFormat.format(linkedStartTime);
+    }
+
+    public boolean isLinkedTarget() {
+        return linkedTarget;
+    }
+
+    public void setLinkedTarget(boolean linkedTarget) {
+        this.linkedTarget = linkedTarget;
     }
 
 //    add getters
