@@ -139,6 +139,14 @@
   text-align: center;
 }
 
+.linked-minyan {
+  color: var(--primary-color);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0.15rem 0 0;
+}
+
 /* Lock desktop table column widths so filtering doesn't cause reflow */
 #minyan-table {
   table-layout: fixed;

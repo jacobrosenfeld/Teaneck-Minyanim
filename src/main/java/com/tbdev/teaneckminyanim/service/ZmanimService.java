@@ -1,6 +1,7 @@
 package com.tbdev.teaneckminyanim.service;
 
 import com.kosherjava.zmanim.util.GeoLocation;
+import com.tbdev.teaneckminyanim.enums.EventSource;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.model.Location;
 import com.tbdev.teaneckminyanim.model.Minyan;
@@ -139,6 +140,7 @@ public class ZmanimService {
 
             // Convert to MinyanEvent objects
             List<MinyanEvent> orgEvents = calendarEventAdapter.toMinyanEvents(calendarEvents);
+            scheduleEnrichmentService.annotateZmanim(orgEvents, zmanim);
 
             // Apply time-based filtering and termination date logic
             boolean isSelichosRecited = zmanimHandler.isSelichosRecited(localDateRef);
@@ -227,9 +229,6 @@ public class ZmanimService {
         List<MinyanEvent> selichosMinyanim = new ArrayList<>();
         List<MinyanEvent> nightSelichosMinyanim = new ArrayList<>();
         
-        // Add final zman notes, including Shkiya for Mincha/Maariv and Plag replacements.
-        scheduleEnrichmentService.annotateZmanim(minyanEvents, zmanim);
-
         // Populate organization slugs for all minyan events
         populateOrganizationSlugs(minyanEvents);
 
@@ -388,7 +387,7 @@ public class ZmanimService {
         
         // Filter today's events to find upcoming ones
         for (MinyanEvent event : todayEvents) {
-            if (event.getStartTime() != null && event.getStartTime().after(terminationDate)) {
+            if (event.getStartTime() != null && event.getStartTime().after(terminationDate) && !event.isLinkedTarget()) {
                 nextMinyan.add(event);
             }
         }
@@ -545,17 +544,24 @@ public class ZmanimService {
         mgMinusOne.setTime(zmanim.get(Zman.MINCHA_GEDOLA));
         mgMinusOne.add(Calendar.MINUTE, -1);
         
+        String publicGroup = event.getPublicGroup();
+        boolean explicitScheduleEvent = event.getSource() == EventSource.IMPORTED
+                || event.getSource() == EventSource.MANUAL;
+
+        if (MinyanType.SELICHOS_SHACHARIS.name().equals(publicGroup)) {
+            return (explicitScheduleEvent || isSelichosRecited) && startTime.before(zmanim.get(Zman.SZT));
+        }
+
+        if ("NIGHT_SELICHOS".equals(publicGroup)) {
+            return explicitScheduleEvent || isSelichosRecited;
+        }
+
         // Shacharis: Between Alos Hashachar and SZT
         if (type.equals(MinyanType.SHACHARIS)) {
             return startTime.before(zmanim.get(Zman.SZT)) && 
                    startTime.after(zmanim.get(Zman.ALOS_HASHACHAR));
         }
 
-        // Linked Selichos/Shacharis: display during Selichos season under Shacharis.
-        if (type.equals(MinyanType.SELICHOS_SHACHARIS)) {
-            return isSelichosRecited && startTime.before(zmanim.get(Zman.SZT));
-        }
-        
         // Mincha: Between Mincha Gedola and Shekiya
         if (type.equals(MinyanType.MINCHA)) {
             return startTime.before(zmanim.get(Zman.SHEKIYA)) &&

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -152,6 +153,56 @@ class ScheduleEnrichmentServiceTest {
         assertEquals(true, enriched.get(1).linkedTarget());
     }
 
+    @Test
+    void annotateZmanim_marksSameTimeShacharisAsLinkedTargetForMorningSelichos() {
+        when(zmanimHandler.getZmanim(DATE))
+                .thenReturn(zmanim(DATE, null, null, LocalTime.of(5, 20), LocalTime.of(20, 10)));
+
+        ScheduleEventDto selichos = dto("sel-1", DATE, "07:20", "SELICHOS", null, null);
+        ScheduleEventDto shacharis = dto("sh-1", DATE, "07:20", "SHACHARIS", null, null);
+
+        List<ScheduleEventDto> enriched = service.annotateZmanim(List.of(selichos, shacharis));
+
+        assertEquals("SELICHOS_SHACHARIS", enriched.get(0).groupMinyanType());
+        assertEquals("Selichos & Shacharis", enriched.get(0).groupMinyanTypeDisplay());
+        assertNull(enriched.get(0).linkedStartTime());
+        assertEquals(true, enriched.get(1).linkedTarget());
+    }
+
+    @Test
+    void annotateZmanim_attachesFollowingShacharisTimeToMorningSelichos() {
+        when(zmanimHandler.getZmanim(DATE))
+                .thenReturn(zmanim(DATE, null, null, LocalTime.of(5, 20), LocalTime.of(20, 10)));
+
+        ScheduleEventDto selichos = dto("sel-1", DATE, "06:00", "SELICHOS", null, null);
+        ScheduleEventDto shacharis = dto("sh-1", DATE, "06:45", "SHACHARIS", null, null);
+
+        List<ScheduleEventDto> enriched = service.annotateZmanim(List.of(selichos, shacharis));
+
+        assertEquals("SELICHOS_SHACHARIS", enriched.get(0).groupMinyanType());
+        assertEquals("06:45", enriched.get(0).linkedStartTime());
+        assertEquals("SHACHARIS", enriched.get(0).linkedMinyanType());
+        assertEquals(true, enriched.get(1).linkedTarget());
+    }
+
+    @Test
+    void annotateZmanim_marksSameTimeWebShacharisAsLinkedTargetForMorningSelichos() {
+        Dictionary<Zman, Date> zmanim = zmanim(
+                DATE,
+                null,
+                null,
+                LocalTime.of(5, 20),
+                LocalTime.of(20, 10));
+        MinyanEvent selichos = minyanEvent("sel-1", MinyanType.SELICHOS, LocalTime.of(7, 20));
+        MinyanEvent shacharis = minyanEvent("sh-1", MinyanType.SHACHARIS, LocalTime.of(7, 20));
+
+        service.annotateZmanim(List.of(selichos, shacharis), zmanim);
+
+        assertEquals("SELICHOS_SHACHARIS", selichos.getPublicGroup());
+        assertNull(selichos.getLinkedStartTime());
+        assertEquals(true, shacharis.isLinkedTarget());
+    }
+
     private ScheduleEventDto dto(
             String id,
             LocalDate date,
@@ -193,6 +244,21 @@ class ScheduleEnrichmentServiceTest {
                 dynamicTimeString,
                 "MANUAL",
                 null);
+    }
+
+    private MinyanEvent minyanEvent(String id, MinyanType type, LocalTime time) {
+        return new MinyanEvent(
+                id,
+                type,
+                "Org",
+                Nusach.ASHKENAZ,
+                "org-1",
+                "Main",
+                dateAt(DATE, time),
+                Nusach.ASHKENAZ,
+                null,
+                "#000000",
+                "");
     }
 
     private Dictionary<Zman, Date> zmanim(LocalDate date, LocalTime shkiya, LocalTime plag) {

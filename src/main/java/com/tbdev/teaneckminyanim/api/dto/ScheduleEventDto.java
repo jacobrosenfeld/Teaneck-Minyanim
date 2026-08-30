@@ -17,7 +17,7 @@ public record ScheduleEventDto(
         String minyanTypeDisplay,  // human label: "Shacharis"
         String displayMinyanType,  // presentation enum/group label, e.g. "NIGHT_SELICHOS"
         String displayMinyanTypeDisplay,
-        String groupMinyanType,    // section/filter group, e.g. "SHACHARIS" for SELICHOS_SHACHARIS
+        String groupMinyanType,    // section/filter group, e.g. "SELICHOS_SHACHARIS"
         String groupMinyanTypeDisplay,
         String linkedMinyanType,   // e.g. "SHACHARIS" for SELICHOS_SHACHARIS
         String linkedMinyanTypeDisplay,
@@ -60,6 +60,14 @@ public record ScheduleEventDto(
     }
 
     public ScheduleEventDto withLinkedStartTime(String linkedStartTime) {
+        return new ScheduleEventDto(id, date, startTime, minyanType, minyanTypeDisplay,
+                displayMinyanType, displayMinyanTypeDisplay, groupMinyanType, groupMinyanTypeDisplay,
+                linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime, linkedTarget,
+                organization, locationName, notes, nusach, nusachDisplay,
+                dynamicTimeString, source, whatsapp);
+    }
+
+    public ScheduleEventDto withLinkedMinyan(String linkedMinyanType, String linkedMinyanTypeDisplay, String linkedStartTime) {
         return new ScheduleEventDto(id, date, startTime, minyanType, minyanTypeDisplay,
                 displayMinyanType, displayMinyanTypeDisplay, groupMinyanType, groupMinyanTypeDisplay,
                 linkedMinyanType, linkedMinyanTypeDisplay, linkedStartTime, linkedTarget,

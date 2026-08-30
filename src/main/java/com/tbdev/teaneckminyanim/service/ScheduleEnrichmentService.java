@@ -242,15 +242,22 @@ public class ScheduleEnrichmentService {
 
     private void attachLinkedShacharisTimesForWeb(List<MinyanEvent> events) {
         for (MinyanEvent event : events) {
-            if (!event.getType().isSelichosShacharis() || event.getStartTime() == null) {
+            if (!isSelichosShacharisPublicEvent(event) || event.getStartTime() == null) {
                 continue;
             }
             findLinkedShacharisEvent(event, events).ifPresent(linked -> {
-                event.setLinkedMinyanType(MinyanType.SHACHARIS);
-                event.setLinkedStartTime(linked.getStartTime());
+                if (linked.getStartTime().after(event.getStartTime())) {
+                    event.setLinkedMinyanType(MinyanType.SHACHARIS);
+                    event.setLinkedStartTime(linked.getStartTime());
+                }
                 linked.setLinkedTarget(true);
             });
         }
+    }
+
+    private boolean isSelichosShacharisPublicEvent(MinyanEvent event) {
+        return MinyanType.SELICHOS_SHACHARIS.name().equals(event.getPublicGroup())
+                && event.getType() != MinyanType.SHACHARIS;
     }
 
     private Optional<MinyanEvent> findLinkedShacharisEvent(MinyanEvent linked, List<MinyanEvent> events) {
@@ -259,7 +266,7 @@ public class ScheduleEnrichmentService {
                 .filter(candidate -> candidate.getStartTime() != null)
                 .filter(candidate -> Objects.equals(candidate.getOrganizationId(), linked.getOrganizationId()))
                 .filter(candidate -> sameLocationWhenPresent(candidate, linked))
-                .filter(candidate -> candidate.getStartTime().after(linked.getStartTime()))
+                .filter(candidate -> !candidate.getStartTime().before(linked.getStartTime()))
                 .sorted(Comparator.comparing(MinyanEvent::getStartTime))
                 .findFirst();
     }
@@ -268,11 +275,13 @@ public class ScheduleEnrichmentService {
         Map<String, String> linkedStartTimesById = new HashMap<>();
         Set<String> linkedTargetIds = new HashSet<>();
         for (ScheduleEventDto dto : dtos) {
-            if (!MinyanType.SELICHOS_SHACHARIS.name().equals(dto.minyanType())) {
+            if (!isSelichosShacharisPublicDto(dto)) {
                 continue;
             }
             findLinkedShacharis(dto, dtos).ifPresent(linked -> {
-                linkedStartTimesById.put(dto.id(), linked.startTime());
+                if (linked.startTime().compareTo(dto.startTime()) > 0) {
+                    linkedStartTimesById.put(dto.id(), linked.startTime());
+                }
                 linkedTargetIds.add(linked.id());
             });
         }
@@ -281,7 +290,10 @@ public class ScheduleEnrichmentService {
                 .map(dto -> {
                     ScheduleEventDto result = dto;
                     if (linkedStartTimesById.containsKey(result.id())) {
-                        result = result.withLinkedStartTime(linkedStartTimesById.get(result.id()));
+                        result = result.withLinkedMinyan(
+                                MinyanType.SHACHARIS.name(),
+                                MinyanType.SHACHARIS.displayName(),
+                                linkedStartTimesById.get(result.id()));
                     }
                     if (linkedTargetIds.contains(result.id())) {
                         result = result.withLinkedTarget(true);
@@ -291,13 +303,18 @@ public class ScheduleEnrichmentService {
                 .collect(Collectors.toList());
     }
 
+    private boolean isSelichosShacharisPublicDto(ScheduleEventDto dto) {
+        return MinyanType.SELICHOS_SHACHARIS.name().equals(dto.groupMinyanType())
+                && !MinyanType.SHACHARIS.name().equals(dto.minyanType());
+    }
+
     private Optional<ScheduleEventDto> findLinkedShacharis(ScheduleEventDto linked, List<ScheduleEventDto> dtos) {
         return dtos.stream()
                 .filter(candidate -> MinyanType.SHACHARIS.name().equals(candidate.minyanType()))
                 .filter(candidate -> Objects.equals(candidate.date(), linked.date()))
                 .filter(candidate -> sameOrganization(candidate, linked))
                 .filter(candidate -> sameLocationWhenPresent(candidate, linked))
-                .filter(candidate -> candidate.startTime().compareTo(linked.startTime()) > 0)
+                .filter(candidate -> candidate.startTime().compareTo(linked.startTime()) >= 0)
                 .sorted(Comparator.comparing(ScheduleEventDto::startTime))
                 .findFirst();
     }

@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.service.provider;
 
+import com.tbdev.teaneckminyanim.enums.EventSource;
 import com.tbdev.teaneckminyanim.enums.Nusach;
 import com.tbdev.teaneckminyanim.front.MinyanEvent;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
@@ -133,7 +134,7 @@ public class CalendarImportProvider implements OrgScheduleProvider {
         // Do NOT append description automatically - that's handled by classifier
         String notes = entry.getNotes() != null ? entry.getNotes() : "";
 
-        return new MinyanEvent(
+        MinyanEvent event = new MinyanEvent(
                 parentMinyanId,
                 minyanType,
                 org.getName(),
@@ -146,6 +147,8 @@ public class CalendarImportProvider implements OrgScheduleProvider {
                 org.getOrgColor() != null ? org.getOrgColor() : "#000000",
                 "" // WhatsApp link not available from calendar imports
         );
+        event.setSource(EventSource.IMPORTED);
+        return event;
     }
 
     /**

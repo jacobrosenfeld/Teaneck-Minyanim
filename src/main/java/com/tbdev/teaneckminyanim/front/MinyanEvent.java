@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.front;
 
+import com.tbdev.teaneckminyanim.enums.EventSource;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.enums.Nusach;
 
@@ -32,6 +33,8 @@ public class MinyanEvent {
     private Date linkedStartTime;
 
     private boolean linkedTarget;
+
+    private EventSource source;
 
     private String organizationName;
 
@@ -146,6 +149,14 @@ public class MinyanEvent {
 
     public void setLinkedTarget(boolean linkedTarget) {
         this.linkedTarget = linkedTarget;
+    }
+
+    public EventSource getSource() {
+        return source;
+    }
+
+    public void setSource(EventSource source) {
+        this.source = source;
     }
 
 //    add getters
