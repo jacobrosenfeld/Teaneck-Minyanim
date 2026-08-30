@@ -115,6 +115,14 @@ Same query params as combined schedule, but max range is **30 days**.
   "startTime": "07:00",
   "minyanType": "SHACHARIS",
   "minyanTypeDisplay": "Shacharis",
+  "displayMinyanType": "SHACHARIS",
+  "displayMinyanTypeDisplay": "Shacharis",
+  "groupMinyanType": "SHACHARIS",
+  "groupMinyanTypeDisplay": "Shacharis",
+  "linkedMinyanType": null,
+  "linkedMinyanTypeDisplay": null,
+  "linkedStartTime": null,
+  "linkedTarget": false,
   "organization": {
     "id": "bmob",
     "name": "BMOB",
@@ -135,6 +143,14 @@ Same query params as combined schedule, but max range is **30 days**.
 **`dynamicTimeString`** is non-null for rule-based events that are tied to a halachic time, e.g. `"NETZ+5min"` or `"PLAG-10min"`. Display as `"7:00 (Netz +5 min)"`.
 
 **`source`** is `RULES`, `IMPORTED`, or `MANUAL` (manual overrides, future feature).
+
+**Display/group fields** let clients render derived public labels without rewriting schedule logic:
+- `displayMinyanType` / `displayMinyanTypeDisplay` are the label for the row itself.
+- `groupMinyanType` / `groupMinyanTypeDisplay` are the public filter or section grouping.
+- `linkedMinyanType`, `linkedMinyanTypeDisplay`, and `linkedStartTime` describe a related service when the event should mention another minyan time.
+- `linkedTarget: true` marks a row that has been folded into a linked public event and should usually be hidden from schedule lists.
+
+For Selichos, imported or manual morning Selichos may be displayed as `Selichos & Shacharis` and grouped with Shacharis. When the service appears shortly before a Shacharis row from the same shul/date, clients should display the linked Shacharis time as approximate, for example `Shacharis at approx. 8:45 AM`, and hide the linked target row. Late-night standalone Selichos uses `NIGHT_SELICHOS` / `Night Selichos`.
 
 ---
 
