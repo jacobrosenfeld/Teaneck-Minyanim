@@ -122,7 +122,7 @@ export default function MinyanCard({
       <View style={styles.inner}>
         {/* Type + Time row */}
         <View style={styles.typeTimeRow}>
-          <Text style={[styles.type, { color: typeColor }]} numberOfLines={1}>
+          <Text style={[styles.type, { color: typeColor }]} numberOfLines={2}>
             {displayTypeLabel}
           </Text>
           <View style={styles.timeRow}>
@@ -144,8 +144,8 @@ export default function MinyanCard({
 
         {/* Linked minyan time */}
         {event.linkedStartTime && linkedMinyanLabel ? (
-          <Text style={[styles.linkedTime, { color: typeColor }]} numberOfLines={1}>
-            {linkedMinyanLabel} at {formatTime(event.linkedStartTime)}
+          <Text style={[styles.linkedTime, { color: typeColor }]}>
+            {linkedMinyanLabel} at approx. {formatTime(event.linkedStartTime)}
           </Text>
         ) : null}
 
@@ -222,25 +222,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
+    flexWrap: 'wrap',
     marginBottom: 3,
     gap: 8,
   },
   type: {
     fontSize: 20,
     fontWeight: '800',
-    letterSpacing: -0.3,
     flex: 1,
+    minWidth: 0,
   },
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginLeft: 'auto',
     flexShrink: 0,
   },
   time: {
     fontSize: 18,
     fontWeight: '700',
-    letterSpacing: -0.3,
   },
   linkedTime: {
     fontSize: 12,

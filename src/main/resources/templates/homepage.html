@@ -137,7 +137,7 @@
                                     <td class="align-middle">
                                       <p class="p-time" th:utext="${minyan.getFormattedStartTimeOnly()}"></p>
                                       <p class="p-dts linked-minyan" th:if="${minyan.getLinkedStartTime() != null}"
-                                         th:text="@{|${minyan.getLinkedMinyanTypeDisplayName()} at ${minyan.getFormattedLinkedStartTimeOnly()}|}"></p>
+                                         th:text="@{|${minyan.getLinkedMinyanTypeDisplayName()} at approx. ${minyan.getFormattedLinkedStartTimeOnly()}|}"></p>
                                       <p class="p-dts" th:if="${not #strings.isEmpty(minyan.dynamicTimeString()) and #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.dynamicTimeString()}"></p>
                                       <div class="d-flex justify-content-center align-items-center">
                                         <p class="p-dts" th:if="${not #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.getNotes()}"
@@ -178,7 +178,7 @@
                                       </tbody>
                                     </table>
                                     <p class="p-notes linked-minyan" th:if="${minyan.getLinkedStartTime() != null}"
-                                       th:text="@{|${minyan.getLinkedMinyanTypeDisplayName()} at ${minyan.getFormattedLinkedStartTimeOnly()}|}"></p>
+                                       th:text="@{|${minyan.getLinkedMinyanTypeDisplayName()} at approx. ${minyan.getFormattedLinkedStartTimeOnly()}|}"></p>
                                     <p class="p-nusach" th:if="${not #strings.isEmpty(minyan.dynamicTimeString())}" th:utext="${minyan.dynamicTimeString()}"></p>
                                     <p class="p-notes" th:if="${not #strings.isEmpty(minyan.getNotes()) and #strings.isEmpty(minyan.getWhatsapp())}" th:utext="${minyan.getNotes()}"
                                        th:attr="data-bs-toggle=${minyan.hasPlagGuidance()} ? 'tooltip' : null,data-bs-placement=${minyan.hasPlagGuidance()} ? 'top' : null,data-bs-custom-class=${minyan.hasPlagGuidance()} ? 'custom-tooltip' : null,data-bs-title=${minyan.hasPlagGuidance() ? minyan.getPlagGuidanceText() : null}"></p>

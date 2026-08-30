@@ -33,6 +33,9 @@ public class ScheduleEnrichmentService {
 
     private static final Pattern GENERATED_ZMAN_NOTE_PATTERN = Pattern.compile(
             "(?i)(^|\\s*\\|\\s*|\\.\\s*)\\b(?:Shkiya|Plag):\\s*\\d{1,2}:\\d{2}\\s*[AP]M\\b\\.?\\s*");
+    private static final String SELICHOS_SHACHARIS_DISPLAY = "Selichos & Shacharis";
+    private static final long MAX_LINKED_SHACHARIS_GAP_MILLIS = 45L * 60 * 1000;
+    private static final int MAX_LINKED_SHACHARIS_GAP_MINUTES = 45;
 
     // -----------------------------------------------------------------------
     // API path — operates on ScheduleEventDto (immutable record)
@@ -135,8 +138,9 @@ public class ScheduleEnrichmentService {
             if (hasZmanim) {
                 annotateSelichosDisplay(event, alosTime, tzesTime);
             } else if (event.getType().isSelichosShacharis()) {
+                event.setDisplayTypeName(SELICHOS_SHACHARIS_DISPLAY);
                 event.setPublicGroup(MinyanType.SELICHOS_SHACHARIS.name());
-                event.setPublicGroupDisplayName(MinyanType.SELICHOS_SHACHARIS.publicGroupDisplayName());
+                event.setPublicGroupDisplayName(SELICHOS_SHACHARIS_DISPLAY);
             }
 
             if (event.getType().isMinchaMariv() && shkiyaTime != null) {
@@ -182,6 +186,13 @@ public class ScheduleEnrichmentService {
             Date alosTime,
             Date tzesTime,
             ZoneId zoneId) {
+        if (MinyanType.SELICHOS_SHACHARIS.name().equals(dto.minyanType())) {
+            return dto.withDisplayContext(
+                    MinyanType.SELICHOS_SHACHARIS.name(),
+                    SELICHOS_SHACHARIS_DISPLAY,
+                    MinyanType.SELICHOS_SHACHARIS.name(),
+                    SELICHOS_SHACHARIS_DISPLAY);
+        }
         if (!MinyanType.SELICHOS.name().equals(dto.minyanType())) {
             return dto;
         }
@@ -193,16 +204,17 @@ public class ScheduleEnrichmentService {
                     "Night Selichos");
         }
         return dto.withDisplayContext(
-                MinyanType.SELICHOS.name(),
-                MinyanType.SELICHOS.displayName(),
                 MinyanType.SELICHOS_SHACHARIS.name(),
-                MinyanType.SELICHOS_SHACHARIS.publicGroupDisplayName());
+                SELICHOS_SHACHARIS_DISPLAY,
+                MinyanType.SELICHOS_SHACHARIS.name(),
+                SELICHOS_SHACHARIS_DISPLAY);
     }
 
     private void annotateSelichosDisplay(MinyanEvent event, Date alosTime, Date tzesTime) {
         if (event.getType().isSelichosShacharis()) {
+            event.setDisplayTypeName(SELICHOS_SHACHARIS_DISPLAY);
             event.setPublicGroup(MinyanType.SELICHOS_SHACHARIS.name());
-            event.setPublicGroupDisplayName(MinyanType.SELICHOS_SHACHARIS.publicGroupDisplayName());
+            event.setPublicGroupDisplayName(SELICHOS_SHACHARIS_DISPLAY);
             return;
         }
         if (!event.getType().isSelichos()) {
@@ -213,8 +225,9 @@ public class ScheduleEnrichmentService {
             event.setPublicGroup("NIGHT_SELICHOS");
             event.setPublicGroupDisplayName("Night Selichos");
         } else {
+            event.setDisplayTypeName(SELICHOS_SHACHARIS_DISPLAY);
             event.setPublicGroup(MinyanType.SELICHOS_SHACHARIS.name());
-            event.setPublicGroupDisplayName(MinyanType.SELICHOS_SHACHARIS.publicGroupDisplayName());
+            event.setPublicGroupDisplayName(SELICHOS_SHACHARIS_DISPLAY);
         }
     }
 
@@ -261,14 +274,20 @@ public class ScheduleEnrichmentService {
     }
 
     private Optional<MinyanEvent> findLinkedShacharisEvent(MinyanEvent linked, List<MinyanEvent> events) {
-        return events.stream()
+        List<MinyanEvent> candidates = events.stream()
                 .filter(candidate -> candidate.getType() == MinyanType.SHACHARIS)
                 .filter(candidate -> candidate.getStartTime() != null)
                 .filter(candidate -> Objects.equals(candidate.getOrganizationId(), linked.getOrganizationId()))
-                .filter(candidate -> sameLocationWhenPresent(candidate, linked))
                 .filter(candidate -> !candidate.getStartTime().before(linked.getStartTime()))
+                .filter(candidate -> withinLinkedShacharisWindow(linked.getStartTime(), candidate.getStartTime()))
                 .sorted(Comparator.comparing(MinyanEvent::getStartTime))
-                .findFirst();
+                .collect(Collectors.toList());
+
+        return candidates.stream()
+                .filter(candidate -> sameLocationWhenPresent(candidate, linked))
+                .findFirst()
+                .or(() -> candidates.stream()
+                        .findFirst());
     }
 
     private List<ScheduleEventDto> attachLinkedShacharisTimes(List<ScheduleEventDto> dtos) {
@@ -309,14 +328,37 @@ public class ScheduleEnrichmentService {
     }
 
     private Optional<ScheduleEventDto> findLinkedShacharis(ScheduleEventDto linked, List<ScheduleEventDto> dtos) {
-        return dtos.stream()
+        List<ScheduleEventDto> candidates = dtos.stream()
                 .filter(candidate -> MinyanType.SHACHARIS.name().equals(candidate.minyanType()))
                 .filter(candidate -> Objects.equals(candidate.date(), linked.date()))
                 .filter(candidate -> sameOrganization(candidate, linked))
-                .filter(candidate -> sameLocationWhenPresent(candidate, linked))
                 .filter(candidate -> candidate.startTime().compareTo(linked.startTime()) >= 0)
+                .filter(candidate -> withinLinkedShacharisWindow(linked.startTime(), candidate.startTime()))
                 .sorted(Comparator.comparing(ScheduleEventDto::startTime))
-                .findFirst();
+                .collect(Collectors.toList());
+
+        return candidates.stream()
+                .filter(candidate -> sameLocationWhenPresent(candidate, linked))
+                .findFirst()
+                .or(() -> candidates.stream()
+                        .findFirst());
+    }
+
+    private boolean withinLinkedShacharisWindow(Date linkedStart, Date shacharisStart) {
+        long diff = shacharisStart.getTime() - linkedStart.getTime();
+        return diff >= 0 && diff <= MAX_LINKED_SHACHARIS_GAP_MILLIS;
+    }
+
+    private boolean withinLinkedShacharisWindow(String linkedStart, String shacharisStart) {
+        try {
+            int diff = LocalTime.parse(shacharisStart).toSecondOfDay()
+                    - LocalTime.parse(linkedStart).toSecondOfDay();
+            return diff >= 0 && diff <= MAX_LINKED_SHACHARIS_GAP_MINUTES * 60;
+        } catch (Exception e) {
+            log.warn("Could not compare linked Selichos/Shacharis times {} -> {}: {}",
+                    linkedStart, shacharisStart, e.getMessage());
+            return false;
+        }
     }
 
     private boolean sameOrganization(ScheduleEventDto a, ScheduleEventDto b) {

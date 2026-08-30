@@ -348,14 +348,13 @@ public class ZmanimService {
         mv.getModel().put("allminyanim", visibleMinyanEvents);
 
         List<MinyanEvent> shacharisMinyanim = new ArrayList<>();
-        List<MinyanEvent> selichosShacharisMinyanim = new ArrayList<>();
         List<MinyanEvent> minchaMinyanim = new ArrayList<>();
         List<MinyanEvent> maarivMinyanim = new ArrayList<>();
         List<MinyanEvent> selichosMinyanim = new ArrayList<>();
         List<MinyanEvent> nightSelichosMinyanim = new ArrayList<>();
         for (MinyanEvent me : visibleMinyanEvents) {
             if (MinyanType.SELICHOS_SHACHARIS.name().equals(me.getPublicGroup())) {
-                selichosShacharisMinyanim.add(me);
+                shacharisMinyanim.add(me);
             } else if (MinyanType.SHACHARIS.name().equals(me.getPublicGroup())) {
                 shacharisMinyanim.add(me);
             } else if (me.getType().isMincha() || me.getType().isMinchaMariv()) {
@@ -409,7 +408,6 @@ public class ZmanimService {
         // end upcoming
 
         mv.getModel().put("shacharisMinyanim", shacharisMinyanim);
-        mv.getModel().put("selichosShacharisMinyanim", selichosShacharisMinyanim);
         mv.getModel().put("minchaMinyanim", minchaMinyanim);
         mv.getModel().put("maarivMinyanim", maarivMinyanim);
         mv.getModel().put("selichosMinyanim", selichosMinyanim);

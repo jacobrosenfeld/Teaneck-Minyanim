@@ -148,6 +148,8 @@ class ScheduleEnrichmentServiceTest {
 
         assertEquals("06:45", enriched.get(0).linkedStartTime());
         assertEquals("SHACHARIS", enriched.get(0).linkedMinyanType());
+        assertEquals("SELICHOS_SHACHARIS", enriched.get(0).displayMinyanType());
+        assertEquals("Selichos & Shacharis", enriched.get(0).displayMinyanTypeDisplay());
         assertEquals("SELICHOS_SHACHARIS", enriched.get(0).groupMinyanType());
         assertEquals("Selichos & Shacharis", enriched.get(0).groupMinyanTypeDisplay());
         assertEquals(true, enriched.get(1).linkedTarget());
@@ -165,6 +167,8 @@ class ScheduleEnrichmentServiceTest {
 
         assertEquals("SELICHOS_SHACHARIS", enriched.get(0).groupMinyanType());
         assertEquals("Selichos & Shacharis", enriched.get(0).groupMinyanTypeDisplay());
+        assertEquals("SELICHOS_SHACHARIS", enriched.get(0).displayMinyanType());
+        assertEquals("Selichos & Shacharis", enriched.get(0).displayMinyanTypeDisplay());
         assertNull(enriched.get(0).linkedStartTime());
         assertEquals(true, enriched.get(1).linkedTarget());
     }
@@ -180,9 +184,39 @@ class ScheduleEnrichmentServiceTest {
         List<ScheduleEventDto> enriched = service.annotateZmanim(List.of(selichos, shacharis));
 
         assertEquals("SELICHOS_SHACHARIS", enriched.get(0).groupMinyanType());
+        assertEquals("SELICHOS_SHACHARIS", enriched.get(0).displayMinyanType());
+        assertEquals("Selichos & Shacharis", enriched.get(0).displayMinyanTypeDisplay());
         assertEquals("06:45", enriched.get(0).linkedStartTime());
         assertEquals("SHACHARIS", enriched.get(0).linkedMinyanType());
         assertEquals(true, enriched.get(1).linkedTarget());
+    }
+
+    @Test
+    void annotateZmanim_linksNearbyMorningSelichosToShacharisAcrossLocationFallback() {
+        when(zmanimHandler.getZmanim(DATE))
+                .thenReturn(zmanim(DATE, null, null, LocalTime.of(5, 20), LocalTime.of(20, 10)));
+
+        ScheduleEventDto selichos = dto("sel-1", DATE, "08:40", "SELICHOS", null, null, "Beis Midrash");
+        ScheduleEventDto shacharis = dto("sh-1", DATE, "08:45", "SHACHARIS", null, null, "Main");
+
+        List<ScheduleEventDto> enriched = service.annotateZmanim(List.of(selichos, shacharis));
+
+        assertEquals("08:45", enriched.get(0).linkedStartTime());
+        assertEquals(true, enriched.get(1).linkedTarget());
+    }
+
+    @Test
+    void annotateZmanim_doesNotLinkMorningSelichosToDistantShacharis() {
+        when(zmanimHandler.getZmanim(DATE))
+                .thenReturn(zmanim(DATE, null, null, LocalTime.of(5, 20), LocalTime.of(20, 10)));
+
+        ScheduleEventDto selichos = dto("sel-1", DATE, "06:00", "SELICHOS", null, null);
+        ScheduleEventDto shacharis = dto("sh-1", DATE, "07:00", "SHACHARIS", null, null);
+
+        List<ScheduleEventDto> enriched = service.annotateZmanim(List.of(selichos, shacharis));
+
+        assertNull(enriched.get(0).linkedStartTime());
+        assertEquals(false, enriched.get(1).linkedTarget());
     }
 
     @Test
@@ -199,7 +233,25 @@ class ScheduleEnrichmentServiceTest {
         service.annotateZmanim(List.of(selichos, shacharis), zmanim);
 
         assertEquals("SELICHOS_SHACHARIS", selichos.getPublicGroup());
+        assertEquals("Selichos & Shacharis", selichos.getDisplayTypeName());
         assertNull(selichos.getLinkedStartTime());
+        assertEquals(true, shacharis.isLinkedTarget());
+    }
+
+    @Test
+    void annotateZmanim_linksNearbyWebMorningSelichosToShacharisAcrossLocationFallback() {
+        Dictionary<Zman, Date> zmanim = zmanim(
+                DATE,
+                null,
+                null,
+                LocalTime.of(5, 20),
+                LocalTime.of(20, 10));
+        MinyanEvent selichos = minyanEvent("sel-1", MinyanType.SELICHOS, LocalTime.of(8, 40), "Beis Midrash");
+        MinyanEvent shacharis = minyanEvent("sh-1", MinyanType.SHACHARIS, LocalTime.of(8, 45), "Main");
+
+        service.annotateZmanim(List.of(selichos, shacharis), zmanim);
+
+        assertEquals(dateAt(DATE, LocalTime.of(8, 45)), selichos.getLinkedStartTime());
         assertEquals(true, shacharis.isLinkedTarget());
     }
 
@@ -210,6 +262,17 @@ class ScheduleEnrichmentServiceTest {
             String minyanType,
             String notes,
             String dynamicTimeString) {
+        return dto(id, date, startTime, minyanType, notes, dynamicTimeString, "Main");
+    }
+
+    private ScheduleEventDto dto(
+            String id,
+            LocalDate date,
+            String startTime,
+            String minyanType,
+            String notes,
+            String dynamicTimeString,
+            String locationName) {
         ScheduleEventDto.OrgSummary org = new ScheduleEventDto.OrgSummary(
                 "org-1", "Org", "org", "#000000", null);
         String display = switch (minyanType) {
@@ -237,7 +300,7 @@ class ScheduleEnrichmentServiceTest {
                 null,
                 false,
                 org,
-                "Main",
+                locationName,
                 notes,
                 "ASHKENAZ",
                 "Ashkenaz",
@@ -247,13 +310,17 @@ class ScheduleEnrichmentServiceTest {
     }
 
     private MinyanEvent minyanEvent(String id, MinyanType type, LocalTime time) {
+        return minyanEvent(id, type, time, "Main");
+    }
+
+    private MinyanEvent minyanEvent(String id, MinyanType type, LocalTime time, String locationName) {
         return new MinyanEvent(
                 id,
                 type,
                 "Org",
                 Nusach.ASHKENAZ,
                 "org-1",
-                "Main",
+                locationName,
                 dateAt(DATE, time),
                 Nusach.ASHKENAZ,
                 null,
