@@ -39,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -75,6 +76,38 @@ class SuperAdminOverrideXlsxServiceTest {
             assertEquals(expectedTypes, columnValues(superWorkbook.getSheet("Lists"), 1));
             assertEquals(expectedTypes, columnValues(orgWorkbook.getSheet("Lists"), 0));
         }
+    }
+
+    @Test
+    void importSuperAdminWorkbook_rejectsOrganizationWorkbookWithClearError() throws Exception {
+        SuperAdminOverrideXlsxService.ImportResult result = service.importSuperAdminWorkbook(
+                multipartFile(orgWorkbook(
+                        new String[]{"2026-06-07", "", "5:05 AM", "SELICHOS", "FULL_DAY_REPLACE", "Ogden Lower Level", "Sephardic Selichot", "SEFARD", "true"})),
+                "tester");
+
+        assertTrue(result.hasErrors());
+        assertEquals(0, result.getRowsRead());
+        assertEquals("This looks like an organization-specific override workbook. Upload it from that organization's Overrides page, or use the super-admin override template with organization_name as the first column.",
+                result.getErrors().getFirst());
+        verifyNoInteractions(organizationService, locationService, calendarEventRepository);
+    }
+
+    @Test
+    void importOrganizationWorkbook_rejectsSuperAdminWorkbookWithClearError() throws Exception {
+        Organization organization = organization();
+        when(organizationService.findById(ORG_ID)).thenReturn(Optional.of(organization));
+
+        SuperAdminOverrideXlsxService.ImportResult result = service.importOrganizationWorkbook(
+                ORG_ID,
+                multipartFile(superWorkbook(
+                        new String[]{ORG_NAME, "2026-06-07", "5:05 AM", "SELICHOS", "FULL_DAY_REPLACE", "Ogden Lower Level", "Sephardic Selichot", "SEFARD", "true"})),
+                "tester");
+
+        assertTrue(result.hasErrors());
+        assertEquals(0, result.getRowsRead());
+        assertEquals("This looks like a super-admin override workbook. Upload it from the Super Admin Overrides page, or use this organization's override template with date as the first column.",
+                result.getErrors().getFirst());
+        verifyNoInteractions(locationService, calendarEventRepository);
     }
 
     @Test

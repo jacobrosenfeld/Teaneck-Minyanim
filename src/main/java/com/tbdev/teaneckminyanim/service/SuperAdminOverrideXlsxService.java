@@ -162,11 +162,6 @@ public class SuperAdminOverrideXlsxService {
             return result;
         }
 
-        List<Organization> organizations = organizationService.getAll();
-        Map<String, List<Organization>> orgsByNameLower = organizations.stream()
-                .collect(Collectors.groupingBy(o -> normalizeOrgName(o.getName())));
-        Map<String, Map<String, Location>> locationsByOrgAndNameLower = buildLocationLookupByOrg(organizations);
-
         List<ParsedRow> parsedRows = new ArrayList<>();
         DataFormatter formatter = new DataFormatter();
 
@@ -179,6 +174,14 @@ public class SuperAdminOverrideXlsxService {
                 result.addError("Workbook is empty.");
                 return result;
             }
+            if (!validateSuperAdminWorkbookHeader(sheet, formatter, result)) {
+                return result;
+            }
+
+            List<Organization> organizations = organizationService.getAll();
+            Map<String, List<Organization>> orgsByNameLower = organizations.stream()
+                    .collect(Collectors.groupingBy(o -> normalizeOrgName(o.getName())));
+            Map<String, Map<String, Location>> locationsByOrgAndNameLower = buildLocationLookupByOrg(organizations);
 
             int lastRow = sheet.getLastRowNum();
             for (int i = 1; i <= lastRow; i++) {
@@ -221,13 +224,6 @@ public class SuperAdminOverrideXlsxService {
         }
         Organization organization = orgOpt.get();
 
-        Map<String, Location> orgLocationsByLowerName = locationService.findMatching(orgId).stream()
-                .filter(l -> l.getName() != null && !l.getName().trim().isEmpty())
-                .collect(Collectors.toMap(
-                        l -> l.getName().trim().toLowerCase(Locale.US),
-                        l -> l,
-                        (a, b) -> a));
-
         List<ParsedRow> parsedRows = new ArrayList<>();
         DataFormatter formatter = new DataFormatter();
 
@@ -240,6 +236,16 @@ public class SuperAdminOverrideXlsxService {
                 result.addError("Workbook is empty.");
                 return result;
             }
+            if (!validateOrganizationWorkbookHeader(sheet, formatter, result)) {
+                return result;
+            }
+
+            Map<String, Location> orgLocationsByLowerName = locationService.findMatching(orgId).stream()
+                    .filter(l -> l.getName() != null && !l.getName().trim().isEmpty())
+                    .collect(Collectors.toMap(
+                            l -> l.getName().trim().toLowerCase(Locale.US),
+                            l -> l,
+                            (a, b) -> a));
 
             int lastRow = sheet.getLastRowNum();
             for (int i = 1; i <= lastRow; i++) {
@@ -597,6 +603,44 @@ public class SuperAdminOverrideXlsxService {
                 nusach,
                 enabled
         );
+    }
+
+    private boolean validateSuperAdminWorkbookHeader(Sheet sheet, DataFormatter formatter, ImportResult result) {
+        String firstHeader = readHeaderCell(sheet, formatter, SUPER_COL_ORG_NAME);
+        if ("date".equals(firstHeader)) {
+            result.addError("This looks like an organization-specific override workbook. Upload it from that organization's Overrides page, or use the super-admin override template with organization_name as the first column.");
+            return false;
+        }
+        if (!"organization_name".equals(firstHeader)) {
+            result.addError("Super-admin override import requires organization_name as the first column. Download the super-admin override template and try again.");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateOrganizationWorkbookHeader(Sheet sheet, DataFormatter formatter, ImportResult result) {
+        String firstHeader = readHeaderCell(sheet, formatter, ORG_COL_DATE);
+        if ("organization_name".equals(firstHeader)) {
+            result.addError("This looks like a super-admin override workbook. Upload it from the Super Admin Overrides page, or use this organization's override template with date as the first column.");
+            return false;
+        }
+        if (!"date".equals(firstHeader)) {
+            result.addError("Organization override import requires date as the first column. Download this organization's override template and try again.");
+            return false;
+        }
+        return true;
+    }
+
+    private String readHeaderCell(Sheet sheet, DataFormatter formatter, int col) {
+        Row header = sheet.getRow(0);
+        return normalizeHeader(readCellAsString(header, col, formatter));
+    }
+
+    private String normalizeHeader(String value) {
+        if (value == null) return "";
+        return value.trim().toLowerCase(Locale.US)
+                .replace('-', '_')
+                .replace(' ', '_');
     }
 
     // ---------------------------------------------------------------------
