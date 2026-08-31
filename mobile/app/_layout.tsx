@@ -15,6 +15,7 @@ import TrackingConsentModal from '@/components/TrackingConsentModal';
 import { useColorScheme } from '@/components/useColorScheme';
 import { requestNotificationPermission, SNOOZE_ACTION } from '@/utils/notifications';
 import { triggerOpenSheet } from '@/utils/tabEvents';
+import { setFeedbackNavigationContext } from '@/utils/feedbackContext';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -101,6 +102,7 @@ export default function RootLayout() {
       pathname,
       ...routeParams,
     });
+    setFeedbackNavigationContext(pathname, routeParams);
   }, [pathname, params]);
 
   // Handle notification tap: navigate to minyanim tab and open the ShulDaySheet

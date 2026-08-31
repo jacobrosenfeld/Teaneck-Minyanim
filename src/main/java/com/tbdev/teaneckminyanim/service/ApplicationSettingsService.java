@@ -214,10 +214,18 @@ public class ApplicationSettingsService {
         return getString(SettingKey.FEEDBACK_GITHUB_TOKEN);
     }
 
+    public String getFeedbackMobileAppToken() {
+        return getString(SettingKey.FEEDBACK_MOBILE_APP_TOKEN);
+    }
+
     public boolean isFeedbackEnabled() {
         return hasText(getFeedbackGithubOwner())
                 && hasText(getFeedbackGithubRepo())
                 && hasText(getFeedbackGithubToken());
+    }
+
+    public boolean isMobileFeedbackAuthEnabled() {
+        return hasText(getFeedbackMobileAppToken());
     }
 
     public String getRecaptchaSiteKey() {
@@ -578,6 +586,7 @@ public class ApplicationSettingsService {
         switch (key) {
             case MAPBOX_ACCESS_TOKEN:
             case FEEDBACK_GITHUB_TOKEN:
+            case FEEDBACK_MOBILE_APP_TOKEN:
             case RECAPTCHA_SITE_KEY:
             case RECAPTCHA_SECRET_KEY:
             case MOBILE_IOS_APP_URL:

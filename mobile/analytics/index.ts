@@ -1,9 +1,4 @@
 import PostHog from 'posthog-react-native';
-import {
-  getTrackingPermissionsAsync,
-  requestTrackingPermissionsAsync,
-  getAdvertisingId,
-} from 'expo-tracking-transparency';
 
 import { getAnalyticsConfig } from './config';
 import {
@@ -29,6 +24,14 @@ import type {
   PlatformTrackingPermission,
 } from './types';
 
+type TrackingTransparencyModule = typeof import('expo-tracking-transparency');
+
+interface PostHogFeedbackContext {
+  distinctId?: string;
+  sessionId?: string;
+  sessionReplayUrl?: string;
+}
+
 interface RuntimeState {
   consent: ConsentState;
   platformTrackingPermission: PlatformTrackingPermission;
@@ -49,9 +52,20 @@ const runtime: RuntimeState = {
 
 let posthogClient: PostHog | null = null;
 let posthogReadyPromise: Promise<void> | null = null;
+let trackingTransparencyPromise: Promise<TrackingTransparencyModule | null> | null = null;
 
 function currentPlatform(): 'ios' | 'android' | 'web' {
   return getAnalyticsPlatform();
+}
+
+async function loadTrackingTransparency(): Promise<TrackingTransparencyModule | null> {
+  if (currentPlatform() === 'web') return null;
+
+  if (!trackingTransparencyPromise) {
+    trackingTransparencyPromise = import('expo-tracking-transparency').catch(() => null);
+  }
+
+  return trackingTransparencyPromise;
 }
 
 function ensureClient(): PostHog | null {
@@ -124,7 +138,10 @@ async function syncAdvertisingId(shouldAttachAdvertisingId: boolean): Promise<vo
   }
 
   try {
-    const advertisingId = await getAdvertisingId();
+    const trackingTransparency = await loadTrackingTransparency();
+    if (!trackingTransparency?.getAdvertisingId) return;
+
+    const advertisingId = await trackingTransparency.getAdvertisingId();
     if (advertisingId) {
       await posthogClient.register({ advertising_id: advertisingId });
     }
@@ -149,7 +166,10 @@ async function readPlatformTrackingPermission(): Promise<PlatformTrackingPermiss
   if (platform !== 'ios') return 'unknown';
 
   try {
-    const response = await getTrackingPermissionsAsync();
+    const trackingTransparency = await loadTrackingTransparency();
+    if (!trackingTransparency?.getTrackingPermissionsAsync) return 'unknown';
+
+    const response = await trackingTransparency.getTrackingPermissionsAsync();
     return mapTrackingPermissionStatus(response.status, 'ios');
   } catch {
     return runtime.platformTrackingPermission;
@@ -233,8 +253,13 @@ export async function setConsent(
 
   if (currentPlatform() === 'ios' && action === 'accept') {
     try {
-      const response = await requestTrackingPermissionsAsync();
-      runtime.platformTrackingPermission = mapTrackingPermissionStatus(response.status, 'ios');
+      const trackingTransparency = await loadTrackingTransparency();
+      if (trackingTransparency?.requestTrackingPermissionsAsync) {
+        const response = await trackingTransparency.requestTrackingPermissionsAsync();
+        runtime.platformTrackingPermission = mapTrackingPermissionStatus(response.status, 'ios');
+      } else {
+        runtime.platformTrackingPermission = 'unknown';
+      }
     } catch {
       runtime.platformTrackingPermission = await readPlatformTrackingPermission();
     }
@@ -281,4 +306,42 @@ export function getConsentSnapshot(): ConsentSnapshot {
 export function getAnalyticsClient(): PostHog | null {
   if (!runtime.analyticsEnabled) return null;
   return ensureClient();
+}
+
+export function getPostHogFeedbackContext(): PostHogFeedbackContext | null {
+  const client = getAnalyticsClient();
+  if (!client) return null;
+
+  const distinctId = safePostHogString(() => client.getDistinctId());
+  const sessionId = safePostHogString(() => client.getSessionId());
+  const sessionReplayUrl = safePostHogString(() => {
+    const clientWithReplayUrl = client as PostHog & {
+      getSessionReplayUrl?: (options?: { withTimestamp?: boolean }) => string;
+      get_session_replay_url?: (options?: { withTimestamp?: boolean }) => string;
+    };
+    return clientWithReplayUrl.getSessionReplayUrl?.({ withTimestamp: true })
+      ?? clientWithReplayUrl.get_session_replay_url?.({ withTimestamp: true })
+      ?? null;
+  });
+
+  if (!distinctId && !sessionId && !sessionReplayUrl) {
+    return null;
+  }
+
+  return {
+    distinctId: distinctId ?? undefined,
+    sessionId: sessionId ?? undefined,
+    sessionReplayUrl: sessionReplayUrl ?? undefined,
+  };
+}
+
+function safePostHogString(read: () => string | null | undefined): string | null {
+  try {
+    const value = read();
+    if (!value) return null;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  } catch {
+    return null;
+  }
 }

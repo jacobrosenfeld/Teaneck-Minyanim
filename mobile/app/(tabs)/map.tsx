@@ -18,6 +18,7 @@ import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useOrganizations } from '@/api/hooks';
 import type { Organization } from '@/api/types';
+import { setFeedbackNavigationContext } from '@/utils/feedbackContext';
 
 // Teaneck, NJ — default map center
 const TEANECK: Region = {
@@ -41,6 +42,14 @@ export default function MapScreen() {
     (o): o is Organization & { latitude: number; longitude: number } =>
       o.latitude != null && o.longitude != null,
   );
+
+  useEffect(() => {
+    setFeedbackNavigationContext('/map', {
+      locationGranted: locationGranted == null ? '' : String(locationGranted),
+      visibleShuls: String(mappable.length),
+      totalShuls: orgs ? String(orgs.length) : '',
+    });
+  }, [locationGranted, mappable.length, orgs?.length]);
 
   useEffect(() => {
     (async () => {

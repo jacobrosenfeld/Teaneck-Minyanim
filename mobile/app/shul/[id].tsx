@@ -33,18 +33,20 @@ import { useColorScheme } from '@/components/useColorScheme';
 import MinyanCard from '@/components/MinyanCard';
 import ErrorState from '@/components/ErrorState';
 import { useOrganization, useOrgSchedule } from '@/api/hooks';
-import { toApiDate } from '@/api/client';
+import { isMobileFeedbackConfigured, toApiDate } from '@/api/client';
 import type { ScheduleEvent } from '@/api/types';
+import { setFeedbackNavigationContext } from '@/utils/feedbackContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const TAB_BAR_HEIGHT = 49;
+const TAB_BAR_HEIGHT = 68;
 
 const BOTTOM_TABS = [
   { key: 'minyanim', label: 'Minyanim', icon: 'calendar',        iconFocused: 'calendar',           path: '/(tabs)/'      },
   { key: 'shuls',    label: 'Shuls',    icon: 'building.2',       iconFocused: 'building.2.fill',    path: '/(tabs)/shuls' },
   { key: 'map',      label: 'Map',      icon: 'map',              iconFocused: 'map.fill',            path: '/(tabs)/map'   },
   { key: 'zmanim',   label: 'Zmanim',   icon: 'clock',            iconFocused: 'clock.fill',         path: '/(tabs)/zmanim'},
+  { key: 'feedback', label: 'Feedback', icon: 'bubble.left.and.bubble.right', iconFocused: 'bubble.left.and.bubble.right.fill', path: '/(tabs)/feedback' },
 ] as const;
 
 const TYPE_ORDER = ['SHACHARIS', 'MINCHA', 'MINCHA_MAARIV', 'MAARIV', 'NIGHT_SELICHOS', 'SELICHOS', 'MEGILA_READING'];
@@ -108,56 +110,77 @@ function CustomTabBar({
   scheme: 'light' | 'dark';
 }) {
   const insets = useSafeAreaInsets();
+  const feedbackConfigured = isMobileFeedbackConfigured();
+  const tabs = feedbackConfigured ? BOTTOM_TABS : BOTTOM_TABS.filter((tab) => tab.key !== 'feedback');
+  const glassOverlay = scheme === 'dark'
+    ? 'rgba(18, 24, 38, 0.72)'
+    : 'rgba(255, 255, 255, 0.64)';
+  const glassBorder = scheme === 'dark'
+    ? 'rgba(255, 255, 255, 0.14)'
+    : 'rgba(255, 255, 255, 0.78)';
 
   return (
-    <View style={[styles.customTabBarWrap, { height: TAB_BAR_HEIGHT + insets.bottom }]}>
-      {Platform.OS === 'ios' ? (
-        <BlurView
-          intensity={90}
-          tint={scheme === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterial'}
-          style={StyleSheet.absoluteFill}
-        />
-      ) : (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.card }]} />
-      )}
+    <View
+      pointerEvents="box-none"
+      style={[
+        styles.customTabBarWrap,
+        { paddingBottom: Math.max(insets.bottom, 10) },
+      ]}>
       <View
         style={[
-          styles.customTabBarBorder,
+          styles.customTabBarPill,
           {
-            borderTopColor:
-              scheme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+            borderColor: glassBorder,
+            backgroundColor: Platform.OS === 'ios'
+              ? 'transparent'
+              : scheme === 'dark'
+                ? 'rgba(22, 27, 34, 0.96)'
+                : 'rgba(255, 255, 255, 0.96)',
+            shadowOpacity: scheme === 'dark' ? 0.34 : 0.14,
           },
-        ]}
-      />
-      <View style={[styles.customTabBarRow, { paddingBottom: 0, height: TAB_BAR_HEIGHT }]}>
-        {BOTTOM_TABS.map((tab) => {
-          const isActive = tab.key === activeTab;
-          const iconColor = isActive ? colors.tint : colors.tabIconDefault;
-          return (
-            <TouchableOpacity
-              key={tab.key}
-              style={styles.customTabItem}
-              onPress={() => {
-                // Always go BACK first — this pops shul/[id] and returns to
-                // the existing (tabs) group already in the root stack.
-                // Then, if the target is a different tab than where we came
-                // from, navigate within (tabs) to switch the active tab.
-                // Both dispatches are processed synchronously so the final
-                // animated state is correct (no forward-navigation chain).
-                router.back();
-                if (tab.key !== activeTab) {
-                  router.navigate(tab.path as never);
-                }
-              }}>
-              <SymbolView
-                name={isActive ? tab.iconFocused : tab.icon}
-                tintColor={iconColor}
-                size={22}
-              />
-              <Text style={[styles.customTabLabel, { color: iconColor }]}>{tab.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
+        ]}>
+        {Platform.OS === 'ios' ? (
+          <>
+            <BlurView
+              intensity={82}
+              tint={scheme === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterial'}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: glassOverlay }]} />
+          </>
+        ) : null}
+        <View style={styles.customTabBarRow}>
+          {tabs.map((tab) => {
+            const isActive = tab.key === activeTab;
+            const iconColor = isActive ? colors.tint : colors.tabIconDefault;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                style={[
+                  styles.customTabItem,
+                  isActive && {
+                    backgroundColor: scheme === 'dark'
+                      ? 'rgba(91, 143, 255, 0.18)'
+                      : 'rgba(39, 94, 216, 0.11)',
+                  },
+                ]}
+                onPress={() => {
+                  // Pop shul/[id] back to the existing tabs group before switching tabs.
+                  router.back();
+                  if (tab.key !== activeTab) {
+                    router.navigate(tab.path as never);
+                  }
+                }}>
+                <SymbolView
+                  name={isActive ? tab.iconFocused : tab.icon}
+                  tintColor={iconColor}
+                  size={22}
+                />
+                <Text style={[styles.customTabLabel, { color: iconColor }]}>{tab.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -389,6 +412,19 @@ export default function ShulDetailScreen() {
     const td = sortKey(shulDetailSortType(a)) - sortKey(shulDetailSortType(b));
     return td !== 0 ? td : a.startTime.localeCompare(b.startTime);
   });
+
+  useEffect(() => {
+    setFeedbackNavigationContext('/shul/[id]', {
+      id: orgSlug,
+      orgId: org?.id ?? '',
+      orgSlug,
+      orgName: org?.name ?? '',
+      selectedDate,
+      activeTab: activeTab === 0 ? 'day' : 'week',
+      weekStart: toApiDate(weekStart),
+      sourceTab: sourceTab ?? '',
+    });
+  }, [activeTab, org?.id, org?.name, orgSlug, selectedDate, sourceTab, weekStart]);
 
   const openWebsite = async () => {
     if (!org?.websiteUrl) return;
@@ -804,30 +840,40 @@ const styles = StyleSheet.create({
 
   // ── Custom bottom tab bar ─────────────────────────────────────────────────
   customTabBarWrap: {
-    overflow: 'hidden',
-    // height is set dynamically via inline style (TAB_BAR_HEIGHT + insets.bottom)
+    paddingHorizontal: 12,
+    paddingTop: 8,
   },
-  customTabBarBorder: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    borderTopWidth: StyleSheet.hairlineWidth,
+  customTabBarPill: {
+    height: TAB_BAR_HEIGHT,
+    borderRadius: TAB_BAR_HEIGHT / 2,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 24,
+    ...Platform.select({
+      android: { elevation: 10 },
+    }),
   },
   customTabBarRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    height: '100%',
+    paddingHorizontal: 3,
+    paddingVertical: 7,
   },
   customTabItem: {
     flex: 1,
+    height: 52,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
-    paddingVertical: 6,
+    gap: 2,
+    paddingVertical: 4,
   },
   customTabLabel: {
     fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 0.2,
+    fontWeight: '700',
+    letterSpacing: 0,
   },
 });

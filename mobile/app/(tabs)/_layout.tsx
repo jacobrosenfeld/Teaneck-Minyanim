@@ -1,8 +1,9 @@
 import { Tabs } from 'expo-router';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 
+import { isMobileFeedbackConfigured } from '@/api/client';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { triggerScrollToNow, triggerGoToday } from '@/utils/tabEvents';
@@ -10,51 +11,98 @@ import { triggerScrollToNow, triggerGoToday } from '@/utils/tabEvents';
 export default function TabLayout() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const feedbackConfigured = isMobileFeedbackConfigured();
+  const glassOverlay = scheme === 'dark'
+    ? 'rgba(18, 24, 38, 0.72)'
+    : 'rgba(255, 255, 255, 0.64)';
+  const glassBorder = scheme === 'dark'
+    ? 'rgba(255, 255, 255, 0.14)'
+    : 'rgba(255, 255, 255, 0.78)';
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.tabIconDefault,
+        tabBarActiveBackgroundColor: scheme === 'dark'
+          ? 'rgba(91, 143, 255, 0.18)'
+          : 'rgba(39, 94, 216, 0.11)',
+        tabBarInactiveBackgroundColor: 'transparent',
+        tabBarHideOnKeyboard: true,
+        tabBarLabelPosition: 'below-icon',
 
-        // ── Liquid glass on iOS, solid on Android ──────────────────────────
         tabBarBackground: Platform.OS === 'ios'
           ? () => (
-              <BlurView
-                intensity={90}
-                tint={scheme === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterial'}
-                style={StyleSheet.absoluteFill}
-              />
+              <View style={StyleSheet.absoluteFill}>
+                <BlurView
+                  intensity={82}
+                  tint={scheme === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterial'}
+                  style={StyleSheet.absoluteFill}
+                />
+                <View
+                  style={[
+                    StyleSheet.absoluteFill,
+                    { backgroundColor: glassOverlay },
+                  ]}
+                />
+              </View>
             )
           : undefined,
 
         tabBarStyle: Platform.select({
           ios: {
             position: 'absolute',
-            backgroundColor: 'transparent',
+            left: 12,
+            right: 12,
+            bottom: 10,
+            height: 68,
+            borderRadius: 34,
+            borderWidth: StyleSheet.hairlineWidth,
             borderTopWidth: StyleSheet.hairlineWidth,
-            borderTopColor: scheme === 'dark'
-              ? 'rgba(255,255,255,0.12)'
-              : 'rgba(0,0,0,0.08)',
+            borderColor: glassBorder,
+            backgroundColor: 'transparent',
+            overflow: 'hidden',
+            paddingTop: 7,
+            paddingBottom: 7,
             shadowColor: '#000',
-            shadowOffset: { width: 0, height: -2 },
-            shadowOpacity: scheme === 'dark' ? 0.25 : 0.08,
-            shadowRadius: 16,
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: scheme === 'dark' ? 0.34 : 0.14,
+            shadowRadius: 24,
           },
           android: {
-            backgroundColor: colors.card,
-            borderTopColor: colors.border,
+            position: 'absolute',
+            left: 12,
+            right: 12,
+            bottom: 10,
+            height: 68,
+            borderRadius: 34,
+            borderWidth: 1,
             borderTopWidth: 1,
-            elevation: 8,
+            borderColor: colors.border,
+            backgroundColor: scheme === 'dark' ? 'rgba(22, 27, 34, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+            paddingTop: 7,
+            paddingBottom: 7,
+            elevation: 10,
           },
           default: {
-            backgroundColor: colors.card,
-            borderTopColor: colors.border,
+            position: 'absolute',
+            left: 12,
+            right: 12,
+            bottom: 10,
+            height: 68,
+            borderRadius: 34,
+            borderWidth: 1,
             borderTopWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.card,
+            paddingTop: 7,
+            paddingBottom: 7,
           },
         }),
 
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', letterSpacing: 0.2 },
+        tabBarItemStyle: styles.tabItem,
+        tabBarIconStyle: styles.tabIcon,
+        tabBarLabelStyle: styles.tabLabel,
         headerShown: false,
       }}>
 
@@ -116,6 +164,37 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="feedback"
+        options={{
+          title: 'Feedback',
+          href: feedbackConfigured ? undefined : null,
+          tabBarIcon: ({ color, focused }) => (
+            <SymbolView
+              name={focused ? 'bubble.left.and.bubble.right.fill' : 'bubble.left.and.bubble.right'}
+              tintColor={color}
+              size={24}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabItem: {
+    borderRadius: 28,
+    marginHorizontal: 1,
+    minHeight: 52,
+  },
+  tabIcon: {
+    marginBottom: 1,
+  },
+  tabLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0,
+  },
+});

@@ -8,6 +8,8 @@ import com.tbdev.teaneckminyanim.service.feedback.FeedbackIssueCreationException
 import com.tbdev.teaneckminyanim.service.feedback.FeedbackService;
 import com.tbdev.teaneckminyanim.service.feedback.FeedbackSubmissionResult;
 import com.tbdev.teaneckminyanim.service.feedback.FeedbackValidationException;
+import com.tbdev.teaneckminyanim.service.feedback.MobileFeedbackAuthService;
+import com.tbdev.teaneckminyanim.service.feedback.MobileFeedbackAuthenticationException;
 import com.tbdev.teaneckminyanim.service.feedback.ServerFeedbackContext;
 import com.tbdev.teaneckminyanim.service.recaptcha.RecaptchaService;
 import com.tbdev.teaneckminyanim.service.recaptcha.RecaptchaVerificationException;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Locale;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/feedback")
@@ -35,17 +39,18 @@ public class FeedbackApiController {
 
     private final FeedbackService feedbackService;
     private final RecaptchaService recaptchaService;
+    private final MobileFeedbackAuthService mobileFeedbackAuthService;
 
     @PostMapping
     @Operation(
             summary = "Submit user feedback",
-            description = "Creates a GitHub issue from categorized user feedback and optional automatically collected client metadata."
+            description = "Creates a GitHub issue from categorized user feedback and optional automatically collected client metadata. Web submissions use reCAPTCHA when configured. Native mobile submissions with metadata.platform of ios, android, mobile, or native must send X-Teaneck-Minyanim-App-Token and skip reCAPTCHA."
     )
     public ResponseEntity<ApiResponse<FeedbackSubmissionResponse>> submitFeedback(
             @RequestBody FeedbackSubmissionRequest request,
             HttpServletRequest httpRequest) {
         try {
-            recaptchaService.verify(request == null ? null : request.recaptchaToken(), httpRequest);
+            verifyClientSubmission(request, httpRequest);
             FeedbackSubmissionResult result = feedbackService.submit(
                     request,
                     ServerFeedbackContext.from(httpRequest));
@@ -57,6 +62,10 @@ public class FeedbackApiController {
         } catch (RecaptchaVerificationException e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.err("INVALID_RECAPTCHA", e.getMessage()));
+        } catch (MobileFeedbackAuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.err("INVALID_MOBILE_APP_TOKEN",
+                            "Mobile feedback authorization failed."));
         } catch (FeedbackConfigurationException e) {
             log.warn("Feedback submission rejected because infrastructure is not configured: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
@@ -67,5 +76,26 @@ public class FeedbackApiController {
                     .body(ApiResponse.err("FEEDBACK_SUBMISSION_FAILED",
                             "Feedback could not be submitted right now. Please try again later."));
         }
+    }
+
+    private void verifyClientSubmission(FeedbackSubmissionRequest request, HttpServletRequest httpRequest)
+            throws RecaptchaVerificationException, FeedbackConfigurationException, MobileFeedbackAuthenticationException {
+        if (isNativeMobileSubmission(request)) {
+            mobileFeedbackAuthService.verify(httpRequest);
+            return;
+        }
+
+        recaptchaService.verify(request == null ? null : request.recaptchaToken(), httpRequest);
+    }
+
+    private boolean isNativeMobileSubmission(FeedbackSubmissionRequest request) {
+        if (request == null || request.metadata() == null || request.metadata().platform() == null) {
+            return false;
+        }
+
+        return switch (request.metadata().platform().trim().toLowerCase(Locale.ROOT)) {
+            case "ios", "android", "mobile", "native" -> true;
+            default -> false;
+        };
     }
 }

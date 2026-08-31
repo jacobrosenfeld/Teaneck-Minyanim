@@ -238,9 +238,15 @@ The visible client UI should collect only:
 | `message` | Yes | Free-text user feedback. Max 5,000 characters. |
 | `category` | Yes | Feedback category. Supported values: `MINYAN_SCHEDULE` or `APP_FUNCTIONALITY`. |
 | `email` | No | Optional user email for private follow-up. Never include this in public GitHub issue content. |
-| `recaptchaToken` | When configured | Invisible reCAPTCHA response token. Required when reCAPTCHA site and secret keys are configured. |
+| `recaptchaToken` | Web only, when configured | Invisible reCAPTCHA response token. Required for website submissions when reCAPTCHA site and secret keys are configured. Native mobile submissions skip reCAPTCHA. |
 
 Clients may send `metadata` gathered automatically in the background. Do not ask users to type this manually.
+
+Native mobile clients must send this header when `metadata.platform` is `ios`, `android`, `mobile`, or `native`:
+
+| Header | Required | Description |
+|---|---|---|
+| `X-Teaneck-Minyanim-App-Token` | Native mobile only | Token that matches the server-side `Feedback Mobile App Token` External Services setting. This is an interim native-app gate for mobile feedback submissions that skip reCAPTCHA. |
 
 **Request body:**
 
@@ -295,6 +301,8 @@ Clients may send `metadata` gathered automatically in the background. Do not ask
 - The shared public website widget is rendered only when Feedback GitHub owner, repository, and token settings are populated.
 - Website submissions use an Intercom-style floating popup with a category selector for schedule/data issues versus app/website functionality issues.
 - When reCAPTCHA site and secret key settings are populated, website submissions include an invisible reCAPTCHA token and the API verifies it before creating a GitHub issue.
+- Native mobile submissions set `metadata.platform` to `ios`, `android`, `mobile`, or `native`, send `X-Teaneck-Minyanim-App-Token`, and do not send a reCAPTCHA token.
+- The mobile app token blocks unauthenticated scripts but is not a cryptographic proof that the request came from an unmodified app. Platform attestation such as Apple App Attest or Google Play Integrity should be used for stronger app-only assurance.
 - The public GitHub issue body includes the user message and automatically collected debugging metadata.
 - Created GitHub issues are labeled `user feedback`.
 - The optional user email is used only for private email notification/follow-up and is not written to the GitHub issue.
@@ -304,7 +312,8 @@ Clients may send `metadata` gathered automatically in the background. Do not ask
 **Error codes:**
 - `INVALID_FEEDBACK` — blank message, invalid email, invalid category, or message too long
 - `INVALID_RECAPTCHA` — reCAPTCHA is configured but the token is missing or rejected by Google
-- `FEEDBACK_NOT_CONFIGURED` — GitHub owner/repo/token settings are missing
+- `INVALID_MOBILE_APP_TOKEN` — native mobile token header is missing or invalid
+- `FEEDBACK_NOT_CONFIGURED` — GitHub owner/repo/token settings are missing, or a native mobile submission was attempted before the mobile app token was configured
 - `FEEDBACK_SUBMISSION_FAILED` — GitHub issue creation failed
 
 ---
