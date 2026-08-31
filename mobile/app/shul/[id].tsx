@@ -20,7 +20,6 @@ import Reanimated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
-import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, Stack, router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -39,7 +38,7 @@ import { setFeedbackNavigationContext } from '@/utils/feedbackContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const TAB_BAR_HEIGHT = 68;
+const TAB_BAR_HEIGHT = 56;
 
 const BOTTOM_TABS = [
   { key: 'minyanim', label: 'Minyanim', icon: 'calendar',        iconFocused: 'calendar',           path: '/(tabs)/'      },
@@ -98,7 +97,7 @@ function openDirections(address: string, properties: Record<string, unknown>) {
   Linking.openURL(url!);
 }
 
-// ── Custom bottom tab bar ──────────────────────────────────────────────────────
+// ── Standalone-route bottom tab fallback ──────────────────────────────────────
 
 function CustomTabBar({
   activeTab,
@@ -112,75 +111,40 @@ function CustomTabBar({
   const insets = useSafeAreaInsets();
   const feedbackConfigured = isMobileFeedbackConfigured();
   const tabs = feedbackConfigured ? BOTTOM_TABS : BOTTOM_TABS.filter((tab) => tab.key !== 'feedback');
-  const glassOverlay = scheme === 'dark'
-    ? 'rgba(18, 24, 38, 0.72)'
-    : 'rgba(255, 255, 255, 0.64)';
-  const glassBorder = scheme === 'dark'
-    ? 'rgba(255, 255, 255, 0.14)'
-    : 'rgba(255, 255, 255, 0.78)';
 
   return (
     <View
-      pointerEvents="box-none"
       style={[
         styles.customTabBarWrap,
-        { paddingBottom: Math.max(insets.bottom, 10) },
+        {
+          paddingBottom: insets.bottom,
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+        },
       ]}>
-      <View
-        style={[
-          styles.customTabBarPill,
-          {
-            borderColor: glassBorder,
-            backgroundColor: Platform.OS === 'ios'
-              ? 'transparent'
-              : scheme === 'dark'
-                ? 'rgba(22, 27, 34, 0.96)'
-                : 'rgba(255, 255, 255, 0.96)',
-            shadowOpacity: scheme === 'dark' ? 0.34 : 0.14,
-          },
-        ]}>
-        {Platform.OS === 'ios' ? (
-          <>
-            <BlurView
-              intensity={82}
-              tint={scheme === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterial'}
-              style={StyleSheet.absoluteFill}
-            />
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: glassOverlay }]} />
-          </>
-        ) : null}
-        <View style={styles.customTabBarRow}>
-          {tabs.map((tab) => {
-            const isActive = tab.key === activeTab;
-            const iconColor = isActive ? colors.tint : colors.tabIconDefault;
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                style={[
-                  styles.customTabItem,
-                  isActive && {
-                    backgroundColor: scheme === 'dark'
-                      ? 'rgba(91, 143, 255, 0.18)'
-                      : 'rgba(39, 94, 216, 0.11)',
-                  },
-                ]}
-                onPress={() => {
-                  // Pop shul/[id] back to the existing tabs group before switching tabs.
-                  router.back();
-                  if (tab.key !== activeTab) {
-                    router.navigate(tab.path as never);
-                  }
-                }}>
-                <SymbolView
-                  name={isActive ? tab.iconFocused : tab.icon}
-                  tintColor={iconColor}
-                  size={22}
-                />
-                <Text style={[styles.customTabLabel, { color: iconColor }]}>{tab.label}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+      <View style={styles.customTabBarRow}>
+        {tabs.map((tab) => {
+          const isActive = tab.key === activeTab;
+          const iconColor = isActive ? colors.tint : colors.tabIconDefault;
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              style={styles.customTabItem}
+              onPress={() => {
+                router.back();
+                if (tab.key !== activeTab) {
+                  router.navigate(tab.path as never);
+                }
+              }}>
+              <SymbolView
+                name={isActive ? tab.iconFocused : tab.icon}
+                tintColor={iconColor}
+                size={22}
+              />
+              <Text style={[styles.customTabLabel, { color: iconColor }]}>{tab.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </View>
   );
@@ -713,7 +677,7 @@ export default function ShulDetailScreen() {
           </View>
         </ScrollView>
 
-        {/* ── Custom bottom tab bar ── */}
+        {/* ── Standalone-route bottom tab fallback ── */}
         <CustomTabBar activeTab={sourceTab} colors={colors} scheme={scheme} />
       </View>
     </>
@@ -838,38 +802,21 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 15, textAlign: 'center' },
   switchHint: { fontSize: 14, fontWeight: '600' },
 
-  // ── Custom bottom tab bar ─────────────────────────────────────────────────
+  // ── Standalone-route bottom tab fallback ──────────────────────────────────
   customTabBarWrap: {
-    paddingHorizontal: 12,
-    paddingTop: 8,
-  },
-  customTabBarPill: {
-    height: TAB_BAR_HEIGHT,
-    borderRadius: TAB_BAR_HEIGHT / 2,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 24,
-    ...Platform.select({
-      android: { elevation: 10 },
-    }),
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   customTabBarRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: '100%',
-    paddingHorizontal: 3,
-    paddingVertical: 7,
+    height: TAB_BAR_HEIGHT,
   },
   customTabItem: {
     flex: 1,
-    height: 52,
-    borderRadius: 28,
+    height: TAB_BAR_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
-    paddingVertical: 4,
   },
   customTabLabel: {
     fontSize: 10,

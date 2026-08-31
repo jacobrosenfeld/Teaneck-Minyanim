@@ -75,6 +75,20 @@ class FeedbackApiControllerTest {
     }
 
     @Test
+    void feedbackWithAppTokenHeaderSkipsRecaptchaEvenWhenMetadataIsNotMobile() throws Exception {
+        FeedbackSubmissionRequest request = request("web", null);
+        when(httpRequest.getHeader(MobileFeedbackAuthService.APP_TOKEN_HEADER)).thenReturn("app-token");
+        when(feedbackService.submit(eq(request), any())).thenReturn(result());
+
+        ResponseEntity<ApiResponse<FeedbackSubmissionResponse>> response =
+                controller.submitFeedback(request, httpRequest);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        verify(mobileFeedbackAuthService).verify(httpRequest);
+        verifyNoInteractions(recaptchaService);
+    }
+
+    @Test
     void nativeMobileFeedbackRejectsInvalidAppToken() throws Exception {
         FeedbackSubmissionRequest request = request("android", null);
         doThrow(new MobileFeedbackAuthenticationException("Bad token"))

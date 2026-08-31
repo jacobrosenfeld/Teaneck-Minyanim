@@ -238,11 +238,11 @@ The visible client UI should collect only:
 | `message` | Yes | Free-text user feedback. Max 5,000 characters. |
 | `category` | Yes | Feedback category. Supported values: `MINYAN_SCHEDULE` or `APP_FUNCTIONALITY`. |
 | `email` | No | Optional user email for private follow-up. Never include this in public GitHub issue content. |
-| `recaptchaToken` | Web only, when configured | Invisible reCAPTCHA response token. Required for website submissions when reCAPTCHA site and secret keys are configured. Native mobile submissions skip reCAPTCHA. |
+| `recaptchaToken` | Web only, when configured | Invisible reCAPTCHA response token. Required for website submissions when reCAPTCHA site and secret keys are configured. Requests with a valid native mobile app token skip reCAPTCHA. |
 
 Clients may send `metadata` gathered automatically in the background. Do not ask users to type this manually.
 
-Native mobile clients must send this header when `metadata.platform` is `ios`, `android`, `mobile`, or `native`:
+Native mobile clients must send this header. When this header is present, the API uses the mobile-token validation path and does not require a reCAPTCHA token:
 
 | Header | Required | Description |
 |---|---|---|
@@ -301,7 +301,7 @@ Native mobile clients must send this header when `metadata.platform` is `ios`, `
 - The shared public website widget is rendered only when Feedback GitHub owner, repository, and token settings are populated.
 - Website submissions use an Intercom-style floating popup with a category selector for schedule/data issues versus app/website functionality issues.
 - When reCAPTCHA site and secret key settings are populated, website submissions include an invisible reCAPTCHA token and the API verifies it before creating a GitHub issue.
-- Native mobile submissions set `metadata.platform` to `ios`, `android`, `mobile`, or `native`, send `X-Teaneck-Minyanim-App-Token`, and do not send a reCAPTCHA token.
+- Native mobile submissions send `X-Teaneck-Minyanim-App-Token` and do not send a reCAPTCHA token. Mobile metadata should still set `metadata.platform` to `ios`, `android`, `mobile`, or `native` for debugging context.
 - The mobile app token blocks unauthenticated scripts but is not a cryptographic proof that the request came from an unmodified app. Platform attestation such as Apple App Attest or Google Play Integrity should be used for stronger app-only assurance.
 - The public GitHub issue body includes the user message and automatically collected debugging metadata.
 - Created GitHub issues are labeled `user feedback`.

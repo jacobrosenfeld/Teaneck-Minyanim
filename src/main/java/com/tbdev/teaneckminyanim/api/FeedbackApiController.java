@@ -44,7 +44,7 @@ public class FeedbackApiController {
     @PostMapping
     @Operation(
             summary = "Submit user feedback",
-            description = "Creates a GitHub issue from categorized user feedback and optional automatically collected client metadata. Web submissions use reCAPTCHA when configured. Native mobile submissions with metadata.platform of ios, android, mobile, or native must send X-Teaneck-Minyanim-App-Token and skip reCAPTCHA."
+            description = "Creates a GitHub issue from categorized user feedback and optional automatically collected client metadata. Web submissions use reCAPTCHA when configured. Native mobile submissions send X-Teaneck-Minyanim-App-Token and skip reCAPTCHA."
     )
     public ResponseEntity<ApiResponse<FeedbackSubmissionResponse>> submitFeedback(
             @RequestBody FeedbackSubmissionRequest request,
@@ -80,12 +80,21 @@ public class FeedbackApiController {
 
     private void verifyClientSubmission(FeedbackSubmissionRequest request, HttpServletRequest httpRequest)
             throws RecaptchaVerificationException, FeedbackConfigurationException, MobileFeedbackAuthenticationException {
-        if (isNativeMobileSubmission(request)) {
+        if (hasMobileAppToken(httpRequest) || isNativeMobileSubmission(request)) {
             mobileFeedbackAuthService.verify(httpRequest);
             return;
         }
 
         recaptchaService.verify(request == null ? null : request.recaptchaToken(), httpRequest);
+    }
+
+    private boolean hasMobileAppToken(HttpServletRequest request) {
+        if (request == null) {
+            return false;
+        }
+
+        String token = request.getHeader(MobileFeedbackAuthService.APP_TOKEN_HEADER);
+        return token != null && !token.trim().isEmpty();
     }
 
     private boolean isNativeMobileSubmission(FeedbackSubmissionRequest request) {

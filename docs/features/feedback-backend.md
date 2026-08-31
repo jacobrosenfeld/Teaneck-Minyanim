@@ -43,8 +43,10 @@ gathered in the background by web/mobile clients. Supported categories are
 `MINYAN_SCHEDULE` and `APP_FUNCTIONALITY`.
 
 Website clients send `recaptchaToken` when reCAPTCHA is configured. Native
-mobile clients set `metadata.platform` to `ios`, `android`, `mobile`, or
-`native`, send the `X-Teaneck-Minyanim-App-Token` header, and omit reCAPTCHA.
+mobile clients send the `X-Teaneck-Minyanim-App-Token` header and omit
+reCAPTCHA. Mobile metadata should still set `metadata.platform` to `ios`,
+`android`, `mobile`, or `native` for debugging context, but the app-token header
+is the server-side switch for the mobile validation path.
 
 ## Website Widget
 
