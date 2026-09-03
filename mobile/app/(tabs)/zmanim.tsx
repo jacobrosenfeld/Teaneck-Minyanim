@@ -27,6 +27,7 @@ import ErrorState from '@/components/ErrorState';
 import { useZmanim } from '@/api/hooks';
 import { toApiDate } from '@/api/client';
 import { formatTime } from '@/utils/time';
+import { setFeedbackNavigationContext } from '@/utils/feedbackContext';
 import type { ZmanimTimes } from '@/api/types';
 
 type ZmanimRow = {
@@ -111,6 +112,10 @@ export default function ZmanimScreen() {
 
   const parsedDate = parseISO(selectedDate);
   const isToday = selectedDate === toApiDate(new Date());
+
+  React.useEffect(() => {
+    setFeedbackNavigationContext('/zmanim', { selectedDate });
+  }, [selectedDate]);
 
   // Slide animation — mirrors shul detail page
   const contentOpacity = useSharedValue(1);

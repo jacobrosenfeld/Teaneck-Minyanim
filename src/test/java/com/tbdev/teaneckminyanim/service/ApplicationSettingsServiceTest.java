@@ -117,6 +117,24 @@ class ApplicationSettingsServiceTest {
     }
 
     @Test
+    void isMobileFeedbackAuthEnabled_requiresMobileAppToken() {
+        stubExistingSettingsWithValues(Map.of(SettingKey.FEEDBACK_MOBILE_APP_TOKEN, "app-token"));
+
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertTrue(service.isMobileFeedbackAuthEnabled());
+    }
+
+    @Test
+    void isMobileFeedbackAuthEnabled_returnsFalseWhenTokenIsBlank() {
+        stubExistingSettingsWithValues(Map.of(SettingKey.FEEDBACK_MOBILE_APP_TOKEN, ""));
+
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertFalse(service.isMobileFeedbackAuthEnabled());
+    }
+
+    @Test
     void updateSetting_encryptsSensitiveValuesBeforeSaving() throws Exception {
         ApplicationSettings setting = setting(SettingKey.EMAIL_SMTP_PASSWORD, "");
         when(repository.findBySettingKey(SettingKey.EMAIL_SMTP_PASSWORD.getKey()))

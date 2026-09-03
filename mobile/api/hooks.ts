@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   fetchOrganizations,
   fetchOrganization,
@@ -6,9 +6,11 @@ import {
   fetchOrgSchedule,
   fetchZmanim,
   fetchNotifications,
+  submitFeedback,
   toApiDate,
   type ScheduleParams,
 } from './client';
+import type { FeedbackSubmissionRequest } from './types';
 
 // --- Organizations ---
 
@@ -76,5 +78,13 @@ export function useNotifications(type?: 'BANNER' | 'POPUP') {
     queryKey: ['notifications', type],
     queryFn: () => fetchNotifications(type),
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+// --- Feedback ---
+
+export function useSubmitFeedback() {
+  return useMutation({
+    mutationFn: (request: FeedbackSubmissionRequest) => submitFeedback(request),
   });
 }

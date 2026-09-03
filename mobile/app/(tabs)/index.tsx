@@ -36,6 +36,7 @@ import ErrorState from '@/components/ErrorState';
 import { useSchedule, useZmanim, useOrganizations } from '@/api/hooks';
 import { toApiDate } from '@/api/client';
 import type { ScheduleEvent, Organization } from '@/api/types';
+import { setFeedbackNavigationContext } from '@/utils/feedbackContext';
 import { formatTime } from '@/utils/time';
 import { registerScrollToNow, unregisterScrollToNow, registerGoToday, unregisterGoToday, registerOpenSheet, unregisterOpenSheet } from '@/utils/tabEvents';
 import type { SheetTarget } from '@/utils/tabEvents';
@@ -383,6 +384,17 @@ export default function MinyanimScreen() {
   const selectedOrg = orgs?.find((o) => o.id === orgFilter);
   const activeFilters = typeFilter !== 'ALL' || orgFilter !== null;
   const hasEvents = listItems.some((i) => i._type === 'event');
+
+  useEffect(() => {
+    setFeedbackNavigationContext('/', {
+      selectedDate,
+      minyanType: typeFilter,
+      orgId: orgFilter ?? '',
+      orgSlug: selectedOrg?.slug ?? '',
+      orgName: selectedOrg?.name ?? '',
+    });
+  }, [orgFilter, selectedDate, selectedOrg?.name, selectedOrg?.slug, typeFilter]);
+
   const handleTypeFilterPress = useCallback((nextFilter: TypeFilter) => {
     setTypeFilter(nextFilter);
     capture('filter_chip_selected', {

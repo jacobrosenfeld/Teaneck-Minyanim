@@ -90,3 +90,71 @@ export interface Notification {
   expiresAt: string | null;
   maxDisplays: number | null;
 }
+
+export type FeedbackCategory = 'MINYAN_SCHEDULE' | 'APP_FUNCTIONALITY';
+
+export interface FeedbackOrganizationContext {
+  id?: string | null;
+  slug?: string | null;
+  name?: string | null;
+}
+
+export interface FeedbackMinyanContext {
+  id?: string | null;
+  type?: string | null;
+  time?: string | null;
+  date?: string | null;
+  locationName?: string | null;
+}
+
+export interface FeedbackCalendarContext {
+  eventId?: string | null;
+  entryId?: string | null;
+  source?: string | null;
+  sourceId?: string | null;
+}
+
+export interface FeedbackPostHogContext {
+  distinctId?: string | null;
+  sessionId?: string | null;
+  sessionReplayUrl?: string | null;
+}
+
+export interface FeedbackMetadata {
+  platform: 'ios' | 'android' | 'mobile' | 'native';
+  screen?: string | null;
+  page?: string | null;
+  route?: string | null;
+  url?: string | null;
+  appVersion?: string | null;
+  buildNumber?: string | null;
+  browser?: string | null;
+  userAgent?: string | null;
+  deviceModel?: string | null;
+  osName?: string | null;
+  osVersion?: string | null;
+  selectedDate?: string | null;
+  organization?: FeedbackOrganizationContext | null;
+  minyan?: FeedbackMinyanContext | null;
+  calendar?: FeedbackCalendarContext | null;
+  posthog?: FeedbackPostHogContext | null;
+  filters?: Record<string, string>;
+  routeParams?: Record<string, string>;
+  extra?: Record<string, string>;
+}
+
+export interface FeedbackSubmissionRequest {
+  message: string;
+  email?: string;
+  category: FeedbackCategory;
+  metadata: FeedbackMetadata;
+}
+
+export interface FeedbackSubmissionResponse {
+  feedbackId: string;
+  githubIssueNumber: number;
+  githubIssueUrl: string;
+  userEmailProvided: boolean;
+  notificationEmailSent: boolean;
+  notificationEmailMessage?: string | null;
+}

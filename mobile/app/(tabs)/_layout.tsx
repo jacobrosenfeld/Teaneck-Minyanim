@@ -1,8 +1,6 @@
-import { Tabs } from 'expo-router';
-import { Platform, StyleSheet } from 'react-native';
-import { SymbolView } from 'expo-symbols';
-import { BlurView } from 'expo-blur';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
+import { isMobileFeedbackConfigured } from '@/api/client';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { triggerScrollToNow, triggerGoToday } from '@/utils/tabEvents';
@@ -10,112 +8,71 @@ import { triggerScrollToNow, triggerGoToday } from '@/utils/tabEvents';
 export default function TabLayout() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const feedbackConfigured = isMobileFeedbackConfigured();
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: colors.tint,
-        tabBarInactiveTintColor: colors.tabIconDefault,
-
-        // ── Liquid glass on iOS, solid on Android ──────────────────────────
-        tabBarBackground: Platform.OS === 'ios'
-          ? () => (
-              <BlurView
-                intensity={90}
-                tint={scheme === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterial'}
-                style={StyleSheet.absoluteFill}
-              />
-            )
-          : undefined,
-
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-            backgroundColor: 'transparent',
-            borderTopWidth: StyleSheet.hairlineWidth,
-            borderTopColor: scheme === 'dark'
-              ? 'rgba(255,255,255,0.12)'
-              : 'rgba(0,0,0,0.08)',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: -2 },
-            shadowOpacity: scheme === 'dark' ? 0.25 : 0.08,
-            shadowRadius: 16,
-          },
-          android: {
-            backgroundColor: colors.card,
-            borderTopColor: colors.border,
-            borderTopWidth: 1,
-            elevation: 8,
-          },
-          default: {
-            backgroundColor: colors.card,
-            borderTopColor: colors.border,
-            borderTopWidth: 1,
-          },
-        }),
-
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', letterSpacing: 0.2 },
-        headerShown: false,
-      }}>
-
-      <Tabs.Screen
+    <NativeTabs
+      tintColor={colors.tint}
+      iconColor={{ default: colors.tabIconDefault, selected: colors.tint }}
+      labelStyle={{
+        default: { color: colors.tabIconDefault, fontSize: 10 },
+        selected: { color: colors.tint, fontSize: 10, fontWeight: '600' },
+      }}
+      disableTransparentOnScrollEdge
+      minimizeBehavior="automatic"
+      tabBarRespectsIMEInsets>
+      <NativeTabs.Trigger
         name="index"
-        options={{
-          title: 'Minyanim',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name="calendar"
-              tintColor={color}
-              size={24}
-            />
-          ),
-        }}
+        disableScrollToTop
         listeners={{
-          tabPress: () => { triggerGoToday(); triggerScrollToNow(); },
-        }}
-      />
+          tabPress: () => {
+            triggerGoToday();
+            triggerScrollToNow();
+          },
+        }}>
+        <NativeTabs.Trigger.Label>Minyanim</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf="calendar"
+          md="calendar_month"
+        />
+      </NativeTabs.Trigger>
 
-      <Tabs.Screen
-        name="shuls"
-        options={{
-          title: 'Shuls',
-          tabBarIcon: ({ color, focused }) => (
-            <SymbolView
-              name={focused ? 'building.2.fill' : 'building.2'}
-              tintColor={color}
-              size={24}
-            />
-          ),
-        }}
-      />
+      <NativeTabs.Trigger name="shuls">
+        <NativeTabs.Trigger.Label>Shuls</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'building.2', selected: 'building.2.fill' }}
+          md="apartment"
+        />
+      </NativeTabs.Trigger>
 
-      <Tabs.Screen
-        name="map"
-        options={{
-          title: 'Map',
-          tabBarIcon: ({ color, focused }) => (
-            <SymbolView
-              name={focused ? 'map.fill' : 'map'}
-              tintColor={color}
-              size={24}
-            />
-          ),
-        }}
-      />
+      <NativeTabs.Trigger name="map">
+        <NativeTabs.Trigger.Label>Map</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'map', selected: 'map.fill' }}
+          md="map"
+        />
+      </NativeTabs.Trigger>
 
-      <Tabs.Screen
-        name="zmanim"
-        options={{
-          title: 'Zmanim',
-          tabBarIcon: ({ color, focused }) => (
-            <SymbolView
-              name={focused ? 'clock.fill' : 'clock'}
-              tintColor={color}
-              size={24}
-            />
-          ),
-        }}
-      />
-    </Tabs>
+      <NativeTabs.Trigger name="zmanim">
+        <NativeTabs.Trigger.Label>Zmanim</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'clock', selected: 'clock.fill' }}
+          md="schedule"
+        />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger
+        name="feedback"
+        hidden={!feedbackConfigured}>
+        <NativeTabs.Trigger.Label>Feedback</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{
+            default: 'bubble.left.and.bubble.right',
+            selected: 'bubble.left.and.bubble.right.fill',
+          }}
+          md="feedback"
+        />
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }

@@ -33,6 +33,7 @@ import ErrorState from '@/components/ErrorState';
 import { useOrganization, useOrgSchedule } from '@/api/hooks';
 import { toApiDate } from '@/api/client';
 import type { ScheduleEvent } from '@/api/types';
+import { setFeedbackNavigationContext } from '@/utils/feedbackContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -282,6 +283,18 @@ export default function ShulDetailScreen() {
     const td = sortKey(shulDetailSortType(a)) - sortKey(shulDetailSortType(b));
     return td !== 0 ? td : a.startTime.localeCompare(b.startTime);
   });
+
+  useEffect(() => {
+    setFeedbackNavigationContext('/shuls/[id]', {
+      id: orgSlug,
+      orgId: org?.id ?? '',
+      orgSlug,
+      orgName: org?.name ?? '',
+      selectedDate,
+      activeTab: activeTab === 0 ? 'day' : 'week',
+      weekStart: toApiDate(weekStart),
+    });
+  }, [activeTab, org?.id, org?.name, orgSlug, selectedDate, weekStart]);
 
   const openWebsite = async () => {
     if (!org?.websiteUrl) return;

@@ -20,6 +20,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import ErrorState from '@/components/ErrorState';
 import { useOrganizations } from '@/api/hooks';
 import type { Organization } from '@/api/types';
+import { setFeedbackNavigationContext } from '@/utils/feedbackContext';
 
 type SortMode = 'alpha' | 'distance';
 
@@ -79,6 +80,14 @@ export default function ShulsScreen() {
     }
     return copy;
   }, [rawOrgs, sortMode, userLocation]);
+
+  useEffect(() => {
+    setFeedbackNavigationContext('/shuls', {
+      sortMode,
+      locationGranted: String(locationGranted),
+      shulCount: orgs ? String(orgs.length) : '',
+    });
+  }, [locationGranted, orgs?.length, sortMode]);
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>

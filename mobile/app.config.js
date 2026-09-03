@@ -7,6 +7,9 @@ const ANALYTICS_ENV_KEYS = [
   'EXPO_PUBLIC_POSTHOG_HOST',
   'EXPO_PUBLIC_SESSION_REPLAY_ENABLED',
 ];
+const FEEDBACK_ENV_KEYS = [
+  'EXPO_PUBLIC_FEEDBACK_APP_TOKEN',
+];
 
 function isProductionProfile() {
   return process.env.EAS_BUILD_PROFILE === 'production' || process.env.NODE_ENV === 'production';
@@ -33,7 +36,7 @@ function loadProductionEnvFile() {
   if (!fs.existsSync(envPath)) return;
 
   const parsed = parseDotEnv(fs.readFileSync(envPath, 'utf8'));
-  for (const key of ANALYTICS_ENV_KEYS) {
+  for (const key of [...ANALYTICS_ENV_KEYS, ...FEEDBACK_ENV_KEYS]) {
     if (Object.prototype.hasOwnProperty.call(parsed, key)) {
       process.env[key] = parsed[key];
     }
@@ -74,6 +77,7 @@ module.exports = ({ config }) => {
   const posthogHost = readEnv('EXPO_PUBLIC_POSTHOG_HOST');
   const sessionReplayEnabledRaw = readEnv('EXPO_PUBLIC_SESSION_REPLAY_ENABLED');
   const sessionReplayEnabled = sessionReplayEnabledRaw.toLowerCase() === 'true';
+  const feedbackAppToken = readEnv('EXPO_PUBLIC_FEEDBACK_APP_TOKEN');
 
   if (!mapsApiKey && process.env.EAS_BUILD_PROFILE === 'production') {
     throw new Error(
@@ -112,6 +116,9 @@ module.exports = ({ config }) => {
       posthogKey,
       posthogHost,
       sessionReplayEnabled,
+    },
+    feedbackConfig: {
+      appToken: feedbackAppToken,
     },
   };
 
