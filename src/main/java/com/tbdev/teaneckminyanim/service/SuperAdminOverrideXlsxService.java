@@ -59,7 +59,9 @@ public class SuperAdminOverrideXlsxService {
     private static final String MODE_FULL_DAY_REPLACE = "FULL_DAY_REPLACE";
     private static final String MANUAL_ADDITIVE_SOURCE_REF_PREFIX = "manual:ADDITIVE";
 
-    private static final String[] MINYAN_TYPE_VALUES = {"SHACHARIS", "MINCHA", "MAARIV", "MINCHA/MAARIV", "SELICHOS"};
+    private static final String[] MINYAN_TYPE_VALUES = {
+            "SHACHARIS", "MINCHA", "MAARIV", "MINCHA/MAARIV", "SELICHOS", "SELICHOS_SHACHARIS"
+    };
     private static final String[] OVERRIDE_MODE_VALUES = {"ADDITIVE", "FULL_DAY_REPLACE"};
     private static final String[] ENABLED_VALUES = {"true", "false"};
 

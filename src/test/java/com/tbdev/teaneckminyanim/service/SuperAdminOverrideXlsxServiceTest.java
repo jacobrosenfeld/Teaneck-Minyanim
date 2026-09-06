@@ -63,7 +63,7 @@ class SuperAdminOverrideXlsxServiceTest {
     private SuperAdminOverrideXlsxService service;
 
     @Test
-    void buildTemplates_includeSelichosInMinyanTypeDropdownLists() throws Exception {
+    void buildTemplates_includeSelichosTypesInMinyanTypeDropdownLists() throws Exception {
         Organization organization = organization();
         Location location = new Location("Ogden Lower Level", ORG_ID);
 
@@ -72,10 +72,49 @@ class SuperAdminOverrideXlsxServiceTest {
              Workbook orgWorkbook = WorkbookFactory.create(new ByteArrayInputStream(
                      service.buildOrganizationTemplate(organization, List.of(location))))) {
 
-            List<String> expectedTypes = List.of("SHACHARIS", "MINCHA", "MAARIV", "MINCHA/MAARIV", "SELICHOS");
+            List<String> expectedTypes = List.of(
+                    "SHACHARIS",
+                    "MINCHA",
+                    "MAARIV",
+                    "MINCHA/MAARIV",
+                    "SELICHOS",
+                    "SELICHOS_SHACHARIS"
+            );
             assertEquals(expectedTypes, columnValues(superWorkbook.getSheet("Lists"), 1));
             assertEquals(expectedTypes, columnValues(orgWorkbook.getSheet("Lists"), 0));
         }
+    }
+
+    @Test
+    void importOrganizationWorkbook_acceptsSelichosShacharisFullDayReplaceRows() throws Exception {
+        Organization organization = organization();
+        when(organizationService.findById(ORG_ID)).thenReturn(Optional.of(organization));
+        when(locationService.findMatching(ORG_ID)).thenReturn(List.of(new Location("Ogden Lower Level", ORG_ID)));
+        when(calendarEventRepository.deleteByOrganizationIdAndDateAndSource(ORG_ID, DATE, EventSource.MANUAL))
+                .thenReturn(1L);
+        when(calendarEventRepository.findByOrganizationIdAndDateAndMinyanTypeAndStartTimeAndSourceOrderByIdAsc(
+                any(), any(), any(), any(), any()))
+                .thenReturn(List.of());
+
+        SuperAdminOverrideXlsxService.ImportResult result = service.importOrganizationWorkbook(
+                ORG_ID,
+                multipartFile(orgWorkbook(
+                        new String[]{"2026-06-07", "", "5:05 AM", "SELICHOS_SHACHARIS", "FULL_DAY_REPLACE", "Ogden Lower Level", "Selichot/Shacharit", "SEFARD", "true"})),
+                "tester");
+
+        ArgumentCaptor<CalendarEvent> captor = ArgumentCaptor.forClass(CalendarEvent.class);
+        verify(calendarEventRepository).save(captor.capture());
+
+        CalendarEvent saved = captor.getValue();
+        assertFalse(result.hasErrors());
+        assertEquals(1, result.getRowsRead());
+        assertEquals(1, result.getCreatedCount());
+        assertEquals(1L, result.getDeletedManualCount());
+        assertEquals(MinyanType.SELICHOS_SHACHARIS, saved.getMinyanType());
+        assertEquals(LocalTime.of(5, 5), saved.getStartTime());
+        assertEquals("Ogden Lower Level", saved.getLocationName());
+        assertEquals("Selichot/Shacharit", saved.getNotes());
+        assertEquals(Nusach.SEFARD, saved.getNusach());
     }
 
     @Test

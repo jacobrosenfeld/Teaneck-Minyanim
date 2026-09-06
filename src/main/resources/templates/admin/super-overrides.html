@@ -288,6 +288,15 @@
         </div>
     </div>
 
+    <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center mb-4" role="alert">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span th:text="${successMessage}">Success</span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+        <i class="fas fa-exclamation-circle mr-2"></i>
+        <span th:text="${errorMessage}">Error</span>
+    </div>
+
     <div class="panel">
         <form method="get" th:action="@{/admin/super/overrides}" class="grid">
             <div class="field">
