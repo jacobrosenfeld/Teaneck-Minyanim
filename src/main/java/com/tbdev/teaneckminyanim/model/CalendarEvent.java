@@ -36,6 +36,9 @@ import java.time.LocalTime;
                 @Index(name = "idx_enabled", columnList = "enabled")
         })
 public class CalendarEvent {
+    public static final String MINYAN_TYPE_COLUMN_DEFINITION =
+            "ENUM('SHACHARIS','MINCHA','MAARIV','MINCHA_MAARIV','SELICHOS',"
+                    + "'SELICHOS_SHACHARIS','MEGILA_READING','NON_MINYAN','OTHER','MINYAN')";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,7 +52,7 @@ public class CalendarEvent {
     private LocalDate date;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "minyan_type", nullable = false)
+    @Column(name = "minyan_type", nullable = false, columnDefinition = MINYAN_TYPE_COLUMN_DEFINITION)
     private MinyanType minyanType;
 
     @Column(name = "start_time", nullable = false)
