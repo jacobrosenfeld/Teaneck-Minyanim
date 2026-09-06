@@ -5,7 +5,7 @@
 
 #minyanim .table-org .table-nested tbody tr {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: flex-start;
   gap: 0.15rem 0.75rem;
 }
@@ -17,12 +17,12 @@
 }
 
 #minyanim .table-org .table-nested td:first-child {
-  flex: 1 1 10rem;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
 #minyanim .table-org .table-nested td:last-child {
-  flex: 0 1 auto;
+  flex: 0 0 max-content;
   min-width: 5.75rem;
   text-align: right;
 }
@@ -37,6 +37,10 @@
   white-space: nowrap;
 }
 
+#minyanim .table-org .p-dts {
+  margin-top: 0.2rem;
+}
+
 #minyanim .linked-minyan {
   color: var(--primary-color);
   font-family: 'Montserrat';
@@ -46,7 +50,11 @@
   overflow-wrap: anywhere;
 }
 
-@media screen and (max-width: 1400px) {
+@media screen and (max-width: 520px) {
+  #minyanim .table-org .table-nested tbody tr {
+    flex-wrap: wrap;
+  }
+
   #minyanim .table-org .table-nested td:last-child {
     flex-basis: 100%;
     text-align: left;
