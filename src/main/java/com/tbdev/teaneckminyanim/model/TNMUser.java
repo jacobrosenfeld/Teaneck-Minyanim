@@ -57,6 +57,10 @@ public class TNMUser {
     @Column(name = "AUTH_MIGRATION_REQUIRED", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean authMigrationRequired = true;
 
+    @Builder.Default
+    @Column(name = "WEEKLY_MINYAN_REVIEW_EMAILS_ENABLED", columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private Boolean weeklyMinyanReviewEmailsEnabled = true;
+
     @PrePersist
     @PreUpdate
     public void normalizeAuthFields() {
@@ -66,6 +70,9 @@ public class TNMUser {
         }
         if (authMigrationRequired == null) {
             authMigrationRequired = true;
+        }
+        if (weeklyMinyanReviewEmailsEnabled == null) {
+            weeklyMinyanReviewEmailsEnabled = true;
         }
     }
 
@@ -91,6 +98,10 @@ public class TNMUser {
 
     public boolean isAuthMigrationRequired() {
         return authMigrationRequired == null || authMigrationRequired;
+    }
+
+    public boolean isWeeklyMinyanReviewEmailsEnabled() {
+        return weeklyMinyanReviewEmailsEnabled == null || weeklyMinyanReviewEmailsEnabled;
     }
 
     public boolean isSuperAdmin() {

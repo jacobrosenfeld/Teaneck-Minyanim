@@ -102,6 +102,7 @@ public class OrganizationService {
                    .encryptedPassword(account.getEncryptedPassword())
                    .organizationId(account.getOrganizationId())
                    .roleId(Integer.parseInt(account.getRoleId()))
+                   .weeklyMinyanReviewEmailsEnabled(account.getWeeklyMinyanReviewEmailsEnabled())
                    .build());
 
         }

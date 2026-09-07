@@ -28,4 +28,7 @@ public class Account {
 
     @Column(name = "ROLE_ID")
     private String roleId;
+
+    @Column(name = "WEEKLY_MINYAN_REVIEW_EMAILS_ENABLED")
+    private Boolean weeklyMinyanReviewEmailsEnabled;
 }

@@ -296,6 +296,7 @@
             <nav class="settings-tabs" aria-label="Account sections">
                 <a class="settings-tab" href="#security">Security</a>
                 <a class="settings-tab" href="#profile">Profile</a>
+                <a class="settings-tab" href="#notifications">Notifications</a>
                 <a class="settings-tab" href="#access">Access</a>
                 <a class="settings-tab" th:if="${user.isAdmin()}" href="#account-status">Status</a>
             </nav>
@@ -398,6 +399,44 @@
                         <button type="submit" class="btn-modern btn-primary">
                             <i class="fas fa-save"></i>
                             Update Account
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="settings-section" id="notifications">
+                <div class="section-copy">
+                    <h2 class="section-title">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                    </h2>
+                    <p class="section-description">Choose which admin emails this account receives.</p>
+                </div>
+
+                <form class="settings-panel" th:action="@{/admin/account/notifications}" method="post">
+                    <input type="hidden" name="id" th:value="${queriedaccount.id}">
+
+                    <div class="account-field-row">
+                        <div>
+                            <label for="weekly-minyan-review-emails-enabled" class="field-label">Weekly minyan review</label>
+                            <p class="field-description">Send the Saturday-night schedule review email with override links.</p>
+                        </div>
+                        <div class="form-check-modern" style="margin-bottom: 0;">
+                            <input id="weekly-minyan-review-emails-enabled"
+                                   type="checkbox"
+                                   class="form-check-input-modern"
+                                   name="weeklyMinyanReviewEmailsEnabled"
+                                   value="true"
+                                   th:checked="${queriedaccount.isWeeklyMinyanReviewEmailsEnabled()}">
+                            <label class="form-check-label-modern" for="weekly-minyan-review-emails-enabled">Enabled</label>
+                        </div>
+                    </div>
+
+                    <div class="account-field-row">
+                        <div></div>
+                        <button type="submit" class="btn-modern btn-primary">
+                            <i class="fas fa-save"></i>
+                            Save Notifications
                         </button>
                     </div>
                 </form>
