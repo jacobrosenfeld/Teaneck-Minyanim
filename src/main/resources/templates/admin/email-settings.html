@@ -282,6 +282,35 @@
                 align-items: center;
             }
 
+            .email-test-divider {
+                margin: var(--space-5, 1.25rem) 0;
+                border-top: 1px solid var(--border-color-light, #e9ecef);
+            }
+
+            .email-test-action {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: var(--space-3, 0.75rem);
+                align-items: center;
+            }
+
+            .email-test-controls {
+                display: inline-flex;
+                align-items: center;
+                justify-content: flex-end;
+                flex-wrap: wrap;
+                gap: var(--space-3, 0.75rem);
+            }
+
+            .email-test-checkbox {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                white-space: nowrap;
+            }
+
             .test-result {
                 margin-top: var(--space-3, 0.75rem);
                 font-size: var(--font-size-sm, 0.875rem);
@@ -312,7 +341,8 @@
 
             @media (max-width: 560px) {
                 .email-status-panel,
-                .email-test-form {
+                .email-test-form,
+                .email-test-action {
                     grid-template-columns: 1fr;
                 }
 
@@ -460,6 +490,27 @@
                         </button>
                     </form>
                     <div id="testEmailResult" class="test-result" aria-live="polite"></div>
+
+                    <div class="email-test-divider"></div>
+
+                    <form id="weeklyDigestTestForm" class="email-test-action"
+                          th:action="@{/admin/email/weekly-minyan-review/test}" method="post">
+                        <div>
+                            <span class="field-label">Weekly Digest Test</span>
+                            <p class="field-description">Sends the weekly digest to your account only.</p>
+                        </div>
+                        <div class="email-test-controls">
+                            <label class="email-test-checkbox">
+                                <input type="checkbox" name="refreshBeforeSend" value="true">
+                                <span>Refresh first</span>
+                            </label>
+                            <button class="btn-modern btn-primary" type="submit">
+                                <i class="fas fa-envelope-open-text"></i>
+                                <span>Send Digest Test</span>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="weeklyDigestTestResult" class="test-result" aria-live="polite"></div>
                 </div>
             </div>
         </section>
@@ -627,6 +678,48 @@
                     button.disabled = false;
                     icon.className = 'fas fa-paper-plane';
                     label.textContent = 'Send Test';
+                }
+            });
+        }
+
+        const weeklyDigestTestForm = document.getElementById('weeklyDigestTestForm');
+        const weeklyDigestTestResult = document.getElementById('weeklyDigestTestResult');
+
+        if (weeklyDigestTestForm) {
+            weeklyDigestTestForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const button = weeklyDigestTestForm.querySelector('button[type="submit"]');
+                const icon = button.querySelector('i');
+                const label = button.querySelector('span');
+
+                button.disabled = true;
+                icon.className = 'fas fa-spinner fa-spin';
+                label.textContent = 'Sending';
+                weeklyDigestTestResult.className = 'test-result';
+                weeklyDigestTestResult.textContent = '';
+
+                try {
+                    const response = await fetch(weeklyDigestTestForm.action, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams(new FormData(weeklyDigestTestForm))
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || 'Weekly digest test could not be sent.');
+                    }
+
+                    weeklyDigestTestResult.className = 'test-result success';
+                    weeklyDigestTestResult.textContent = result.message || 'Weekly digest test sent.';
+                } catch (error) {
+                    weeklyDigestTestResult.className = 'test-result error';
+                    weeklyDigestTestResult.textContent = error.message;
+                } finally {
+                    button.disabled = false;
+                    icon.className = 'fas fa-envelope-open-text';
+                    label.textContent = 'Send Digest Test';
                 }
             });
         }

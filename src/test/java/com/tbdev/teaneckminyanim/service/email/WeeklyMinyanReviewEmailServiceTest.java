@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -164,6 +165,37 @@ class WeeklyMinyanReviewEmailServiceTest {
         assertFalse(result.refreshSucceeded());
         assertEquals("import failed", result.refreshError());
         verifyNoInteractions(emailService);
+    }
+
+    @Test
+    void weeklyDigestTestSendsOnlyToRequestedAdminAccount() {
+        TNMUser superAdmin = user("A0", "super", null, Role.ADMIN);
+        Organization orgA = organization("org-a", "Congregation A", true);
+        LocalDate start = LocalDate.of(2026, 9, 6);
+        LocalDate end = LocalDate.of(2026, 9, 12);
+
+        when(organizationService.getAll()).thenReturn(List.of(orgA));
+        when(effectiveScheduleService.getEffectiveEventsInRange("org-a", start, end))
+                .thenReturn(List.of(
+                        event("org-a", start, LocalTime.of(7, 0), MinyanType.SHACHARIS, EventSource.RULES)));
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(EmailProvider.SMTP, "sent"));
+
+        WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult result =
+                service.sendWeeklyReviewTestEmail(superAdmin, false, LocalDate.of(2026, 9, 5));
+
+        assertTrue(result.success());
+        assertEquals("sent", result.message());
+        verify(userService, never()).getWeeklyMinyanReviewEmailRecipients();
+        verifyNoInteractions(calendarImportService, materializationService);
+
+        ArgumentCaptor<EmailMessage> messages = ArgumentCaptor.forClass(EmailMessage.class);
+        verify(emailService).send(messages.capture());
+
+        EmailMessage message = messages.getValue();
+        assertEquals(List.of("super@example.com"), message.getTo());
+        assertTrue(message.getSubject().startsWith("[TEST] Teaneck Minyanim weekly minyan review"));
+        assertEquals("true", message.getMetadata().get("test"));
+        assertTrue(message.getTextBody().contains("Congregation A: 1 minyanim"));
     }
 
     private TNMUser user(String id, String username, String organizationId, Role role) {

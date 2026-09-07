@@ -59,12 +59,9 @@ public class WeeklyMinyanReviewEmailService {
         DateRange range = upcomingSundayThroughSaturday(referenceDate);
 
         if (refreshBeforeSend) {
-            try {
-                calendarImportService.importAllEnabledOrganizations();
-                materializationService.materializeAll();
-            } catch (RuntimeException e) {
-                log.error("Weekly minyan review refresh failed; skipping digest send", e);
-                return new WeeklyMinyanReviewSendResult(range, 0, 0, 0, 0, false, e.getMessage());
+            String refreshError = refreshSchedulesForDigest("Weekly minyan review");
+            if (refreshError != null) {
+                return new WeeklyMinyanReviewSendResult(range, 0, 0, 0, 0, false, refreshError);
             }
         }
 
@@ -112,6 +109,58 @@ public class WeeklyMinyanReviewEmailService {
         return new WeeklyMinyanReviewSendResult(range, recipients.size(), sent, failed, skipped, true, null);
     }
 
+    public WeeklyMinyanReviewTestSendResult sendWeeklyReviewTestEmail(TNMUser recipient, boolean refreshBeforeSend) {
+        return sendWeeklyReviewTestEmail(recipient, refreshBeforeSend, LocalDate.now(settingsService.getZoneId()));
+    }
+
+    public WeeklyMinyanReviewTestSendResult sendWeeklyReviewTestEmail(
+            TNMUser recipient,
+            boolean refreshBeforeSend,
+            LocalDate referenceDate) {
+        DateRange range = upcomingSundayThroughSaturday(referenceDate);
+
+        if (recipient == null || !recipient.isAdmin()) {
+            return WeeklyMinyanReviewTestSendResult.notSent(range, true, null,
+                    "Only admin accounts can receive weekly digest test emails.");
+        }
+
+        if (!hasText(recipient.getEmail())) {
+            return WeeklyMinyanReviewTestSendResult.notSent(range, true, null,
+                    "Your account does not have an email address.");
+        }
+
+        if (refreshBeforeSend) {
+            String refreshError = refreshSchedulesForDigest("Weekly minyan review test");
+            if (refreshError != null) {
+                return WeeklyMinyanReviewTestSendResult.notSent(range, false, refreshError,
+                        "Weekly digest test could not refresh schedules: " + refreshError);
+            }
+        }
+
+        Map<String, Organization> organizationsById = enabledOrganizationsById();
+
+        if (recipient.isSuperAdmin()) {
+            List<OrganizationScheduleSummary> allOrgSummaries = buildOrganizationSummaries(
+                    organizationsById.values().stream()
+                            .sorted(Comparator.comparing(Organization::getName, String.CASE_INSENSITIVE_ORDER))
+                            .toList(),
+                    range);
+            return WeeklyMinyanReviewTestSendResult.from(range,
+                    sendSuperAdminDigest(recipient, allOrgSummaries, range, true));
+        }
+
+        String orgId = trimToNull(recipient.getOrganizationId());
+        Organization organization = orgId == null ? null : organizationsById.get(orgId);
+        if (organization == null) {
+            return WeeklyMinyanReviewTestSendResult.notSent(range, true, null,
+                    "Your organization is disabled or could not be found.");
+        }
+
+        OrganizationScheduleSummary summary = buildOrganizationSummaries(List.of(organization), range).getFirst();
+        return WeeklyMinyanReviewTestSendResult.from(range,
+                sendOrganizationDigest(recipient, organization, summary.events(), range, true));
+    }
+
     public DateRange upcomingSundayThroughSaturday(LocalDate referenceDate) {
         LocalDate start = referenceDate.with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
         return new DateRange(start, start.plusDays(6));
@@ -122,9 +171,18 @@ public class WeeklyMinyanReviewEmailService {
             Organization organization,
             List<ScheduleEventDto> events,
             DateRange range) {
+        return sendOrganizationDigest(recipient, organization, events, range, false);
+    }
+
+    private EmailSendResult sendOrganizationDigest(
+            TNMUser recipient,
+            Organization organization,
+            List<ScheduleEventDto> events,
+            DateRange range,
+            boolean testMessage) {
         Map<LocalDate, List<ScheduleEventDto>> eventsByDate = groupByDate(events);
         String reviewUrl = organizationReviewUrl(organization.getId(), range);
-        String subject = settingsService.getSiteName() + " weekly minyan review: "
+        String subject = testPrefix(testMessage) + settingsService.getSiteName() + " weekly minyan review: "
                 + organization.getName() + ", " + range.displayLabel();
 
         EmailMessage message = EmailMessage.builder()
@@ -137,6 +195,7 @@ public class WeeklyMinyanReviewEmailService {
                 .metadata("digestType", "organization")
                 .metadata("rangeStart", range.startDate().toString())
                 .metadata("rangeEnd", range.endDate().toString())
+                .metadata("test", Boolean.toString(testMessage))
                 .build();
 
         return send(message, recipient);
@@ -146,8 +205,17 @@ public class WeeklyMinyanReviewEmailService {
             TNMUser recipient,
             List<OrganizationScheduleSummary> summaries,
             DateRange range) {
+        return sendSuperAdminDigest(recipient, summaries, range, false);
+    }
+
+    private EmailSendResult sendSuperAdminDigest(
+            TNMUser recipient,
+            List<OrganizationScheduleSummary> summaries,
+            DateRange range,
+            boolean testMessage) {
         String reviewUrl = superAdminReviewUrl(range);
-        String subject = settingsService.getSiteName() + " weekly minyan review: all shuls, " + range.displayLabel();
+        String subject = testPrefix(testMessage) + settingsService.getSiteName()
+                + " weekly minyan review: all shuls, " + range.displayLabel();
 
         EmailMessage message = EmailMessage.builder()
                 .to(recipient.getEmail())
@@ -158,9 +226,25 @@ public class WeeklyMinyanReviewEmailService {
                 .metadata("digestType", "super-admin")
                 .metadata("rangeStart", range.startDate().toString())
                 .metadata("rangeEnd", range.endDate().toString())
+                .metadata("test", Boolean.toString(testMessage))
                 .build();
 
         return send(message, recipient);
+    }
+
+    private String refreshSchedulesForDigest(String operationName) {
+        try {
+            calendarImportService.importAllEnabledOrganizations();
+            materializationService.materializeAll();
+            return null;
+        } catch (RuntimeException e) {
+            log.error("{} refresh failed; skipping digest send", operationName, e);
+            return e.getMessage();
+        }
+    }
+
+    private String testPrefix(boolean testMessage) {
+        return testMessage ? "[TEST] " : "";
     }
 
     private EmailSendResult send(EmailMessage message, TNMUser recipient) {
@@ -466,6 +550,34 @@ public class WeeklyMinyanReviewEmailService {
             int skippedCount,
             boolean refreshSucceeded,
             String refreshError) {
+    }
+
+    public record WeeklyMinyanReviewTestSendResult(
+            DateRange range,
+            boolean sent,
+            boolean refreshSucceeded,
+            String refreshError,
+            String message) {
+        public boolean success() {
+            return sent && refreshSucceeded;
+        }
+
+        static WeeklyMinyanReviewTestSendResult from(DateRange range, EmailSendResult result) {
+            return new WeeklyMinyanReviewTestSendResult(
+                    range,
+                    result.isSuccess(),
+                    true,
+                    null,
+                    result.getMessage());
+        }
+
+        static WeeklyMinyanReviewTestSendResult notSent(
+                DateRange range,
+                boolean refreshSucceeded,
+                String refreshError,
+                String message) {
+            return new WeeklyMinyanReviewTestSendResult(range, false, refreshSucceeded, refreshError, message);
+        }
     }
 
     private record OrganizationScheduleSummary(Organization organization, List<ScheduleEventDto> events) {

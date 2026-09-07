@@ -6,6 +6,7 @@ import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.email.EmailProvider;
 import com.tbdev.teaneckminyanim.service.email.EmailSendResult;
 import com.tbdev.teaneckminyanim.service.email.EmailService;
+import com.tbdev.teaneckminyanim.service.email.WeeklyMinyanReviewEmailService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,8 +36,12 @@ class EmailAdminControllerTest {
     @Test
     void superAdminCanSendTestEmail() {
         EmailService emailService = mock(EmailService.class);
+        WeeklyMinyanReviewEmailService weeklyMinyanReviewEmailService = mock(WeeklyMinyanReviewEmailService.class);
         TNMUserService userService = mock(TNMUserService.class);
-        EmailAdminController controller = new EmailAdminController(emailService, userService);
+        EmailAdminController controller = new EmailAdminController(
+                emailService,
+                weeklyMinyanReviewEmailService,
+                userService);
         authenticate("super");
         when(userService.findByName("super")).thenReturn(user("super", null, Role.ADMIN));
         when(emailService.sendTestEmail("admin@example.com"))
@@ -52,8 +58,12 @@ class EmailAdminControllerTest {
     @Test
     void organizationAdminCannotSendTestEmail() {
         EmailService emailService = mock(EmailService.class);
+        WeeklyMinyanReviewEmailService weeklyMinyanReviewEmailService = mock(WeeklyMinyanReviewEmailService.class);
         TNMUserService userService = mock(TNMUserService.class);
-        EmailAdminController controller = new EmailAdminController(emailService, userService);
+        EmailAdminController controller = new EmailAdminController(
+                emailService,
+                weeklyMinyanReviewEmailService,
+                userService);
         authenticate("manager");
         when(userService.findByName("manager")).thenReturn(user("manager", "org-a", Role.ADMIN));
 
@@ -62,12 +72,70 @@ class EmailAdminControllerTest {
         verify(emailService, never()).sendTestEmail("admin@example.com");
     }
 
+    @Test
+    void adminCanSendWeeklyDigestTestEmailToSelf() {
+        EmailService emailService = mock(EmailService.class);
+        WeeklyMinyanReviewEmailService weeklyMinyanReviewEmailService = mock(WeeklyMinyanReviewEmailService.class);
+        TNMUserService userService = mock(TNMUserService.class);
+        EmailAdminController controller = new EmailAdminController(
+                emailService,
+                weeklyMinyanReviewEmailService,
+                userService);
+        TNMUser manager = user("manager", "org-a", Role.ADMIN);
+        WeeklyMinyanReviewEmailService.DateRange range =
+                new WeeklyMinyanReviewEmailService.DateRange(
+                        LocalDate.of(2026, 9, 6),
+                        LocalDate.of(2026, 9, 12));
+
+        authenticate("manager");
+        when(userService.findByName("manager")).thenReturn(manager);
+        when(weeklyMinyanReviewEmailService.sendWeeklyReviewTestEmail(manager, true))
+                .thenReturn(new WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult(
+                        range,
+                        true,
+                        true,
+                        null,
+                        "sent"));
+
+        ResponseEntity<EmailAdminController.WeeklyDigestTestEmailResponse> response =
+                controller.sendWeeklyDigestTestEmail(true);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(true, response.getBody().success());
+        assertEquals("Sep 6, 2026 - Sep 12, 2026", response.getBody().range());
+        assertEquals("Weekly digest test sent for Sep 6, 2026 - Sep 12, 2026.",
+                response.getBody().message());
+    }
+
+    @Test
+    void nonAdminCannotSendWeeklyDigestTestEmail() {
+        EmailService emailService = mock(EmailService.class);
+        WeeklyMinyanReviewEmailService weeklyMinyanReviewEmailService = mock(WeeklyMinyanReviewEmailService.class);
+        TNMUserService userService = mock(TNMUserService.class);
+        EmailAdminController controller = new EmailAdminController(
+                emailService,
+                weeklyMinyanReviewEmailService,
+                userService);
+        authenticate("viewer", Role.USER);
+        when(userService.findByName("viewer")).thenReturn(user("viewer", "org-a", Role.USER));
+
+        assertThrows(AccessDeniedException.class,
+                () -> controller.sendWeeklyDigestTestEmail(false));
+        verify(weeklyMinyanReviewEmailService, never()).sendWeeklyReviewTestEmail(
+                org.mockito.Mockito.any(),
+                org.mockito.Mockito.anyBoolean());
+    }
+
     private void authenticate(String username) {
+        authenticate(username, Role.ADMIN);
+    }
+
+    private void authenticate(String username, Role role) {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
                         username,
                         "password",
-                        List.of(new SimpleGrantedAuthority(Role.ADMIN.getName()))));
+                        List.of(new SimpleGrantedAuthority(role.getName()))));
     }
 
     private TNMUser user(String username, String organizationId, Role role) {

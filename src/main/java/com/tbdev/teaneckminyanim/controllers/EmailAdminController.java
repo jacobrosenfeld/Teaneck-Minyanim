@@ -4,6 +4,7 @@ import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.email.EmailSendResult;
 import com.tbdev.teaneckminyanim.service.email.EmailService;
+import com.tbdev.teaneckminyanim.service.email.WeeklyMinyanReviewEmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/admin/email")
 public class EmailAdminController {
     private final EmailService emailService;
+    private final WeeklyMinyanReviewEmailService weeklyMinyanReviewEmailService;
     private final TNMUserService userService;
 
     @PostMapping("/test")
@@ -31,16 +33,36 @@ public class EmailAdminController {
         return ResponseEntity.status(status).body(TestEmailResponse.from(result));
     }
 
-    private void requireSuperAdmin() {
+    @PostMapping("/weekly-minyan-review/test")
+    public ResponseEntity<WeeklyDigestTestEmailResponse> sendWeeklyDigestTestEmail(
+            @RequestParam(value = "refreshBeforeSend", defaultValue = "false") boolean refreshBeforeSend) {
+        TNMUser user = requireAdmin("You are not authorized to send weekly digest test emails.");
+
+        WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult result =
+                weeklyMinyanReviewEmailService.sendWeeklyReviewTestEmail(user, refreshBeforeSend);
+        HttpStatus status = result.success() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(WeeklyDigestTestEmailResponse.from(result));
+    }
+
+    private TNMUser requireSuperAdmin() {
+        TNMUser user = requireAdmin("You are not authorized to send test emails.");
+        if (!user.isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to send test emails.");
+        }
+        return user;
+    }
+
+    private TNMUser requireAdmin(String message) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
-            throw new AccessDeniedException("You are not authorized to send test emails.");
+            throw new AccessDeniedException(message);
         }
 
         TNMUser user = userService.findByName(authentication.getName());
-        if (user == null || !user.isSuperAdmin()) {
-            throw new AccessDeniedException("You are not authorized to send test emails.");
+        if (user == null || !user.isAdmin()) {
+            throw new AccessDeniedException(message);
         }
+        return user;
     }
 
     public record TestEmailResponse(boolean success, String provider, String message) {
@@ -49,6 +71,24 @@ public class EmailAdminController {
                     result.isSuccess(),
                     result.getProvider() == null ? null : result.getProvider().name(),
                     result.getMessage());
+        }
+    }
+
+    public record WeeklyDigestTestEmailResponse(boolean success, String range, String message) {
+        static WeeklyDigestTestEmailResponse from(
+                WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult result) {
+            String rangeLabel = result.range() == null ? null : result.range().displayLabel();
+            String message = result.success()
+                    ? "Weekly digest test sent for " + rangeLabel + "."
+                    : defaultFailureMessage(result.message());
+            return new WeeklyDigestTestEmailResponse(result.success(), rangeLabel, message);
+        }
+
+        private static String defaultFailureMessage(String message) {
+            if (message != null && !message.isBlank()) {
+                return message;
+            }
+            return "Weekly digest test could not be sent.";
         }
     }
 }
