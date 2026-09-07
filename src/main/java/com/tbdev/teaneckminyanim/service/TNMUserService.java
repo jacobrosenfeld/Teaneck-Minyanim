@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class TNMUserService {
@@ -56,6 +57,16 @@ public class TNMUserService {
 
     public List<TNMUser> getAll() {
         return repository.findAll();
+    }
+
+    public List<TNMUser> getWeeklyMinyanReviewEmailRecipients() {
+        return getAll().stream()
+                .filter(Objects::nonNull)
+                .filter(TNMUser::isEnabled)
+                .filter(user -> user.getRoleId() != null)
+                .filter(TNMUser::isAdmin)
+                .filter(TNMUser::isWeeklyMinyanReviewEmailsEnabled)
+                .toList();
     }
 
     public TNMUser findById(String id) {

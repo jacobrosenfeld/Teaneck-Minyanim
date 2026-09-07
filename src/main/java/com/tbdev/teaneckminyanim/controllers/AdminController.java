@@ -862,6 +862,7 @@ public class AdminController {
                             .invitedAt(targetUser.getInvitedAt())
                             .inviteAcceptedAt(targetUser.getInviteAcceptedAt())
                             .authMigrationRequired(targetUser.isAuthMigrationRequired())
+                            .weeklyMinyanReviewEmailsEnabled(targetUser.isWeeklyMinyanReviewEmailsEnabled())
                             .build());
 
             return account(accountId, "Successfully updated the account password.", null, null);
@@ -1336,6 +1337,13 @@ public class AdminController {
                     .organizationId(userToUpdate.getOrganizationId())
                     .roleId(newRole.getId())
                     .enabled(userToUpdate.isEnabled())
+                    .emailNormalized(userToUpdate.getEmailNormalized())
+                    .lastLoginAt(userToUpdate.getLastLoginAt())
+                    .lastLoginMethod(userToUpdate.getLastLoginMethod())
+                    .invitedAt(userToUpdate.getInvitedAt())
+                    .inviteAcceptedAt(userToUpdate.getInviteAcceptedAt())
+                    .authMigrationRequired(userToUpdate.isAuthMigrationRequired())
+                    .weeklyMinyanReviewEmailsEnabled(userToUpdate.isWeeklyMinyanReviewEmailsEnabled())
                     .build();
             if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
@@ -1351,6 +1359,13 @@ public class AdminController {
                     .organizationId(userToUpdate.getOrganizationId())
                     .roleId(newRole.getId())
                     .enabled(userToUpdate.isEnabled())
+                    .emailNormalized(userToUpdate.getEmailNormalized())
+                    .lastLoginAt(userToUpdate.getLastLoginAt())
+                    .lastLoginMethod(userToUpdate.getLastLoginMethod())
+                    .invitedAt(userToUpdate.getInvitedAt())
+                    .inviteAcceptedAt(userToUpdate.getInviteAcceptedAt())
+                    .authMigrationRequired(userToUpdate.isAuthMigrationRequired())
+                    .weeklyMinyanReviewEmailsEnabled(userToUpdate.isWeeklyMinyanReviewEmailsEnabled())
                     .build();
             if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
@@ -1359,12 +1374,20 @@ public class AdminController {
             }
         } else if (!isAdmin() && userToUpdate.getId().equals(getCurrentUser().getId())) {
             TNMUser updatedUser = TNMUser.builder()
+                    .id(id)
                     .username(newUsername.toLowerCase())
                     .email(newEmail.toLowerCase())
                     .encryptedPassword(userToUpdate.getEncryptedPassword())
                     .organizationId(userToUpdate.getOrganizationId())
                     .roleId(userToUpdate.getRoleId())
                     .enabled(userToUpdate.isEnabled())
+                    .emailNormalized(userToUpdate.getEmailNormalized())
+                    .lastLoginAt(userToUpdate.getLastLoginAt())
+                    .lastLoginMethod(userToUpdate.getLastLoginMethod())
+                    .invitedAt(userToUpdate.getInvitedAt())
+                    .inviteAcceptedAt(userToUpdate.getInviteAcceptedAt())
+                    .authMigrationRequired(userToUpdate.isAuthMigrationRequired())
+                    .weeklyMinyanReviewEmailsEnabled(userToUpdate.isWeeklyMinyanReviewEmailsEnabled())
                     .build();
             if (TNMUserDAO.update(updatedUser)) {
                 return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
@@ -1373,6 +1396,49 @@ public class AdminController {
             }
         } else {
             throw new AccessDeniedException("You do not have permission to update this information.");
+        }
+    }
+
+    @PostMapping("/admin/account/notifications")
+    public ModelAndView updateAccountNotifications(
+            @RequestParam(value = "id", required = true) String id,
+            @RequestParam(value = "weeklyMinyanReviewEmailsEnabled", required = false) Boolean weeklyMinyanReviewEmailsEnabled) {
+        TNMUser targetUser = TNMUserDAO.findById(id);
+        TNMUser currentUser = getCurrentUser();
+
+        if (targetUser == null || currentUser == null) {
+            throw new AccessDeniedException("You do not have permission to update this account.");
+        }
+
+        requireAccountSettingsAccess(currentUser, targetUser);
+
+        targetUser.setWeeklyMinyanReviewEmailsEnabled(Boolean.TRUE.equals(weeklyMinyanReviewEmailsEnabled));
+        if (TNMUserDAO.update(targetUser)) {
+            return account(id, "Notification settings updated.", null, null);
+        }
+
+        return account(id, null, "Sorry, notification settings could not be updated.", null);
+    }
+
+    private void requireAccountSettingsAccess(TNMUser currentUser, TNMUser targetUser) {
+        if (currentUser.isSuperAdmin()) {
+            if (targetUser.isSuperAdmin() && !Objects.equals(currentUser.getId(), targetUser.getId())) {
+                throw new AccessDeniedException("You do not have permission to update this account.");
+            }
+            return;
+        }
+
+        if (currentUser.isAdmin()) {
+            boolean sameOrganization = Objects.equals(currentUser.getOrganizationId(), targetUser.getOrganizationId());
+            boolean updatingSelf = Objects.equals(currentUser.getId(), targetUser.getId());
+            if (!sameOrganization || (targetUser.isAdmin() && !updatingSelf)) {
+                throw new AccessDeniedException("You do not have permission to update this account.");
+            }
+            return;
+        }
+
+        if (!Objects.equals(currentUser.getId(), targetUser.getId())) {
+            throw new AccessDeniedException("You do not have permission to update this account.");
         }
     }
 

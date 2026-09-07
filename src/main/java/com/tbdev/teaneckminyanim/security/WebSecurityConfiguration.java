@@ -92,7 +92,7 @@ public class WebSecurityConfiguration {
                                 "/webjars/**", "/**/*.css", "/**/*.js", "/static/**", "/db/**",
                                 "/assets/**", "/favicon.ico", "/test/errors/**", "/subscribe", "/subscription").permitAll()
                 .requestMatchers("/admin", "/admin/dashboard", "/admin/organization", "/admin/account", 
-                                "/admin/update-organization", "/admin/update-account", 
+                                "/admin/update-organization", "/admin/update-account", "/admin/account/notifications",
                                 "/admin/*/locations", "/admin/*/locations/**",
                                 "/admin/create-location", "/admin/update-location", "/admin/delete-location", 
                                 "/admin/*/minyanim", "/admin/*/minyanim/**", 
