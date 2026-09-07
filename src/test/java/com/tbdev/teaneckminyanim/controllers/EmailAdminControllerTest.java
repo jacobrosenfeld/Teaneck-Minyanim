@@ -92,18 +92,54 @@ class EmailAdminControllerTest {
         when(weeklyMinyanReviewEmailService.sendWeeklyReviewTestEmail(manager, true))
                 .thenReturn(new WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult(
                         range,
+                        "Congregation A",
                         true,
                         true,
                         null,
                         "sent"));
 
         ResponseEntity<EmailAdminController.WeeklyDigestTestEmailResponse> response =
-                controller.sendWeeklyDigestTestEmail(true);
+                controller.sendWeeklyDigestTestEmail(true, null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(true, response.getBody().success());
         assertEquals("Sep 6, 2026 - Sep 12, 2026", response.getBody().range());
-        assertEquals("Weekly digest test sent for Sep 6, 2026 - Sep 12, 2026.",
+        assertEquals("Weekly digest test sent for Congregation A, Sep 6, 2026 - Sep 12, 2026.",
+                response.getBody().message());
+    }
+
+    @Test
+    void superAdminCanSendSelectedShulDigestTestEmailToSelf() {
+        EmailService emailService = mock(EmailService.class);
+        WeeklyMinyanReviewEmailService weeklyMinyanReviewEmailService = mock(WeeklyMinyanReviewEmailService.class);
+        TNMUserService userService = mock(TNMUserService.class);
+        EmailAdminController controller = new EmailAdminController(
+                emailService,
+                weeklyMinyanReviewEmailService,
+                userService);
+        TNMUser superAdmin = user("super", null, Role.ADMIN);
+        WeeklyMinyanReviewEmailService.DateRange range =
+                new WeeklyMinyanReviewEmailService.DateRange(
+                        LocalDate.of(2026, 9, 6),
+                        LocalDate.of(2026, 9, 12));
+
+        authenticate("super");
+        when(userService.findByName("super")).thenReturn(superAdmin);
+        when(weeklyMinyanReviewEmailService.sendWeeklyReviewTestEmailForOrganization(superAdmin, "org-a", false))
+                .thenReturn(new WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult(
+                        range,
+                        "Congregation A",
+                        true,
+                        true,
+                        null,
+                        "sent"));
+
+        ResponseEntity<EmailAdminController.WeeklyDigestTestEmailResponse> response =
+                controller.sendWeeklyDigestTestEmail(false, "org-a");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(true, response.getBody().success());
+        assertEquals("Weekly digest test sent for Congregation A, Sep 6, 2026 - Sep 12, 2026.",
                 response.getBody().message());
     }
 
@@ -120,9 +156,29 @@ class EmailAdminControllerTest {
         when(userService.findByName("viewer")).thenReturn(user("viewer", "org-a", Role.USER));
 
         assertThrows(AccessDeniedException.class,
-                () -> controller.sendWeeklyDigestTestEmail(false));
+                () -> controller.sendWeeklyDigestTestEmail(false, null));
         verify(weeklyMinyanReviewEmailService, never()).sendWeeklyReviewTestEmail(
                 org.mockito.Mockito.any(),
+                org.mockito.Mockito.anyBoolean());
+    }
+
+    @Test
+    void organizationAdminCannotSelectAnotherShulForWeeklyDigestTestEmail() {
+        EmailService emailService = mock(EmailService.class);
+        WeeklyMinyanReviewEmailService weeklyMinyanReviewEmailService = mock(WeeklyMinyanReviewEmailService.class);
+        TNMUserService userService = mock(TNMUserService.class);
+        EmailAdminController controller = new EmailAdminController(
+                emailService,
+                weeklyMinyanReviewEmailService,
+                userService);
+        authenticate("manager");
+        when(userService.findByName("manager")).thenReturn(user("manager", "org-a", Role.ADMIN));
+
+        assertThrows(AccessDeniedException.class,
+                () -> controller.sendWeeklyDigestTestEmail(false, "org-b"));
+        verify(weeklyMinyanReviewEmailService, never()).sendWeeklyReviewTestEmailForOrganization(
+                org.mockito.Mockito.any(),
+                org.mockito.Mockito.anyString(),
                 org.mockito.Mockito.anyBoolean());
     }
 

@@ -35,11 +35,22 @@ public class EmailAdminController {
 
     @PostMapping("/weekly-minyan-review/test")
     public ResponseEntity<WeeklyDigestTestEmailResponse> sendWeeklyDigestTestEmail(
-            @RequestParam(value = "refreshBeforeSend", defaultValue = "false") boolean refreshBeforeSend) {
+            @RequestParam(value = "refreshBeforeSend", defaultValue = "false") boolean refreshBeforeSend,
+            @RequestParam(value = "organizationId", required = false) String organizationId) {
         TNMUser user = requireAdmin("You are not authorized to send weekly digest test emails.");
 
+        String selectedOrganizationId = trimToNull(organizationId);
+        if (selectedOrganizationId != null && !user.isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to send a shul digest test.");
+        }
+
         WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult result =
-                weeklyMinyanReviewEmailService.sendWeeklyReviewTestEmail(user, refreshBeforeSend);
+                selectedOrganizationId == null
+                        ? weeklyMinyanReviewEmailService.sendWeeklyReviewTestEmail(user, refreshBeforeSend)
+                        : weeklyMinyanReviewEmailService.sendWeeklyReviewTestEmailForOrganization(
+                                user,
+                                selectedOrganizationId,
+                                refreshBeforeSend);
         HttpStatus status = result.success() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(WeeklyDigestTestEmailResponse.from(result));
     }
@@ -50,6 +61,13 @@ public class EmailAdminController {
             throw new AccessDeniedException("You are not authorized to send test emails.");
         }
         return user;
+    }
+
+    private String trimToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 
     private TNMUser requireAdmin(String message) {
@@ -78,8 +96,9 @@ public class EmailAdminController {
         static WeeklyDigestTestEmailResponse from(
                 WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult result) {
             String rangeLabel = result.range() == null ? null : result.range().displayLabel();
+            String digestLabel = result.digestLabel() == null ? "weekly digest" : result.digestLabel();
             String message = result.success()
-                    ? "Weekly digest test sent for " + rangeLabel + "."
+                    ? "Weekly digest test sent for " + digestLabel + ", " + rangeLabel + "."
                     : defaultFailureMessage(result.message());
             return new WeeklyDigestTestEmailResponse(result.success(), rangeLabel, message);
         }

@@ -62,6 +62,8 @@ class WeeklyMinyanReviewEmailServiceTest {
 
         when(settingsService.getSiteName()).thenReturn("Teaneck Minyanim");
         when(settingsService.getSiteRootUrl()).thenReturn("https://www.teaneckminyanim.com/");
+        when(settingsService.getAppColor()).thenReturn("#275ED8");
+        when(settingsService.getSupportEmail()).thenReturn("support@example.com");
         when(settingsService.getZoneId()).thenReturn(ZoneId.of("America/New_York"));
         when(scheduleEnrichmentService.annotateZmanim(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -136,6 +138,9 @@ class WeeklyMinyanReviewEmailServiceTest {
         assertFalse(orgMessage.getTextBody().contains("Congregation B"));
         assertTrue(orgMessage.getTextBody().contains(
                 "https://www.teaneckminyanim.com/admin/org-a/overrides?startDate=2026-09-06&endDate=2026-09-12"));
+        assertTrue(orgMessage.getHtmlBody().contains("https://www.teaneckminyanim.com/assets/icons/favicon.png"));
+        assertTrue(orgMessage.getHtmlBody().contains("background:#275ED8"));
+        assertTrue(orgMessage.getHtmlBody().contains("support@example.com"));
     }
 
     @Test
@@ -196,6 +201,44 @@ class WeeklyMinyanReviewEmailServiceTest {
         assertTrue(message.getSubject().startsWith("[TEST] Teaneck Minyanim weekly minyan review"));
         assertEquals("true", message.getMetadata().get("test"));
         assertTrue(message.getTextBody().contains("Congregation A: 1 minyanim"));
+    }
+
+    @Test
+    void superAdminCanSendSelectedOrganizationDigestTestToSelf() {
+        TNMUser superAdmin = user("A0", "super", null, Role.ADMIN);
+        Organization orgA = organization("org-a", "Congregation A", true);
+        Organization orgB = organization("org-b", "Congregation B", true);
+        LocalDate start = LocalDate.of(2026, 9, 6);
+        LocalDate end = LocalDate.of(2026, 9, 12);
+
+        when(organizationService.getAll()).thenReturn(List.of(orgA, orgB));
+        when(effectiveScheduleService.getEffectiveEventsInRange("org-a", start, end))
+                .thenReturn(List.of(
+                        event("org-a", start, LocalTime.of(7, 0), MinyanType.SHACHARIS, EventSource.RULES)));
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(EmailProvider.SMTP, "sent"));
+
+        WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult result =
+                service.sendWeeklyReviewTestEmailForOrganization(
+                        superAdmin,
+                        "org-a",
+                        false,
+                        LocalDate.of(2026, 9, 5));
+
+        assertTrue(result.success());
+        assertEquals("Congregation A", result.digestLabel());
+        verify(userService, never()).getWeeklyMinyanReviewEmailRecipients();
+        verify(effectiveScheduleService).getEffectiveEventsInRange("org-a", start, end);
+        verify(effectiveScheduleService, never()).getEffectiveEventsInRange("org-b", start, end);
+
+        ArgumentCaptor<EmailMessage> messages = ArgumentCaptor.forClass(EmailMessage.class);
+        verify(emailService).send(messages.capture());
+
+        EmailMessage message = messages.getValue();
+        assertEquals(List.of("super@example.com"), message.getTo());
+        assertEquals("org-a", message.getOrganizationId());
+        assertTrue(message.getSubject().contains("Congregation A"));
+        assertTrue(message.getTextBody().contains("7:00 AM Shacharis"));
+        assertFalse(message.getTextBody().contains("Congregation B"));
     }
 
     private TNMUser user(String id, String username, String organizationId, Role role) {

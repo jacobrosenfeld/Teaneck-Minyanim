@@ -289,9 +289,20 @@
 
             .email-test-action {
                 display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
+                grid-template-columns: minmax(280px, 1fr) auto;
                 gap: var(--space-3, 0.75rem);
                 align-items: center;
+            }
+
+            .email-test-copy {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: var(--space-2, 0.5rem);
+            }
+
+            .email-test-copy .field-label,
+            .email-test-copy .field-description {
+                margin: 0;
             }
 
             .email-test-controls {
@@ -495,8 +506,15 @@
 
                     <form id="weeklyDigestTestForm" class="email-test-action"
                           th:action="@{/admin/email/weekly-minyan-review/test}" method="post">
-                        <div>
-                            <span class="field-label">Weekly Digest Test</span>
+                        <div class="email-test-copy">
+                            <label class="field-label" for="weeklyDigestOrganizationId">Weekly Digest Test</label>
+                            <select class="field-input" id="weeklyDigestOrganizationId" name="organizationId">
+                                <option value="">All shuls summary</option>
+                                <option th:each="digestOrg : ${allOrganizations}"
+                                        th:if="${digestOrg.isEnabled()}"
+                                        th:value="${digestOrg.id}"
+                                        th:text="${digestOrg.name}">Shul</option>
+                            </select>
                             <p class="field-description">Sends the weekly digest to your account only.</p>
                         </div>
                         <div class="email-test-controls">
