@@ -44,11 +44,14 @@
                                 <div class="user-actions"><label><input type="checkbox" name="enabled" value="true" th:checked="${account.enabled}"> Account enabled</label><button class="btn-modern btn-primary" type="submit">Save permissions</button></div>
                             </form>
                             <p class="field-description mt-3"><span th:text="|Passkeys: ${passkeyCounts.get(account.id) ?: 'Unavailable'}|"></span> · Last login: <span th:text="${account.lastLoginAt ?: 'Never'}"></span> <span th:text="${account.lastLoginMethod}"></span></p>
-                            <p class="field-description">Last sign-in link sent: <span th:text="${account.invitedAt ?: 'Never'}"></span></p>
+                            <p class="field-description">Last welcome or sign-in email sent: <span th:text="${account.invitedAt ?: 'Never'}"></span></p>
                             <div class="user-actions">
                                 <a class="btn-modern btn-secondary" th:href="@{/admin/account(id=${account.id})}">Account settings</a>
+                                <form th:action="@{/admin/users/send-welcome}" method="post"><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-secondary" type="submit" th:disabled="${!account.enabled}">Resend welcome email</button></form>
                                 <form th:action="@{/admin/users/send-link}" method="post"><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-secondary" type="submit" th:disabled="${!account.enabled}">Send sign-in link</button></form>
                                 <form th:if="${account.id != user.id}" th:action="@{/admin/users/revoke-passkeys}" method="post" data-confirm="Revoke all passkeys for this user? They will need an emailed sign-in link to register replacements."><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-danger" type="submit">Revoke passkeys</button></form>
+                                <form th:if="${account.id != user.id}" th:action="@{/admin/users/delete}" method="post" th:attr="data-confirm=|Permanently delete ${account.username}? This removes their shul assignments, passkeys, and unused sign-in links and cannot be undone.|,title=${account.enabled} ? 'Disable this account before deleting' : null"><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-danger" type="submit" th:disabled="${account.enabled}">Delete user</button></form>
+                                <span class="field-description" th:if="${account.id != user.id and account.enabled}">Disable first to delete.</span>
                             </div>
                         </div>
                     </details>
@@ -57,7 +60,7 @@
             </div>
         </section>
         <section class="settings-section" id="new-user">
-            <div class="section-copy"><h2 class="section-title">Create user</h2><p class="section-description">Create the account, then send a sign-in link from their user card. No shared password is needed.</p></div>
+            <div class="section-copy"><h2 class="section-title">Create user</h2><p class="section-description">Creating an account automatically sends a role-aware welcome email with assigned shuls and a secure activation link. No shared password is needed.</p></div>
             <form class="settings-panel user-editor access-form" th:action="@{/admin/users/create}" method="post"
                   th:attr="data-open-create-user=${openCreateUser}">
                 <div class="user-fields">

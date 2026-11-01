@@ -15,6 +15,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.context.support.StaticWebApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring6.view.ThymeleafViewResolver;
@@ -31,6 +33,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class UserManagementWebTest {
     @Test
+    void creatingUserAutomaticallySendsWelcomeEmail() {
+        UserManagementService management = mock(UserManagementService.class);
+        MagicLinkService magicLinks = mock(MagicLinkService.class);
+        UserManagementController controller = new UserManagementController(
+                management, magicLinks, mock(PasskeyCredentialService.class));
+        TNMUser created = TNMUser.builder().id("A1").username("newuser").email("new@example.com").build();
+        when(management.create("newuser", "new@example.com", "USER", java.util.Set.of("one")))
+                .thenReturn(created);
+        when(magicLinks.sendManagedWelcomeLink(any(), any())).thenReturn(true);
+        RedirectAttributesModelMap redirect = new RedirectAttributesModelMap();
+
+        String view = controller.create("newuser", "new@example.com", "USER", java.util.Set.of("one"),
+                new MockHttpServletRequest(), redirect);
+
+        assertEquals("redirect:/admin/accounts", view);
+        verify(magicLinks).sendManagedWelcomeLink(eq(created), any());
+        assertTrue(redirect.getFlashAttributes().get("successmessage").toString().contains("welcome email"));
+    }
+
+    @Test
     void accountMutationsRequireCsrf() throws Exception {
         UserManagementService management = mock(UserManagementService.class);
         UserManagementController controller = new UserManagementController(management,
@@ -46,6 +68,9 @@ class UserManagementWebTest {
         var tokenRequest = new org.springframework.mock.web.MockHttpServletRequest();
         var token = tokens.generateToken(tokenRequest);
         tokens.saveToken(token, tokenRequest, new org.springframework.mock.web.MockHttpServletResponse());
+        when(management.update("user", "user@example.com", "USER", null, false))
+                .thenReturn(new UserManagementService.UserUpdateResult(
+                        TNMUser.builder().id("user").email("user@example.com").build(), false));
         mvc.perform(post("/admin/users/update").servletPath("/admin/users/update")
                 .session((org.springframework.mock.web.MockHttpSession) tokenRequest.getSession())
                 .param(token.getParameterName(), token.getToken())
@@ -81,6 +106,8 @@ class UserManagementWebTest {
         assertTrue(html.contains("User Management"));
         assertTrue(html.contains("name=\"_csrf\""));
         assertTrue(html.contains("/admin/users/update"));
+        assertTrue(html.contains("/admin/users/send-welcome"));
+        assertTrue(html.contains("/admin/users/delete"));
         assertTrue(html.contains("Shul One"));
         assertFalse(html.contains("th:each="));
         Path output = Path.of("target/user-management-preview.html");

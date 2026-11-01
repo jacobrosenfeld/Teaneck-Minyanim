@@ -4,6 +4,9 @@ import com.tbdev.teaneckminyanim.enums.Role;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.repo.TNMUserRepository;
+import com.tbdev.teaneckminyanim.repo.MagicLinkTokenRepository;
+import com.tbdev.teaneckminyanim.repo.AuthAuditEventRepository;
+import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,7 +23,11 @@ class UserManagementServiceTest {
     private final TNMUserService users = mock(TNMUserService.class);
     private final TNMUserRepository repository = mock(TNMUserRepository.class);
     private final OrganizationService organizations = mock(OrganizationService.class);
-    private final UserManagementService service = new UserManagementService(users, repository, organizations);
+    private final PasskeyCredentialService passkeys = mock(PasskeyCredentialService.class);
+    private final MagicLinkTokenRepository magicLinkTokens = mock(MagicLinkTokenRepository.class);
+    private final AuthAuditEventRepository authAuditEvents = mock(AuthAuditEventRepository.class);
+    private final UserManagementService service = new UserManagementService(
+            users, repository, organizations, passkeys, magicLinkTokens, authAuditEvents);
     private TNMUser actor;
 
     @BeforeEach
@@ -91,6 +98,31 @@ class UserManagementServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> service.create("newuser", "SUPER@EXAMPLE.COM", "USER", Set.of("one")));
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    void deletesDisabledUserAndAuthenticationMaterial() {
+        TNMUser target = user("target", "one", Role.USER);
+        target.setEnabled(false);
+        when(repository.findById("target")).thenReturn(Optional.of(target));
+
+        assertEquals("target", service.delete("target"));
+
+        verify(passkeys).revokeAll(target);
+        verify(magicLinkTokens).deleteByAccountId("target");
+        verify(authAuditEvents).deleteByAccountId("target");
+        verify(repository).delete(target);
+    }
+
+    @Test
+    void refusesToDeleteEnabledUserOrCurrentSuperAdmin() {
+        TNMUser enabled = user("target", "one", Role.USER);
+        when(repository.findById("target")).thenReturn(Optional.of(enabled));
+        when(repository.findById("super")).thenReturn(Optional.of(actor));
+
+        assertThrows(IllegalArgumentException.class, () -> service.delete("target"));
+        assertThrows(IllegalArgumentException.class, () -> service.delete("super"));
+        verify(repository, never()).delete(any());
     }
 
     private TNMUser user(String id, String org, Role role) {

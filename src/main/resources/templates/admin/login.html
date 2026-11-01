@@ -123,7 +123,9 @@
                                     <input type="hidden" name="username" id="password-username-field">
                                     <label for="password-field">Password</label>
                                     <input type="password" class="form-control" name="password"
-                                           id="password-field" placeholder="Password" autocomplete="current-password">
+                                           id="password-field" placeholder="Password" autocomplete="current-password"
+                                           aria-describedby="login-password-requirements" required>
+                                    <small id="login-password-requirements">Passwords use at least 8 characters with an uppercase letter, a lowercase letter, and a number.</small>
                                     <input type="hidden" name="recaptchaToken" value="">
                                     <button type="submit" class="login-password-submit">Sign in with password</button>
                                     <div id="login-recaptcha-status" class="form-msg-fatal" role="status" aria-live="polite"></div>

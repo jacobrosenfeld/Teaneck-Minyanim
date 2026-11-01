@@ -3,6 +3,9 @@ package com.tbdev.teaneckminyanim.service;
 import com.tbdev.teaneckminyanim.enums.Role;
 import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.repo.TNMUserRepository;
+import com.tbdev.teaneckminyanim.repo.MagicLinkTokenRepository;
+import com.tbdev.teaneckminyanim.repo.AuthAuditEventRepository;
+import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,6 +23,9 @@ public class UserManagementService {
     private final TNMUserService users;
     private final TNMUserRepository repository;
     private final OrganizationService organizations;
+    private final PasskeyCredentialService passkeys;
+    private final MagicLinkTokenRepository magicLinkTokens;
+    private final AuthAuditEventRepository authAuditEvents;
 
     public TNMUser requireSuperAdmin() {
         TNMUser actor = users.getCurrentUser();
@@ -46,16 +52,37 @@ public class UserManagementService {
     }
 
     @Transactional
-    public void update(String id, String email, String access, Set<String> organizationIds, boolean enabled) {
+    public UserUpdateResult update(String id, String email, String access, Set<String> organizationIds, boolean enabled) {
         TNMUser actor = requireSuperAdmin();
         TNMUser target = requireTarget(id);
         if (Objects.equals(actor.getId(), id) && (!enabled || !"SUPER_ADMIN".equals(access))) {
             throw new IllegalArgumentException("You cannot disable or remove your own super-admin access.");
         }
+        String previousEmail = target.getEmail();
         updateProfile(target, target.getUsername(), email);
         assignAccess(target, access, organizationIds);
         target.setEnabled(enabled);
-        repository.save(target);
+        TNMUser saved = repository.save(target);
+        return new UserUpdateResult(saved, !Objects.equals(
+                TNMUser.normalizeEmail(previousEmail), TNMUser.normalizeEmail(saved.getEmail())));
+    }
+
+    @Transactional
+    public String delete(String id) {
+        TNMUser actor = requireSuperAdmin();
+        TNMUser target = requireTarget(id);
+        if (Objects.equals(actor.getId(), target.getId())) {
+            throw new IllegalArgumentException("You cannot delete your own account.");
+        }
+        if (target.isEnabled()) {
+            throw new IllegalArgumentException("Disable this account before deleting it.");
+        }
+        String username = target.getUsername();
+        passkeys.revokeAll(target);
+        magicLinkTokens.deleteByAccountId(target.getId());
+        authAuditEvents.deleteByAccountId(target.getId());
+        repository.delete(target);
+        return username;
     }
 
     private void updateProfile(TNMUser target, String username, String email) {
@@ -99,4 +126,6 @@ public class UserManagementService {
         target.getAdditionalOrganizationIds().clear();
         target.getAdditionalOrganizationIds().addAll(ids);
     }
+
+    public record UserUpdateResult(TNMUser user, boolean emailChanged) {}
 }

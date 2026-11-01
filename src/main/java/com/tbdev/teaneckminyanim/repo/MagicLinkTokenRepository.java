@@ -20,4 +20,6 @@ public interface MagicLinkTokenRepository extends JpaRepository<MagicLinkToken, 
     int consumeIfUsable(@Param("id") String id, @Param("usedAt") LocalDateTime usedAt);
 
     long deleteByExpiresAtBeforeOrUsedAtBefore(LocalDateTime expiredBefore, LocalDateTime usedBefore);
+
+    long deleteByAccountId(String accountId);
 }

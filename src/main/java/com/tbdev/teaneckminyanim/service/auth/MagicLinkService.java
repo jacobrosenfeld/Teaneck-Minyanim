@@ -8,6 +8,7 @@ import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.email.EmailMessage;
 import com.tbdev.teaneckminyanim.service.email.EmailSendResult;
 import com.tbdev.teaneckminyanim.service.email.EmailService;
+import com.tbdev.teaneckminyanim.service.email.UserWelcomeEmailService;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class MagicLinkService {
     private final EmailService emailService;
     private final MagicLinkRateLimitService rateLimitService;
     private final AuthAuditService auditService;
+    private final UserWelcomeEmailService welcomeEmailService;
 
     @Value("${auth.magic-link.enabled:true}")
     private boolean magicLinkEnabled = true;
@@ -92,10 +94,25 @@ public class MagicLinkService {
             auditService.record("MAGIC_LINK_RATE_LIMITED", user.getId(), ipHash, "managed");
             return false;
         }
-        return sendManagedLoginLinkInternal(user, request);
+        return sendManagedLinkInternal(user, request, false);
+    }
+
+    @Transactional
+    public boolean sendManagedWelcomeLink(TNMUser user, HttpServletRequest request) {
+        if (!magicLinkEnabled || user == null) return false;
+        String ipHash = sha256(clientIp(request));
+        if (!rateLimitService.allow(ipHash, sha256("welcome:" + user.getId()))) {
+            auditService.record("WELCOME_EMAIL_RATE_LIMITED", user.getId(), ipHash, "managed");
+            return false;
+        }
+        return sendManagedLinkInternal(user, request, true);
     }
 
     private boolean sendManagedLoginLinkInternal(TNMUser user, HttpServletRequest request) {
+        return sendManagedLinkInternal(user, request, false);
+    }
+
+    private boolean sendManagedLinkInternal(TNMUser user, HttpServletRequest request, boolean welcome) {
         if (user == null || user.isDisabled()) return false;
         String normalizedEmail = TNMUser.normalizeEmail(user.getEmail());
         if (normalizedEmail == null) return false;
@@ -108,15 +125,20 @@ public class MagicLinkService {
                 .requestIpHash(sha256(clientIp(request)))
                 .userAgent(truncate(request == null ? null : request.getHeader("User-Agent"), 500)).build();
         tokenRepository.save(token);
-        EmailSendResult result = sendLoginLink(user, rawToken, request);
+        String loginUrl = buildLoginUrl(rawToken, request);
+        EmailSendResult result = welcome
+                ? welcomeEmailService.sendWelcome(user, loginUrl)
+                : sendLoginLink(user, loginUrl);
         if (result.isSuccess()) {
             user.setInvitedAt(LocalDateTime.now());
             userService.update(user);
-            auditService.record("MAGIC_LINK_SENT", user.getId(), sha256(clientIp(request)), null);
+            auditService.record(welcome ? "WELCOME_EMAIL_SENT" : "MAGIC_LINK_SENT",
+                    user.getId(), sha256(clientIp(request)), null);
         } else {
             tokenRepository.delete(token);
             log.warn("Magic-link delivery failed for account {}", user.getId());
-            auditService.record("MAGIC_LINK_SEND_FAILED", user.getId(), sha256(clientIp(request)),
+            auditService.record(welcome ? "WELCOME_EMAIL_SEND_FAILED" : "MAGIC_LINK_SEND_FAILED",
+                    user.getId(), sha256(clientIp(request)),
                     result.getMessage());
         }
         return result.isSuccess();
@@ -179,10 +201,9 @@ public class MagicLinkService {
         return sha256(token);
     }
 
-    private EmailSendResult sendLoginLink(TNMUser user, String rawToken, HttpServletRequest request) {
+    private EmailSendResult sendLoginLink(TNMUser user, String loginUrl) {
         String siteName = settingsService.getSiteName();
         String escapedSiteName = HtmlUtils.htmlEscape(siteName);
-        String loginUrl = buildLoginUrl(rawToken, request);
         String escapedLoginUrl = HtmlUtils.htmlEscape(loginUrl);
         String escapedUsername = HtmlUtils.htmlEscape(
                 user.getUsername() == null || user.getUsername().isBlank() ? "there" : user.getUsername());

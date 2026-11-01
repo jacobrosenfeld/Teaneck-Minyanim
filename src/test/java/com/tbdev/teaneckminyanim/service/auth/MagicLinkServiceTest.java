@@ -9,6 +9,7 @@ import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.email.EmailMessage;
 import com.tbdev.teaneckminyanim.service.email.EmailSendResult;
 import com.tbdev.teaneckminyanim.service.email.EmailService;
+import com.tbdev.teaneckminyanim.service.email.UserWelcomeEmailService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -149,6 +150,30 @@ class MagicLinkServiceTest {
     }
 
     @Test
+    void managedWelcomeCreatesTokenAndUsesWelcomeEmailRenderer() {
+        MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
+        TNMUserService userService = mock(TNMUserService.class);
+        ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
+        EmailService emailService = mock(EmailService.class);
+        UserWelcomeEmailService welcomeEmails = mock(UserWelcomeEmailService.class);
+        MagicLinkRateLimitService rateLimits = mock(MagicLinkRateLimitService.class);
+        when(rateLimits.allow(any(), any())).thenReturn(true);
+        when(settingsService.getSiteRootUrl()).thenReturn("https://example.com");
+        when(welcomeEmails.sendWelcome(any(), any()))
+                .thenReturn(EmailSendResult.success(null, "sent"));
+        MagicLinkService service = new MagicLinkService(tokenRepository, userService, settingsService,
+                emailService, rateLimits, mock(AuthAuditService.class), welcomeEmails);
+        TNMUser user = user(true);
+
+        assertTrue(service.sendManagedWelcomeLink(user, new MockHttpServletRequest()));
+
+        verify(tokenRepository).save(any());
+        verify(welcomeEmails).sendWelcome(org.mockito.ArgumentMatchers.eq(user),
+                org.mockito.ArgumentMatchers.contains("/admin/login/magic-link/verify?token="));
+        verify(userService).update(user);
+    }
+
+    @Test
     void consumeLoginTokenMarksTokenUsedAndUpdatesUserLoginMetadata() {
         MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
         TNMUserService userService = mock(TNMUserService.class);
@@ -228,7 +253,7 @@ class MagicLinkServiceTest {
         MagicLinkRateLimitService rateLimitService = mock(MagicLinkRateLimitService.class);
         when(rateLimitService.allow(any(), any())).thenReturn(true);
         return new MagicLinkService(tokenRepository, userService, settingsService, emailService,
-                rateLimitService, mock(AuthAuditService.class));
+                rateLimitService, mock(AuthAuditService.class), mock(UserWelcomeEmailService.class));
     }
 
     private TNMUser user(boolean enabled) {

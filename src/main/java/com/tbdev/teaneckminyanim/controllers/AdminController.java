@@ -11,7 +11,9 @@ import com.tbdev.teaneckminyanim.minyan.MinyanTime;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.minyan.Schedule;
 import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
+import com.tbdev.teaneckminyanim.service.auth.MagicLinkService;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.net.URI;
@@ -68,6 +71,9 @@ public class AdminController {
 
     @Autowired
     private PasskeyCredentialService passkeyCredentialService;
+
+    @Autowired
+    private MagicLinkService magicLinkService;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -768,22 +774,21 @@ public class AdminController {
         mv.addObject("hasPasskeys", passkeyCount > 0);
         mv.addObject("showPasskeySetupPrompt",
                 setupPasskey && getCurrentUser() != null && Objects.equals(queriedUser.getId(), getCurrentUser().getId()));
-        mv.addObject("changePasswordError", changePasswordError);
-        mv.addObject("successMessage", successMessage);
-        mv.addObject("mainErrorMessage", errorMessage);
+        if (changePasswordError != null) mv.addObject("changePasswordError", changePasswordError);
+        if (successMessage != null) mv.addObject("successMessage", successMessage);
+        if (errorMessage != null) mv.addObject("mainErrorMessage", errorMessage);
 
         return mv;
     }
 
     @PostMapping("/admin/accounts/{accountId}/changepassword")
-    public ModelAndView changeAccountPassword(@PathVariable String accountId, @RequestParam(value = "password", required = true) String password, @RequestParam(value = "cpassword", required = true) String cpassword) {
-        if (!password.equals(cpassword)) {
-            return account(accountId, null, null, "Sorry, the passwords don't match.");
-        }
-
+    public String changeAccountPassword(@PathVariable String accountId,
+                                        @RequestParam String password,
+                                        @RequestParam String cpassword,
+                                        RedirectAttributes redirect) {
         TNMUser targetUser = TNMUserDAO.findById(accountId);
         if (targetUser == null) {
-            return account(accountId, null, null, "Sorry, we ran into an unexpected error.");
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND);
         }
 
         requireAccountSettingsAccess(getCurrentUser(), targetUser);
@@ -791,12 +796,19 @@ public class AdminController {
             throw new AccessDeniedException("Only super admins can reset another account's sign-in credentials.");
         }
 
+        if (!password.equals(cpassword)) {
+            redirect.addFlashAttribute("changePasswordError", "The passwords do not match.");
+            return "redirect:/admin/account?id=" + accountId;
+        }
+
         //        check if password is valid
         String passwordRegex = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$";
         Pattern passwordPattern = Pattern.compile(passwordRegex);
         Matcher m3 = passwordPattern.matcher(password);
         if (!m3.matches()) {
-            return account(accountId, null, null, "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
+            redirect.addFlashAttribute("changePasswordError",
+                    "The password must be at least 8 characters and contain an uppercase letter, a lowercase letter, and a number.");
+            return "redirect:/admin/account?id=" + accountId;
         }
 
         try {
@@ -819,10 +831,11 @@ public class AdminController {
                             .weeklyMinyanReviewEmailsEnabled(targetUser.isWeeklyMinyanReviewEmailsEnabled())
                             .build());
 
-            return account(accountId, "Successfully updated the account password.", null, null);
+            redirect.addFlashAttribute("successMessage", "Successfully updated the account password.");
         } catch (Exception e) {
-            return account(accountId, null, null, "Sorry, we ran into an unexpected error.");
+            redirect.addFlashAttribute("changePasswordError", "Sorry, we ran into an unexpected error.");
         }
+        return "redirect:/admin/account?id=" + accountId;
     }
 
     @GetMapping("/admin/organization")
@@ -1227,7 +1240,8 @@ public class AdminController {
             @RequestParam(value = "id", required = true) String id,
             @RequestParam(value = "username", required = true) String newUsername,
             @RequestParam(value = "email", required = true) String newEmail,
-            @RequestParam(value = "privileges", defaultValue = "0") int roleId
+            @RequestParam(value = "privileges", defaultValue = "0") int roleId,
+            HttpServletRequest request
     ) {
         TNMUser userToUpdate = TNMUserDAO.findById(id);
         TNMUser currentUser = getCurrentUser();
@@ -1267,10 +1281,20 @@ public class AdminController {
         }
 
 
+        boolean emailChanged = !Objects.equals(
+                TNMUser.normalizeEmail(userToUpdate.getEmail()), normalizedEmail);
         userToUpdate.setUsername(normalizedUsername);
         userToUpdate.setEmail(normalizedEmail);
         userToUpdate.setEmailNormalized(normalizedEmail);
         if (TNMUserDAO.update(userToUpdate)) {
+            if (emailChanged) {
+                boolean sent = magicLinkService.sendManagedWelcomeLink(userToUpdate, request);
+                if (!sent) {
+                    return account(id, null,
+                            "The account was updated, but the welcome email could not be sent to the new address.", null);
+                }
+                return account(id, "Account updated and a welcome email was sent to the new address.", null, null);
+            }
             return account(id, "Successfully updated account with username '" + normalizedUsername + "'.", null, null);
         }
         return account(id, null, "Sorry, an error occurred. The account could not be updated.", null);

@@ -7,6 +7,7 @@
     <title layout:fragment="title" th:text="|${queriedaccount.username} - Account|">Account</title>
     
     <th:block layout:fragment="styles">
+        <link rel="stylesheet" th:href="@{/admin/user-management.css}">
         <style>
             .settings-breadcrumb {
                 display: flex;
@@ -376,7 +377,6 @@
                         <span class="field-label">Permissions</span>
                         <div>
                             <span th:text="${queriedaccount.getRoleDisplayName()}"></span>
-                            <a th:if="${user.isSuperAdmin()}" th:href="@{/admin/accounts}">Manage role and shuls</a>
                         </div>
                     </div>
 
@@ -387,6 +387,45 @@
                         <button type="submit" class="btn-modern btn-primary">
                             <i class="fas fa-save"></i>
                             Update Account
+                        </button>
+                    </div>
+                </form>
+
+                <form class="settings-panel mt-3 access-form" th:if="${user.isSuperAdmin()}"
+                      th:action="@{/admin/users/update}" method="post">
+                    <input type="hidden" name="id" th:value="${queriedaccount.id}">
+                    <input type="hidden" name="email" th:value="${queriedaccount.email}">
+                    <input type="hidden" name="enabled" th:value="${queriedaccount.isEnabled()}">
+                    <input type="hidden" name="returnToAccount" value="true">
+                    <div class="account-field-row">
+                        <div>
+                            <label for="account-access" class="field-label">Role</label>
+                            <p class="field-description">The role applies across every assigned shul.</p>
+                        </div>
+                        <select class="field-input access-select" name="access" id="account-access">
+                            <option value="USER" th:selected="${queriedaccount.isUser()}">User</option>
+                            <option value="MANAGER" th:selected="${queriedaccount.isAdmin() and !queriedaccount.isSuperAdmin()}">Manager</option>
+                            <option value="SUPER_ADMIN" th:selected="${queriedaccount.isSuperAdmin()}">Super admin — all shuls</option>
+                        </select>
+                    </div>
+                    <div class="account-field-row">
+                        <div>
+                            <span class="field-label">Assigned shuls</span>
+                            <p class="field-description">Select one or more shuls. Super admins have access to all shuls.</p>
+                        </div>
+                        <div class="shul-options">
+                            <label th:each="org : ${allOrganizations}">
+                                <input type="checkbox" name="organizationIds" th:value="${org.id}"
+                                       th:checked="${queriedaccount.accessibleOrganizationIds.contains(org.id)}">
+                                <span th:text="${org.name}"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="account-field-row">
+                        <div></div>
+                        <button type="submit" class="btn-modern btn-primary">
+                            <i class="fas fa-user-shield"></i>
+                            Save Permissions
                         </button>
                     </div>
                 </form>
@@ -615,14 +654,19 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form method="post" th:action="|/admin/accounts/${queriedaccount.id}/changepassword|">
+                        <form method="post" th:action="|/admin/accounts/${queriedaccount.id}/changepassword|" id="change-password-form">
                             <div class="form-group mb-4">
                                 <label for="new-password" class="form-label">Password</label>
-                                <input type="password" class="form-control" name="password" id="new-password" required>
+                                <input type="password" class="form-control" name="password" id="new-password"
+                                       minlength="8" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
+                                       autocomplete="new-password" aria-describedby="password-requirements" required>
+                                <small id="password-requirements" class="form-text text-muted">At least 8 characters with one uppercase letter, one lowercase letter, and one number.</small>
                             </div>
                             <div class="form-group mb-4">
                                 <label for="new-cpassword" class="form-label">Confirm Password</label>
-                                <input type="password" class="form-control" name="cpassword" id="new-cpassword" required>
+                                <input type="password" class="form-control" name="cpassword" id="new-cpassword"
+                                       minlength="8" autocomplete="new-password" aria-describedby="confirm-password-requirements" required>
+                                <small id="confirm-password-requirements" class="form-text text-muted">Enter the same password again.</small>
                             </div>
 
                             <div th:if="${changePasswordError}" class="alert-modern alert-danger mb-3" th:text="${changePasswordError}"></div>
@@ -642,6 +686,7 @@
     <!-- Page-specific scripts -->
     <th:block layout:fragment="scripts">
         <script th:src="@{/account.js}"></script>
+        <script th:src="@{/admin/user-management.js}"></script>
         <script th:if="${changePasswordError}" th:inline="javascript">
             $(document).ready(function() {
                 $('#change-password-modal').modal('show');

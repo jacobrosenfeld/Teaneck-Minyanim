@@ -29,6 +29,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.util.List;
 import java.util.Optional;
@@ -108,7 +109,8 @@ class AdminControllerAuthorizationTest {
         TNMUser target = user("A2", "target", "org-a", Role.USER);
         when(userService.findByName("manager")).thenReturn(manager);
         when(userService.findById("A2")).thenReturn(target);
-        assertThrows(AccessDeniedException.class, () -> controller.updateAccount("A2", "target", "target@example.com", 1));
+        assertThrows(AccessDeniedException.class, () -> controller.updateAccount(
+                "A2", "target", "target@example.com", 1, null));
         verify(userService, never()).update(any());
     }
 
@@ -275,9 +277,12 @@ class AdminControllerAuthorizationTest {
         when(organizationService.findById("org-a")).thenReturn(Optional.of(organization));
         when(organizationService.getAll()).thenReturn(new java.util.ArrayList<>(List.of(organization)));
 
-        ModelAndView mv = controller.changeAccountPassword("A1", "NewPass123", "NewPass123");
+        RedirectAttributesModelMap redirect = new RedirectAttributesModelMap();
+        String view = controller.changeAccountPassword("A1", "NewPass123", "NewPass123", redirect);
 
-        assertEquals("account", mv.getViewName());
+        assertEquals("redirect:/admin/account?id=A1", view);
+        assertEquals("Successfully updated the account password.",
+                redirect.getFlashAttributes().get("successMessage"));
         verify(userService).update(argThat(updated ->
                 "A1".equals(updated.getId())
                         && "manager".equals(updated.getUsername())

@@ -24,11 +24,15 @@ public class UserManagementController {
     public String create(@RequestParam String username, @RequestParam String email,
                          @RequestParam String access,
                          @RequestParam(required = false) Set<String> organizationIds,
+                         HttpServletRequest request,
                          RedirectAttributes redirect) {
         management.requireSuperAdmin();
         try {
             TNMUser user = management.create(username, email, access, organizationIds);
-            redirect.addFlashAttribute("successmessage", "Created " + user.getUsername() + ". Send a sign-in link when ready to invite them.");
+            boolean sent = magicLinks.sendManagedWelcomeLink(user, request);
+            redirect.addFlashAttribute(sent ? "successmessage" : "errormessage", sent
+                    ? "Created " + user.getUsername() + " and sent their welcome email."
+                    : "Created " + user.getUsername() + ", but the welcome email could not be sent. Use Resend welcome email after checking Email Settings.");
         } catch (IllegalArgumentException e) {
             redirect.addFlashAttribute("errormessage", e.getMessage());
             redirect.addFlashAttribute("draftUsername", username);
@@ -44,16 +48,29 @@ public class UserManagementController {
     @PostMapping("/admin/users/update")
     public String update(@RequestParam String id, @RequestParam String email, @RequestParam String access,
                          @RequestParam(required = false) Set<String> organizationIds,
-                         @RequestParam(defaultValue = "false") boolean enabled, RedirectAttributes redirect) {
+                         @RequestParam(defaultValue = "false") boolean enabled,
+                         @RequestParam(defaultValue = "false") boolean returnToAccount,
+                         HttpServletRequest request, RedirectAttributes redirect) {
         management.requireSuperAdmin();
         try {
-            management.update(id, email, access, organizationIds, enabled);
-            redirect.addFlashAttribute("successmessage", "User permissions saved.");
+            UserManagementService.UserUpdateResult result = management.update(
+                    id, email, access, organizationIds, enabled);
+            if (result.emailChanged()) {
+                boolean sent = magicLinks.sendManagedWelcomeLink(result.user(), request);
+                redirect.addFlashAttribute(sent
+                                ? (returnToAccount ? "successMessage" : "successmessage")
+                                : (returnToAccount ? "mainErrorMessage" : "errormessage"), sent
+                        ? "User permissions saved and a welcome email was sent to the new address."
+                        : "User permissions and email were saved, but the welcome email could not be sent to the new address.");
+            } else {
+                redirect.addFlashAttribute(returnToAccount ? "successMessage" : "successmessage",
+                        "User permissions saved.");
+            }
         } catch (IllegalArgumentException e) {
-            redirect.addFlashAttribute("errormessage", e.getMessage());
+            redirect.addFlashAttribute(returnToAccount ? "mainErrorMessage" : "errormessage", e.getMessage());
             redirect.addFlashAttribute("editUserId", id);
         }
-        return "redirect:/admin/accounts";
+        return returnToAccount ? "redirect:/admin/account?id=" + id : "redirect:/admin/accounts";
     }
 
     @PostMapping("/admin/users/send-link")
@@ -63,6 +80,28 @@ public class UserManagementController {
         redirect.addFlashAttribute(sent ? "successmessage" : "errormessage", sent
                 ? "Sign-in link sent. It expires in 15 minutes."
                 : "Sign-in link could not be sent. Check account status and Email Settings.");
+        return "redirect:/admin/accounts";
+    }
+
+    @PostMapping("/admin/users/send-welcome")
+    public String sendWelcome(@RequestParam String id, HttpServletRequest request, RedirectAttributes redirect) {
+        TNMUser target = management.requireTarget(id);
+        boolean sent = magicLinks.sendManagedWelcomeLink(target, request);
+        redirect.addFlashAttribute(sent ? "successmessage" : "errormessage", sent
+                ? "Welcome email sent with role, shul access, and a secure activation link."
+                : "Welcome email could not be sent. Check account status and Email Settings.");
+        return "redirect:/admin/accounts";
+    }
+
+    @PostMapping("/admin/users/delete")
+    public String delete(@RequestParam String id, RedirectAttributes redirect) {
+        try {
+            String username = management.delete(id);
+            redirect.addFlashAttribute("successmessage", "Deleted " + username + ".");
+        } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("errormessage", e.getMessage());
+            redirect.addFlashAttribute("editUserId", id);
+        }
         return "redirect:/admin/accounts";
     }
 
