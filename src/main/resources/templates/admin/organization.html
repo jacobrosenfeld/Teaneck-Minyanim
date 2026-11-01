@@ -192,7 +192,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>This account will have user privileges associated with <span th:text="${organization.name}"></span>. To create an admin account, visit the <a href="/admin/new-account">create an account</a> page.</p>
+                        <p>This passwordless account will have user privileges associated with <span th:text="${organization.name}"></span>. After creating it, use <a href="/admin/accounts">User Management</a> to send its first sign-in link or change its access.</p>
                         <form method="post" th:action="@{/admin/create-account?r=u&oid=} + ${organization.id}">
                             <div class="form-group">
                                 <label for="new-account-username" class="form-label">Username</label>
@@ -202,15 +202,7 @@
                             <div class="form-group">
                                 <label for="new-account-email" class="form-label">Email address</label>
                                 <input type="email" class="form-control" id="new-account-email" name="email" required>
-                                <small class="form-text">This email will be used for password recovery.</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="new-password" class="form-label">Password</label>
-                                <input type="password" class="form-control" name="password" id="new-password" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="new-cpassword" class="form-label">Confirm Password</label>
-                                <input type="password" class="form-control" name="cpassword" id="new-cpassword" required>
+                                <small class="form-text">This address receives sign-in and recovery links.</small>
                             </div>
                             <div th:if="${addAccountError}" class="alert alert-danger">
                                 <i class="fas fa-exclamation-circle"></i>

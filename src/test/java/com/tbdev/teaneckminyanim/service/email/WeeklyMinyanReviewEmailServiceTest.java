@@ -79,6 +79,22 @@ class WeeklyMinyanReviewEmailServiceTest {
     }
 
     @Test
+    void sendsDigestsForEveryAssignedShulOnly() {
+        TNMUser manager = user("A1", "manager", "org-a", Role.ADMIN);
+        manager.getAdditionalOrganizationIds().add("org-b");
+        when(userService.getWeeklyMinyanReviewEmailRecipients()).thenReturn(List.of(manager));
+        when(organizationService.getAll()).thenReturn(List.of(
+                organization("org-a", "Shul A", true), organization("org-b", "Shul B", true),
+                organization("org-c", "Shul C", true)));
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(EmailProvider.SMTP, "sent"));
+        var result = service.sendWeeklyReviewEmails(false, LocalDate.of(2026, 9, 5));
+        assertEquals(2, result.sentCount());
+        ArgumentCaptor<EmailMessage> messages = ArgumentCaptor.forClass(EmailMessage.class);
+        verify(emailService, org.mockito.Mockito.times(2)).send(messages.capture());
+        assertTrue(messages.getAllValues().stream().noneMatch(message -> message.getHtmlBody().contains("Shul C")));
+    }
+
+    @Test
     void saturdayNightWindowCoversUpcomingSundayThroughSaturday() {
         WeeklyMinyanReviewEmailService.DateRange range =
                 service.upcomingSundayThroughSaturday(LocalDate.of(2026, 9, 5));

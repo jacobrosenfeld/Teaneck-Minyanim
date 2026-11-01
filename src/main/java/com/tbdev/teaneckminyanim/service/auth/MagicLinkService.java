@@ -12,7 +12,9 @@ import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.HtmlUtils;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -41,11 +43,24 @@ public class MagicLinkService {
     private final TNMUserService userService;
     private final ApplicationSettingsService settingsService;
     private final EmailService emailService;
+    private final MagicLinkRateLimitService rateLimitService;
+    private final AuthAuditService auditService;
+
+    @Value("${auth.magic-link.enabled:true}")
+    private boolean magicLinkEnabled = true;
 
     @Transactional
     public MagicLinkRequestResult requestLoginLink(String identifier, HttpServletRequest request) {
+        if (!magicLinkEnabled) return MagicLinkRequestResult.neutral();
         String normalizedIdentifier = TNMUser.normalizeEmail(identifier);
         if (normalizedIdentifier == null) {
+            return MagicLinkRequestResult.neutral();
+        }
+
+        String ipHash = sha256(clientIp(request));
+        String identifierHash = sha256(normalizedIdentifier);
+        if (!rateLimitService.allow(ipHash, identifierHash)) {
+            auditService.record("MAGIC_LINK_RATE_LIMITED", null, ipHash, identifierHash);
             return MagicLinkRequestResult.neutral();
         }
 
@@ -53,6 +68,7 @@ public class MagicLinkService {
         if (user == null || user.isDisabled()) {
             log.info("Magic-link login requested for unknown or disabled account identifier hash {}",
                     sha256(normalizedIdentifier));
+            auditService.record("MAGIC_LINK_REQUESTED_UNKNOWN", null, ipHash, identifierHash);
             return MagicLinkRequestResult.neutral();
         }
         String normalizedEmail = TNMUser.normalizeEmail(user.getEmail());
@@ -61,51 +77,84 @@ public class MagicLinkService {
             return MagicLinkRequestResult.neutral();
         }
 
-        String rawToken = generateToken();
-        MagicLinkToken token = MagicLinkToken.builder()
-                .id(IDGenerator.generateID('M'))
-                .accountId(user.getId())
-                .tokenHash(hashToken(rawToken))
-                .purpose(PURPOSE_LOGIN)
-                .expiresAt(LocalDateTime.now().plus(TOKEN_TTL))
-                .requestedEmailHash(sha256(normalizedEmail))
-                .requestIpHash(sha256(clientIp(request)))
-                .userAgent(truncate(request == null ? null : request.getHeader("User-Agent"), 500))
-                .build();
-        tokenRepository.save(token);
-        log.info("Magic-link token {} created for account {} email hash {}",
-                token.getId(), user.getId(), sha256(normalizedEmail));
-
-        EmailSendResult result = sendLoginLink(user, rawToken, request);
-        if (!result.isSuccess()) {
-            log.warn("Magic-link email for account {} was not sent: {}", user.getId(), result.getMessage());
-        } else {
-            log.info("Magic-link email sent for account {} via {}", user.getId(), result.getProvider());
-        }
+        auditService.record("MAGIC_LINK_REQUESTED", user.getId(), ipHash, null);
+        sendManagedLoginLinkInternal(user, request);
         return MagicLinkRequestResult.neutral();
     }
 
+    /** Called only after account-management authorization, or the public neutral lookup above. */
     @Transactional
+    public boolean sendManagedLoginLink(TNMUser user, HttpServletRequest request) {
+        if (!magicLinkEnabled) return false;
+        if (user == null) return false;
+        String ipHash = sha256(clientIp(request));
+        if (!rateLimitService.allow(ipHash, sha256("managed:" + user.getId()))) {
+            auditService.record("MAGIC_LINK_RATE_LIMITED", user.getId(), ipHash, "managed");
+            return false;
+        }
+        return sendManagedLoginLinkInternal(user, request);
+    }
+
+    private boolean sendManagedLoginLinkInternal(TNMUser user, HttpServletRequest request) {
+        if (user == null || user.isDisabled()) return false;
+        String normalizedEmail = TNMUser.normalizeEmail(user.getEmail());
+        if (normalizedEmail == null) return false;
+        String rawToken = generateToken();
+        MagicLinkToken token = MagicLinkToken.builder()
+                .id(IDGenerator.generateID('M')).accountId(user.getId())
+                .tokenHash(hashToken(rawToken)).purpose(PURPOSE_LOGIN)
+                .expiresAt(LocalDateTime.now().plus(TOKEN_TTL))
+                .requestedEmailHash(sha256(normalizedEmail))
+                .requestIpHash(sha256(clientIp(request)))
+                .userAgent(truncate(request == null ? null : request.getHeader("User-Agent"), 500)).build();
+        tokenRepository.save(token);
+        EmailSendResult result = sendLoginLink(user, rawToken, request);
+        if (result.isSuccess()) {
+            user.setInvitedAt(LocalDateTime.now());
+            userService.update(user);
+            auditService.record("MAGIC_LINK_SENT", user.getId(), sha256(clientIp(request)), null);
+        } else {
+            tokenRepository.delete(token);
+            log.warn("Magic-link delivery failed for account {}", user.getId());
+            auditService.record("MAGIC_LINK_SEND_FAILED", user.getId(), sha256(clientIp(request)),
+                    result.getMessage());
+        }
+        return result.isSuccess();
+    }
+
+    @Transactional(noRollbackFor = MagicLinkAuthenticationException.class)
     public TNMUser consumeLoginToken(String rawToken) {
+        if (!magicLinkEnabled) {
+            throw new MagicLinkAuthenticationException("Sign-in link is invalid or expired.");
+        }
         if (rawToken == null || rawToken.isBlank()) {
+            auditService.record("MAGIC_LINK_REJECTED", null, null, "missing");
             throw new MagicLinkAuthenticationException("Sign-in link is missing.");
         }
 
-        MagicLinkToken token = tokenRepository.findByTokenHash(hashToken(rawToken))
-                .orElseThrow(() -> new MagicLinkAuthenticationException("Sign-in link is invalid or expired."));
+        String tokenHash = hashToken(rawToken);
+        MagicLinkToken token = tokenRepository.findByTokenHash(tokenHash).orElse(null);
+        if (token == null) {
+            auditService.record("MAGIC_LINK_REJECTED", null, null, tokenHash);
+            throw new MagicLinkAuthenticationException("Sign-in link is invalid or expired.");
+        }
 
         LocalDateTime now = LocalDateTime.now();
         if (!PURPOSE_LOGIN.equals(token.getPurpose()) || !token.isUsable(now)) {
+            auditService.record("MAGIC_LINK_REJECTED", token.getAccountId(), null, token.getId());
             throw new MagicLinkAuthenticationException("Sign-in link is invalid or expired.");
         }
 
         TNMUser user = userService.findById(token.getAccountId());
         if (user == null || user.isDisabled()) {
+            auditService.record("MAGIC_LINK_REJECTED", token.getAccountId(), null, "disabled-or-missing");
             throw new MagicLinkAuthenticationException("Sign-in link is invalid or expired.");
         }
 
-        token.setUsedAt(now);
-        tokenRepository.save(token);
+        if (tokenRepository.consumeIfUsable(token.getId(), now) != 1) {
+            auditService.record("MAGIC_LINK_REPLAY_REJECTED", token.getAccountId(), null, token.getId());
+            throw new MagicLinkAuthenticationException("Sign-in link is invalid or expired.");
+        }
 
         user.setLastLoginAt(now);
         user.setLastLoginMethod("MAGIC_LINK");
@@ -113,8 +162,17 @@ public class MagicLinkService {
             user.setInviteAcceptedAt(now);
         }
         userService.update(user);
+        auditService.record("MAGIC_LINK_USED", user.getId(), null, token.getId());
 
         return user;
+    }
+
+    @Scheduled(cron = "0 17 3 * * *")
+    @Transactional
+    public void purgeExpiredAndUsedTokens() {
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(1);
+        long deleted = tokenRepository.deleteByExpiresAtBeforeOrUsedAtBefore(cutoff, cutoff);
+        if (deleted > 0) log.info("Purged {} expired or used magic-link tokens", deleted);
     }
 
     public static String hashToken(String token) {
@@ -300,7 +358,7 @@ public class MagicLinkService {
     }
 
     public record MagicLinkRequestResult(String message) {
-        static MagicLinkRequestResult neutral() {
+        public static MagicLinkRequestResult neutral() {
             return new MagicLinkRequestResult(
                     "If this email is authorized, a sign-in link will be sent shortly.");
         }

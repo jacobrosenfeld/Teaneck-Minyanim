@@ -1,3 +1,11 @@
+@font-face {
+    font-display: swap;
+    font-family: "Ezra SIL Web";
+    font-style: normal;
+    font-weight: 400 700;
+    src: url("/assets/fonts/ezra-sil/SILEOT.woff") format("woff");
+}
+
 .login-main {
     min-height: 70vh;
     padding: 72px 16px 90px;
@@ -40,6 +48,16 @@
     font-weight: 700;
     line-height: 1.2;
     margin: 0;
+}
+
+.login-maariv-quote {
+    color: #4c3a2d;
+    font-family: "Ezra SIL Web", "Ezra SIL", "Keter YG", "Noto Serif Hebrew", serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    margin: 2px 0 0;
 }
 
 .login-identifier-form label,
@@ -226,6 +244,10 @@
 
     .login-brand h1 {
         font-size: 1.35rem;
+    }
+
+    .login-maariv-quote {
+        font-size: 1.1rem;
     }
 
     .login-identifier-row {

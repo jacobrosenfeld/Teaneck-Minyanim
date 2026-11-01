@@ -45,6 +45,26 @@ public class PasskeyCredentialService {
         }
     }
 
+    public Integer countStoredPasskeys(TNMUser user) {
+        try {
+            return userCredentialRepository.findByUserId(
+                    new Bytes(user.getId().getBytes(StandardCharsets.UTF_8))).size();
+        } catch (DataAccessException e) {
+            log.warn("Could not count stored passkeys for account {}", user.getId());
+            return null;
+        }
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void revokeAll(TNMUser user) {
+        // Load directly: disabled accounts must also support credential revocation.
+        var credentials = userCredentialRepository.findByUserId(
+                new Bytes(user.getId().getBytes(StandardCharsets.UTF_8)));
+        for (var credential : credentials) {
+            userCredentialRepository.delete(credential.getCredentialId());
+        }
+    }
+
     public String setupPromptUrl(TNMUser user) {
         String accountId = user == null ? "" : user.getId();
         return UriComponentsBuilder

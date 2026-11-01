@@ -10,7 +10,7 @@
   </parent>  
   <groupId>com.tbdev</groupId>  
   <artifactId>Teaneck-Minyanim</artifactId>  
-  <version>1.18.0</version>
+  <version>1.19.0</version>
   <name>Teaneck-Minyanim</name>
   <description>Teaneck-Minyanim</description>
   <properties>
@@ -36,7 +36,12 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-  <dependencies> 
+  <dependencies>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency> 
       <groupId>org.springframework.boot</groupId>  
       <artifactId>spring-boot-starter-thymeleaf</artifactId>

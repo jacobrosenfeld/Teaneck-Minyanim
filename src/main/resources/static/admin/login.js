@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var identifierField = document.getElementById('login-identifier-field');
     var submitButton = document.getElementById('identifier-submit');
     var status = document.getElementById('login-flow-status');
+    var magicLinkButton = document.getElementById('magic-link-button');
     var passwordToggle = document.getElementById('password-toggle');
     var passwordPanel = document.getElementById('login-form');
     var passwordField = document.getElementById('password-field');
@@ -33,6 +34,22 @@ document.addEventListener('DOMContentLoaded', function () {
     if (passwordToggle && passwordPanel) {
         passwordToggle.addEventListener('click', function () {
             showPasswordPanel();
+        });
+    }
+
+    if (magicLinkButton) {
+        magicLinkButton.addEventListener('click', async function () {
+            var identifier = normalizedIdentifier(identifierField.value);
+            if (!identifier) return;
+            setLoading(true);
+            try {
+                await requestMagicLink(identifierForm, identifier);
+            } catch (error) {
+                console.error('Magic-link request failed.', error);
+                setStatus('Could not request a sign-in link. Please try again shortly.', 'error');
+            } finally {
+                setLoading(false);
+            }
         });
     }
 
@@ -63,17 +80,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 } catch (error) {
                     console.warn('Passkey authentication did not complete.', error);
-                    setStatus('Passkey was not completed. Sending a sign-in link instead.', '');
+                    setStatus('Passkey was not completed. Try again or request a sign-in link.', 'error');
+                    showRecoveryOptions();
                 }
             } else if (methods.passkeyAvailable && !passkeysCanRunHere()) {
                 setStatus(passkeyUnavailableMessage(), '');
+                showRecoveryOptions();
+            } else if (methods.magicLinkAvailable) {
+                setStatus('Request a sign-in link to continue.', '');
+                showRecoveryOptions();
+            } else {
+                setStatus('Passwordless sign-in is temporarily unavailable.', 'error');
+                showPasswordOption();
             }
-
-            await requestMagicLink(identifierForm, identifier);
         } catch (error) {
             console.error('Login method check failed.', error);
             setStatus('Could not complete the passwordless check. You can try again or use password instead.', 'error');
             showPasswordOption();
+            showRecoveryOptions();
         } finally {
             setLoading(false);
         }
@@ -81,8 +105,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function loginMethods(form, identifier) {
         return fetchJson(form.dataset.authMethodsUrl, { identifier: identifier }).catch(function (error) {
-            console.warn('Login method check failed. Falling back to magic link.', error);
-            return { passkeyAvailable: false, magicLinkAvailable: true };
+            console.warn('Login method check failed.', error);
+            return { passkeyAvailable: true, magicLinkAvailable: true };
         });
     }
 
@@ -97,6 +121,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (passwordToggle) {
             passwordToggle.classList.remove('d-none');
         }
+    }
+
+    function showRecoveryOptions() {
+        if (magicLinkButton) magicLinkButton.classList.remove('d-none');
+        showPasswordOption();
     }
 
     function showPasswordPanel() {
@@ -127,12 +156,16 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 async function fetchJson(url, body) {
+    var csrfToken = document.querySelector('meta[name="_csrf"]');
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+    var headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    };
+    if (csrfToken && csrfHeader) headers[csrfHeader.content] = csrfToken.content;
     var response = await fetch(url, {
         method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
+        headers: headers,
         body: JSON.stringify(body || {})
     });
     if (!response.ok) {
@@ -150,9 +183,9 @@ function passkeysCanRunHere() {
 
 function passkeyUnavailableMessage() {
     if (window.isSecureContext === false) {
-        return 'Passkeys require HTTPS or localhost. Sending a sign-in link instead.';
+        return 'Passkeys require HTTPS or localhost. You can request a sign-in link instead.';
     }
-    return 'This browser is not exposing passkeys right now. Sending a sign-in link instead.';
+    return 'This browser is not exposing passkeys right now. You can request a sign-in link instead.';
 }
 
 async function authenticateWithPasskey(form) {

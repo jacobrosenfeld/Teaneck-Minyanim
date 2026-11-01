@@ -2,7 +2,6 @@ package com.tbdev.teaneckminyanim.service;
 
 import com.tbdev.teaneckminyanim.enums.Role;
 import com.tbdev.teaneckminyanim.model.TNMUser;
-import com.tbdev.teaneckminyanim.security.Encrypter;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +12,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * Creates a default super admin account on first startup if none exists.
+ * Creates an invite-ready super admin account on first startup if an explicit
+ * bootstrap email is configured and no super admin exists.
  * Super admin = Role.ADMIN + no organizationId.
- * Change the password via the admin UI after first login.
  */
 @Slf4j
 @Service
@@ -27,8 +26,8 @@ public class SuperAdminInitializerService {
     @Value("${superadmin.username:admin}")
     private String defaultUsername;
 
-    @Value("${superadmin.password:Admin123!}")
-    private String defaultPassword;
+    @Value("${superadmin.email:}")
+    private String bootstrapEmail;
 
     @PostConstruct
     public void initializeSuperAdmin() {
@@ -40,20 +39,28 @@ public class SuperAdminInitializerService {
             return;
         }
 
-        log.info("No super admin found — creating default super admin account '{}'.", defaultUsername);
+        String normalizedEmail = TNMUser.normalizeEmail(bootstrapEmail);
+        if (normalizedEmail == null || !normalizedEmail.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
+            log.error("No super admin exists and SUPERADMIN_EMAIL is not configured with a valid address. "
+                    + "Set it and restart to create the passwordless bootstrap account.");
+            return;
+        }
+
+        log.info("No super admin found — creating passwordless bootstrap account '{}'.", defaultUsername);
 
         TNMUser superAdmin = TNMUser.builder()
                 .id(IDGenerator.generateID('S'))
                 .username(defaultUsername)
-                .email("admin@localhost")
-                .encryptedPassword(Encrypter.encrytedPassword(defaultPassword))
+                .email(normalizedEmail)
+                .encryptedPassword("!PASSWORDLESS")
                 .organizationId(null)
                 .roleId(Role.ADMIN.getId())
                 .enabled(true)
                 .build();
 
         if (tnmUserService.save(superAdmin)) {
-            log.info("Default super admin '{}' created. Please change the password after first login.", defaultUsername);
+            log.info("Bootstrap super admin '{}' created. Request a magic link for {} to sign in.",
+                    defaultUsername, normalizedEmail);
         } else {
             log.error("Failed to create default super admin account.");
         }

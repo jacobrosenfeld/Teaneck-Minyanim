@@ -534,10 +534,10 @@
         const errorMsg = /*[[${error}]]*/ null;
 
         if (successMsg) {
-            showToast('success', successMsg);
+            showToast(successMsg, 'success');
         }
         if (errorMsg) {
-            showToast('error', errorMsg);
+            showToast(errorMsg, 'error');
         }
 
         const timezoneOptions = document.getElementById('timezone-options');

@@ -6,6 +6,8 @@ import lombok.*;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Locale;
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 @Data
 @NoArgsConstructor
@@ -25,7 +27,7 @@ public class TNMUser {
     @Column(name = "EMAIL", nullable = false)
     private String email;
 
-    @Column(name = "EMAIL_NORMALIZED")
+    @Column(name = "EMAIL_NORMALIZED", unique = true)
     private String emailNormalized;
 
     @Column(name = "ENCRYPTED_PASSWORD", nullable = false)
@@ -33,6 +35,24 @@ public class TNMUser {
 
     @Column(name = "ORGANIZATION_ID")
     private String organizationId;
+
+    @Builder.Default
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "ACCOUNT_ORGANIZATION", joinColumns = @JoinColumn(name = "ACCOUNT_ID"))
+    @Column(name = "ORGANIZATION_ID", nullable = false)
+    private Set<String> additionalOrganizationIds = new LinkedHashSet<>();
+
+    /** Primary organization is retained for legacy links and the default landing page. */
+    public Set<String> getAccessibleOrganizationIds() {
+        Set<String> ids = new LinkedHashSet<>();
+        if (organizationId != null) ids.add(organizationId);
+        if (additionalOrganizationIds != null) ids.addAll(additionalOrganizationIds);
+        return ids;
+    }
+
+    public boolean canAccessOrganization(String id) {
+        return isEnabled() && id != null && (isSuperAdmin() || getAccessibleOrganizationIds().contains(id));
+    }
 
     @Column(name = "ROLE_ID")
     private Integer roleId;

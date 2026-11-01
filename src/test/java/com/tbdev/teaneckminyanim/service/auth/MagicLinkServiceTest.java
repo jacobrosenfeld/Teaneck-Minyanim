@@ -34,7 +34,7 @@ class MagicLinkServiceTest {
         TNMUserService userService = mock(TNMUserService.class);
         ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
         EmailService emailService = mock(EmailService.class);
-        MagicLinkService service = new MagicLinkService(tokenRepository, userService, settingsService, emailService);
+        MagicLinkService service = service(tokenRepository, userService, settingsService, emailService);
         TNMUser user = user(true);
         when(userService.findByIdentifier("manager@example.com")).thenReturn(user);
         when(settingsService.getSiteName()).thenReturn("Teaneck Minyanim");
@@ -65,7 +65,7 @@ class MagicLinkServiceTest {
         TNMUserService userService = mock(TNMUserService.class);
         ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
         EmailService emailService = mock(EmailService.class);
-        MagicLinkService service = new MagicLinkService(tokenRepository, userService, settingsService, emailService);
+        MagicLinkService service = service(tokenRepository, userService, settingsService, emailService);
         TNMUser user = user(true);
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/admin/login/magic-link/request");
         request.addHeader("X-Forwarded-Proto", "https");
@@ -89,7 +89,7 @@ class MagicLinkServiceTest {
         TNMUserService userService = mock(TNMUserService.class);
         ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
         EmailService emailService = mock(EmailService.class);
-        MagicLinkService service = new MagicLinkService(tokenRepository, userService, settingsService, emailService);
+        MagicLinkService service = service(tokenRepository, userService, settingsService, emailService);
         TNMUser user = user(true);
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/admin/login/magic-link/request");
         request.addHeader("X-Forwarded-Proto", "https");
@@ -111,7 +111,7 @@ class MagicLinkServiceTest {
     void requestLoginLinkDoesNotSendEmailForUnknownAccount() {
         MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
         TNMUserService userService = mock(TNMUserService.class);
-        MagicLinkService service = new MagicLinkService(
+        MagicLinkService service = service(
                 tokenRepository,
                 userService,
                 mock(ApplicationSettingsService.class),
@@ -131,7 +131,7 @@ class MagicLinkServiceTest {
         TNMUserService userService = mock(TNMUserService.class);
         ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
         EmailService emailService = mock(EmailService.class);
-        MagicLinkService service = new MagicLinkService(tokenRepository, userService, settingsService, emailService);
+        MagicLinkService service = service(tokenRepository, userService, settingsService, emailService);
         TNMUser user = user(true);
         when(userService.findByIdentifier("manager")).thenReturn(user);
         when(settingsService.getSiteName()).thenReturn("Teaneck Minyanim");
@@ -148,7 +148,7 @@ class MagicLinkServiceTest {
     void consumeLoginTokenMarksTokenUsedAndUpdatesUserLoginMetadata() {
         MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
         TNMUserService userService = mock(TNMUserService.class);
-        MagicLinkService service = new MagicLinkService(
+        MagicLinkService service = service(
                 tokenRepository,
                 userService,
                 mock(ApplicationSettingsService.class),
@@ -164,20 +164,20 @@ class MagicLinkServiceTest {
         TNMUser user = user(true);
         when(tokenRepository.findByTokenHash(MagicLinkService.hashToken(rawToken))).thenReturn(Optional.of(token));
         when(userService.findById("A1")).thenReturn(user);
+        when(tokenRepository.consumeIfUsable(any(), any())).thenReturn(1);
 
         TNMUser authenticatedUser = service.consumeLoginToken(rawToken);
 
         assertEquals(user, authenticatedUser);
-        assertNotNull(token.getUsedAt());
         assertEquals("MAGIC_LINK", user.getLastLoginMethod());
-        verify(tokenRepository).save(token);
+        verify(tokenRepository).consumeIfUsable(any(), any());
         verify(userService).update(user);
     }
 
     @Test
     void consumeLoginTokenRejectsExpiredToken() {
         MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
-        MagicLinkService service = new MagicLinkService(
+        MagicLinkService service = service(
                 tokenRepository,
                 mock(TNMUserService.class),
                 mock(ApplicationSettingsService.class),
@@ -193,6 +193,38 @@ class MagicLinkServiceTest {
         when(tokenRepository.findByTokenHash(MagicLinkService.hashToken(rawToken))).thenReturn(Optional.of(token));
 
         assertThrows(MagicLinkAuthenticationException.class, () -> service.consumeLoginToken(rawToken));
+    }
+
+    @Test
+    void consumeLoginTokenRejectsReplayWhenAtomicUpdateLosesRace() {
+        MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
+        TNMUserService userService = mock(TNMUserService.class);
+        MagicLinkService service = service(tokenRepository, userService,
+                mock(ApplicationSettingsService.class), mock(EmailService.class));
+        String rawToken = "token";
+        MagicLinkToken token = MagicLinkToken.builder()
+                .id("M1")
+                .accountId("A1")
+                .tokenHash(MagicLinkService.hashToken(rawToken))
+                .purpose(MagicLinkService.PURPOSE_LOGIN)
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .build();
+        when(tokenRepository.findByTokenHash(MagicLinkService.hashToken(rawToken))).thenReturn(Optional.of(token));
+        when(userService.findById("A1")).thenReturn(user(true));
+        when(tokenRepository.consumeIfUsable(any(), any())).thenReturn(0);
+
+        assertThrows(MagicLinkAuthenticationException.class, () -> service.consumeLoginToken(rawToken));
+        verify(userService, never()).update(any());
+    }
+
+    private MagicLinkService service(MagicLinkTokenRepository tokenRepository,
+                                     TNMUserService userService,
+                                     ApplicationSettingsService settingsService,
+                                     EmailService emailService) {
+        MagicLinkRateLimitService rateLimitService = mock(MagicLinkRateLimitService.class);
+        when(rateLimitService.allow(any(), any())).thenReturn(true);
+        return new MagicLinkService(tokenRepository, userService, settingsService, emailService,
+                rateLimitService, mock(AuthAuditService.class));
     }
 
     private TNMUser user(boolean enabled) {

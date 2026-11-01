@@ -1,115 +1,84 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{admin/layout}">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
 <head>
-    <meta charset="UTF-8">
-    <title th:text="|Accounts - ${siteName ?: 'Minyanim Platform'}|">Accounts</title>
-    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
-    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
-    <link rel="manifest" href="/assets/icons/site.webmanifest">
-    <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#275ed8">
-    
-    <meta name="msapplication-TileColor" content="#275ed8">
-    <meta name="msapplication-config" content="/assets/icons/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
+    <title th:text="|User Management - ${siteName}|"></title>
+    <th:block layout:fragment="styles"><link rel="stylesheet" th:href="@{/admin/user-management.css}"></th:block>
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- Page Header -->
-    <div class="page-header flex justify-between items-center">
-        <div>
-            <h1 class="page-title">Accounts</h1>
-            <p class="page-description" th:text="|Add new accounts and manage the data for all existing ones on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
-        </div>
-        <div class="page-actions">
-            <a href="/admin/new-organization" class="btn-modern btn-primary">
-                <i class="fas fa-plus"></i>
-                <span>New Organization</span>
-            </a>
-        </div>
-    </div>
-
-    <!-- Success/Error Messages -->
-    <div th:if="${successmessage}" class="alert-modern alert-success mb-4">
-        <i class="fas fa-check-circle alert-modern-icon"></i>
-        <div class="alert-modern-content">
-            <span th:text="${successmessage}">Success</span>
-        </div>
-    </div>
-    <div th:if="${errormessage}" class="alert-modern alert-danger mb-4">
-        <i class="fas fa-exclamation-circle alert-modern-icon"></i>
-        <div class="alert-modern-content">
-            <span th:text="${errormessage}">Error</span>
-        </div>
-    </div>
-
-    <!-- Accounts Table -->
-    <div class="card-modern">
-        <div class="card-modern-body">
-            <div class="table-modern-wrapper">
-                <table class="table-modern table-admin-list w-full">
-                    <thead>
-                        <tr>
-                            <th class="table-cell-nowrap">ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th class="table-cell-nowrap">Role</th>
-                            <th>Linked Organization</th>
-                            <th class="table-cell-nowrap">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="account: ${accounts}">
-                            <td class="table-cell-nowrap" th:text="${account.id}">1</td>
-                            <td th:text="${account.username}">username</td>
-                            <td th:text="${account.email}">email@example.com</td>
-                            <td>
-                                <span class="badge-modern badge-secondary" th:text="${account.getRoleDisplayName()}">Role</span>
-                            </td>
-                            <td th:text="${organizationNames.get(account.id)}">Organization</td>
-                            <td class="table-cell-nowrap">
-                                <a class="btn-modern btn-sm btn-primary" th:href="@{/admin/account?id=} + ${account.id}">
-                                    <i class="fas fa-user"></i>
-                                    <span>Manage</span>
-                                </a>
-                            </td>
-                        </tr>
-                        <tr th:if="${#lists.isEmpty(accounts)}">
-                            <td colspan="6" style="text-align: center; padding: var(--space-12); color: var(--text-secondary);">
-                                <i class="fas fa-users" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.3;"></i>
-                                <p style="margin: 0; font-weight: var(--font-weight-medium);">No accounts found.</p>
-                                <p style="margin-top: var(--space-2); font-size: var(--font-size-sm);">Create a new organization with an account to get started.</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div class="settings-shell">
+        <div class="settings-breadcrumb"><a href="/admin">Dashboard</a><span>/</span><span>User Management</span></div>
+        <div class="page-header"><div><h1 class="page-title">User Management</h1><p class="page-description">Manage people, shul access, and sign-in recovery.</p></div></div>
+        <div th:if="${successmessage}" role="status" class="alert-modern alert-success mb-4" th:text="${successmessage}"></div>
+        <div th:if="${errormessage}" role="alert" class="alert-modern alert-danger mb-4" th:text="${errormessage}"></div>
+        <nav class="settings-tabs" aria-label="User management sections"><a class="settings-tab" href="#users">Users</a><a class="settings-tab" href="#new-user">Create user</a><a class="settings-tab" href="#roles">Role guide</a></nav>
+        <section class="settings-section" id="users">
+            <div class="section-copy"><h2 class="section-title">Users <span class="badge-modern badge-secondary" th:text="${#lists.size(accounts)}"></span></h2><p class="section-description">Open a user to change their role, assigned shuls, or sign-in access. Profile and notification settings remain on their account page.</p></div>
+            <div>
+                <label class="field-label" for="user-search">Find a user</label>
+                <input class="field-input user-filter" id="user-search" type="search" placeholder="Name, email, or shul">
+                <div class="user-list">
+                    <details class="settings-panel user-item" th:each="account : ${accounts}"
+                             th:open="${editUserId == account.id}"
+                             th:attr="data-search=|${account.username} ${account.email} ${organizationNames.get(account.id)}|">
+                        <summary class="user-summary">
+                            <div class="user-identity"><strong th:text="${account.username}"></strong><div class="user-meta" th:text="${account.email}"></div></div>
+                            <span class="badge-modern badge-secondary" th:text="${account.isSuperAdmin() ? 'Super admin' : account.getRoleDisplayName()}"></span>
+                            <span th:text="${account.enabled ? 'Enabled' : 'Disabled'}"></span>
+                            <div class="user-meta" th:text="${organizationNames.get(account.id)}"></div>
+                        </summary>
+                        <div class="user-editor">
+                            <form th:action="@{/admin/users/update}" method="post" class="access-form">
+                                <input type="hidden" name="id" th:value="${account.id}">
+                                <div class="user-fields">
+                                    <div><label class="field-label" th:for="|email-${account.id}|">Email</label><input class="field-input" type="email" name="email" th:id="|email-${account.id}|" th:value="${account.email}" required></div>
+                                    <div><label class="field-label" th:for="|role-${account.id}|">Role</label><select class="field-input access-select" name="access" th:id="|role-${account.id}|">
+                                        <option value="USER" th:selected="${account.isUser()}">User</option>
+                                        <option value="MANAGER" th:selected="${account.isAdmin() and !account.isSuperAdmin()}">Manager</option>
+                                        <option value="SUPER_ADMIN" th:selected="${account.isSuperAdmin()}">Super admin — all shuls</option>
+                                    </select></div>
+                                </div>
+                                <fieldset class="shul-fieldset"><legend class="field-label">Assigned shuls</legend><div class="shul-options">
+                                    <label th:each="org : ${organizations}"><input type="checkbox" name="organizationIds" th:value="${org.id}" th:checked="${account.accessibleOrganizationIds.contains(org.id)}"> <span th:text="${org.name}"></span></label>
+                                </div><p class="field-description">Select one or more shuls. Super admins have access to all shuls.</p></fieldset>
+                                <div class="user-actions"><label><input type="checkbox" name="enabled" value="true" th:checked="${account.enabled}"> Account enabled</label><button class="btn-modern btn-primary" type="submit">Save permissions</button></div>
+                            </form>
+                            <p class="field-description mt-3"><span th:text="|Passkeys: ${passkeyCounts.get(account.id) ?: 'Unavailable'}|"></span> · Last login: <span th:text="${account.lastLoginAt ?: 'Never'}"></span> <span th:text="${account.lastLoginMethod}"></span></p>
+                            <p class="field-description">Last sign-in link sent: <span th:text="${account.invitedAt ?: 'Never'}"></span></p>
+                            <div class="user-actions">
+                                <a class="btn-modern btn-secondary" th:href="@{/admin/account(id=${account.id})}">Account settings</a>
+                                <form th:action="@{/admin/users/send-link}" method="post"><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-secondary" type="submit" th:disabled="${!account.enabled}">Send sign-in link</button></form>
+                                <form th:if="${account.id != user.id}" th:action="@{/admin/users/revoke-passkeys}" method="post" data-confirm="Revoke all passkeys for this user? They will need an emailed sign-in link to register replacements."><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-danger" type="submit">Revoke passkeys</button></form>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+                <p id="no-users" th:hidden="${!#lists.isEmpty(accounts)}">No matching users.</p>
             </div>
-        </div>
+        </section>
+        <section class="settings-section" id="new-user">
+            <div class="section-copy"><h2 class="section-title">Create user</h2><p class="section-description">Create the account, then send a sign-in link from their user card. No shared password is needed.</p></div>
+            <form class="settings-panel user-editor access-form" th:action="@{/admin/users/create}" method="post"
+                  th:attr="data-open-create-user=${openCreateUser}">
+                <div class="user-fields">
+                    <div><label class="field-label" for="new-username">Username</label><input class="field-input" id="new-username" name="username" th:value="${draftUsername}" pattern="[A-Za-z][A-Za-z0-9_]{5,29}" minlength="6" maxlength="30" required><p class="field-description">6–30 characters, starting with a letter.</p></div>
+                    <div><label class="field-label" for="new-email">Email</label><input class="field-input" id="new-email" name="email" th:value="${draftEmail}" type="email" required></div>
+                </div>
+                <label class="field-label" for="new-role">Role</label><select class="field-input access-select mb-3" id="new-role" name="access"><option value="USER" th:selected="${draftAccess == null or draftAccess == 'USER'}">User</option><option value="MANAGER" th:selected="${draftAccess == 'MANAGER'}">Manager</option><option value="SUPER_ADMIN" th:selected="${draftAccess == 'SUPER_ADMIN'}">Super admin — all shuls</option></select>
+                <fieldset class="shul-fieldset"><legend class="field-label">Assigned shuls</legend><div class="shul-options"><label th:each="org : ${organizations}"><input type="checkbox" name="organizationIds" th:value="${org.id}" th:checked="${draftOrganizationIds != null and draftOrganizationIds.contains(org.id)}"> <span th:text="${org.name}"></span></label></div></fieldset>
+                <div class="user-actions"><button class="btn-modern btn-primary" type="submit">Create user</button></div>
+            </form>
+        </section>
+        <section class="settings-section" id="roles">
+            <div class="section-copy"><h2 class="section-title">Role guide</h2><p class="section-description">Roles apply across every assigned shul.</p></div>
+            <div class="settings-panel">
+                <div class="account-card"><div><div class="account-card-title">User</div><p class="account-card-description">Maintains schedules, locations, and organization details for assigned shuls.</p></div></div>
+                <div class="account-card"><div><div class="account-card-title">Manager</div><p class="account-card-description">User access plus account maintenance for users whose shuls are all within their assigned scope. Permission assignment and authentication recovery are controlled by super admins.</p></div></div>
+                <div class="account-card"><div><div class="account-card-title">Super admin</div><p class="account-card-description">Full access to all shuls, user permissions, and platform settings.</p></div></div>
+            </div>
+        </section>
     </div>
 </div>
-
-<th:block layout:fragment="scripts">
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const successAlert = document.querySelector('.alert-modern.alert-success');
-            const errorAlert = document.querySelector('.alert-modern.alert-danger');
-            
-            if (successAlert) {
-                const message = successAlert.textContent.trim();
-                window.showToast(message, 'success');
-                successAlert.remove();
-            }
-            
-            if (errorAlert) {
-                const message = errorAlert.textContent.trim();
-                window.showToast(message, 'error');
-                errorAlert.remove();
-            }
-        });
-    </script>
-</th:block>
+<th:block layout:fragment="scripts"><script th:src="@{/admin/user-management.js}"></script></th:block>
 </body>
 </html>

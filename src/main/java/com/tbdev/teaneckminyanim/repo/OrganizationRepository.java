@@ -25,6 +25,10 @@ public interface OrganizationRepository extends JpaRepository<Organization, Stri
     @Query("SELECT a FROM Account a WHERE a.organizationId = :organizationId")
     List<Account> findAccountsByOrganizationId(@Param("organizationId") String organizationId);
 
+    @Query("SELECT DISTINCT u FROM TNMUser u LEFT JOIN u.additionalOrganizationIds orgId "
+            + "WHERE u.organizationId = :organizationId OR orgId = :organizationId")
+    List<com.tbdev.teaneckminyanim.model.TNMUser> findUsersWithOrganizationAccess(@Param("organizationId") String organizationId);
+
     @Modifying
     @Transactional
     @Query("UPDATE Organization o SET o.latitude = :lat, o.longitude = :lng WHERE o.id = :id")

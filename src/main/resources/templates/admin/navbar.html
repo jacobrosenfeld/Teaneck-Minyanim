@@ -279,7 +279,7 @@
         </a>
         
         <!-- Super Admin Navigation -->
-        <div class="admin-navbar-menu" th:if="${user.isSuperAdmin()}">
+        <div class="admin-navbar-menu">
             <!-- Organizations Dropdown -->
             <div class="admin-navbar-dropdown" id="orgs-dropdown">
                 <button class="admin-navbar-dropdown-toggle" id="orgs-dropdown-toggle" type="button">
@@ -293,7 +293,7 @@
                         <input type="text" class="admin-navbar-dropdown-search" id="org-search" placeholder="Search organizations...">
                     </div>
                     <div id="org-list">
-                        <a th:each="org : ${allOrganizations}" 
+                        <a th:each="org : ${accessibleOrganizations}"
                            th:href="@{|/admin/org/${org.id}/dashboard|}" 
                            th:text="${org.name}"
                            th:data-org-name="${org.name.toLowerCase()}"
@@ -302,16 +302,16 @@
                         </a>
                     </div>
                     <div class="admin-navbar-dropdown-divider"></div>
-                    <a href="/admin/new-organization" class="admin-navbar-dropdown-item new-org">
+                    <a th:if="${user.isSuperAdmin()}" href="/admin/new-organization" class="admin-navbar-dropdown-item new-org">
                         <i class="fas fa-plus" style="margin-right: 0.5rem;"></i>
                         New Organization
                     </a>
                 </div>
             </div>
             
-            <a class="admin-navbar-link" href="/admin/accounts">Accounts</a>
-            <a class="admin-navbar-link" href="/admin/notifications">Notifications</a>
-            <a class="admin-navbar-link" href="/admin/settings">Settings</a>
+            <a th:if="${user.isSuperAdmin()}" class="admin-navbar-link" href="/admin/accounts">User Management</a>
+            <a th:if="${user.isSuperAdmin()}" class="admin-navbar-link" href="/admin/notifications">Notifications</a>
+            <a th:if="${user.isSuperAdmin()}" class="admin-navbar-link" href="/admin/settings">Settings</a>
         </div>
         
         <div class="admin-navbar-right">

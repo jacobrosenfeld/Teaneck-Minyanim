@@ -83,6 +83,41 @@ class AdminControllerAuthorizationTest {
     }
 
     @Test
+    void managerCanOpenSecondAssignedShulButNotUnassignedShul() {
+        authenticate("manager", ADMIN);
+        TNMUser manager = user("A1", "manager", "org-a", ADMIN);
+        manager.getAdditionalOrganizationIds().add("org-b");
+        when(userService.findByName("manager")).thenReturn(manager);
+        assertEquals("/admin/org-b/minyanim", controller.orgDashboard("org-b").getUrl());
+        assertThrows(AccessDeniedException.class, () -> controller.orgDashboard("org-c"));
+        manager.getAdditionalOrganizationIds().clear();
+        assertThrows(AccessDeniedException.class, () -> controller.orgDashboard("org-b"));
+    }
+
+    @Test
+    void legacyProfileCannotPromoteUser() {
+        authenticate("manager", ADMIN);
+        TNMUser manager = user("A1", "manager", "org-a", ADMIN);
+        TNMUser target = user("A2", "target", "org-a", Role.USER);
+        when(userService.findByName("manager")).thenReturn(manager);
+        when(userService.findById("A2")).thenReturn(target);
+        assertThrows(AccessDeniedException.class, () -> controller.updateAccount("A2", "target", "target@example.com", 1));
+        verify(userService, never()).update(any());
+    }
+
+    @Test
+    void managerCannotEditUserWithBroaderShulScope() {
+        authenticate("manager", ADMIN);
+        TNMUser manager = user("A1", "manager", "org-a", ADMIN);
+        TNMUser target = user("A2", "target", "org-a", Role.USER);
+        target.getAdditionalOrganizationIds().add("org-b");
+        when(userService.findByName("manager")).thenReturn(manager);
+        when(userService.findById("A2")).thenReturn(target);
+        assertThrows(AccessDeniedException.class, () -> controller.disableAccount("A2", null));
+        verify(userService, never()).update(any());
+    }
+
+    @Test
     void orgAdminCannotViewDifferentOrganizationByChangingQueryParam() {
         authenticate("manager", ADMIN);
         when(userService.findByName("manager")).thenReturn(user("A1", "manager", "org-a", ADMIN));

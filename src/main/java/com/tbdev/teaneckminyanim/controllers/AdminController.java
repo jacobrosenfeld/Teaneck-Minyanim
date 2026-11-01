@@ -101,7 +101,7 @@ public class AdminController {
 
     private boolean canAccessOrganization(String orgId) {
         TNMUser user = getCurrentUser();
-        return user != null && (user.isSuperAdmin() || Objects.equals(user.getOrganizationId(), orgId));
+        return user != null && user.canAccessOrganization(orgId);
     }
 
     private void requireOrganizationAccess(String orgId) {
@@ -221,11 +221,6 @@ public class AdminController {
             return mv;
 //            throw new AccessDeniedException("You don't have permission to view this page.");
         }
-    }
-
-    @GetMapping("/admin/logout")
-    public ModelAndView logout(@RequestParam(value = "error", required = false) String error) {
-        return new ModelAndView("redirect:/admin/login?logout=true");
     }
 
     @GetMapping("/admin/organizations")
@@ -588,6 +583,13 @@ public class AdminController {
         return mv;
     }
 
+    private ModelAndView organizationFormError(String error, String inputErrorMessage,
+                                               Map<String, String> formValues) {
+        ModelAndView mv = addOrganization(false, error, inputErrorMessage);
+        mv.addObject("formValues", formValues);
+        return mv;
+    }
+
     @RequestMapping(value = "/admin/create-organization", method = RequestMethod.POST)
     public ModelAndView createOrganization(@RequestParam(value = "name", required = true) String name,
                                            @RequestParam(value = "address", required = true) String address,
@@ -595,21 +597,17 @@ public class AdminController {
                                            @RequestParam(value = "email", required = true) String email,
                                            @RequestParam(value = "site-url", required = false) String siteURIString,
                                            @RequestParam(value = "nusach", required = false) String nusachString,
-                                           @RequestParam(value = "password", required = true) String password,
-                                           @RequestParam(value = "cpassword", required = true) String cpassword,
                                            @RequestParam(value = "orgColor", required = true) String orgColor,
                                            @RequestParam(value = "url-slug", required = false) String urlSlug,
-                                           @RequestParam(value = "whatsapp", required = false) String whatsapp) {
+                                           @RequestParam(value = "whatsapp", required = false) String whatsapp,
+                                           @RequestParam Map<String, String> formValues) {
         if (!isSuperAdmin()) {
             throw new AccessDeniedException("You are not authorized to access this page.");
         }
 
-        if (name.isEmpty() || address.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty() || cpassword.isEmpty() || orgColor.isEmpty()) {
-            return addOrganization(false, "The organization could not be created. Required fields cannot be left blank.", "Sorry, required fields cannot be left blank.");
-        }
-
-        if (!password.equals(cpassword)) {
-            return addOrganization(false, "The organization could not be created. The passwords do not match.", "Sorry, passwords do not match.");
+        if (name.isEmpty() || address.isEmpty() || username.isEmpty() || email.isEmpty() || orgColor.isEmpty()) {
+            return organizationFormError("The shul could not be created. Required fields cannot be left blank.",
+                    "Required fields cannot be left blank.", formValues);
         }
 
 //        check if username is valid
@@ -617,12 +615,14 @@ public class AdminController {
         Pattern usernamePattern = Pattern.compile(usernameRegex);
         Matcher m = usernamePattern.matcher(username);
         if (!m.matches()) {
-            return addOrganization(false, "The organization could not be created. The username must be 6-30 characters, only contain letters and numbers, and start with a letter.", "Sorry, the username must be 6-30 characters, only contain letters and numbers, and start with a letter.");
+            return organizationFormError("The shul could not be created. The username is invalid.",
+                    "The username must be 6-30 characters, contain only letters, numbers, or underscores, and start with a letter.", formValues);
         }
 
 //        check if username already exists
         if (TNMUserDAO.findByName(username) != null) {
-            return addOrganization(false, "The organization could not be created. This username already in use.","Sorry, this username is already in use.");
+            return organizationFormError("The shul could not be created. This username is already in use.",
+                    "This username is already in use.", formValues);
         }
 
 //        check if email is valid
@@ -630,7 +630,12 @@ public class AdminController {
         Pattern emailPattern = Pattern.compile(emailRegex);
         Matcher m2 = emailPattern.matcher(email);
         if (!m2.matches()) {
-            return addOrganization(false, "The organization could not be created. This email address is invalid.","Sorry, this email address is invalid.");
+            return organizationFormError("The shul could not be created. This email address is invalid.",
+                    "Enter a valid email address.", formValues);
+        }
+        if (TNMUserDAO.findByNormalizedEmail(email) != null) {
+            return organizationFormError("The shul could not be created. This email address is already in use.",
+                    "This email address already belongs to an account.", formValues);
         }
 
 //        check if url string is valid
@@ -640,21 +645,14 @@ public class AdminController {
                 siteURI = new URI(siteURIString);
             } catch (URISyntaxException e) {
                 e.printStackTrace();
-                return addOrganization(false, "The organization could not be created. This site URI is invalid.", "Sorry, this site URI is invalid.");
+                return organizationFormError("The shul could not be created. This website URL is invalid.",
+                        "Enter a valid website URL.", formValues);
             }
-        }
-
-//        check if password is valid
-        String passwordRegex = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$";
-        Pattern passwordPattern = Pattern.compile(passwordRegex);
-        Matcher m3 = passwordPattern.matcher(password);
-        if (!m3.matches()) {
-            return addOrganization(false, "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.", "The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
         }
 
         Nusach nusach = Nusach.fromString(nusachString);
         if (nusach == null) {
-            return addOrganization(false, "The organization could not be created.", "Sorry, the organization could not be created.");
+            return organizationFormError("The shul could not be created.", "Choose a valid nusach.", formValues);
         }
 
         Organization organization = Organization.builder()
@@ -683,7 +681,7 @@ public class AdminController {
                     .id(IDGenerator.generateID('A'))
                     .username(username)
                     .email(email)
-                    .encryptedPassword(Encrypter.encrytedPassword(password))
+                    .encryptedPassword("!PASSWORDLESS")
                     .organizationId(organization.getId())
                     .roleId(ADMIN.getId())
                     .enabled(true)
@@ -695,10 +693,10 @@ public class AdminController {
                 } else {
                 }
 
-                return addOrganization(false, "Sorry, there was an error creating the account.", null);
+                return organizationFormError("Sorry, there was an error creating the account.", null, formValues);
             }
         } else {
-            return addOrganization(false,"Sorry, there was an error creating the organization.", null);
+            return organizationFormError("Sorry, there was an error creating the shul.", null, formValues);
         }
     }
 
@@ -713,21 +711,24 @@ public class AdminController {
 
         List<TNMUser> users = this.TNMUserDAO.getAll();
         mv.addObject("accounts", users);
+        mv.addObject("organizations", organizationService.getAll());
+        Map<String, Integer> passkeyCounts = new HashMap<>();
+        users.forEach(user -> passkeyCounts.put(user.getId(), passkeyCredentialService.countStoredPasskeys(user)));
+        mv.addObject("passkeyCounts", passkeyCounts);
 
         Map<String, String> organizationNames = new HashMap<>();
         for (TNMUser user : users) {
-            if (user.getOrganizationId()!= null) {
-                Optional<Organization> organization = this.organizationService.findById(user.getOrganizationId());
-                String organizationDisplayName = organization.isEmpty() ? "" : organization.get().getName();
-                organizationNames.put(user.getId(), organizationDisplayName);
-            }
+            String names = user.getAccessibleOrganizationIds().stream()
+                    .map(orgId -> organizationService.findById(orgId).map(Organization::getName).orElse("Unknown shul"))
+                    .collect(Collectors.joining(", "));
+            organizationNames.put(user.getId(), user.isSuperAdmin() ? "All shuls" : names);
         }
         mv.addObject("organizationNames", organizationNames);
 
         addStandardPageData(mv);
 
-        mv.getModel().put("successmessage", successMessage);
-        mv.getModel().put("errormessage", errorMessage);
+        if (successMessage != null) mv.getModel().put("successmessage", successMessage);
+        if (errorMessage != null) mv.getModel().put("errormessage", errorMessage);
 
         return mv;
     }
@@ -752,53 +753,12 @@ public class AdminController {
                                      boolean setupPasskey) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("account");
-        TNMUser queriedUser;
-        if (isSuperAdmin()) {
-            queriedUser = this.TNMUserDAO.findById(id);
-            mv.addObject("queriedaccount", queriedUser);
-
-            if (queriedUser.isSuperAdmin() && !queriedUser.getId().equals(getCurrentUser().getId())) {
-                throw new AccessDeniedException("You are not authorized to view this account.");
-            }
-
-            if (!queriedUser.isSuperAdmin()) {
-                Optional<Organization> associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
-                mv.addObject("associatedorganization", associatedOrganization.orElseGet(Organization::new));
-            }
-        } else if (isAdmin()) {
-            TNMUser user = getCurrentUser();
-            queriedUser = this.TNMUserDAO.findById(id);
-
-            if (user != null && user.getOrganizationId().equals(queriedUser.getOrganizationId()) && !(queriedUser.isAdmin() && !queriedUser.getId().equals(user.getId()))) {
-
-                mv.addObject("queriedaccount", queriedUser);
-
-                Optional<Organization> associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
-                mv.addObject("associatedorganization", associatedOrganization.orElseGet(Organization::new));
-            } else {
-                throw new AccessDeniedException("You are not authorized to view this account.");
-            }
-        } else if (isUser()) {
-            TNMUser user = getCurrentUser();
-
-            if (!user.getId().equals(id)) {
-                throw new AccessDeniedException("You are not authorized to view this account.");
-            }
-
-            queriedUser = this.TNMUserDAO.findById(id);
-
-            if (user.getId().equals(queriedUser.getId())) {
-                mv.setViewName("account");
-
-                mv.addObject("queriedaccount", queriedUser);
-
-                Optional<Organization> associatedOrganization = this.organizationService.findById(queriedUser.getOrganizationId());
-                mv.addObject("associatedorganization", associatedOrganization.orElseGet(Organization::new));
-            } else {
-                throw new AccessDeniedException("You are not authorized to view this account.");
-            }
-        } else {
-            throw new AccessDeniedException("You are not authorized to view this account.");
+        TNMUser queriedUser = TNMUserDAO.findById(id);
+        if (queriedUser == null) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND);
+        requireAccountSettingsAccess(getCurrentUser(), queriedUser);
+        mv.addObject("queriedaccount", queriedUser);
+        if (queriedUser.getOrganizationId() != null) {
+            mv.addObject("associatedorganization", organizationService.findById(queriedUser.getOrganizationId()).orElseGet(Organization::new));
         }
 
         addStandardPageData(mv);
@@ -826,16 +786,9 @@ public class AdminController {
             return account(accountId, null, null, "Sorry, we ran into an unexpected error.");
         }
 
-        if (!getCurrentUser().isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(targetUser.getOrganizationId())) {
-            throw new AccessDeniedException("You don't have permission to interact with this account.");
-        }
-
-        if (!getCurrentUser().isSuperAdmin() && !getCurrentUser().isAdmin() && !getCurrentUser().getId().equals(targetUser.getId())) {
-            throw new AccessDeniedException("You don't have permission to interact with this account.");
-        }
-
-        if (targetUser.isSuperAdmin() && !getCurrentUser().getId().equals(targetUser.getId())) {
-            throw new AccessDeniedException("You don't have permission to interact with this account.");
+        requireAccountSettingsAccess(getCurrentUser(), targetUser);
+        if (!isSuperAdmin() && !Objects.equals(getCurrentUser().getId(), targetUser.getId())) {
+            throw new AccessDeniedException("Only super admins can reset another account's sign-in credentials.");
         }
 
         //        check if password is valid
@@ -855,6 +808,7 @@ public class AdminController {
                             .emailNormalized(targetUser.getEmailNormalized())
                             .encryptedPassword(Encrypter.encrytedPassword(password))
                             .organizationId(targetUser.getOrganizationId())
+                            .additionalOrganizationIds(targetUser.getAdditionalOrganizationIds())
                             .roleId(targetUser.getRoleId())
                             .enabled(targetUser.isEnabled())
                             .lastLoginAt(targetUser.getLastLoginAt())
@@ -987,7 +941,7 @@ public class AdminController {
         }
     }
 
-    @GetMapping("/admin/disable-organization")
+    @PostMapping("/admin/disable-organization")
     public ModelAndView disableOrganization(@RequestParam(value = "id") String id,
                                             @RequestParam(value = "rd", required = false) String redirect) throws Exception {
         Optional<Organization> organization = this.organizationService.findById(id);
@@ -995,7 +949,7 @@ public class AdminController {
             return organizations(null, "Sorry, the organization could not be found.");
         }
 
-        if (!isSuperAdmin() && !organization.get().getId().equals(getCurrentUser().getOrganizationId())) {
+        if (!canAccessOrganization(organization.get().getId())) {
             throw new AccessDeniedException("You do not have permission to disable this organization.");
         }
 
@@ -1006,7 +960,7 @@ public class AdminController {
         return new ModelAndView(redirectView);
     }
 
-    @GetMapping("/admin/enable-organization")
+    @PostMapping("/admin/enable-organization")
     public ModelAndView enableOrganization(@RequestParam(value = "id") String id,
                                            @RequestParam(value = "rd", required = false) String redirect) throws Exception {
         Optional<Organization> organization = this.organizationService.findById(id);
@@ -1014,7 +968,7 @@ public class AdminController {
             return organizations(null, "Sorry, the organization could not be found.");
         }
 
-        if (!isSuperAdmin() && !organization.get().getId().equals(getCurrentUser().getOrganizationId())) {
+        if (!canAccessOrganization(organization.get().getId())) {
             throw new AccessDeniedException("You do not have permission to enable this organization.");
         }
 
@@ -1025,7 +979,7 @@ public class AdminController {
         return new ModelAndView(redirectView);
     }
 
-    @RequestMapping(value = "/admin/delete-organization")
+    @PostMapping("/admin/delete-organization")
     public ModelAndView deleteOrganization(@RequestParam(value = "id", required = true) String id) throws Exception {
         if (isSuperAdmin()) {
 //            get organization and check if it exists
@@ -1066,7 +1020,7 @@ public class AdminController {
         }
     }
 
-    @RequestMapping(value = "/admin/delete-account")
+    @PostMapping("/admin/delete-account")
     public ModelAndView deleteAccount(@RequestParam(value = "id", required = true) String id) throws Exception {
         if (!isSuperAdmin() && !isAdmin()) {
             throw new AccessDeniedException("You do not have permission to delete this account.");
@@ -1077,12 +1031,9 @@ public class AdminController {
             return accounts(null, "Sorry, the account could not be deleted.");
         }
 
-        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
-            throw new AccessDeniedException("You do not have permission to delete this account.");
-        }
-
-        if (account.isSuperAdmin() && !getCurrentUser().getId().equals(account.getId())) {
-            throw new AccessDeniedException("You do not have permission to delete this account.");
+        requireAccountSettingsAccess(getCurrentUser(), account);
+        if (Objects.equals(getCurrentUser().getId(), account.getId())) {
+            throw new AccessDeniedException("You cannot disable or delete your own account.");
         }
 
         if (account.isEnabled()) {
@@ -1108,12 +1059,9 @@ public class AdminController {
             return accounts(null, "Account not found.");
         }
 
-        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
-            throw new AccessDeniedException("You do not have permission to disable this account.");
-        }
-
-        if (account.isSuperAdmin() && !getCurrentUser().getId().equals(account.getId())) {
-            throw new AccessDeniedException("You do not have permission to disable this account.");
+        requireAccountSettingsAccess(getCurrentUser(), account);
+        if (Objects.equals(getCurrentUser().getId(), account.getId())) {
+            throw new AccessDeniedException("You cannot disable or delete your own account.");
         }
 
         account.setEnabled(false);
@@ -1139,13 +1087,7 @@ public class AdminController {
             return accounts(null, "Account not found.");
         }
 
-        if (!isSuperAdmin() && !getCurrentUser().getOrganizationId().equals(account.getOrganizationId())) {
-            throw new AccessDeniedException("You do not have permission to enable this account.");
-        }
-
-        if (account.isSuperAdmin() && !getCurrentUser().getId().equals(account.getId())) {
-            throw new AccessDeniedException("You do not have permission to enable this account.");
-        }
+        requireAccountSettingsAccess(getCurrentUser(), account);
 
         account.setEnabled(true);
         this.TNMUserDAO.update(account);
@@ -1158,12 +1100,10 @@ public class AdminController {
         return account(id, "Account enabled successfully.", null, null);
     }
 
-    @RequestMapping(value = "/admin/create-account")
+    @PostMapping("/admin/create-account")
     public ModelAndView createAccount(
             @RequestParam(value = "username", required = true) String username,
             @RequestParam(value = "email", required = true) String email,
-            @RequestParam(value = "password", required = true) String password,
-            @RequestParam(value = "cpassword") String cpassword,
             @RequestParam(value = "oid", required = true) String organizationId,
             @RequestParam(value = "r", required = false) String roleInital
     ) throws Exception {
@@ -1173,12 +1113,8 @@ public class AdminController {
 
 //            validate input
 
-        if (username.isEmpty() || email.isEmpty() || password.isEmpty() || cpassword.isEmpty()) {
+        if (username.isEmpty() || email.isEmpty()) {
             return organization(organizationId, null, null, null, "Sorry, fields cannot be left blank.");
-        }
-
-        if (!password.equals(cpassword)) {
-            return organization(organizationId, null, null, null, "Sorry, passwords do not match.");
         }
 
         String usernameRegex = "^[A-Za-z]\\w{5,29}$";
@@ -1200,19 +1136,14 @@ public class AdminController {
         if (!m2.matches()) {
             return organization(organizationId, null, null, null,"Sorry, this email address is invalid.");
         }
-
-//        check if password is valid
-        String passwordRegex = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$";
-        Pattern passwordPattern = Pattern.compile(passwordRegex);
-        Matcher m3 = passwordPattern.matcher(password);
-        if (!m3.matches()) {
-            return organization(organizationId, null, null, null,"The organization could not be created. The password must be at least 8 characters, contain at least one upper and lower case letters and one number.");
+        if (TNMUserDAO.findByNormalizedEmail(email) != null) {
+            return organization(organizationId, null, null, null,"Sorry, this email address already belongs to an account.");
         }
 
         Role role;
-        if (roleInital.toLowerCase().equals("a")) {
+        if ("a".equalsIgnoreCase(roleInital)) {
             role = ADMIN;
-        } else if (roleInital.toLowerCase().equals("u") && organizationId != null) {
+        } else if ("u".equalsIgnoreCase(roleInital) && organizationId != null) {
             role = Role.USER;
         } else if (organizationId != null) {
             role = Role.USER;
@@ -1227,7 +1158,7 @@ public class AdminController {
                         .id(IDGenerator.generateID('A'))
                         .username(username.toLowerCase())
                         .email(email.toLowerCase())
-                        .encryptedPassword(Encrypter.encrytedPassword(password))
+                        .encryptedPassword("!PASSWORDLESS")
                         .organizationId(organizationId)
                         .roleId(role.getId())
                         .enabled(true)
@@ -1248,7 +1179,7 @@ public class AdminController {
                         .id(IDGenerator.generateID('A')) // Generate the ID here
                         .username(username.toLowerCase())
                         .email(email.toLowerCase())
-                        .encryptedPassword(Encrypter.encrytedPassword(password))
+                        .encryptedPassword("!PASSWORDLESS")
                         .organizationId(organizationId)
                         .roleId(role.getId())
                         .enabled(true)
@@ -1267,7 +1198,7 @@ public class AdminController {
                                 .id(IDGenerator.generateID('A')) // Generate the ID here
                                 .username(username.toLowerCase())
                                 .email(email.toLowerCase())
-                                .encryptedPassword(Encrypter.encrytedPassword(password))
+                                .encryptedPassword("!PASSWORDLESS")
                                 .organizationId(organizationId)
                                 .roleId(role.getId())
                                 .enabled(true)
@@ -1296,21 +1227,15 @@ public class AdminController {
             @RequestParam(value = "id", required = true) String id,
             @RequestParam(value = "username", required = true) String newUsername,
             @RequestParam(value = "email", required = true) String newEmail,
-            @RequestParam(value = "privileges", required = false) int roleId
+            @RequestParam(value = "privileges", defaultValue = "0") int roleId
     ) {
         TNMUser userToUpdate = TNMUserDAO.findById(id);
         TNMUser currentUser = getCurrentUser();
 
-        if (!currentUser.isSuperAdmin()) {
-            if (!currentUser.getOrganizationId().equals(userToUpdate.getOrganizationId())) {
-                throw new AccessDeniedException("You do not have permission to update this account.");
-            }
+        requireAccountSettingsAccess(currentUser, userToUpdate);
+        if (roleId != 0 && !Objects.equals(roleId, userToUpdate.getRoleId())) {
+            throw new AccessDeniedException("Change permissions from User Management.");
         }
-
-//        if (!isSuperAdmin() && !(isAdmin() && currentUser.getOrganizationId().equals(userToUpdate.getOrganizationId())) && !(currentUser.getId().equals(userToUpdate.getId()))) {
-//            throw new AccessDeniedException("You do not have permission to update this account.");
-//        }
-
         Role newRole;
         if (roleId == 1) {
             newRole = Role.ADMIN;
@@ -1324,79 +1249,31 @@ public class AdminController {
             throw new AccessDeniedException("You do not have permission to update this information.");
         }
 
-        System.out.printf("IDS: %s %s " + userToUpdate.getId().equals(currentUser.getId()), currentUser.getId(), userToUpdate.getId());
-
-//        TODO: DECIDE ABOUT CONTROL OF SUPER ADMIN STATUSES
-        if (isSuperAdmin() && (!userToUpdate.isSuperAdmin() || userToUpdate.getId().equals(currentUser.getId()))) {
-
-            TNMUser updatedUser = TNMUser.builder()
-                    .id(id)
-                    .username(newUsername.toLowerCase())
-                    .email(newEmail.toLowerCase())
-                    .encryptedPassword(userToUpdate.getEncryptedPassword())
-                    .organizationId(userToUpdate.getOrganizationId())
-                    .roleId(newRole.getId())
-                    .enabled(userToUpdate.isEnabled())
-                    .emailNormalized(userToUpdate.getEmailNormalized())
-                    .lastLoginAt(userToUpdate.getLastLoginAt())
-                    .lastLoginMethod(userToUpdate.getLastLoginMethod())
-                    .invitedAt(userToUpdate.getInvitedAt())
-                    .inviteAcceptedAt(userToUpdate.getInviteAcceptedAt())
-                    .authMigrationRequired(userToUpdate.isAuthMigrationRequired())
-                    .weeklyMinyanReviewEmailsEnabled(userToUpdate.isWeeklyMinyanReviewEmailsEnabled())
-                    .build();
-            if (TNMUserDAO.update(updatedUser)) {
-                return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
-            } else {
-                return account(id,null, "Sorry, an error occurred. The account could not be updated.", null);
-            }
-        } else if (isAdmin() && !userToUpdate.isSuperAdmin()) {
-            TNMUser updatedUser = TNMUser.builder()
-                    .id(id)
-                    .username(newUsername.toLowerCase())
-                    .email(newEmail.toLowerCase())
-                    .encryptedPassword(userToUpdate.getEncryptedPassword())
-                    .organizationId(userToUpdate.getOrganizationId())
-                    .roleId(newRole.getId())
-                    .enabled(userToUpdate.isEnabled())
-                    .emailNormalized(userToUpdate.getEmailNormalized())
-                    .lastLoginAt(userToUpdate.getLastLoginAt())
-                    .lastLoginMethod(userToUpdate.getLastLoginMethod())
-                    .invitedAt(userToUpdate.getInvitedAt())
-                    .inviteAcceptedAt(userToUpdate.getInviteAcceptedAt())
-                    .authMigrationRequired(userToUpdate.isAuthMigrationRequired())
-                    .weeklyMinyanReviewEmailsEnabled(userToUpdate.isWeeklyMinyanReviewEmailsEnabled())
-                    .build();
-            if (TNMUserDAO.update(updatedUser)) {
-                return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
-            } else {
-                return account(id,null, "Sorry, an error occurred. The account could not be updated.", null);
-            }
-        } else if (!isAdmin() && userToUpdate.getId().equals(getCurrentUser().getId())) {
-            TNMUser updatedUser = TNMUser.builder()
-                    .id(id)
-                    .username(newUsername.toLowerCase())
-                    .email(newEmail.toLowerCase())
-                    .encryptedPassword(userToUpdate.getEncryptedPassword())
-                    .organizationId(userToUpdate.getOrganizationId())
-                    .roleId(userToUpdate.getRoleId())
-                    .enabled(userToUpdate.isEnabled())
-                    .emailNormalized(userToUpdate.getEmailNormalized())
-                    .lastLoginAt(userToUpdate.getLastLoginAt())
-                    .lastLoginMethod(userToUpdate.getLastLoginMethod())
-                    .invitedAt(userToUpdate.getInvitedAt())
-                    .inviteAcceptedAt(userToUpdate.getInviteAcceptedAt())
-                    .authMigrationRequired(userToUpdate.isAuthMigrationRequired())
-                    .weeklyMinyanReviewEmailsEnabled(userToUpdate.isWeeklyMinyanReviewEmailsEnabled())
-                    .build();
-            if (TNMUserDAO.update(updatedUser)) {
-                return account(id,"Successfully updated account with username '" + updatedUser.getUsername() + "'.", null, null);
-            } else {
-                return account(id,null, "Sorry, an error occurred. The account could not be updated.", null);
-            }
-        } else {
-            throw new AccessDeniedException("You do not have permission to update this information.");
+        String normalizedUsername = newUsername == null ? "" : newUsername.trim().toLowerCase(Locale.ROOT);
+        String normalizedEmail = TNMUser.normalizeEmail(newEmail);
+        if (!normalizedUsername.matches("[a-z][a-z0-9_]{5,29}")) {
+            return account(id, null, "Username must be 6–30 letters, numbers or underscores, starting with a letter.", null);
         }
+        if (normalizedEmail == null || normalizedEmail.length() > 254
+                || !normalizedEmail.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
+            return account(id, null, "Enter a valid email address.", null);
+        }
+        boolean duplicateIdentity = TNMUserDAO.getAll().stream()
+                .filter(other -> !Objects.equals(other.getId(), id))
+                .anyMatch(other -> normalizedUsername.equalsIgnoreCase(other.getUsername())
+                        || normalizedEmail.equals(TNMUser.normalizeEmail(other.getEmail())));
+        if (duplicateIdentity) {
+            return account(id, null, "That username or email already belongs to another account.", null);
+        }
+
+
+        userToUpdate.setUsername(normalizedUsername);
+        userToUpdate.setEmail(normalizedEmail);
+        userToUpdate.setEmailNormalized(normalizedEmail);
+        if (TNMUserDAO.update(userToUpdate)) {
+            return account(id, "Successfully updated account with username '" + normalizedUsername + "'.", null, null);
+        }
+        return account(id, null, "Sorry, an error occurred. The account could not be updated.", null);
     }
 
     @PostMapping("/admin/account/notifications")
@@ -1421,25 +1298,15 @@ public class AdminController {
     }
 
     private void requireAccountSettingsAccess(TNMUser currentUser, TNMUser targetUser) {
-        if (currentUser.isSuperAdmin()) {
-            if (targetUser.isSuperAdmin() && !Objects.equals(currentUser.getId(), targetUser.getId())) {
-                throw new AccessDeniedException("You do not have permission to update this account.");
-            }
-            return;
-        }
-
-        if (currentUser.isAdmin()) {
-            boolean sameOrganization = Objects.equals(currentUser.getOrganizationId(), targetUser.getOrganizationId());
-            boolean updatingSelf = Objects.equals(currentUser.getId(), targetUser.getId());
-            if (!sameOrganization || (targetUser.isAdmin() && !updatingSelf)) {
-                throw new AccessDeniedException("You do not have permission to update this account.");
-            }
-            return;
-        }
-
-        if (!Objects.equals(currentUser.getId(), targetUser.getId())) {
+        if (currentUser == null || currentUser.isDisabled() || targetUser == null) {
             throw new AccessDeniedException("You do not have permission to update this account.");
         }
+        if (currentUser.isSuperAdmin() || Objects.equals(currentUser.getId(), targetUser.getId())) return;
+        // An org manager must control every scope of a user they can edit, and cannot edit other managers.
+        if (currentUser.isAdmin() && !targetUser.isAdmin()
+                && !targetUser.getAccessibleOrganizationIds().isEmpty()
+                && currentUser.getAccessibleOrganizationIds().containsAll(targetUser.getAccessibleOrganizationIds())) return;
+        throw new AccessDeniedException("You do not have permission to update this account.");
     }
 
     @RequestMapping(value = "/admin/update-settings", method = RequestMethod.POST)
@@ -1675,7 +1542,7 @@ public class AdminController {
         return mv;
     }
 
-    @RequestMapping(value = "/admin/create-location")
+    @PostMapping("/admin/create-location")
     public ModelAndView createLocation(@RequestParam(value = "name", required = true) String name, @RequestParam(value = "oid", required = true) String organizationId) {
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
@@ -1720,7 +1587,7 @@ public class AdminController {
         }
     }
 
-    @RequestMapping(value = "/admin/delete-location")
+    @PostMapping("/admin/delete-location")
     public ModelAndView deleteLocation(@RequestParam(value = "id", required = true) String id) {
         Location locationToDelete = locationDAO.findById(id);
         if (locationToDelete == null) {
@@ -1738,7 +1605,7 @@ public class AdminController {
         }
     }
 
-    @RequestMapping(value = "/admin/{organizationId}/minyanim")
+    @GetMapping("/admin/{organizationId}/minyanim")
     public ModelAndView minyanim(@PathVariable String organizationId, String successMessage, String errorMessage) {
         ModelAndView mv = new ModelAndView("minyanschedule");
 
@@ -1831,7 +1698,7 @@ public class AdminController {
         return mv;
     }
 
-    @RequestMapping(value = "/admin/{organizationId}/minyanim/printable")
+    @GetMapping("/admin/{organizationId}/minyanim/printable")
     public ModelAndView printableMinyanim(@PathVariable String organizationId, 
                                         @RequestParam(value = "types", required = false) String[] selectedTypes,
                                         @RequestParam(value = "locations", required = false) String[] selectedLocations) {
@@ -1922,7 +1789,7 @@ public class AdminController {
     }
 
     //    enable and disable pages
-    @RequestMapping(value = "/admin/minyanim/{id}/enable")
+    @PostMapping("/admin/minyanim/{id}/enable")
     public ModelAndView enableMinyan(@PathVariable String id, @RequestParam(value = "rd", required = false) String rd) {
         Minyan minyan = minyanService.findById(id);
         if (minyan == null) {
@@ -1930,7 +1797,7 @@ public class AdminController {
         }
 
 //        ensure that user is admin or minyan is in their organization
-        if (!isSuperAdmin() && !minyan.getOrganizationId().equals(getCurrentUser().getOrganizationId())) {
+        if (!canAccessOrganization(minyan.getOrganizationId())) {
             throw new AccessDeniedException("You do not have permission to enable this minyan.");
         }
 
@@ -1947,7 +1814,7 @@ public class AdminController {
         return mv;
     }
 
-    @RequestMapping(value = "/admin/minyanim/{id}/disable")
+    @PostMapping("/admin/minyanim/{id}/disable")
     public ModelAndView disableMinyan(@PathVariable String id, @RequestParam(value = "rd", required = false) String rd) {
         Minyan minyan = minyanService.findById(id);
         if (minyan == null) {
@@ -1955,7 +1822,7 @@ public class AdminController {
         }
 
 //        ensure that user is admin or minyan is in their organization
-        if (!isSuperAdmin() && !minyan.getOrganizationId().equals(getCurrentUser().getOrganizationId())) {
+        if (!canAccessOrganization(minyan.getOrganizationId())) {
             throw new AccessDeniedException("You do not have permission to disable this minyan.");
         }
 
@@ -1972,7 +1839,7 @@ public class AdminController {
         return mv;
     }
 
-    @RequestMapping(value="/admin/{orgId}/minyanim/new")
+    @GetMapping("/admin/{orgId}/minyanim/new")
     public ModelAndView newMinyan(@PathVariable String orgId) throws AccessDeniedException {
         Organization org = this.getOrganization(orgId);
 
@@ -1987,7 +1854,7 @@ public class AdminController {
         return mv;
     }
 
-    @RequestMapping(value="/admin/{orgId}/minyanim/create")
+    @PostMapping("/admin/{orgId}/minyanim/create")
     public ModelAndView createMinyan(@PathVariable String orgId,
                                      @RequestParam(value = "type", required = false) String type,
                                      @RequestParam(value = "location", required = false) String locationId,
@@ -2269,7 +2136,7 @@ public class AdminController {
         }
     }
 
-    @RequestMapping(value = "/admin/{organizationId}/minyanim/{minyanId}/delete", method = RequestMethod.GET)
+    @PostMapping("/admin/{organizationId}/minyanim/{minyanId}/delete")
     public ModelAndView deleteMinyan(@PathVariable("organizationId") String organizationId, @PathVariable("minyanId") String minyanId) throws Exception {
 
         Organization organization = getOrganization(organizationId);

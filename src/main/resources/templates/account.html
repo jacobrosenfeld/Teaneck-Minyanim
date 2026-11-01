@@ -258,7 +258,7 @@
             <div class="settings-breadcrumb">
                 <a th:href="@{/admin}">Dashboard</a>
                 <span>/</span>
-                <a th:if="${user.isSuperAdmin()}" th:href="@{/admin/accounts}">Accounts</a>
+                <a th:if="${user.isSuperAdmin()}" th:href="@{/admin/accounts}">User Management</a>
                 <span th:if="${user.isSuperAdmin()}">/</span>
                 <span th:text="${queriedaccount.username}">Account</span>
             </div>
@@ -333,7 +333,7 @@
                             <p class="account-card-description">Change the password used when passkey or email sign-in is unavailable.</p>
                         </div>
                         <div class="account-actions">
-                            <button type="button" class="btn-modern btn-secondary"
+                            <button th:if="${user.isSuperAdmin() or user.id == queriedaccount.id}" type="button" class="btn-modern btn-secondary"
                                     data-toggle="modal" data-target="#change-password-modal">
                                 Change Password
                             </button>
@@ -372,24 +372,12 @@
                                th:value="${queriedaccount.email}" required>
                     </div>
 
-                    <div class="account-field-row" th:if="${user.isAdmin() && !queriedaccount.isSuperAdmin()}">
+                    <div class="account-field-row">
+                        <span class="field-label">Permissions</span>
                         <div>
-                            <span class="field-label">Privileges</span>
-                            <p class="field-description">Manager permissions allow the user to add and edit other accounts.</p>
+                            <span th:text="${queriedaccount.getRoleDisplayName()}"></span>
+                            <a th:if="${user.isSuperAdmin()}" th:href="@{/admin/accounts}">Manage role and shuls</a>
                         </div>
-                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                            <label th:class="${'btn btn-outline-primary' + (queriedaccount.isAdmin() ? ' active' : '')}">
-                                <input type="radio" name="privileges" value="1" th:checked="${queriedaccount.isAdmin()}"> Manager
-                            </label>
-                            <label th:class="${'btn btn-outline-primary' + ((queriedaccount.isUser() && !queriedaccount.isAdmin()) ? ' active' : '')}">
-                                <input type="radio" name="privileges" value="2" th:checked="${queriedaccount.isUser() && !queriedaccount.isAdmin()}"> User
-                            </label>
-                        </div>
-                    </div>
-
-                    <div hidden th:if="${!(user.isAdmin() && !queriedaccount.isSuperAdmin())}">
-                        <input type="radio" name="privileges" value="1" th:checked="${queriedaccount.isAdmin()}">
-                        <input type="radio" name="privileges" value="2" th:checked="${queriedaccount.isUser() && !queriedaccount.isAdmin()}">
                     </div>
 
                     <div th:if="${updateError}" class="alert-modern alert-danger m-3" th:text="${updateError}"></div>

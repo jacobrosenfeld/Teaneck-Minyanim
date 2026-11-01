@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title layout:title-pattern="$CONTENT_TITLE" th:text="|${siteName ?: 'Minyanim Platform'} Admin|">Minyanim Platform Admin</title>
     
     <!-- Favicons -->
@@ -218,7 +220,63 @@
     
     <!-- Sidebar Toggle Script -->
     <script>
+        (function configureCsrf() {
+            const tokenMeta = document.querySelector('meta[name="_csrf"]');
+            const headerMeta = document.querySelector('meta[name="_csrf_header"]');
+            if (!tokenMeta || !headerMeta) return;
+            const token = tokenMeta.content;
+            const header = headerMeta.content;
+            const originalFetch = window.fetch.bind(window);
+            window.fetch = function(input, init = {}) {
+                const method = String(init.method || 'GET').toUpperCase();
+                const unsafe = !['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method);
+                if (unsafe) {
+                    const headers = new Headers(init.headers || {});
+                    if (!headers.has(header)) headers.set(header, token);
+                    init = Object.assign({}, init, {headers: headers});
+                }
+                return originalFetch(input, init);
+            };
+            if (window.jQuery) {
+                $.ajaxSetup({beforeSend: function(xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) xhr.setRequestHeader(header, token);
+                }});
+            }
+        })();
+
         document.addEventListener('DOMContentLoaded', function() {
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+            document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function(form) {
+                if (!csrfToken || form.querySelector('input[name="_csrf"]')) return;
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = '_csrf';
+                input.value = csrfToken;
+                form.appendChild(input);
+            });
+            document.querySelectorAll('a[href*="/admin/minyanim/"]').forEach(function(link) {
+                let url;
+                try { url = new URL(link.href, window.location.origin); } catch (ignored) { return; }
+                if (!/\/admin\/minyanim\/[^/]+\/(enable|disable)$/.test(url.pathname)) return;
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = url.pathname;
+                    url.searchParams.forEach(function(value, name) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden'; input.name = name; input.value = value;
+                        form.appendChild(input);
+                    });
+                    if (csrfToken) {
+                        const csrf = document.createElement('input');
+                        csrf.type = 'hidden'; csrf.name = '_csrf'; csrf.value = csrfToken;
+                        form.appendChild(csrf);
+                    }
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            });
             const sidebarToggler = document.getElementById('sidebar-toggler');
             const sidebar = document.getElementById('sidebar-wrapper');
             const mainContent = document.getElementById('admin-main');

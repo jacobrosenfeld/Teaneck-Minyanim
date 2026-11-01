@@ -18,6 +18,20 @@ import static org.mockito.Mockito.when;
 class PasskeyCredentialServiceTest {
 
     @Test
+    void disabledAccountPasskeysCanStillBeCountedAndRevoked() {
+        UserCredentialRepository repository = mock(UserCredentialRepository.class);
+        PasskeyCredentialService service = new PasskeyCredentialService(repository);
+        TNMUser user = TNMUser.builder().id("A1").enabled(false).build();
+        var record = mock(org.springframework.security.web.webauthn.api.CredentialRecord.class);
+        Bytes credentialId = new Bytes(new byte[]{1, 2});
+        when(record.getCredentialId()).thenReturn(credentialId);
+        when(repository.findByUserId(any())).thenReturn(java.util.List.of(record));
+        assertEquals(1, service.countStoredPasskeys(user));
+        service.revokeAll(user);
+        org.mockito.Mockito.verify(repository).delete(credentialId);
+    }
+
+    @Test
     void missingCredentialTableIsTreatedAsNoPasskeys() {
         UserCredentialRepository credentialRepository = mock(UserCredentialRepository.class);
         PasskeyCredentialService service = new PasskeyCredentialService(credentialRepository);
