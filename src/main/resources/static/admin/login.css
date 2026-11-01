@@ -52,32 +52,15 @@
 
 .login-maariv-quote {
     color: #4c3a2d;
-    display: flex;
+    display: block;
     font-family: "Ezra SIL Web", "Ezra SIL", "Keter YG", "Noto Serif Hebrew", serif;
     font-size: 1.25rem;
     font-weight: 700;
-    gap: 0.3em;
     letter-spacing: 0.04em;
     line-height: 1.5;
-    margin: 0 -12px 4px;
-    white-space: nowrap;
-}
-
-.login-maariv-word {
-    display: inline-block;
-}
-
-.login-maariv-word:nth-child(1),
-.login-maariv-word:nth-child(3) {
-    transform: translateY(6px) rotate(3deg);
-}
-
-.login-maariv-word:nth-child(3) {
-    transform: translateY(6px) rotate(-3deg);
-}
-
-.login-maariv-word:nth-child(2) {
-    transform: translateY(-2px);
+    margin: 0 0 -4px;
+    overflow: visible;
+    width: min(100%, 360px);
 }
 
 .login-identifier-form label,
@@ -268,7 +251,7 @@
 
     .login-maariv-quote {
         font-size: 1.1rem;
-        margin-bottom: 2px;
+        margin-bottom: -6px;
     }
 
     .login-identifier-row {

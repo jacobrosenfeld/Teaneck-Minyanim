@@ -51,12 +51,16 @@
                         <div class="login-shell">
                             <section class="login-panel" aria-labelledby="login-title">
                                 <div class="login-brand">
-                                    <p class="login-maariv-quote" lang="he" dir="rtl"
-                                       aria-label="משנה עתים ומחליף את הזמנים">
-                                        <span class="login-maariv-word" aria-hidden="true">משנה עתים</span>
-                                        <span class="login-maariv-word" aria-hidden="true">ומחליף</span>
-                                        <span class="login-maariv-word" aria-hidden="true">את הזמנים</span>
-                                    </p>
+                                    <svg class="login-maariv-quote" lang="he" dir="rtl"
+                                         viewBox="0 0 360 100" role="img"
+                                         aria-label="משנה עתים ומחליף את הזמנים">
+                                        <path id="login-maariv-arc" d="M 20 86 Q 180 4 340 86" fill="none"/>
+                                        <text>
+                                            <textPath href="#login-maariv-arc" startOffset="50%" text-anchor="middle">
+                                                משנה עתים ומחליף את הזמנים
+                                            </textPath>
+                                        </text>
+                                    </svg>
                                     <img src="/assets/icons/favicon.svg" alt="" class="login-brand-mark">
                                     <h1 id="login-title" th:text="|${siteName ?: 'Minyanim Platform'} Admin|">Minyanim Platform Admin</h1>
                                 </div>
