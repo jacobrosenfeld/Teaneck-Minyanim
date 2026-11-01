@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!window.confirm(form.dataset.confirm)) event.preventDefault();
         });
     });
-    if (document.querySelector('#new-user form [value]:invalid') || document.querySelector('#new-user [data-open-create-user]')) {
+    const createForm = document.querySelector('#new-user [data-open-create-user]');
+    if (createForm?.dataset.openCreateUser === 'true') {
         document.getElementById('new-user')?.scrollIntoView();
     }
 });

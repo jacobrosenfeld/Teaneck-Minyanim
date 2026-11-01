@@ -2170,7 +2170,7 @@ public class AdminController {
      */
     @PostMapping("/admin/{orgId}/calendar/import")
     public ModelAndView triggerCalendarImport(@PathVariable String orgId) {
-        if (!isAdmin()) {
+        if (!isUser()) {
             throw new AccessDeniedException("You do not have permission to access this page.");
         }
 
@@ -2232,7 +2232,7 @@ public class AdminController {
             @RequestParam(required = false) String endDate,
             @RequestParam(required = false, defaultValue = "false") Boolean showNonMinyan) {
         
-        if (!isAdmin()) {
+        if (!isUser()) {
             throw new AccessDeniedException("You do not have permission to access this page.");
         }
 
@@ -2446,7 +2446,7 @@ public class AdminController {
         boolean ajaxRequest = "XMLHttpRequest".equalsIgnoreCase(requestedWith)
                 || (acceptHeader != null && acceptHeader.contains("application/json"));
 
-        if (!isAdmin()) {
+        if (!isUser()) {
             if (ajaxRequest) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("success", false, "message", "You do not have permission to perform this action."));
@@ -2534,7 +2534,7 @@ public class AdminController {
         boolean ajaxRequest = "XMLHttpRequest".equalsIgnoreCase(requestedWith)
                 || (acceptHeader != null && acceptHeader.contains("application/json"));
 
-        if (!isAdmin()) {
+        if (!isUser()) {
             if (ajaxRequest) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("success", false, "message", "You do not have permission to perform this action."));
@@ -2628,7 +2628,7 @@ public class AdminController {
      */
     @PostMapping("/admin/{orgId}/calendar/reimport-all")
     public RedirectView reimportAllCalendarEntries(@PathVariable String orgId) {
-        if (!isAdmin()) {
+        if (!isUser()) {
             throw new AccessDeniedException("You do not have permission to perform this action.");
         }
 

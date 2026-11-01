@@ -56,7 +56,11 @@ class MagicLinkServiceTest {
 
         ArgumentCaptor<EmailMessage> messageCaptor = ArgumentCaptor.forClass(EmailMessage.class);
         verify(emailService).send(messageCaptor.capture());
-        assertTrue(messageCaptor.getValue().getTextBody().contains("/admin/login/magic-link/verify?token="));
+        EmailMessage message = messageCaptor.getValue();
+        assertTrue(message.getTextBody().contains("/admin/login/magic-link/verify?token="));
+        assertTrue(message.getHtmlBody().contains("Secure admin sign-in"));
+        assertTrue(message.getHtmlBody().contains("background:#275ed8"));
+        assertTrue(message.getHtmlBody().contains("This link expires in 15 minutes"));
     }
 
     @Test

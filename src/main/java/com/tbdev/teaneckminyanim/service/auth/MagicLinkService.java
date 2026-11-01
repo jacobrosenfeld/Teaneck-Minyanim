@@ -183,6 +183,9 @@ public class MagicLinkService {
         String siteName = settingsService.getSiteName();
         String escapedSiteName = HtmlUtils.htmlEscape(siteName);
         String loginUrl = buildLoginUrl(rawToken, request);
+        String escapedLoginUrl = HtmlUtils.htmlEscape(loginUrl);
+        String escapedUsername = HtmlUtils.htmlEscape(
+                user.getUsername() == null || user.getUsername().isBlank() ? "there" : user.getUsername());
 
         EmailMessage message = EmailMessage.builder()
                 .to(user.getEmail())
@@ -190,13 +193,47 @@ public class MagicLinkService {
                 .textBody("Use this link to sign in to " + siteName + ":\n\n"
                         + loginUrl + "\n\n"
                         + "This link expires in 15 minutes and can only be used once.")
-                .htmlBody("<p>Use this link to sign in to <strong>" + escapedSiteName + "</strong>:</p>"
-                        + "<p><a href=\"" + HtmlUtils.htmlEscape(loginUrl) + "\">Sign in to "
-                        + escapedSiteName + "</a></p>"
-                        + "<p>This link expires in 15 minutes and can only be used once.</p>")
+                .htmlBody(brandedLoginEmail(escapedSiteName, escapedUsername, escapedLoginUrl))
                 .metadata("source", "admin-magic-link")
                 .build();
         return emailService.send(message);
+    }
+
+    private String brandedLoginEmail(String siteName, String username, String loginUrl) {
+        return """
+                <!doctype html>
+                <html lang="en">
+                <body style="margin:0;padding:0;background:#f3f6fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f6fb;padding:32px 16px;">
+                    <tr><td align="center">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #dbe3ef;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(31,41,55,0.08);">
+                        <tr><td style="background:#275ed8;padding:28px 32px;color:#ffffff;">
+                          <div style="font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.88;">Secure admin sign-in</div>
+                          <div style="font-size:25px;font-weight:700;margin-top:6px;">{{SITE_NAME}}</div>
+                        </td></tr>
+                        <tr><td style="padding:32px;">
+                          <p style="font-size:17px;line-height:1.55;margin:0 0 14px;">Hello {{USERNAME}},</p>
+                          <p style="font-size:16px;line-height:1.6;margin:0 0 24px;">Use the secure button below to sign in. No password is required.</p>
+                          <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 24px;"><tr><td style="border-radius:8px;background:#275ed8;">
+                            <a href="{{LOGIN_URL}}" style="display:inline-block;padding:14px 24px;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;">Sign in to {{SITE_NAME}}</a>
+                          </td></tr></table>
+                          <div style="background:#f8fafc;border-left:4px solid #275ed8;border-radius:6px;padding:14px 16px;margin-bottom:24px;">
+                            <p style="font-size:14px;line-height:1.55;margin:0;"><strong>This link expires in 15 minutes</strong> and can only be used once.</p>
+                          </div>
+                          <p style="font-size:13px;line-height:1.55;color:#64748b;margin:0 0 8px;">If the button does not work, copy and paste this link into your browser:</p>
+                          <p style="font-size:12px;line-height:1.5;word-break:break-all;margin:0 0 24px;"><a href="{{LOGIN_URL}}" style="color:#275ed8;">{{LOGIN_URL}}</a></p>
+                          <p style="font-size:13px;line-height:1.55;color:#64748b;margin:0;">If you did not request this email, you can safely ignore it.</p>
+                        </td></tr>
+                        <tr><td style="border-top:1px solid #e5e7eb;padding:18px 32px;color:#64748b;font-size:12px;line-height:1.5;">Sent by {{SITE_NAME}} account security.</td></tr>
+                      </table>
+                    </td></tr>
+                  </table>
+                </body>
+                </html>
+                """
+                .replace("{{SITE_NAME}}", siteName)
+                .replace("{{USERNAME}}", username)
+                .replace("{{LOGIN_URL}}", loginUrl);
     }
 
     String buildLoginUrl(String rawToken, HttpServletRequest request) {

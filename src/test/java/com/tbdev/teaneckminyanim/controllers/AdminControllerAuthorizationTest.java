@@ -14,6 +14,7 @@ import com.tbdev.teaneckminyanim.service.TNMSettingsService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
 import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
+import com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
@@ -50,6 +52,7 @@ class AdminControllerAuthorizationTest {
     private OrganizationService organizationService;
     private MinyanService minyanService;
     private ApplicationSettingsService settingsService;
+    private OrganizationCalendarEntryRepository calendarEntryRepository;
 
     @BeforeEach
     void setUp() {
@@ -75,6 +78,10 @@ class AdminControllerAuthorizationTest {
         ReflectionTestUtils.setField(controller, "settingsService", settingsService);
         ReflectionTestUtils.setField(controller, "calendarMaterializationService", mock(CalendarMaterializationService.class));
         ReflectionTestUtils.setField(controller, "passkeyCredentialService", mock(PasskeyCredentialService.class));
+        ApplicationContext applicationContext = mock(ApplicationContext.class);
+        calendarEntryRepository = mock(OrganizationCalendarEntryRepository.class);
+        when(applicationContext.getBean(OrganizationCalendarEntryRepository.class)).thenReturn(calendarEntryRepository);
+        ReflectionTestUtils.setField(controller, "applicationContext", applicationContext);
     }
 
     @AfterEach
@@ -161,6 +168,24 @@ class AdminControllerAuthorizationTest {
                 () -> controller.minyanim("org-b", null, null));
 
         verify(minyanService, never()).findMatching(any());
+    }
+
+    @Test
+    void userCanOpenCalendarEntriesForAssignedShul() {
+        authenticate("user", Role.USER);
+        TNMUser user = user("A2", "user", "org-a", Role.USER);
+        Organization organization = organization("org-a");
+        when(userService.findByName("user")).thenReturn(user);
+        when(organizationService.findById("org-a")).thenReturn(Optional.of(organization));
+        when(calendarEntryRepository.findFromDateWithClassification(any(), any(), any(), any()))
+                .thenReturn(List.of());
+
+        ModelAndView mv = controller.viewCalendarEntries(
+                "org-a", null, null, null, null, null, null, null, null, null, false);
+
+        assertEquals("admin/calendar-entries", mv.getViewName());
+        assertEquals(organization, mv.getModel().get("organization"));
+        assertEquals(List.of(), mv.getModel().get("entries"));
     }
 
     @Test
