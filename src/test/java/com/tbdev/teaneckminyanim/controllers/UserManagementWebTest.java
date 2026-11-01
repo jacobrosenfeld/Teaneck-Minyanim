@@ -33,6 +33,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class UserManagementWebTest {
     @Test
+    void accountDialogsUseAdminDesignSystemStyling() throws Exception {
+        String template = Files.readString(Path.of("src/main/resources/templates/account.html"));
+
+        assertTrue(template.contains("modal fade account-modal"));
+        assertTrue(template.contains("account-modal-icon danger"));
+        assertTrue(template.contains("account-modal-icon warning"));
+        assertTrue(template.contains("modal-dialog modal-dialog-centered"));
+        assertTrue(template.contains("btn-modern btn-outline"));
+        assertTrue(template.contains("btn-modern btn-danger"));
+        assertFalse(template.contains("class=\"btn btn-outline-secondary\""));
+    }
+
+    @Test
     void creatingUserAutomaticallySendsWelcomeEmail() {
         UserManagementService management = mock(UserManagementService.class);
         MagicLinkService magicLinks = mock(MagicLinkService.class);
