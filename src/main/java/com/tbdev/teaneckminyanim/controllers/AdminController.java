@@ -763,9 +763,12 @@ public class AdminController {
         if (queriedUser == null) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND);
         requireAccountSettingsAccess(getCurrentUser(), queriedUser);
         mv.addObject("queriedaccount", queriedUser);
-        if (queriedUser.getOrganizationId() != null) {
-            mv.addObject("associatedorganization", organizationService.findById(queriedUser.getOrganizationId()).orElseGet(Organization::new));
-        }
+        List<Organization> associatedOrganizations = queriedUser.getAccessibleOrganizationIds().stream()
+                .map(organizationService::findById)
+                .flatMap(Optional::stream)
+                .sorted(Comparator.comparing(Organization::getName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+        mv.addObject("associatedOrganizations", associatedOrganizations);
 
         addStandardPageData(mv);
 

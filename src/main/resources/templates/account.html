@@ -654,25 +654,32 @@
                 </div>
 
                 <div class="settings-panel">
-                    <div class="account-card" th:if="${associatedorganization != null and associatedorganization.id != null}">
+                    <div class="account-card" th:each="associatedOrganization : ${associatedOrganizations}">
                         <div>
-                            <div class="account-card-title">Associated Organization</div>
-                            <p class="account-card-description" th:text="|View and manage ${associatedorganization.name}.|">
+                            <div class="account-card-title" th:text="${associatedOrganization.name}">Associated Organization</div>
+                            <p class="account-card-description" th:text="|View and manage ${associatedOrganization.name}.|">
                                 View and manage organization details.
                             </p>
                         </div>
                         <div class="account-actions">
-                            <a th:href="@{/admin/organization(id=${associatedorganization.id})}" class="btn-modern btn-primary">
+                            <a th:href="@{/admin/organization(id=${associatedOrganization.id})}" class="btn-modern btn-primary">
                                 <i class="fas fa-building"></i>
                                 Go to Organization
                             </a>
                         </div>
                     </div>
 
-                    <div class="account-card" th:if="${user.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+                    <div class="account-card" th:if="${#lists.isEmpty(associatedOrganizations) and !queriedaccount.isSuperAdmin()}">
                         <div>
-                            <div class="account-card-title">Organizations</div>
-                            <p class="account-card-description">See all organizations and manage their data and details.</p>
+                            <div class="account-card-title">No assigned organizations</div>
+                            <p class="account-card-description">This account does not currently have access to a shul.</p>
+                        </div>
+                    </div>
+
+                    <div class="account-card" th:if="${queriedaccount.isSuperAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+                        <div>
+                            <div class="account-card-title">All organizations</div>
+                            <p class="account-card-description">This super admin account can access every organization and platform setting.</p>
                         </div>
                         <div class="account-actions">
                             <a href="/admin/organizations" class="btn-modern btn-primary">

@@ -103,6 +103,26 @@ class AdminControllerAuthorizationTest {
     }
 
     @Test
+    void accountPageListsEveryAssignedOrganizationAlphabetically() {
+        authenticate("user", Role.USER);
+        TNMUser user = user("A1", "user", "org-b", Role.USER);
+        user.getAdditionalOrganizationIds().add("org-c");
+        user.getAdditionalOrganizationIds().add("org-a");
+        when(userService.findByName("user")).thenReturn(user);
+        when(userService.findById("A1")).thenReturn(user);
+        when(organizationService.findById("org-a")).thenReturn(Optional.of(organization("org-a")));
+        when(organizationService.findById("org-b")).thenReturn(Optional.of(organization("org-b")));
+        when(organizationService.findById("org-c")).thenReturn(Optional.of(organization("org-c")));
+
+        ModelAndView view = controller.accountRoute("A1", null, null, null, false);
+
+        @SuppressWarnings("unchecked")
+        List<Organization> organizations = (List<Organization>) view.getModel().get("associatedOrganizations");
+        assertEquals(List.of("org-a", "org-b", "org-c"),
+                organizations.stream().map(Organization::getId).toList());
+    }
+
+    @Test
     void legacyProfileCannotPromoteUser() {
         authenticate("manager", ADMIN);
         TNMUser manager = user("A1", "manager", "org-a", ADMIN);
