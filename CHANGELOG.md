@@ -43,7 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Android release pipeline wiring (Issue #132)**: Mobile Expo config now injects `GOOGLE_MAPS_API_KEY` into the `react-native-maps` Android config plugin at build time, production builds load analytics values from `.env.production` (with fail-fast if analytics is enabled but PostHog key is missing), Android map screen explicitly uses Google provider, `eas submit` production profile now includes Android staged rollout defaults, and release runbook was added at `docs/mobile/android-release-checklist.md`.
 
 ### Fixed
-- **Admin email throttling (#290)**: Super-admin welcome and sign-in sends no longer consume public magic-link rate limits. Public recovery and non-super-admin profile emails remain throttled.
 - **Public shul minyan row spacing**: Public organization minyan rows are compact again after the Selichos layout update, keeping the time block beside the minyan label on desktop and tablet widths.
 - **Calendar event minyan type schema (#263)**: Updated the `calendar_events.minyan_type` MariaDB enum to include `SELICHOS_SHACHARIS` so manual override imports keep database-level type validation instead of failing with a data-truncation rollback.
 - **XLSX Selichos override imports (#263)**: Manual override XLSX templates now include standalone `SELICHOS` and linked `SELICHOS_SHACHARIS`, org/super-admin imports accept Selichos rows including full-day replacement days, and wrong-template uploads now fail fast with a clear page-specific error.
@@ -78,6 +77,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - **Email credential encryption**: Sensitive email settings, including SMTP password and SES credentials, are now stored with reversible AES-GCM encryption using `APP_SETTINGS_ENCRYPTION_KEY`, with startup migration for existing plaintext values when the key is configured.
 - **Admin organization access control (#216)**: Organization managers and users can no longer view, edit, or route into admin panels for shuls outside their account by changing organization ids in URLs or form submissions.
+
+## [1.19.1] - 2026-11-05
+
+### Fixed
+- **Admin email throttling (#290)**: Super-admin welcome and sign-in sends no longer consume public magic-link rate limits. Public recovery and non-super-admin profile emails remain throttled.
 
 ## [1.19.0] - 2026-11-05
 
