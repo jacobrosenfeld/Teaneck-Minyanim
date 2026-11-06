@@ -1271,8 +1271,7 @@ public class AdminController {
         if (!normalizedUsername.matches("[a-z][a-z0-9_]{5,29}")) {
             return account(id, null, "Username must be 6–30 letters, numbers or underscores, starting with a letter.", null);
         }
-        if (normalizedEmail == null || normalizedEmail.length() > 254
-                || !normalizedEmail.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
+        if (!TNMUser.isValidAccountEmail(normalizedEmail)) {
             return account(id, null, "Enter a valid email address.", null);
         }
         boolean duplicateIdentity = TNMUserDAO.getAll().stream()

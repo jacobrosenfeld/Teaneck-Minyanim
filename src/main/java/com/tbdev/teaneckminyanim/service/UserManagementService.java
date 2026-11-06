@@ -101,8 +101,7 @@ public class UserManagementService {
         if (target.getUsername() == null && !name.matches("[a-z][a-z0-9_]{5,29}")) {
             throw new IllegalArgumentException("Username must be 6–30 letters, numbers or underscores, starting with a letter.");
         }
-        if (normalizedEmail == null || normalizedEmail.length() > 254
-                || !normalizedEmail.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
+        if (!TNMUser.isValidAccountEmail(normalizedEmail)) {
             throw new IllegalArgumentException("Enter a valid email address.");
         }
         boolean duplicate = repository.findAll().stream().anyMatch(other -> !Objects.equals(other.getId(), target.getId())

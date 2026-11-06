@@ -40,7 +40,7 @@ public class SuperAdminInitializerService {
         }
 
         String normalizedEmail = TNMUser.normalizeEmail(bootstrapEmail);
-        if (normalizedEmail == null || !normalizedEmail.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
+        if (!TNMUser.isValidAccountEmail(normalizedEmail)) {
             log.error("No super admin exists and SUPERADMIN_EMAIL is not configured with a valid address. "
                     + "Set it and restart to create the passwordless bootstrap account.");
             return;

@@ -104,6 +104,31 @@ public class TNMUser {
         return normalized.isBlank() ? null : normalized;
     }
 
+    /** Validates the normalized account address without regex backtracking. */
+    public static boolean isValidAccountEmail(String email) {
+        if (email == null || email.length() > 254) {
+            return false;
+        }
+
+        int at = email.indexOf('@');
+        if (at <= 0 || email.indexOf('@', at + 1) >= 0) {
+            return false;
+        }
+
+        // The domain needs a dot with at least one character on either side.
+        int domainDot = email.indexOf('.', at + 2);
+        if (domainDot < 0 || domainDot == email.length() - 1) {
+            return false;
+        }
+
+        for (int i = 0; i < email.length(); i++) {
+            if (" \t\n\u000B\f\r".indexOf(email.charAt(i)) >= 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public Role role() {
         return Role.getRole(roleId);
     }

@@ -85,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Calendar Entries admin render regression**: Removed fragile per-row `#httpServletRequest` expression from toggle form and switched redirect-state fallback to `Referer`, preventing mixed partial admin render/error-template bleed-through.
 
 ### Security
+- **Account email validation**: Replaced backtracking regular expressions in account management and bootstrap with bounded, linear checks.
 - **Authentication release hardening (#243)**: Enabled global CSRF protection for browser routes, made logout and legacy mutations POST-only, made magic-link consumption atomic, added IP/identifier rate limits and token cleanup, added structured auth audit events, removed unsafe bootstrap defaults, and disabled password login unless explicitly enabled as an emergency rollback.
 - **Admin auth hardening (#243)**: Disabled accounts now load into Spring Security as disabled users, magic-link tokens are stored as single-use SHA-256 hashes with 15-minute expiry, and the hard-coded remember-me key was removed from admin login configuration.
 - **Email credential encryption**: Sensitive email settings, including SMTP password and SES credentials, are now stored with reversible AES-GCM encryption using `APP_SETTINGS_ENCRYPTION_KEY`, with startup migration for existing plaintext values when the key is configured.
