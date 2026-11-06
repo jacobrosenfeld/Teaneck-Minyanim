@@ -18,13 +18,16 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class MagicLinkServiceTest {
@@ -150,15 +153,16 @@ class MagicLinkServiceTest {
     }
 
     @Test
-    void managedWelcomeCreatesTokenAndUsesWelcomeEmailRenderer() {
+    void managedWelcomeAndSignInSendWithoutConsumingPublicQuota() {
         MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
         TNMUserService userService = mock(TNMUserService.class);
         ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
         EmailService emailService = mock(EmailService.class);
         UserWelcomeEmailService welcomeEmails = mock(UserWelcomeEmailService.class);
         MagicLinkRateLimitService rateLimits = mock(MagicLinkRateLimitService.class);
-        when(rateLimits.allow(any(), any())).thenReturn(true);
         when(settingsService.getSiteRootUrl()).thenReturn("https://example.com");
+        when(settingsService.getSiteName()).thenReturn("Teaneck Minyanim");
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(null, "sent"));
         when(welcomeEmails.sendWelcome(any(), any()))
                 .thenReturn(EmailSendResult.success(null, "sent"));
         MagicLinkService service = new MagicLinkService(tokenRepository, userService, settingsService,
@@ -166,11 +170,33 @@ class MagicLinkServiceTest {
         TNMUser user = user(true);
 
         assertTrue(service.sendManagedWelcomeLink(user, new MockHttpServletRequest()));
+        assertTrue(service.sendManagedLoginLink(user, new MockHttpServletRequest()));
 
-        verify(tokenRepository).save(any());
+        verify(tokenRepository, times(2)).save(any());
         verify(welcomeEmails).sendWelcome(org.mockito.ArgumentMatchers.eq(user),
                 org.mockito.ArgumentMatchers.contains("/admin/login/magic-link/verify?token="));
-        verify(userService).update(user);
+        verify(emailService).send(any());
+        verify(userService, times(2)).update(user);
+        verifyNoInteractions(rateLimits);
+    }
+
+    @Test
+    void publicAndProfileRequestsStillStopWhenRateLimited() {
+        MagicLinkTokenRepository tokenRepository = mock(MagicLinkTokenRepository.class);
+        TNMUserService userService = mock(TNMUserService.class);
+        EmailService emailService = mock(EmailService.class);
+        UserWelcomeEmailService welcomeEmails = mock(UserWelcomeEmailService.class);
+        MagicLinkRateLimitService rateLimits = mock(MagicLinkRateLimitService.class);
+        MagicLinkService service = new MagicLinkService(tokenRepository, userService,
+                mock(ApplicationSettingsService.class), emailService, rateLimits, mock(AuthAuditService.class), welcomeEmails);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        assertEquals(MagicLinkService.MagicLinkRequestResult.neutral(),
+                service.requestLoginLink("manager@example.com", request));
+        assertFalse(service.sendProfileWelcomeLink(user(true), request));
+
+        verify(rateLimits, times(2)).allow(any(), any());
+        verifyNoInteractions(tokenRepository, userService, emailService, welcomeEmails);
     }
 
     @Test
