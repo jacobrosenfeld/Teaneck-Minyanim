@@ -80,36 +80,31 @@ public class MagicLinkService {
         }
 
         auditService.record("MAGIC_LINK_REQUESTED", user.getId(), ipHash, null);
-        sendManagedLoginLinkInternal(user, request);
+        sendManagedLinkInternal(user, request, false);
         return MagicLinkRequestResult.neutral();
     }
 
-    /** Called only after account-management authorization, or the public neutral lookup above. */
+    /** Called only after super-admin authorization. */
     @Transactional
     public boolean sendManagedLoginLink(TNMUser user, HttpServletRequest request) {
-        if (!magicLinkEnabled) return false;
-        if (user == null) return false;
-        String ipHash = sha256(clientIp(request));
-        if (!rateLimitService.allow(ipHash, sha256("managed:" + user.getId()))) {
-            auditService.record("MAGIC_LINK_RATE_LIMITED", user.getId(), ipHash, "managed");
-            return false;
-        }
-        return sendManagedLinkInternal(user, request, false);
+        return magicLinkEnabled && sendManagedLinkInternal(user, request, false);
+    }
+
+    /** Called only after super-admin authorization. */
+    @Transactional
+    public boolean sendManagedWelcomeLink(TNMUser user, HttpServletRequest request) {
+        return magicLinkEnabled && sendManagedLinkInternal(user, request, true);
     }
 
     @Transactional
-    public boolean sendManagedWelcomeLink(TNMUser user, HttpServletRequest request) {
+    public boolean sendProfileWelcomeLink(TNMUser user, HttpServletRequest request) {
         if (!magicLinkEnabled || user == null) return false;
         String ipHash = sha256(clientIp(request));
         if (!rateLimitService.allow(ipHash, sha256("welcome:" + user.getId()))) {
-            auditService.record("WELCOME_EMAIL_RATE_LIMITED", user.getId(), ipHash, "managed");
+            auditService.record("WELCOME_EMAIL_RATE_LIMITED", user.getId(), ipHash, "profile");
             return false;
         }
         return sendManagedLinkInternal(user, request, true);
-    }
-
-    private boolean sendManagedLoginLinkInternal(TNMUser user, HttpServletRequest request) {
-        return sendManagedLinkInternal(user, request, false);
     }
 
     private boolean sendManagedLinkInternal(TNMUser user, HttpServletRequest request, boolean welcome) {
