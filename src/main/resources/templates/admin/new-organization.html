@@ -24,8 +24,8 @@
     <!-- Page Header -->
     <div class="page-header flex justify-between items-center">
         <div>
-            <h1 class="page-title">Add an Organization</h1>
-            <p class="page-description">Create an organization along with an account used for posting location details, minyan information, and more.</p>
+            <h1 class="page-title">Add a Shul</h1>
+            <p class="page-description">Create a shul and its first manager account.</p>
         </div>
         <div class="page-actions">
             <a href="/admin/organizations" class="btn-modern btn-secondary">
@@ -54,8 +54,7 @@
         <i class="fas fa-info-circle alert-modern-icon"></i>
         <div class="alert-modern-content">
             <p class="mb-0">
-                The organization created below will be created with a default account using the username and password you enter below.
-                <span th:text="|The account will be a member of the organization, not an admin on the ${siteName ?: 'Minyanim Platform'} site.|"></span>
+                The manager account is passwordless. After creating the shul, open User Management and send its first sign-in link.
             </p>
         </div>
     </div>
@@ -69,25 +68,25 @@
             <form th:action="@{/admin/create-organization}" method="post">
                 <div class="form-group-modern">
                     <label for="name" class="form-label-modern">Organization Name *</label>
-                    <input type="text" class="form-control-modern" name="name" id="name" required>
+                    <input type="text" class="form-control-modern" name="name" id="name" th:value="${formValues?.get('name')}" required>
                     <small class="form-help-modern">This is the public display name for the organization.</small>
                 </div>
 
                 <div class="form-group-modern">
                     <label for="address" class="form-label-modern">Organization Address *</label>
-                    <input type="text" class="form-control-modern" name="address" id="address" required>
+                    <input type="text" class="form-control-modern" name="address" id="address" th:value="${formValues?.get('address')}" required>
                     <small class="form-help-modern">This is the publicly displayed address for the organization.</small>
                 </div>
 
                 <div class="form-group-modern">
                     <label for="site-url" class="form-label-modern">Website</label>
-                    <input type="text" class="form-control-modern" name="site-url" id="site-url">
+                    <input type="text" class="form-control-modern" name="site-url" id="site-url" th:value="${formValues?.get('site-url')}">
                     <small class="form-help-modern">Optional: This website link will be displayed publically. Make sure NOT to include http://</small>
                 </div>
 
                 <div class="form-group-modern">
                     <label for="url-slug" class="form-label-modern">URL Slug</label>
-                    <input type="text" class="form-control-modern" name="url-slug" id="url-slug" pattern="[a-z0-9\-]+">
+                    <input type="text" class="form-control-modern" name="url-slug" id="url-slug" pattern="[a-z0-9\-]+" th:value="${formValues?.get('url-slug')}">
                     <small class="form-help-modern">Human-readable URL for this organization (e.g., "keter-torah"). Only lowercase letters, numbers, and hyphens allowed. Leave blank to auto-generate from organization name.</small>
                 </div>
 
@@ -95,10 +94,10 @@
                     <label for="nusach" class="form-label-modern">Nusach</label>
                     <select class="form-control-modern" name="nusach" id="nusach">
                         <option value="unspecified">None specified</option>
-                        <option value="arizal">Arizal</option>
-                        <option value="edot_hamizrach">Edot HaMizrach</option>
-                        <option value="sefard">Sefard</option>
-                        <option value="ashkenaz" selected>Ashkenaz</option>
+                        <option value="arizal" th:selected="${formValues?.get('nusach') == 'arizal'}">Arizal</option>
+                        <option value="edot_hamizrach" th:selected="${formValues?.get('nusach') == 'edot_hamizrach'}">Edot HaMizrach</option>
+                        <option value="sefard" th:selected="${formValues?.get('nusach') == 'sefard'}">Sefard</option>
+                        <option value="ashkenaz" th:selected="${formValues == null or formValues.get('nusach') == 'ashkenaz'}">Ashkenaz</option>
                     </select>
                 </div>
 
@@ -108,29 +107,19 @@
 
                 <div class="form-group-modern">
                     <label for="email" class="form-label-modern">Email Address *</label>
-                    <input type="email" class="form-control-modern" name="email" id="email" required>
-                    <small class="form-help-modern">This email will be used for password recovery.</small>
+                    <input type="email" class="form-control-modern" name="email" id="email" th:value="${formValues?.get('email')}" required>
+                    <small class="form-help-modern">This email receives sign-in and recovery links.</small>
                 </div>
 
                 <div class="form-group-modern">
                     <label for="username" class="form-label-modern">Username *</label>
-                    <input type="text" class="form-control-modern" name="username" id="username" required>
+                    <input type="text" class="form-control-modern" name="username" id="username" th:value="${formValues?.get('username')}" required>
                     <small class="form-help-modern">This is how the organization will log into the admin panel.</small>
                 </div>
 
                 <div class="form-group-modern">
-                    <label for="password" class="form-label-modern">Password *</label>
-                    <input type="password" class="form-control-modern" name="password" id="password" required>
-                </div>
-
-                <div class="form-group-modern">
-                    <label for="cpassword" class="form-label-modern">Confirm Password *</label>
-                    <input type="password" class="form-control-modern" name="cpassword" id="cpassword" required>
-                </div>
-
-                <div class="form-group-modern">
                     <label for="orgColor" class="form-label-modern">Shul Color</label>
-                    <input type="color" class="form-control-modern" name="orgColor" id="orgColor" value="#563d7c" title="Choose your color" style="height: 48px;">
+                    <input type="color" class="form-control-modern" name="orgColor" id="orgColor" th:value="${formValues?.get('orgColor') ?: '#563d7c'}" title="Choose your color" style="height: 48px;">
                 </div>
 
                 <div th:if="${inputerrormessage}" class="alert-modern alert-danger" style="margin-top: var(--space-4);">

@@ -1,6 +1,7 @@
 package com.tbdev.teaneckminyanim.security;
 
 import com.tbdev.teaneckminyanim.service.LoginAttemptService;
+import com.tbdev.teaneckminyanim.service.auth.AuthAuditService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
@@ -18,6 +19,9 @@ public class AuthenticationFailureListener implements
     @Autowired
     private LoginAttemptService loginAttemptService;
 
+    @Autowired
+    private AuthAuditService auditService;
+
     @Override
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent e) {
         final String xfHeader = request.getHeader("X-Forwarded-For");
@@ -26,5 +30,10 @@ public class AuthenticationFailureListener implements
         } else {
             loginAttemptService.loginFailed(xfHeader.split(",")[0]);
         }
+        String authenticationType = e.getAuthentication().getClass().getSimpleName();
+        String method = authenticationType.toLowerCase().contains("webauthn") ? "PASSKEY" : "PASSWORD";
+        auditService.record(method + "_LOGIN_FAILED", null,
+                AuthAuditService.hash(xfHeader == null ? request.getRemoteAddr() : xfHeader.split(",")[0]),
+                authenticationType);
     }
 }

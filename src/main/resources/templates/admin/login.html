@@ -3,6 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <title th:text="|Login - ${siteName ?: 'Minyanim Platform'} Admin|"></title>
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
@@ -49,6 +51,16 @@
                         <div class="login-shell">
                             <section class="login-panel" aria-labelledby="login-title">
                                 <div class="login-brand">
+                                    <svg class="login-maariv-quote" lang="he" dir="rtl"
+                                         viewBox="0 0 360 100" role="img"
+                                         aria-label="משנה עתים ומחליף את הזמנים">
+                                        <path id="login-maariv-arc" d="M 20 86 Q 180 4 340 86" fill="none"/>
+                                        <text>
+                                            <textPath href="#login-maariv-arc" startOffset="50%" text-anchor="middle">
+                                                משנה עתים ומחליף את הזמנים
+                                            </textPath>
+                                        </text>
+                                    </svg>
                                     <img src="/assets/icons/favicon.svg" alt="" class="login-brand-mark">
                                     <h1 id="login-title" th:text="|${siteName ?: 'Minyanim Platform'} Admin|">Minyanim Platform Admin</h1>
                                 </div>
@@ -73,6 +85,10 @@
                                     </div>
                                 </form>
 
+                                <button type="button" class="login-secondary-action d-none"
+                                        th:if="${magicLinkEnabled}"
+                                        id="magic-link-button">Email me a sign-in link</button>
+
                                 <div id="login-flow-status"
                                      class="login-status"
                                      th:classappend="${error != null} ? ' login-status-error' : (${magicLinkMessage != null or logout == true} ? ' login-status-success' : '')"
@@ -91,11 +107,13 @@
                                 <button type="button"
                                         class="login-secondary-action"
                                         id="password-toggle"
+                                        th:if="${passwordLoginEnabled}"
                                         th:classappend="${error == null and magicLinkMessage == null} ? ' d-none' : ''">
                                     Password instead
                                 </button>
 
                                 <form id="login-form"
+                                      th:if="${passwordLoginEnabled}"
                                       class="login-password-panel"
                                       th:classappend="${error != null} ? ' is-open' : ''"
                                       onsubmit="preparePasswordLogin()"
@@ -105,7 +123,9 @@
                                     <input type="hidden" name="username" id="password-username-field">
                                     <label for="password-field">Password</label>
                                     <input type="password" class="form-control" name="password"
-                                           id="password-field" placeholder="Password" autocomplete="current-password">
+                                           id="password-field" placeholder="Password" autocomplete="current-password"
+                                           aria-describedby="login-password-requirements" required>
+                                    <small id="login-password-requirements">Passwords use at least 8 characters with an uppercase letter, a lowercase letter, and a number.</small>
                                     <input type="hidden" name="recaptchaToken" value="">
                                     <button type="submit" class="login-password-submit">Sign in with password</button>
                                     <div id="login-recaptcha-status" class="form-msg-fatal" role="status" aria-live="polite"></div>

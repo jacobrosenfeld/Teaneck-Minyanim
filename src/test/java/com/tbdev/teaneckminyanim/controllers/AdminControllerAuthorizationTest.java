@@ -14,6 +14,7 @@ import com.tbdev.teaneckminyanim.service.TNMSettingsService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
 import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
+import com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +53,7 @@ class AdminControllerAuthorizationTest {
     private OrganizationService organizationService;
     private MinyanService minyanService;
     private ApplicationSettingsService settingsService;
+    private OrganizationCalendarEntryRepository calendarEntryRepository;
 
     @BeforeEach
     void setUp() {
@@ -75,11 +79,71 @@ class AdminControllerAuthorizationTest {
         ReflectionTestUtils.setField(controller, "settingsService", settingsService);
         ReflectionTestUtils.setField(controller, "calendarMaterializationService", mock(CalendarMaterializationService.class));
         ReflectionTestUtils.setField(controller, "passkeyCredentialService", mock(PasskeyCredentialService.class));
+        ApplicationContext applicationContext = mock(ApplicationContext.class);
+        calendarEntryRepository = mock(OrganizationCalendarEntryRepository.class);
+        when(applicationContext.getBean(OrganizationCalendarEntryRepository.class)).thenReturn(calendarEntryRepository);
+        ReflectionTestUtils.setField(controller, "applicationContext", applicationContext);
     }
 
     @AfterEach
     void tearDown() {
         SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void managerCanOpenSecondAssignedShulButNotUnassignedShul() {
+        authenticate("manager", ADMIN);
+        TNMUser manager = user("A1", "manager", "org-a", ADMIN);
+        manager.getAdditionalOrganizationIds().add("org-b");
+        when(userService.findByName("manager")).thenReturn(manager);
+        assertEquals("/admin/org-b/minyanim", controller.orgDashboard("org-b").getUrl());
+        assertThrows(AccessDeniedException.class, () -> controller.orgDashboard("org-c"));
+        manager.getAdditionalOrganizationIds().clear();
+        assertThrows(AccessDeniedException.class, () -> controller.orgDashboard("org-b"));
+    }
+
+    @Test
+    void accountPageListsEveryAssignedOrganizationAlphabetically() {
+        authenticate("user", Role.USER);
+        TNMUser user = user("A1", "user", "org-b", Role.USER);
+        user.getAdditionalOrganizationIds().add("org-c");
+        user.getAdditionalOrganizationIds().add("org-a");
+        when(userService.findByName("user")).thenReturn(user);
+        when(userService.findById("A1")).thenReturn(user);
+        when(organizationService.findById("org-a")).thenReturn(Optional.of(organization("org-a")));
+        when(organizationService.findById("org-b")).thenReturn(Optional.of(organization("org-b")));
+        when(organizationService.findById("org-c")).thenReturn(Optional.of(organization("org-c")));
+
+        ModelAndView view = controller.accountRoute("A1", null, null, null, false);
+
+        @SuppressWarnings("unchecked")
+        List<Organization> organizations = (List<Organization>) view.getModel().get("associatedOrganizations");
+        assertEquals(List.of("org-a", "org-b", "org-c"),
+                organizations.stream().map(Organization::getId).toList());
+    }
+
+    @Test
+    void legacyProfileCannotPromoteUser() {
+        authenticate("manager", ADMIN);
+        TNMUser manager = user("A1", "manager", "org-a", ADMIN);
+        TNMUser target = user("A2", "target", "org-a", Role.USER);
+        when(userService.findByName("manager")).thenReturn(manager);
+        when(userService.findById("A2")).thenReturn(target);
+        assertThrows(AccessDeniedException.class, () -> controller.updateAccount(
+                "A2", "target", "target@example.com", 1, null));
+        verify(userService, never()).update(any());
+    }
+
+    @Test
+    void managerCannotEditUserWithBroaderShulScope() {
+        authenticate("manager", ADMIN);
+        TNMUser manager = user("A1", "manager", "org-a", ADMIN);
+        TNMUser target = user("A2", "target", "org-a", Role.USER);
+        target.getAdditionalOrganizationIds().add("org-b");
+        when(userService.findByName("manager")).thenReturn(manager);
+        when(userService.findById("A2")).thenReturn(target);
+        assertThrows(AccessDeniedException.class, () -> controller.disableAccount("A2", null));
+        verify(userService, never()).update(any());
     }
 
     @Test
@@ -126,6 +190,24 @@ class AdminControllerAuthorizationTest {
                 () -> controller.minyanim("org-b", null, null));
 
         verify(minyanService, never()).findMatching(any());
+    }
+
+    @Test
+    void userCanOpenCalendarEntriesForAssignedShul() {
+        authenticate("user", Role.USER);
+        TNMUser user = user("A2", "user", "org-a", Role.USER);
+        Organization organization = organization("org-a");
+        when(userService.findByName("user")).thenReturn(user);
+        when(organizationService.findById("org-a")).thenReturn(Optional.of(organization));
+        when(calendarEntryRepository.findFromDateWithClassification(any(), any(), any(), any()))
+                .thenReturn(List.of());
+
+        ModelAndView mv = controller.viewCalendarEntries(
+                "org-a", null, null, null, null, null, null, null, null, null, false);
+
+        assertEquals("admin/calendar-entries", mv.getViewName());
+        assertEquals(organization, mv.getModel().get("organization"));
+        assertEquals(List.of(), mv.getModel().get("entries"));
     }
 
     @Test
@@ -215,9 +297,12 @@ class AdminControllerAuthorizationTest {
         when(organizationService.findById("org-a")).thenReturn(Optional.of(organization));
         when(organizationService.getAll()).thenReturn(new java.util.ArrayList<>(List.of(organization)));
 
-        ModelAndView mv = controller.changeAccountPassword("A1", "NewPass123", "NewPass123");
+        RedirectAttributesModelMap redirect = new RedirectAttributesModelMap();
+        String view = controller.changeAccountPassword("A1", "NewPass123", "NewPass123", redirect);
 
-        assertEquals("account", mv.getViewName());
+        assertEquals("redirect:/admin/account?id=A1", view);
+        assertEquals("Successfully updated the account password.",
+                redirect.getFlashAttributes().get("successMessage"));
         verify(userService).update(argThat(updated ->
                 "A1".equals(updated.getId())
                         && "manager".equals(updated.getUsername())

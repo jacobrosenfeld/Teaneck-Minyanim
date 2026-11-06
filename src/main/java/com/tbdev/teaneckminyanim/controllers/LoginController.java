@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,6 +37,15 @@ public class LoginController {
     private final MagicLinkService magicLinkService;
     private final TNMUserService userService;
     private final PasskeyCredentialService passkeyCredentialService;
+
+    @Value("${auth.password-login.enabled:false}")
+    private boolean passwordLoginEnabled;
+
+    @Value("${auth.magic-link.enabled:true}")
+    private boolean magicLinkEnabled = true;
+
+    @Value("${auth.passkeys.enabled:true}")
+    private boolean passkeysEnabled = true;
     
     @ModelAttribute("siteName")
     public String siteName() {
@@ -56,10 +66,19 @@ public class LoginController {
     public String recaptchaSiteKey() {
         return settingsService.getRecaptchaSiteKey();
     }
+
+    @ModelAttribute("passwordLoginEnabled")
+    public boolean passwordLoginEnabled() {
+        return passwordLoginEnabled;
+    }
+
+    @ModelAttribute("magicLinkEnabled")
+    public boolean magicLinkEnabled() {
+        return magicLinkEnabled;
+    }
     
     @GetMapping("/admin/login")
     public ModelAndView login(@RequestParam(value = "error",required = false) String error, @RequestParam(value = "logout",	required = false) boolean logout) {
-        System.out.println("LoginController.login() called");
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/login");
 
@@ -69,12 +88,7 @@ public class LoginController {
         String timenow = dateFormat.format(datenow);
         mv.getModel().put("timenow", timenow);
 
-        if (logout) {
-            System.out.println("Logging out...");
-            SecurityContextHolder.getContext().setAuthentication(null);
-            System.out.println("Logout Successful");
-            mv.getModel().put("logout", true);
-        }
+        if (logout) mv.getModel().put("logout", true);
 
         if (error != null && !error.isEmpty()) {
             mv.getModel().put("error", error);
@@ -88,9 +102,9 @@ public class LoginController {
                                          @RequestParam(value = "email", required = false) String email,
                                          HttpServletRequest request) {
         ModelAndView mv = login(null, false);
-        MagicLinkService.MagicLinkRequestResult result = magicLinkService.requestLoginLink(
-                firstPresent(identifier, email),
-                request);
+        MagicLinkService.MagicLinkRequestResult result = magicLinkEnabled
+                ? magicLinkService.requestLoginLink(firstPresent(identifier, email), request)
+                : MagicLinkService.MagicLinkRequestResult.neutral();
         mv.addObject("magicLinkMessage", result.message());
         return mv;
     }
@@ -101,9 +115,9 @@ public class LoginController {
     @ResponseBody
     public MagicLinkResponse requestMagicLinkJson(@RequestBody LoginIdentifierRequest loginRequest,
                                                   HttpServletRequest request) {
-        MagicLinkService.MagicLinkRequestResult result = magicLinkService.requestLoginLink(
-                loginRequest == null ? null : loginRequest.identifier(),
-                request);
+        MagicLinkService.MagicLinkRequestResult result = magicLinkEnabled
+                ? magicLinkService.requestLoginLink(loginRequest == null ? null : loginRequest.identifier(), request)
+                : MagicLinkService.MagicLinkRequestResult.neutral();
         return new MagicLinkResponse(result.message());
     }
 
@@ -112,24 +126,18 @@ public class LoginController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public LoginMethodsResponse loginMethods(@RequestBody LoginIdentifierRequest loginRequest) {
-        String identifier = loginRequest == null ? null : loginRequest.identifier();
-        try {
-            TNMUser user = userService.findByIdentifier(identifier);
-            if (user == null || user.isDisabled()) {
-                return new LoginMethodsResponse(false, true);
-            }
-            return new LoginMethodsResponse(passkeyCredentialService.hasPasskeys(user), true);
-        } catch (RuntimeException e) {
-            log.warn("Could not resolve passwordless login methods; falling back to magic-link/password options: {}",
-                    e.getMessage());
-            return new LoginMethodsResponse(false, true);
-        }
+        // Keep this response account-neutral. The WebAuthn ceremony determines whether
+        // a usable credential exists without exposing account state to this endpoint.
+        return new LoginMethodsResponse(passkeysEnabled, magicLinkEnabled);
     }
 
     @GetMapping("/admin/login/magic-link/verify")
     public ModelAndView verifyMagicLink(@RequestParam(value = "token", required = false) String token,
                                         HttpServletRequest request) {
         try {
+            if (!magicLinkEnabled) {
+                throw new MagicLinkAuthenticationException("Sign-in link is invalid or expired.");
+            }
             TNMUser user = magicLinkService.consumeLoginToken(token);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     user.getUsername(),

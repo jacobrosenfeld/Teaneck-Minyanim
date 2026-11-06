@@ -9,10 +9,10 @@
 <body>
 <div layout:fragment="content">
     <script th:if="${successmessage}" th:inline="javascript">
-        showToast('success', /*[[${successmessage}]]*/ 'Success');
+        showToast(/*[[${successmessage}]]*/ 'Success', 'success');
     </script>
     <script th:if="${errormessage}" th:inline="javascript">
-        showToast('error', /*[[${errormessage}]]*/ 'Error');
+        showToast(/*[[${errormessage}]]*/ 'Error', 'error');
     </script>
     <h1 class="display-4 d-sm-block">
         Update Minyan
@@ -811,7 +811,9 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <a role="button" class="btn btn-danger" th:href="@{|/admin/${organization.id}/minyanim/${minyan.id}/delete|}">Delete</a>
+                <form th:action="@{|/admin/${organization.id}/minyanim/${minyan.id}/delete|}" method="post">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
             </div>
         </div>
     </div>

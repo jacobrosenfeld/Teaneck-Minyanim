@@ -106,7 +106,9 @@ public class TNMUserService {
      */
     public TNMUser getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getName() == null) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken
+                || authentication.getName() == null) {
             return null;
         }
         String username = authentication.getName();
@@ -118,7 +120,7 @@ public class TNMUserService {
      */
     public boolean isSuperAdmin() {
         TNMUser user = getCurrentUser();
-        return user != null && user.getOrganizationId() == null && user.role().equals(Role.ADMIN);
+        return user != null && user.isEnabled() && user.isSuperAdmin();
     }
 
     /**
@@ -130,7 +132,7 @@ public class TNMUserService {
             return true;
         }
         TNMUser user = getCurrentUser();
-        return user != null && organizationId.equals(user.getOrganizationId());
+        return user != null && user.canAccessOrganization(organizationId);
     }
 
     private void prepareForPersistence(TNMUser tnmUser) {

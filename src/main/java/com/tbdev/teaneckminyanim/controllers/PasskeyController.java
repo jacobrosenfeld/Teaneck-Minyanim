@@ -8,11 +8,14 @@ import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
 import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.web.webauthn.api.CredentialRecord;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -34,6 +37,9 @@ public class PasskeyController {
     private final VersionService versionService;
     private final OrganizationService organizationService;
 
+    @Value("${auth.passkeys.enabled:true}")
+    private boolean passkeysEnabled = true;
+
     @ModelAttribute("siteName")
     public String siteName() {
         return settingsService.getSiteName();
@@ -46,6 +52,7 @@ public class PasskeyController {
 
     @GetMapping("/webauthn/register")
     public ModelAndView passkeys() {
+        if (!passkeysEnabled) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         TNMUser user = userService.getCurrentUser();
         List<PasskeyRow> passkeys = passkeyRows(user);
         ModelAndView mv = new ModelAndView("admin/passkeys");

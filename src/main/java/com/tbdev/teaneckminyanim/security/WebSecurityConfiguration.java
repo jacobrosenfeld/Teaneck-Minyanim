@@ -3,6 +3,7 @@ package com.tbdev.teaneckminyanim.security;
 import com.tbdev.teaneckminyanim.service.TNMUserDetailsService;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcOperations;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.webauthn.management.JdbcUserCredentialRepository;
 import org.springframework.security.web.webauthn.management.UserCredentialRepository;
@@ -41,6 +43,12 @@ public class WebSecurityConfiguration {
     @Autowired
     TNMUserDetailsService userDetailsService;
 
+    @Value("${auth.password-login.enabled:false}")
+    private boolean passwordLoginEnabled;
+
+    @Value("${auth.passkeys.enabled:true}")
+    private boolean passkeysEnabled;
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -63,7 +71,8 @@ public class WebSecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            LoginRecaptchaFilter loginRecaptchaFilter,
                                            AdminLoginSuccessHandler adminLoginSuccessHandler,
-                                           ApplicationSettingsService settingsService) throws Exception {
+                                           ApplicationSettingsService settingsService,
+                                           com.tbdev.teaneckminyanim.service.TNMUserService users) throws Exception {
         // Never save static asset requests as the post-login redirect target
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setRequestMatcher(new NegatedRequestMatcher(new OrRequestMatcher(
@@ -78,7 +87,8 @@ public class WebSecurityConfiguration {
 
         http
             .requestCache(cache -> cache.requestCache(requestCache))
-            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionFixation(fixation -> fixation.migrateSession()))
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/v1/**", "/subscribe"))
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
             .authorizeHttpRequests(auth -> auth
@@ -91,11 +101,11 @@ public class WebSecurityConfiguration {
                                 "/webauthn/authenticate/options", "/login/webauthn",
                                 "/webjars/**", "/**/*.css", "/**/*.js", "/static/**", "/db/**",
                                 "/assets/**", "/favicon.ico", "/test/errors/**", "/subscribe", "/subscription").permitAll()
-                .requestMatchers("/admin", "/admin/dashboard", "/admin/organization", "/admin/account", 
+                .requestMatchers("/admin", "/admin/dashboard", "/admin/org/*/dashboard", "/admin/organization", "/admin/account",
                                 "/admin/update-organization", "/admin/update-account", "/admin/account/notifications",
                                 "/admin/*/locations", "/admin/*/locations/**",
-                                "/admin/create-location", "/admin/update-location", "/admin/delete-location", 
-                                "/admin/*/minyanim", "/admin/*/minyanim/**", 
+                                "/admin/create-location", "/admin/update-location", "/admin/delete-location",
+                                "/admin/*/minyanim", "/admin/*/minyanim/**",
                                 "/admin/*/calendar-entries", "/admin/*/calendar-entries/**",
                                 "/admin/*/calendar-events", "/admin/*/calendar-events/**",
                                 "/admin/*/overrides", "/admin/*/overrides/**",
@@ -105,27 +115,36 @@ public class WebSecurityConfiguration {
                 .anyRequest().authenticated()
             )
             .addFilterBefore(loginRecaptchaFilter, UsernamePasswordAuthenticationFilter.class)
-            .formLogin(form -> form
-                .loginProcessingUrl("/j_spring_security_check")
-                .loginPage("/admin/login")
-                .defaultSuccessUrl("/admin")
-                .successHandler(adminLoginSuccessHandler)
-                .failureUrl("/admin/login?error=true")
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .permitAll()
-            )
+            .addFilterBefore(new AccountAccessFilter(users), UsernamePasswordAuthenticationFilter.class)
             .logout(logout -> logout
                 .logoutUrl("/admin/logout")
                 .logoutSuccessUrl("/admin/login?logout=true")
                 .permitAll()
-            )
-            .webAuthn(webAuthn -> webAuthn
+            );
+
+        if (passkeysEnabled) {
+            http.webAuthn(webAuthn -> webAuthn
                 .rpId(webAuthnRpId(settingsService))
                 .rpName(settingsService.getSiteName())
                 .allowedOrigins(webAuthnAllowedOrigins(settingsService))
                 .disableDefaultRegistrationPage(true)
             );
+        }
+
+        if (passwordLoginEnabled) {
+            http.formLogin(form -> form
+                    .loginProcessingUrl("/j_spring_security_check")
+                    .loginPage("/admin/login")
+                    .defaultSuccessUrl("/admin")
+                    .successHandler(adminLoginSuccessHandler)
+                    .failureUrl("/admin/login?error=true")
+                    .usernameParameter("username")
+                    .passwordParameter("password")
+                    .permitAll());
+        } else {
+            http.exceptionHandling(exceptions -> exceptions
+                    .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/admin/login")));
+        }
 
         return http.build();
     }

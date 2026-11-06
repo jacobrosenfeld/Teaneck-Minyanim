@@ -89,21 +89,20 @@ public class WeeklyMinyanReviewEmailService {
                 continue;
             }
 
-            String orgId = trimToNull(recipient.getOrganizationId());
-        Organization organization = orgId == null ? null : organizationsById.get(orgId);
-            if (organization == null) {
-                skipped++;
-                log.warn("Skipping weekly review email for account {} because organization {} was not found or is disabled",
-                        recipient.getId(), recipient.getOrganizationId());
-                continue;
+            for (String orgId : recipient.getAccessibleOrganizationIds()) {
+                Organization organization = organizationsById.get(orgId);
+                if (organization == null) {
+                    skipped++;
+                    continue;
+                }
+                OrganizationScheduleSummary summary = summariesByOrgId.get(orgId);
+                if (sendOrganizationDigest(recipient, organization, summary.events(), range).isSuccess()) {
+                    sent++;
+                } else {
+                    failed++;
+                }
             }
 
-            OrganizationScheduleSummary summary = summariesByOrgId.get(organization.getId());
-            if (sendOrganizationDigest(recipient, organization, summary.events(), range).isSuccess()) {
-                sent++;
-            } else {
-                failed++;
-            }
         }
 
         return new WeeklyMinyanReviewSendResult(range, recipients.size(), sent, failed, skipped, true, null);

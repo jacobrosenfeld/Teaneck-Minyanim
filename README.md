@@ -86,14 +86,19 @@ spring.datasource.username=root
 spring.datasource.password=yourpassword
 
 # Super admin created automatically on first startup if none exists
-superadmin.username=admin
-superadmin.password=Admin123!
+SUPERADMIN_USERNAME=admin
+SUPERADMIN_EMAIL=admin@example.com
+AUTH_PASSWORD_LOGIN_ENABLED=false
+AUTH_MAGIC_LINK_ENABLED=true
+AUTH_PASSKEYS_ENABLED=true
 
 # API rate limiting (requests per minute per IP, default 60)
 api.ratelimit.requests-per-minute=60
 ```
 
-> **Security note**: Change the default database credentials and super admin password before deploying to production.
+> **Security note**: Change the default database credentials before deploying. Bootstrap requires an explicit valid `SUPERADMIN_EMAIL`; no default admin password is created.
+
+See the [user management and authentication guide](docs/features/user-management-and-auth-closeout.md) for account onboarding, multi-shul permissions, and the v1.19.0 deployment checklist.
 
 ### Build and Run
 ```bash

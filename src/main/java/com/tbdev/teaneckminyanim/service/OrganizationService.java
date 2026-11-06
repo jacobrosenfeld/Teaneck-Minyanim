@@ -92,21 +92,7 @@ public class OrganizationService {
     }
 
     public List<TNMUser> getUsersForOrganization(Organization organization) {
-        List<TNMUser> users = new ArrayList<>();
-        List<Account> accountsByOrganizationId = organizationRepository.findAccountsByOrganizationId(organization.getId());
-        for (Account account : accountsByOrganizationId) {
-           users.add(TNMUser.builder()
-                   .id(account.getId())
-                   .email(account.getEmail())
-                   .username(account.getUsername())
-                   .encryptedPassword(account.getEncryptedPassword())
-                   .organizationId(account.getOrganizationId())
-                   .roleId(Integer.parseInt(account.getRoleId()))
-                   .weeklyMinyanReviewEmailsEnabled(account.getWeeklyMinyanReviewEmailsEnabled())
-                   .build());
-
-        }
-        return users;
+        return organizationRepository.findUsersWithOrganizationAccess(organization.getId());
     }
 
     public void setupOrg(Organization organization) {
