@@ -7,7 +7,9 @@ This document describes the CI/CD pipeline for Teaneck Minyanim. Pushes to `dev`
 - **Prod**: `teaneckminyanim.com` → Caddy → `localhost:8080` → systemd `teaneck-prod`
 - **Dev**: `dev.teaneckminyanim.com` → Caddy → `localhost:8081` → systemd `teaneck-dev`
 - **CI/CD**: GitHub Actions builds the JAR and deploys via SSH on every push
-- **Databases**: `teaneck-minyanim` (prod), `teaneck-minyanim-dev` (dev)
+- **Databases**: Dev currently connects to the same production database as prod. Keep the separate dev database configuration below as an example for an isolated setup.
+
+For the v1.19.0 shared-database rollout, follow the [user management and authentication checklist](features/user-management-and-auth-closeout.md).
 
 ---
 

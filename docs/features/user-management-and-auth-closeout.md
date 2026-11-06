@@ -4,14 +4,15 @@
 
 `/admin/accounts` is now User Management. Super admins can:
 
-- Create an enabled passwordless account without setting a shared password, then explicitly send its first sign-in link.
+- Create an enabled passwordless account and automatically send a branded welcome email with a secure activation link. The email describes the assigned role and all assigned shuls for scoped accounts. An email address change sends a welcome email to the new address.
 - Assign User, Manager, or Super admin access. User/Manager roles require at least one existing shul and may span multiple shuls; Super admin access covers all shuls.
-- Change email, assignments, role, and enabled status; view stored passkey count, last login and last link-sent time; send recovery links and revoke all of another user's passkeys.
-- Open the existing account page for profile, notifications, password fallback, and deletion.
+- Send a sign-in link or resend the full welcome email from separate actions. Review the passkey count and sign-in activity. **Revoke passkeys** is available for another account when the count is positive.
+- Use **Disable account** to suspend access. Disabled accounts show **Enable account** and **Delete user**. The server requires an account to be disabled before deletion.
+- Open Account Settings to edit the profile, role and shul assignments, and notification preferences. Its Access section lists every assigned shul. Existing password changes show password requirements and validate on the server.
 
 The primary `ACCOUNT.ORGANIZATION_ID` remains the default landing shul. Additional assignments live in `ACCOUNT_ORGANIZATION`. Changing assignments preserves the primary if it remains selected; otherwise a selected shul becomes primary. Clearing all shuls never implicitly promotes a scoped user.
 
-Multi-shul access is enforced through both existing organization access helpers. The shul switcher, organization account lists, schedule/location/calendar/override access, and scheduled weekly digest delivery honor the assignments. Scheduled digests send one email per assigned enabled shul. The existing manual digest test still defaults to the primary shul.
+The shul switcher, organization account lists, schedule/location/calendar/override access, and scheduled weekly digest delivery honor the assignments. Scheduled digests send one email per assigned enabled shul. Super admins can select a shul in the manual weekly digest test.
 
 Only super admins assign permissions or reset another account’s sign-in credentials. Managers may maintain ordinary users only when they manage **all** of that user's shuls, and may not maintain other managers. Disabling/deleting oneself or removing one's own super-admin role is blocked. Disabled/deleted users and stale-role sessions are logged out on their next request; shul access is checked against current database assignments.
 
@@ -19,10 +20,10 @@ Browser mutations require CSRF tokens across the application. Legacy enable, dis
 
 ### Deployment
 
-1. Back up the database. Apply `docs/migrations/MIGRATION_v1.14.0_auth_foundation.sql`, then `docs/migrations/MIGRATION_v1.19.0_user_management.sql` before application startup when schema changes are managed manually. Resolve any duplicate normalized emails reported by the v1.19.0 preflight before its unique index is created. Hibernate `ddl-auto=update` also creates the mapped tables for development.
-2. Set `AUTH_MAGIC_LINK_ENABLED=true`, `AUTH_PASSKEYS_ENABLED=true`, `AUTH_PASSWORD_LOGIN_ENABLED=false`, and `SESSION_COOKIE_SECURE=true` on HTTPS deployments. Configure `SUPERADMIN_EMAIL` only when a bootstrap super admin is needed.
+1. Merging to `main` deploys immediately. Dev and production currently use the same production database. Confirm a current backup and verify the existing auth foundation (v1.14.0), weekly review (v1.18.0), and account management (v1.19.0) schema before deploying. When applying SQL manually, review the scripts in version order and resolve duplicate normalized emails before creating the v1.19.0 unique index. Check which changes are already present before running any migration against the shared database.
+2. Verify the runtime settings for each HTTPS environment. Enable magic links and passkeys and set `SESSION_COOKIE_SECURE=true`. Before rolling out with `AUTH_PASSWORD_LOGIN_ENABLED=false`, confirm that two enabled super admins can use passwordless recovery. If a staged rollout needs password fallback, set `AUTH_PASSWORD_LOGIN_ENABLED=true` before restarting the production service. Configure `SUPERADMIN_EMAIL` only when a bootstrap super admin is needed.
 3. Confirm existing accounts still have their original primary shul. No assignment backfill is needed.
-4. Configure and test the existing Email Settings delivery provider and canonical site URL. Account creation itself sends no email; use **Send sign-in link** after reviewing access.
+4. Test real email delivery and confirm the link lands on the intended HTTPS origin. Use a controlled account and inbox because test accounts and their changes are visible to both environments.
 5. Check a Manager assigned two shuls can switch between them and cannot open a third shul by changing the URL. Remove one assignment and confirm its URLs are denied immediately.
 6. Test User and Manager flows, and verify a disabled account's existing session is rejected on its next request.
 
@@ -45,6 +46,7 @@ Hardening completed in this release:
 - Confirm the retained User route permissions and Manager account-maintenance policy. Permission assignment and invite/revoke actions are super-admin-only.
 - Keep password login disabled (`AUTH_PASSWORD_LOGIN_ENABLED=false`) after verifying at least two enabled super admins have usable passkeys and recovery email access. The documented emergency recovery action is to temporarily enable that environment flag for existing password hashes.
 - Apply/review the auth foundation and multi-shul SQL migrations, then execute browser-based passkey registration/login/removal, email recovery, logout, unauthorized-shul, and CSRF regression checks. Test real devices as well as automated controller/service coverage.
+- Confirm the weekly digest is dispatched by a single instance when both services use shared recipients and email settings. The scheduled job is present in both builds and does not coordinate sends across instances.
 
 Retaining documented SQL migrations follows the repository's existing practice; introducing Flyway is an independent operational decision rather than a prerequisite of #246.
 
@@ -70,4 +72,4 @@ Reviewed all 38 currently open issues, including comments on the closest matches
 | #244 / #94 / #210 / #208 / #113 | Separate UI work | Global navigation redesign, broader admin redesign, organization/notification styling, and a real shul dashboard are not prerequisites of user management. |
 | #131 / #134 / #261 | Separate API/mobile release | JWT/mobile admin and API-key writes add new authentication and authorization surfaces. Update their plans to reflect passwordless login and multi-shul access before implementing; their existing single-shul/password assumptions should not become a competing account model. |
 
-Recommended release grouping: #246 + #121 + #203 + #243 + #259 + #217 + #219, with #238 as a release verification/possible closeout item. The code work for that group is implemented; close #243 after the deployment acceptance above. No GitHub issue statuses were changed by this build.
+PR [#288](https://github.com/jacobrosenfeld/Teaneck-Minyanim/pull/288) tracks release closeout. Close #121, #203, #217, #219, and #246 with the merge. Keep #243 open until production auth acceptance and #259 open until the reported mobile Edge flow is confirmed. #283 tracks the onboarding decision: welcome emails use an activation link and passkey setup, with no generated or emailed passwords.

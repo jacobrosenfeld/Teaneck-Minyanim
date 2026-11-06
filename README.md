@@ -98,6 +98,8 @@ api.ratelimit.requests-per-minute=60
 
 > **Security note**: Change the default database credentials before deploying. Bootstrap requires an explicit valid `SUPERADMIN_EMAIL`; no default admin password is created.
 
+See the [user management and authentication guide](docs/features/user-management-and-auth-closeout.md) for account onboarding, multi-shul permissions, and the v1.19.0 deployment checklist.
+
 ### Build and Run
 ```bash
 # Build

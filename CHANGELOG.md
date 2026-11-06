@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Target server release: v1.19.0. See the [rollout and acceptance checklist](docs/features/user-management-and-auth-closeout.md).
+
 ### Added
 - **User management and multi-shul access (#246, #121, #203, #283)**: Super admins can create passwordless users, assign roles and multiple shuls from User Management or Account Settings, enable/disable accounts, send sign-in links, resend role-aware welcome emails, revoke passkeys, and delete disabled users with authentication cleanup. New accounts automatically receive a branded welcome email explaining their User, Manager, or Super admin capabilities and applicable shuls; changing an account email sends onboarding to the new address. Assigned shuls appear in navigation, organization account lists, and weekly review email delivery.
 - **Weekly minyan review emails (#34)**: Added Saturday-night weekly schedule review emails for admins, with shul-scoped digests, super-admin summary digests, override links, per-account notification opt-outs, a manual weekly digest test sender with a super-admin shul picker, and settings-driven email branding.
@@ -30,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Configurable Smart App Banner settings**: Added `mobile.ios.app.url` and `mobile.google.play.url` to `APPLICATION_SETTINGS`, with iOS app id parsing from the configured App Store URL and dynamic Safari Smart App Banner meta-tag rendering on all public (non-admin) pages.
 
 ### Changed
+- **Weekly minyan review recipients (#34, #121)**: The scheduler introduced in v1.18.0 now sends scoped recipients a digest for each enabled shul they are assigned to.
 - **Admin login flourish**: Added the Maariv line "משנה עתים ומחליף את הזמנים" in a Torah-style Hebrew typeface to the sign-in screen.
 - **Account access protection**: Account mutations now require CSRF tokens; permissions are assigned only through super-admin user management. Disabled/deleted users and sessions with stale roles are rejected on subsequent requests, and self-disable/demotion is prevented.
 - **API docs server list**: Added `https://dev.teaneckminyanim.com` as the Dev server option in the generated OpenAPI docs.
@@ -47,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Android release pipeline wiring (Issue #132)**: Mobile Expo config now injects `GOOGLE_MAPS_API_KEY` into the `react-native-maps` Android config plugin at build time, production builds load analytics values from `.env.production` (with fail-fast if analytics is enabled but PostHog key is missing), Android map screen explicitly uses Google provider, `eas submit` production profile now includes Android staged rollout defaults, and release runbook was added at `docs/mobile/android-release-checklist.md`.
 
 ### Fixed
+- **Admin forms (#217, #219)**: Organization and user creation retain non-secret values on validation errors. Settings and minyan edit pages now use the shared toast argument order.
 - **User Management (#246)**: Show Disable account for enabled users and offer Enable account and Delete user after disabling. Revoke passkeys is disabled when no passkeys are stored or the count is unavailable.
 - **Account Settings (#246)**: The permissions editor now uses the same layout as the other settings sections, keeping the role selector, assigned shuls, and Save Permissions button visible.
 - **User-management and passwordless follow-ups (#243, #246, #283)**: User Management now opens at the top unless a failed create-user submission explicitly needs attention, passwordless sign-in emails use a branded responsive template, scoped User accounts can open and manage their assigned shul's calendar entries, Account Settings lists every assigned shul instead of only the primary organization, POST-based sidebar actions retain the standard link styling, account confirmation dialogs match the admin design system, and password changes show consistent requirements with browser/server validation and a clean redirect after submission.
