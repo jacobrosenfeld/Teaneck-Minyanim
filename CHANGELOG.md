@@ -78,6 +78,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Email credential encryption**: Sensitive email settings, including SMTP password and SES credentials, are now stored with reversible AES-GCM encryption using `APP_SETTINGS_ENCRYPTION_KEY`, with startup migration for existing plaintext values when the key is configured.
 - **Admin organization access control (#216)**: Organization managers and users can no longer view, edit, or route into admin panels for shuls outside their account by changing organization ids in URLs or form submissions.
 
+## [1.19.1] - 2026-11-05
+
+### Fixed
+- **Admin email throttling (#290)**: Super-admin welcome and sign-in sends no longer consume public magic-link rate limits. Public recovery and non-super-admin profile emails remain throttled.
+
 ## [1.19.0] - 2026-11-05
 
 See the [rollout and acceptance checklist](docs/features/user-management-and-auth-closeout.md).

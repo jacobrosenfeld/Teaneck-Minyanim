@@ -7,6 +7,7 @@
 - Create an enabled passwordless account and automatically send a branded welcome email with a secure activation link. The email describes the assigned role and all assigned shuls for scoped accounts. An email address change sends a welcome email to the new address.
 - Assign User, Manager, or Super admin access. User/Manager roles require at least one existing shul and may span multiple shuls; Super admin access covers all shuls.
 - Send a sign-in link or resend the full welcome email from separate actions. Review the passkey count and sign-in activity. **Revoke passkeys** is available for another account when the count is positive.
+- Starting in v1.19.1, super-admin welcome and sign-in sends are exempt from public magic-link quotas. Public recovery and welcome emails triggered by non-super-admin profile edits remain throttled.
 - Use **Disable account** to suspend access. Disabled accounts show **Enable account** and **Delete user**. The server requires an account to be disabled before deletion.
 - Open Account Settings to edit the profile, role and shul assignments, and notification preferences. Its Access section lists every assigned shul. Existing password changes show password requirements and validate on the server.
 

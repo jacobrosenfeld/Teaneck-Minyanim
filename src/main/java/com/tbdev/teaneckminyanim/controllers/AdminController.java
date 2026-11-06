@@ -1290,7 +1290,9 @@ public class AdminController {
         userToUpdate.setEmailNormalized(normalizedEmail);
         if (TNMUserDAO.update(userToUpdate)) {
             if (emailChanged) {
-                boolean sent = magicLinkService.sendManagedWelcomeLink(userToUpdate, request);
+                boolean sent = currentUser.isSuperAdmin()
+                        ? magicLinkService.sendManagedWelcomeLink(userToUpdate, request)
+                        : magicLinkService.sendProfileWelcomeLink(userToUpdate, request);
                 if (!sent) {
                     return account(id, null,
                             "The account was updated, but the welcome email could not be sent to the new address.", null);
