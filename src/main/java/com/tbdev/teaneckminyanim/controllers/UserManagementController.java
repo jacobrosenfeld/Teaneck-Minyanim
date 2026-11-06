@@ -48,13 +48,12 @@ public class UserManagementController {
     @PostMapping("/admin/users/update")
     public String update(@RequestParam String id, @RequestParam String email, @RequestParam String access,
                          @RequestParam(required = false) Set<String> organizationIds,
-                         @RequestParam(defaultValue = "false") boolean enabled,
                          @RequestParam(defaultValue = "false") boolean returnToAccount,
                          HttpServletRequest request, RedirectAttributes redirect) {
         management.requireSuperAdmin();
         try {
             UserManagementService.UserUpdateResult result = management.update(
-                    id, email, access, organizationIds, enabled);
+                    id, email, access, organizationIds);
             if (result.emailChanged()) {
                 boolean sent = magicLinks.sendManagedWelcomeLink(result.user(), request);
                 redirect.addFlashAttribute(sent
@@ -102,6 +101,18 @@ public class UserManagementController {
             redirect.addFlashAttribute("errormessage", e.getMessage());
             redirect.addFlashAttribute("editUserId", id);
         }
+        return "redirect:/admin/accounts";
+    }
+
+    @PostMapping("/admin/users/status")
+    public String updateStatus(@RequestParam String id, @RequestParam boolean enabled, RedirectAttributes redirect) {
+        try {
+            management.setEnabled(id, enabled);
+            redirect.addFlashAttribute("successmessage", enabled ? "Account enabled." : "Account disabled.");
+        } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("errormessage", e.getMessage());
+        }
+        redirect.addFlashAttribute("editUserId", id);
         return "redirect:/admin/accounts";
     }
 

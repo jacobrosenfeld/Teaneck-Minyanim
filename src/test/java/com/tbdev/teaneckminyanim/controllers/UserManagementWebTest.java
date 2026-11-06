@@ -77,11 +77,14 @@ class UserManagementWebTest {
         mvc.perform(post("/admin/users/update").servletPath("/admin/users/update")
                 .param("id", "user").param("email", "user@example.com").param("access", "USER"))
                 .andExpect(status().isForbidden());
+        mvc.perform(post("/admin/users/status").servletPath("/admin/users/status")
+                .param("id", "user").param("enabled", "false"))
+                .andExpect(status().isForbidden());
         verifyNoInteractions(management);
         var tokenRequest = new org.springframework.mock.web.MockHttpServletRequest();
         var token = tokens.generateToken(tokenRequest);
         tokens.saveToken(token, tokenRequest, new org.springframework.mock.web.MockHttpServletResponse());
-        when(management.update("user", "user@example.com", "USER", null, false))
+        when(management.update("user", "user@example.com", "USER", null))
                 .thenReturn(new UserManagementService.UserUpdateResult(
                         TNMUser.builder().id("user").email("user@example.com").build(), false));
         mvc.perform(post("/admin/users/update").servletPath("/admin/users/update")
@@ -89,7 +92,15 @@ class UserManagementWebTest {
                 .param(token.getParameterName(), token.getToken())
                 .param("id", "user").param("email", "user@example.com").param("access", "USER"))
                 .andExpect(status().is3xxRedirection());
-        verify(management).update("user", "user@example.com", "USER", null, false);
+        verify(management).update("user", "user@example.com", "USER", null);
+        var statusResult = mvc.perform(post("/admin/users/status").servletPath("/admin/users/status")
+                .session((org.springframework.mock.web.MockHttpSession) tokenRequest.getSession())
+                .param(token.getParameterName(), token.getToken())
+                .param("id", "user").param("enabled", "false"))
+                .andExpect(redirectedUrl("/admin/accounts"))
+                .andReturn();
+        assertEquals("user", statusResult.getFlashMap().get("editUserId"));
+        verify(management).setEnabled("user", false);
     }
 
     @Test
@@ -123,6 +134,15 @@ class UserManagementWebTest {
         assertTrue(html.contains("/admin/users/delete"));
         assertTrue(html.contains("Shul One"));
         assertFalse(html.contains("th:each="));
+        String enabledCard = html.substring(html.indexOf("data-search=\"shulmanager"), html.indexOf("data-search=\"disableduser"));
+        assertTrue(enabledCard.contains("Disable account</button>"));
+        assertTrue(enabledCard.contains("An account must be disabled before it can be deleted."));
+        assertFalse(enabledCard.contains("Delete user</button>"));
+        assertTrue(enabledCard.contains("disabled=\"disabled\">Revoke passkeys</button>"));
+        String disabledCard = html.substring(html.indexOf("data-search=\"disableduser"));
+        assertTrue(disabledCard.contains("Enable account</button>"));
+        assertTrue(disabledCard.contains("Delete user</button>"));
+        assertFalse(disabledCard.contains("disabled=\"disabled\">Revoke passkeys</button>"));
         Path output = Path.of("target/user-management-preview.html");
         Files.writeString(output, html);
         context.close();
@@ -135,13 +155,15 @@ class UserManagementWebTest {
             TNMUser actor = TNMUser.builder().id("super").username("superadmin").email("admin@example.com").roleId(1).build();
             TNMUser manager = TNMUser.builder().id("manager").username("shulmanager").email("manager@example.com")
                     .roleId(1).organizationId("one").additionalOrganizationIds(new java.util.LinkedHashSet<>(List.of("two"))).build();
+            TNMUser disabled = TNMUser.builder().id("disabled").username("disableduser").email("disabled@example.com")
+                    .roleId(1).organizationId("one").enabled(false).build();
             Organization one = new Organization(); one.setId("one"); one.setName("Shul One");
             Organization two = new Organization(); two.setId("two"); two.setName("Shul Two");
             ModelAndView mv = new ModelAndView("admin/accounts");
-            mv.addObject("user", actor); mv.addObject("accounts", List.of(actor, manager));
+            mv.addObject("user", actor); mv.addObject("accounts", List.of(actor, manager, disabled));
             mv.addObject("organizations", List.of(one, two)); mv.addObject("accessibleOrganizations", List.of(one, two));
-            mv.addObject("organizationNames", Map.of("super", "All shuls", "manager", "Shul One, Shul Two"));
-            mv.addObject("passkeyCounts", Map.of("super", 2, "manager", 1));
+            mv.addObject("organizationNames", Map.of("super", "All shuls", "manager", "Shul One, Shul Two", "disabled", "Shul One"));
+            mv.addObject("passkeyCounts", Map.of("super", 2, "manager", 0, "disabled", 1));
             mv.addObject("siteName", "Teaneck Minyanim"); mv.addObject("appVersion", "1.19.0");
             mv.addObject("supportEmail", "support@example.com"); mv.addObject("date", "September 6, 2026");
             return mv;

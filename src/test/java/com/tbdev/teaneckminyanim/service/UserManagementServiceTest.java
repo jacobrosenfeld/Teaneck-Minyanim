@@ -73,8 +73,21 @@ class UserManagementServiceTest {
     @Test
     void cannotDisableOrDemoteSelf() {
         when(repository.findById("super")).thenReturn(Optional.of(actor));
-        assertThrows(IllegalArgumentException.class, () -> service.update("super", actor.getEmail(), "SUPER_ADMIN", Set.of(), false));
-        assertThrows(IllegalArgumentException.class, () -> service.update("super", actor.getEmail(), "MANAGER", Set.of("one"), true));
+        assertThrows(IllegalArgumentException.class, () -> service.setEnabled("super", false));
+        assertThrows(IllegalArgumentException.class, () -> service.update("super", actor.getEmail(), "MANAGER", Set.of("one")));
+    }
+
+    @Test
+    void statusCanBeToggledAndIsPreservedWhenSavingPermissions() {
+        TNMUser target = user("target", "one", Role.USER);
+        when(repository.findById("target")).thenReturn(Optional.of(target));
+
+        service.setEnabled("target", false);
+        assertTrue(target.isDisabled());
+        service.update("target", target.getEmail(), "USER", Set.of("two"));
+        assertTrue(target.isDisabled());
+        service.setEnabled("target", true);
+        assertTrue(target.isEnabled());
     }
 
     @Test
@@ -83,12 +96,12 @@ class UserManagementServiceTest {
         target.getAdditionalOrganizationIds().add("two");
         target.setLastLoginMethod("PASSKEY");
         when(repository.findById("target")).thenReturn(Optional.of(target));
-        service.update("target", target.getEmail(), "USER", Set.of("two"), true);
+        service.update("target", target.getEmail(), "USER", Set.of("two"));
         assertEquals("two", target.getOrganizationId());
         assertFalse(target.canAccessOrganization("one"));
         assertEquals("PASSKEY", target.getLastLoginMethod());
         assertEquals(Role.USER, target.role());
-        service.update("target", target.getEmail(), "SUPER_ADMIN", Set.of(), true);
+        service.update("target", target.getEmail(), "SUPER_ADMIN", Set.of());
         assertTrue(target.isSuperAdmin());
         assertTrue(target.getAdditionalOrganizationIds().isEmpty());
     }

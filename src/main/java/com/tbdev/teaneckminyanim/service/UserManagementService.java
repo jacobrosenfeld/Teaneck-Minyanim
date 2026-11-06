@@ -52,19 +52,29 @@ public class UserManagementService {
     }
 
     @Transactional
-    public UserUpdateResult update(String id, String email, String access, Set<String> organizationIds, boolean enabled) {
+    public UserUpdateResult update(String id, String email, String access, Set<String> organizationIds) {
         TNMUser actor = requireSuperAdmin();
         TNMUser target = requireTarget(id);
-        if (Objects.equals(actor.getId(), id) && (!enabled || !"SUPER_ADMIN".equals(access))) {
-            throw new IllegalArgumentException("You cannot disable or remove your own super-admin access.");
+        if (Objects.equals(actor.getId(), id) && !"SUPER_ADMIN".equals(access)) {
+            throw new IllegalArgumentException("You cannot remove your own super-admin access.");
         }
         String previousEmail = target.getEmail();
         updateProfile(target, target.getUsername(), email);
         assignAccess(target, access, organizationIds);
-        target.setEnabled(enabled);
         TNMUser saved = repository.save(target);
         return new UserUpdateResult(saved, !Objects.equals(
                 TNMUser.normalizeEmail(previousEmail), TNMUser.normalizeEmail(saved.getEmail())));
+    }
+
+    @Transactional
+    public void setEnabled(String id, boolean enabled) {
+        TNMUser actor = requireSuperAdmin();
+        TNMUser target = requireTarget(id);
+        if (!enabled && Objects.equals(actor.getId(), id)) {
+            throw new IllegalArgumentException("You cannot disable your own account.");
+        }
+        target.setEnabled(enabled);
+        repository.save(target);
     }
 
     @Transactional

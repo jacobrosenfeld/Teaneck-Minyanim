@@ -580,7 +580,6 @@
                 <form class="settings-panel access-form" th:action="@{/admin/users/update}" method="post">
                     <input type="hidden" name="id" th:value="${queriedaccount.id}">
                     <input type="hidden" name="email" th:value="${queriedaccount.email}">
-                    <input type="hidden" name="enabled" th:value="${queriedaccount.isEnabled()}">
                     <input type="hidden" name="returnToAccount" value="true">
                     <div class="account-field-row">
                         <div>

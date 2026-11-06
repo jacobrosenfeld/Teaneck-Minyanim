@@ -27,7 +27,7 @@
                             <span th:text="${account.enabled ? 'Enabled' : 'Disabled'}"></span>
                             <div class="user-meta" th:text="${organizationNames.get(account.id)}"></div>
                         </summary>
-                        <div class="user-editor">
+                        <div class="user-editor" th:with="passkeyCount=${passkeyCounts.get(account.id)}">
                             <form th:action="@{/admin/users/update}" method="post" class="access-form">
                                 <input type="hidden" name="id" th:value="${account.id}">
                                 <div class="user-fields">
@@ -41,17 +41,33 @@
                                 <fieldset class="shul-fieldset"><legend class="field-label">Assigned shuls</legend><div class="shul-options">
                                     <label th:each="org : ${organizations}"><input type="checkbox" name="organizationIds" th:value="${org.id}" th:checked="${account.accessibleOrganizationIds.contains(org.id)}"> <span th:text="${org.name}"></span></label>
                                 </div><p class="field-description">Select one or more shuls. Super admins have access to all shuls.</p></fieldset>
-                                <div class="user-actions"><label><input type="checkbox" name="enabled" value="true" th:checked="${account.enabled}"> Account enabled</label><button class="btn-modern btn-primary" type="submit">Save permissions</button></div>
+                                <div class="user-actions"><button class="btn-modern btn-primary" type="submit">Save permissions</button></div>
                             </form>
-                            <p class="field-description mt-3"><span th:text="|Passkeys: ${passkeyCounts.get(account.id) ?: 'Unavailable'}|"></span> · Last login: <span th:text="${account.lastLoginAt ?: 'Never'}"></span> <span th:text="${account.lastLoginMethod}"></span></p>
+                            <p class="field-description mt-3"><span th:text="|Passkeys: ${passkeyCount ?: 'Unavailable'}|"></span> · Last login: <span th:text="${account.lastLoginAt ?: 'Never'}"></span> <span th:text="${account.lastLoginMethod}"></span></p>
                             <p class="field-description">Last welcome or sign-in email sent: <span th:text="${account.invitedAt ?: 'Never'}"></span></p>
                             <div class="user-actions">
                                 <a class="btn-modern btn-secondary" th:href="@{/admin/account(id=${account.id})}">Account settings</a>
                                 <form th:action="@{/admin/users/send-welcome}" method="post"><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-secondary" type="submit" th:disabled="${!account.enabled}">Resend welcome email</button></form>
                                 <form th:action="@{/admin/users/send-link}" method="post"><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-secondary" type="submit" th:disabled="${!account.enabled}">Send sign-in link</button></form>
-                                <form th:if="${account.id != user.id}" th:action="@{/admin/users/revoke-passkeys}" method="post" data-confirm="Revoke all passkeys for this user? They will need an emailed sign-in link to register replacements."><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-danger" type="submit">Revoke passkeys</button></form>
-                                <form th:if="${account.id != user.id}" th:action="@{/admin/users/delete}" method="post" th:attr="data-confirm=|Permanently delete ${account.username}? This removes their shul assignments, passkeys, and unused sign-in links and cannot be undone.|,title=${account.enabled} ? 'Disable this account before deleting' : null"><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-danger" type="submit" th:disabled="${account.enabled}">Delete user</button></form>
-                                <span class="field-description" th:if="${account.id != user.id and account.enabled}">Disable first to delete.</span>
+                                <form th:if="${account.id != user.id}" th:action="@{/admin/users/revoke-passkeys}" method="post"
+                                      data-confirm="Revoke all passkeys for this user? They will need an emailed sign-in link to register replacements.">
+                                    <input type="hidden" name="id" th:value="${account.id}">
+                                    <button class="btn-modern btn-danger" type="submit"
+                                            th:disabled="${passkeyCount == null or passkeyCount == 0}">Revoke passkeys</button>
+                                </form>
+                                <form th:if="${account.id != user.id}" th:action="@{/admin/users/status}" method="post"
+                                      th:attr="data-confirm=${account.enabled} ? |Disable ${account.username}? They will lose access until re-enabled.| : null">
+                                    <input type="hidden" name="id" th:value="${account.id}">
+                                    <input type="hidden" name="enabled" th:value="${!account.enabled}">
+                                    <button th:if="${account.enabled}" class="btn-modern btn-warning" type="submit"
+                                            title="An account must be disabled before it can be deleted.">Disable account</button>
+                                    <button th:unless="${account.enabled}" class="btn-modern btn-success" type="submit">Enable account</button>
+                                </form>
+                                <form th:if="${account.id != user.id and !account.enabled}" th:action="@{/admin/users/delete}" method="post"
+                                      th:attr="data-confirm=|Permanently delete ${account.username}? This removes their shul assignments, passkeys, and unused sign-in links and cannot be undone.|">
+                                    <input type="hidden" name="id" th:value="${account.id}">
+                                    <button class="btn-modern btn-danger" type="submit">Delete user</button>
+                                </form>
                             </div>
                         </div>
                     </details>
