@@ -7,14 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Target server release: v1.19.0. See the [rollout and acceptance checklist](docs/features/user-management-and-auth-closeout.md).
-
 ### Added
-- **User management and multi-shul access (#246, #121, #203, #283)**: Super admins can create passwordless users, assign roles and multiple shuls from User Management or Account Settings, enable/disable accounts, send sign-in links, resend role-aware welcome emails, revoke passkeys, and delete disabled users with authentication cleanup. New accounts automatically receive a branded welcome email explaining their User, Manager, or Super admin capabilities and applicable shuls; changing an account email sends onboarding to the new address. Assigned shuls appear in navigation, organization account lists, and weekly review email delivery.
 - **Weekly minyan review emails (#34)**: Added Saturday-night weekly schedule review emails for admins, with shul-scoped digests, super-admin summary digests, override links, per-account notification opt-outs, a manual weekly digest test sender with a super-admin shul picker, and settings-driven email branding.
 - **Elul Selichos timing patterns (#262)**: Added explicit `Selichos/Shacharis` support for linked morning Selichos, distinct Night Selichos display grouping for standalone late-night Selichos, API display/group/link metadata for web and mobile clients, importer classification for combined Selichos/Shacharis titles, and admin rule/manual override controls for the new type.
 - **Plag Mincha/Maariv guidance (#249)**: Early Mincha/Maariv rows near plag hamincha now show the applicable `Plag:` time with a public web tooltip explaining the she'at ha-dechak guidance; mobile continues to show the inline note only pending a mobile-specific guidance treatment.
-- **Admin passwordless auth (#243)**: Added passkey signin via Spring Security WebAuthn, custom passkey management through `/webauthn/register`, magic-link signin wired into the existing email handler, normalized account email lookup, auth migration metadata, login timestamp/method fields, account-neutral sign-in choices, and migration SQL while keeping `ACCOUNT`/`TNMUser` as the source of truth.
 - **Feedback infrastructure (#245)**: Added a public feedback API and shared Intercom-style public-site feedback popup that create GitHub issues labeled `user feedback` through server-side GitHub settings, separate minyan schedule/data issues from app/website functionality issues, replace the legacy floating top button on public pages, capture automatic debugging/PostHog metadata without exposing optional user emails in public issue content, hide the widget until GitHub settings are complete, and send private email notifications with the created issue link.
 - **Invisible reCAPTCHA protection**: Added External Services settings for reCAPTCHA site/secret keys and server-side verification for public feedback, newsletter subscription, and admin login submissions.
 - **Mobile feedback**: Added a settings-backed native app token gate plus an Expo bottom-tab feedback form that skips reCAPTCHA, captures app/device/source-route/PostHog metadata, and submits GitHub feedback issues through the shared API.
@@ -32,9 +28,6 @@ Target server release: v1.19.0. See the [rollout and acceptance checklist](docs/
 - **Configurable Smart App Banner settings**: Added `mobile.ios.app.url` and `mobile.google.play.url` to `APPLICATION_SETTINGS`, with iOS app id parsing from the configured App Store URL and dynamic Safari Smart App Banner meta-tag rendering on all public (non-admin) pages.
 
 ### Changed
-- **Weekly minyan review recipients (#34, #121)**: The scheduler introduced in v1.18.0 now sends scoped recipients a digest for each enabled shul they are assigned to.
-- **Admin login flourish**: Added the Maariv line "משנה עתים ומחליף את הזמנים" in a Torah-style Hebrew typeface to the sign-in screen.
-- **Account access protection**: Account mutations now require CSRF tokens; permissions are assigned only through super-admin user management. Disabled/deleted users and sessions with stale roles are rejected on subsequent requests, and self-disable/demotion is prevented.
 - **API docs server list**: Added `https://dev.teaneckminyanim.com` as the Dev server option in the generated OpenAPI docs.
 - **Public footer spacing**: Centered the footer contact email and added mobile bottom clearance so fixed floating action buttons do not cover footer content.
 - **Settings page modernization**: Updated the main super-admin Settings page to match the new email settings form style with section navigation, inline field controls, an in-flow Email Settings card, and per-field save/discard states.
@@ -50,19 +43,12 @@ Target server release: v1.19.0. See the [rollout and acceptance checklist](docs/
 - **Android release pipeline wiring (Issue #132)**: Mobile Expo config now injects `GOOGLE_MAPS_API_KEY` into the `react-native-maps` Android config plugin at build time, production builds load analytics values from `.env.production` (with fail-fast if analytics is enabled but PostHog key is missing), Android map screen explicitly uses Google provider, `eas submit` production profile now includes Android staged rollout defaults, and release runbook was added at `docs/mobile/android-release-checklist.md`.
 
 ### Fixed
-- **Admin forms (#217, #219)**: Organization and user creation retain non-secret values on validation errors. Settings and minyan edit pages now use the shared toast argument order.
-- **User Management (#246)**: Show Disable account for enabled users and offer Enable account and Delete user after disabling. Revoke passkeys is disabled when no passkeys are stored or the count is unavailable.
-- **Account Settings (#246)**: The permissions editor now uses the same layout as the other settings sections, keeping the role selector, assigned shuls, and Save Permissions button visible.
-- **User-management and passwordless follow-ups (#243, #246, #283)**: User Management now opens at the top unless a failed create-user submission explicitly needs attention, passwordless sign-in emails use a branded responsive template, scoped User accounts can open and manage their assigned shul's calendar entries, Account Settings lists every assigned shul instead of only the primary organization, POST-based sidebar actions retain the standard link styling, account confirmation dialogs match the admin design system, and password changes show consistent requirements with browser/server validation and a clean redirect after submission.
 - **Public shul minyan row spacing**: Public organization minyan rows are compact again after the Selichos layout update, keeping the time block beside the minyan label on desktop and tablet widths.
 - **Calendar event minyan type schema (#263)**: Updated the `calendar_events.minyan_type` MariaDB enum to include `SELICHOS_SHACHARIS` so manual override imports keep database-level type validation instead of failing with a data-truncation rollback.
 - **XLSX Selichos override imports (#263)**: Manual override XLSX templates now include standalone `SELICHOS` and linked `SELICHOS_SHACHARIS`, org/super-admin imports accept Selichos rows including full-day replacement days, and wrong-template uploads now fail fast with a clear page-specific error.
 - **Override import feedback visibility**: Org and super-admin override pages now show XLSX import success/error messages instead of silently hiding import failures after redirect.
 - **Selichos/Shacharis shul-page grouping (#262)**: Morning Selichos/Shacharis rows now render inside the Shacharis section on shul pages, use the `Selichos & Shacharis` row label, and show nearby inferred Shacharis times as approximate links while suppressing the duplicate standalone Shacharis row.
 - **Manual override imports now preserve same-time duplicate rows**: XLSX and CSV manual override upserts now choose existing MANUAL rows using location/notes-aware matching instead of only org/date/type/time, so duplicate-time minyanim like concurrent `8:00` Shacharis rows no longer overwrite each other during import.
-- **Admin login passwordless fallback (#243)**: Reworked the admin login page so Edge and other WebAuthn-capable browsers are not blocked by the Spring helper script guard, passkey cancellation falls through to magic-link delivery, password login accepts the same email-or-username identifier, username casing is tolerated, and email lookup still works when existing accounts have not yet backfilled `EMAIL_NORMALIZED`.
-- **Passkey registration page (#243)**: Replaced Spring Security's generated passkey registration page with an app-styled page to avoid a CSRF-disabled 500, to keep passkey setup inside the admin design system, to share the `teaneckminyanim.com` WebAuthn relying-party id across prod and dev origins, and to bootstrap Spring Security's `user_credentials` storage table when JPA schema updates cannot create it.
-- **Account password update flow (#243)**: Fixed the existing account password-change route so it preserves account fields and stores the new encrypted password instead of rebuilding the account with stale credentials.
 - **Email settings encryption startup**: Fixed the sensitive-settings crypto component constructor wiring so Spring can instantiate it during application startup.
 - **Deleted source calendar events (#240)**: Scheduled calendar imports now reconcile the successful feed coverage window, mark imported rows missing from the source calendar as source-deleted/disabled, disable stale imported `calendar_events` rows, and allow admins to manually re-enable source-removed imported rows when needed.
 - **Mobile admin panel responsiveness (#238)**: Added reusable responsive admin table primitives, migrated high-risk admin tables onto shared scroll/action wrappers, kept header actions within narrow mobile viewports, exposed super-admin navigation links in the mobile sidebar, and moved the Geocode All Organizations action to the super-admin Maintenance page.
@@ -89,11 +75,35 @@ Target server release: v1.19.0. See the [rollout and acceptance checklist](docs/
 - **Calendar Entries admin render regression**: Removed fragile per-row `#httpServletRequest` expression from toggle form and switched redirect-state fallback to `Referer`, preventing mixed partial admin render/error-template bleed-through.
 
 ### Security
+- **Email credential encryption**: Sensitive email settings, including SMTP password and SES credentials, are now stored with reversible AES-GCM encryption using `APP_SETTINGS_ENCRYPTION_KEY`, with startup migration for existing plaintext values when the key is configured.
+- **Admin organization access control (#216)**: Organization managers and users can no longer view, edit, or route into admin panels for shuls outside their account by changing organization ids in URLs or form submissions.
+
+## [1.19.0] - 2026-11-05
+
+See the [rollout and acceptance checklist](docs/features/user-management-and-auth-closeout.md).
+
+### Added
+- **User management and multi-shul access (#246, #121, #203, #283)**: Super admins can create passwordless users, assign roles and multiple shuls from User Management or Account Settings, enable/disable accounts, send sign-in links, resend role-aware welcome emails, revoke passkeys, and delete disabled users with authentication cleanup. New accounts automatically receive a branded welcome email explaining their User, Manager, or Super admin capabilities and applicable shuls; changing an account email sends onboarding to the new address. Assigned shuls appear in navigation, organization account lists, and weekly review email delivery.
+- **Admin passwordless auth (#243)**: Added passkey signin via Spring Security WebAuthn, custom passkey management through `/webauthn/register`, magic-link signin wired into the existing email handler, normalized account email lookup, auth migration metadata, login timestamp/method fields, account-neutral sign-in choices, and migration SQL while keeping `ACCOUNT`/`TNMUser` as the source of truth.
+
+### Changed
+- **Weekly minyan review recipients (#34, #121)**: The scheduler introduced in v1.18.0 now sends scoped recipients a digest for each enabled shul they are assigned to.
+- **Admin login flourish**: Added the Maariv line "משנה עתים ומחליף את הזמנים" in a Torah-style Hebrew typeface to the sign-in screen.
+- **Account access protection**: Account mutations now require CSRF tokens; permissions are assigned only through super-admin user management. Disabled/deleted users and sessions with stale roles are rejected on subsequent requests, and self-disable/demotion is prevented.
+
+### Fixed
+- **Admin forms (#217, #219)**: Organization and user creation retain non-secret values on validation errors. Settings and minyan edit pages now use the shared toast argument order.
+- **User Management (#246)**: Show Disable account for enabled users and offer Enable account and Delete user after disabling. Revoke passkeys is disabled when no passkeys are stored or the count is unavailable.
+- **Account Settings (#246)**: The permissions editor now uses the same layout as the other settings sections, keeping the role selector, assigned shuls, and Save Permissions button visible.
+- **User-management and passwordless follow-ups (#243, #246, #283)**: User Management now opens at the top unless a failed create-user submission explicitly needs attention, passwordless sign-in emails use a branded responsive template, scoped User accounts can open and manage their assigned shul's calendar entries, Account Settings lists every assigned shul instead of only the primary organization, POST-based sidebar actions retain the standard link styling, account confirmation dialogs match the admin design system, and password changes show consistent requirements with browser/server validation and a clean redirect after submission.
+- **Admin login fallback (#243, #259)**: The first Continue attempts a passkey when enabled. Cancellation or failure offers an explicit email sign-in action. Existing password fallback accepts email or username when enabled.
+- **Passkey registration page (#243)**: Replaced Spring Security's generated passkey registration page with an app-styled page to avoid a CSRF-disabled 500, to keep passkey setup inside the admin design system, to share the `teaneckminyanim.com` WebAuthn relying-party id across prod and dev origins, and to bootstrap Spring Security's `user_credentials` storage table when JPA schema updates cannot create it.
+- **Account password update flow (#243)**: Fixed the existing account password-change route so it preserves account fields and stores the new encrypted password instead of rebuilding the account with stale credentials.
+
+### Security
 - **Account email validation**: Replaced backtracking regular expressions in account management and bootstrap with bounded, linear checks.
 - **Authentication release hardening (#243)**: Enabled global CSRF protection for browser routes, made logout and legacy mutations POST-only, made magic-link consumption atomic, added IP/identifier rate limits and token cleanup, added structured auth audit events, removed unsafe bootstrap defaults, and disabled password login unless explicitly enabled as an emergency rollback.
 - **Admin auth hardening (#243)**: Disabled accounts now load into Spring Security as disabled users, magic-link tokens are stored as single-use SHA-256 hashes with 15-minute expiry, and the hard-coded remember-me key was removed from admin login configuration.
-- **Email credential encryption**: Sensitive email settings, including SMTP password and SES credentials, are now stored with reversible AES-GCM encryption using `APP_SETTINGS_ENCRYPTION_KEY`, with startup migration for existing plaintext values when the key is configured.
-- **Admin organization access control (#216)**: Organization managers and users can no longer view, edit, or route into admin panels for shuls outside their account by changing organization ids in URLs or form submissions.
 
 ## [1.9.2] - 2026-03-20
 
