@@ -155,7 +155,7 @@
 
             .account-field-row {
                 display: grid;
-                grid-template-columns: minmax(180px, 280px) minmax(260px, 1fr);
+                grid-template-columns: min(40%, 280px) minmax(0, 1fr);
                 gap: var(--space-4, 1rem);
                 align-items: center;
                 padding: var(--space-4, 1rem) var(--space-5, 1.25rem);
@@ -472,6 +472,7 @@
             <nav class="settings-tabs" aria-label="Account sections">
                 <a class="settings-tab" href="#security">Security</a>
                 <a class="settings-tab" href="#profile">Profile</a>
+                <a class="settings-tab" th:if="${user.isSuperAdmin()}" href="#permissions">Permissions</a>
                 <a class="settings-tab" href="#notifications">Notifications</a>
                 <a class="settings-tab" href="#access">Access</a>
                 <a class="settings-tab" th:if="${user.isAdmin()}" href="#account-status">Status</a>
@@ -565,9 +566,18 @@
                         </button>
                     </div>
                 </form>
+            </section>
 
-                <form class="settings-panel mt-3 access-form" th:if="${user.isSuperAdmin()}"
-                      th:action="@{/admin/users/update}" method="post">
+            <section class="settings-section" id="permissions" th:if="${user.isSuperAdmin()}">
+                <div class="section-copy">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Permissions</span>
+                    </h2>
+                    <p class="section-description">Manage this account’s role and shul access.</p>
+                </div>
+
+                <form class="settings-panel access-form" th:action="@{/admin/users/update}" method="post">
                     <input type="hidden" name="id" th:value="${queriedaccount.id}">
                     <input type="hidden" name="email" th:value="${queriedaccount.email}">
                     <input type="hidden" name="enabled" th:value="${queriedaccount.isEnabled()}">
