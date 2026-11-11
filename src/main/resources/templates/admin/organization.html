@@ -155,7 +155,7 @@
                                         <td th:text="${user.username}"></td>
                                         <td th:text="${user.email}"></td>
                                         <td>
-                                            <span class="badge badge-primary" th:text="${user.getRoleDisplayName()}"></span>
+                                            <span th:replace="~{admin/fragments/role-chip :: roleChip(${user})}"></span>
                                         </td>
                                         <td>
                                             <div class="table-actions table-actions-nowrap">
