@@ -148,8 +148,68 @@ class UserManagementWebTest {
         context.close();
     }
 
+    @Test
+    void organizationPageOffersManagerRoleChoicesAndScopedActions() throws Exception {
+        var context = new StaticWebApplicationContext();
+        context.setServletContext(new MockServletContext());
+        context.refresh();
+        var resolver = new SpringResourceTemplateResolver();
+        resolver.setApplicationContext(context);
+        resolver.setPrefix("classpath:/templates/");
+        resolver.setSuffix(".html");
+        resolver.setTemplateMode("HTML");
+        var engine = new SpringTemplateEngine();
+        engine.setTemplateResolver(resolver);
+        engine.addDialect(new LayoutDialect());
+        var views = new ThymeleafViewResolver();
+        views.setTemplateEngine(engine);
+        views.setCharacterEncoding("UTF-8");
+        MockMvc mvc = MockMvcBuilders.standaloneSetup(new FixtureController()).setViewResolvers(views)
+                .addFilters(new CsrfFilter(new HttpSessionCsrfTokenRepository())).build();
+        org.springframework.test.util.ReflectionTestUtils.invokeMethod(mvc.getDispatcherServlet().getWebApplicationContext(),
+                "addBean", "requestDataValueProcessor",
+                new org.springframework.security.web.servlet.support.csrf.CsrfRequestDataValueProcessor());
+
+        String html = mvc.perform(get("/org-preview"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertTrue(html.contains("action=\"/admin/create-account?oid=one\""));
+        assertFalse(html.contains("r=u"));
+        assertTrue(html.contains("<option value=\"u\" selected>User</option>"));
+        assertTrue(html.contains("<option value=\"m\">Manager</option>"));
+        assertFalse(html.toLowerCase().contains("super admin</option>"));
+        assertFalse(html.contains("/admin/accounts\">User Management</a> to grant"));
+        assertTrue(html.contains("href=\"/admin/account?id=peer\""));
+        assertTrue(html.contains("href=\"/admin/account?id=actor\""));
+        assertFalse(html.contains("href=\"/admin/account?id=broader\""));
+        assertFalse(html.contains("#disable-account-modal-actor"));
+        assertTrue(html.contains("#disable-account-modal-peer"));
+        assertFalse(html.contains("#disable-account-modal-broader"));
+        context.close();
+    }
+
     @org.springframework.stereotype.Controller
     static class FixtureController {
+        @GetMapping("/org-preview")
+        ModelAndView organizationPage() {
+            TNMUser actor = TNMUser.builder().id("actor").username("shulmanager").email("actor@example.com")
+                    .roleId(1).organizationId("one").build();
+            TNMUser peer = TNMUser.builder().id("peer").username("peermanager").email("peer@example.com")
+                    .roleId(1).organizationId("one").build();
+            TNMUser broader = TNMUser.builder().id("broader").username("broaderuser").email("broader@example.com")
+                    .roleId(2).organizationId("one").additionalOrganizationIds(new java.util.LinkedHashSet<>(List.of("two"))).build();
+            Organization one = new Organization(); one.setId("one"); one.setName("Shul One"); one.setOrgColor("#123456");
+            ModelAndView mv = new ModelAndView("admin/organization");
+            mv.addObject("user", actor);
+            mv.addObject("organization", one);
+            mv.addObject("associatedusers", List.of(actor, peer, broader));
+            mv.addObject("manageableAccountIds", java.util.Set.of("actor", "peer"));
+            mv.addObject("accessibleOrganizations", List.of(one));
+            mv.addObject("siteName", "Teaneck Minyanim"); mv.addObject("appVersion", "1.19.1");
+            mv.addObject("supportEmail", "support@example.com"); mv.addObject("date", "November 11, 2026");
+            return mv;
+        }
+
         @GetMapping("/preview")
         ModelAndView page() {
             TNMUser actor = TNMUser.builder().id("super").username("superadmin").email("admin@example.com").roleId(1).build();
