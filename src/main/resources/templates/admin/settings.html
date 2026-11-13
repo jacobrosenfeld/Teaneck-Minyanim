@@ -152,6 +152,9 @@
                 border-radius: var(--radius-lg, 0.5rem);
                 box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
                 overflow: hidden;
+                min-width: 0;
+                /* Field rows size against the panel, not the viewport (the sidebar changes the available width). */
+                container-type: inline-size;
             }
 
             .settings-link-card {
@@ -222,15 +225,24 @@
 
             .setting-field-form {
                 display: grid;
-                grid-template-columns: minmax(180px, 280px) minmax(260px, 1fr);
+                grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
                 gap: var(--space-4, 1rem);
                 align-items: center;
                 padding: var(--space-4, 1rem) var(--space-5, 1.25rem);
                 border-bottom: 1px solid var(--border-color-light, #e9ecef);
             }
 
+            .setting-field-form > * {
+                min-width: 0;
+            }
+
             .setting-field-form:last-child {
                 border-bottom: 0;
+            }
+
+            .field-label,
+            .field-description {
+                overflow-wrap: anywhere;
             }
 
             .field-label {
@@ -248,12 +260,14 @@
 
             .field-control {
                 display: grid;
-                grid-template-columns: minmax(0, 1fr) 2.5rem 2.5rem minmax(5rem, auto);
+                /* Input and status share the flexible space so a long saved value can't squeeze the input. */
+                grid-template-columns: minmax(8rem, 2fr) 2.5rem 2.5rem minmax(5rem, 1fr);
                 gap: var(--space-2, 0.5rem);
                 align-items: center;
             }
 
             .field-input {
+                min-width: 0;
                 width: 100%;
                 height: 2.75rem;
                 padding: 0 var(--space-3, 0.75rem);
@@ -324,8 +338,7 @@
                 gap: var(--space-1, 0.25rem);
                 color: var(--text-secondary, #6c757d);
                 font-size: var(--font-size-sm, 0.875rem);
-                min-width: 5rem;
-                max-width: 12rem;
+                min-width: 0;
                 white-space: nowrap;
             }
 
@@ -345,22 +358,18 @@
 
             .field-state.error {
                 color: var(--color-danger, #f44336);
-                max-width: 16rem;
                 white-space: normal;
+                overflow-wrap: anywhere;
             }
 
             @media (max-width: 900px) {
                 .settings-section {
-                    grid-template-columns: 1fr;
+                    grid-template-columns: minmax(0, 1fr);
                     gap: var(--space-3, 0.75rem);
                 }
 
                 .section-copy {
                     position: static;
-                }
-
-                .setting-field-form {
-                    grid-template-columns: 1fr;
                 }
             }
 
@@ -374,14 +383,23 @@
                     align-items: flex-start;
                     flex-direction: column;
                 }
+            }
 
+            /* Stack label above control when the panel itself is narrow. */
+            @container (max-width: 640px) {
+                .setting-field-form {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+            }
+
+            /* Move the saved-value status onto its own line when the control row is cramped. */
+            @container (max-width: 420px) {
                 .field-control {
                     grid-template-columns: minmax(0, 1fr) 2.5rem 2.5rem;
                 }
 
                 .field-state {
                     grid-column: 1 / -1;
-                    max-width: 100%;
                 }
             }
         </style>
@@ -485,7 +503,7 @@
 
                             <span class="field-state">
                                 <i class="far fa-circle"></i>
-                                <span th:text="${field.displayValue}">Not set</span>
+                                <span th:text="${field.displayValue}" th:title="${field.displayValue}">Not set</span>
                             </span>
                         </div>
                     </form>
@@ -558,6 +576,7 @@
             state.className = 'field-state';
             stateIcon.className = 'far fa-circle';
             stateText.textContent = form.dataset.originalDisplay || 'Not set';
+            stateText.title = stateText.textContent;
             if (discardButton) {
                 discardButton.disabled = true;
             }
@@ -572,6 +591,7 @@
             state.className = 'field-state unsaved';
             stateIcon.className = 'far fa-circle-dot';
             stateText.textContent = 'Unsaved';
+            stateText.title = '';
             if (discardButton) {
                 discardButton.disabled = false;
             }
@@ -627,6 +647,7 @@
                 state.className = 'field-state';
                 stateIcon.className = 'fas fa-spinner fa-spin';
                 stateText.textContent = 'Saving';
+                stateText.title = '';
 
                 try {
                     const response = await fetch(form.action, {
@@ -643,6 +664,7 @@
                     state.className = 'field-state saved';
                     stateIcon.className = 'fas fa-check-circle';
                     stateText.textContent = result.displayValue || 'Saved';
+                    stateText.title = stateText.textContent;
                     form.dataset.originalDisplay = result.displayValue || 'Saved';
 
                     if (sensitive && fieldInput) {

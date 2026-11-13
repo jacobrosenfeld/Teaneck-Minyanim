@@ -143,6 +143,8 @@ class UserManagementWebTest {
         assertTrue(disabledCard.contains("Enable account</button>"));
         assertTrue(disabledCard.contains("Delete user</button>"));
         assertFalse(disabledCard.contains("disabled=\"disabled\">Revoke passkeys</button>"));
+        assertTrue(html.contains("class=\"badge-modern role-chip role-chip-super-admin\">Super admin</span>"));
+        assertTrue(enabledCard.contains("class=\"badge-modern role-chip role-chip-manager\">Manager</span>"));
         Path output = Path.of("target/user-management-preview.html");
         Files.writeString(output, html);
         context.close();
@@ -185,7 +187,47 @@ class UserManagementWebTest {
         assertFalse(html.contains("#disable-account-modal-actor"));
         assertTrue(html.contains("#disable-account-modal-peer"));
         assertFalse(html.contains("#disable-account-modal-broader"));
+        // Each row's chip must reflect that row's account, not the signed-in viewer (a Manager here).
+        assertEquals(2, html.split("role-chip-manager\"", -1).length - 1);
+        assertEquals(1, html.split("role-chip-user\"", -1).length - 1);
         context.close();
+    }
+
+    @Test
+    void roleChipsAreColorCodedPerRoleAndSharedAcrossAdminPages() throws Exception {
+        var files = new org.thymeleaf.templateresolver.ClassLoaderTemplateResolver();
+        files.setPrefix("templates/");
+        files.setSuffix(".html");
+        files.setTemplateMode("HTML");
+        files.setCheckExistence(true);
+        files.setOrder(1);
+        var strings = new org.thymeleaf.templateresolver.StringTemplateResolver();
+        strings.setOrder(2);
+        var engine = new SpringTemplateEngine();
+        engine.addTemplateResolver(files);
+        engine.addTemplateResolver(strings);
+        var ctx = new org.thymeleaf.context.Context();
+        ctx.setVariable("superAdmin", TNMUser.builder().id("s").roleId(1).build());
+        ctx.setVariable("manager", TNMUser.builder().id("m").roleId(1).organizationId("one").build());
+        ctx.setVariable("member", TNMUser.builder().id("u").roleId(2).organizationId("one").build());
+
+        String html = engine.process("<p>"
+                + "<span th:replace=\"~{admin/fragments/role-chip :: roleChip(${superAdmin})}\"></span>"
+                + "<span th:replace=\"~{admin/fragments/role-chip :: roleChip(${manager})}\"></span>"
+                + "<span th:replace=\"~{admin/fragments/role-chip :: roleChip(${member})}\"></span>"
+                + "</p>", ctx);
+
+        assertTrue(html.contains("<span class=\"badge-modern role-chip role-chip-super-admin\">Super admin</span>"));
+        assertTrue(html.contains("<span class=\"badge-modern role-chip role-chip-manager\">Manager</span>"));
+        assertTrue(html.contains("<span class=\"badge-modern role-chip role-chip-user\">User</span>"));
+
+        String chipCall = "~{admin/fragments/role-chip :: roleChip(";
+        assertTrue(Files.readString(Path.of("src/main/resources/templates/admin/accounts.html")).contains(chipCall));
+        assertTrue(Files.readString(Path.of("src/main/resources/templates/admin/organization.html")).contains(chipCall));
+        String css = Files.readString(Path.of("src/main/resources/static/admin/design-system.css"));
+        for (String role : List.of("super-admin", "manager", "user")) {
+            assertTrue(css.contains(".badge-modern.role-chip-" + role + " {"), role);
+        }
     }
 
     @org.springframework.stereotype.Controller
