@@ -150,22 +150,24 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="user: ${associatedusers}">
-                                        <td class="table-cell-nowrap" th:text="${user.id}"></td>
-                                        <td th:text="${user.username}"></td>
-                                        <td th:text="${user.email}"></td>
+                                    <tr th:each="member: ${associatedusers}">
+                                        <td class="table-cell-nowrap" th:text="${member.id}"></td>
+                                        <td th:text="${member.username}"></td>
+                                        <td th:text="${member.email}"></td>
                                         <td>
-                                            <span th:replace="~{admin/fragments/role-chip :: roleChip(${user})}"></span>
+                                            <span th:replace="~{admin/fragments/role-chip :: roleChip(${member})}"></span>
                                         </td>
                                         <td>
-                                            <div class="table-actions table-actions-nowrap">
-                                                <button type="button" class="btn-modern btn-sm btn-warning" 
-                                                        th:disabled="${associatedusers.size() <= 1}" 
-                                                        data-toggle="modal" 
-                                                        th:data-target="${'#disable-account-modal-' + user.id}">
+                                            <div class="table-actions table-actions-nowrap"
+                                                 th:if="${manageableAccountIds != null and manageableAccountIds.contains(member.id)}">
+                                                <button type="button" class="btn-modern btn-sm btn-warning"
+                                                        th:if="${member.id != user.id}"
+                                                        th:disabled="${associatedusers.size() <= 1}"
+                                                        data-toggle="modal"
+                                                        th:data-target="${'#disable-account-modal-' + member.id}">
                                                     <i class="fas fa-ban"></i> Disable
                                                 </button>
-                                                <a class="btn-modern btn-sm btn-secondary" role="button" th:href="@{/admin/account(id=${user.id})}">
+                                                <a class="btn-modern btn-sm btn-secondary" role="button" th:href="@{/admin/account(id=${member.id})}">
                                                     <i class="fas fa-cog"></i> Manage
                                                 </a>
                                             </div>
@@ -192,8 +194,8 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>This passwordless account will have user privileges associated with <span th:text="${organization.name}"></span>. After creating it, use <a href="/admin/accounts">User Management</a> to send its first sign-in link or change its access.</p>
-                        <form method="post" th:action="@{/admin/create-account?r=u&oid=} + ${organization.id}">
+                        <p>This passwordless account will be assigned to <span th:text="${organization.name}"></span>. A welcome email with a secure activation link is sent automatically.<span th:if="${user.isSuperAdmin()}"> Use <a href="/admin/accounts">User Management</a> to grant Super admin access or assign more shuls.</span></p>
+                        <form method="post" th:action="@{/admin/create-account(oid=${organization.id})}">
                             <div class="form-group">
                                 <label for="new-account-username" class="form-label">Username</label>
                                 <input type="text" class="form-control" id="new-account-username" name="username" required>
@@ -203,6 +205,14 @@
                                 <label for="new-account-email" class="form-label">Email address</label>
                                 <input type="email" class="form-control" id="new-account-email" name="email" required>
                                 <small class="form-text">This address receives sign-in and recovery links.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-account-role" class="form-label">Role</label>
+                                <select class="form-control" id="new-account-role" name="r" required>
+                                    <option value="u" selected>User</option>
+                                    <option value="m">Manager</option>
+                                </select>
+                                <small class="form-text">Managers can also manage this shul's accounts.</small>
                             </div>
                             <div th:if="${addAccountError}" class="alert alert-danger">
                                 <i class="fas fa-exclamation-circle"></i>

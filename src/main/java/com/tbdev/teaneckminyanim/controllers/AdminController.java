@@ -75,6 +75,9 @@ public class AdminController {
     @Autowired
     private MagicLinkService magicLinkService;
 
+    @Autowired
+    private UserManagementService userManagementService;
+
     @ModelAttribute("siteName")
     public String siteName() {
         return settingsService.getSiteName();
@@ -883,6 +886,11 @@ public class AdminController {
             mv.getModel().put("organization", organization);
             List<TNMUser> associatedUsers = this.organizationService.getUsersForOrganization(organization);
             mv.addObject("associatedusers", associatedUsers);
+            TNMUser actor = getCurrentUser();
+            mv.addObject("manageableAccountIds", associatedUsers.stream()
+                    .filter(account -> actor != null && actor.canManageAccount(account))
+                    .map(TNMUser::getId)
+                    .collect(Collectors.toSet()));
         } else {
             throw new AccessDeniedException("You are not authorized to view this organization.");
         }
@@ -1051,6 +1059,9 @@ public class AdminController {
         if (Objects.equals(getCurrentUser().getId(), account.getId())) {
             throw new AccessDeniedException("You cannot disable or delete your own account.");
         }
+        if (!isSuperAdmin() && account.isAdmin()) {
+            throw new AccessDeniedException("Only super admins can delete a Manager account.");
+        }
 
         if (account.isEnabled()) {
             return account(id, null, "Disable the account before deleting.", null);
@@ -1121,121 +1132,41 @@ public class AdminController {
             @RequestParam(value = "username", required = true) String username,
             @RequestParam(value = "email", required = true) String email,
             @RequestParam(value = "oid", required = true) String organizationId,
-            @RequestParam(value = "r", required = false) String roleInital
+            @RequestParam(value = "r", required = false) String roleInitial,
+            HttpServletRequest request
     ) throws Exception {
-        if (!isSuperAdmin()) {
-            throw new AccessDeniedException("You do not have permission to create an account.");
+        TNMUser actor = getCurrentUser();
+        // Authorize the actor against the requested shul before validating anything else.
+        if (actor == null || actor.isDisabled() || !actor.isAdmin() || !actor.canAccessOrganization(organizationId)) {
+            throw new AccessDeniedException("You do not have permission to create an account for this shul.");
         }
 
-//            validate input
-
-        if (username.isEmpty() || email.isEmpty()) {
-            return organization(organizationId, null, null, null, "Sorry, fields cannot be left blank.");
-        }
-
-        String usernameRegex = "^[A-Za-z]\\w{5,29}$";
-        Pattern usernamePatter = Pattern.compile(usernameRegex);
-        Matcher m = usernamePatter.matcher(username);
-        if (!m.matches()) {
-            return organization(organizationId, null, null, null,"Sorry, the username must be 6-30 characters, only contain letters and numbers, and start with a letter.");
-        }
-
-//        check if username already exists
-        if (TNMUserDAO.findByName(username) != null) {
-            return organization(organizationId, null, null, null,"Sorry, this username already exists.");
-        }
-
-//        check if email is valid
-        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
-        Pattern emailPattern = Pattern.compile(emailRegex);
-        Matcher m2 = emailPattern.matcher(email);
-        if (!m2.matches()) {
-            return organization(organizationId, null, null, null,"Sorry, this email address is invalid.");
-        }
-        if (TNMUserDAO.findByNormalizedEmail(email) != null) {
-            return organization(organizationId, null, null, null,"Sorry, this email address already belongs to an account.");
-        }
-
-        Role role;
-        if ("a".equalsIgnoreCase(roleInital)) {
-            role = ADMIN;
-        } else if ("u".equalsIgnoreCase(roleInital) && organizationId != null) {
-            role = Role.USER;
-        } else if (organizationId != null) {
-            role = Role.USER;
+        String access;
+        if ("u".equalsIgnoreCase(roleInitial)) {
+            access = "USER";
+        } else if ("m".equalsIgnoreCase(roleInitial) || "a".equalsIgnoreCase(roleInitial)) {
+            access = "MANAGER";
         } else {
-            return organization(organizationId, null, null, null,"Sorry, an error occurred.");
+            return organization(organizationId, null, null, null, "Choose User or Manager.");
         }
 
-        if (role == ADMIN) {
-            if (isAdmin()) {
-
-                TNMUser user = TNMUser.builder()
-                        .id(IDGenerator.generateID('A'))
-                        .username(username.toLowerCase())
-                        .email(email.toLowerCase())
-                        .encryptedPassword("!PASSWORDLESS")
-                        .organizationId(organizationId)
-                        .roleId(role.getId())
-                        .enabled(true)
-                        .build();
-
-                if (this.TNMUserDAO.save(user)) {
-                    return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
-                } else {
-                    return organization(organizationId, null, null, null,"Sorry, an error occurred.");
-                }
-            } else {
-                throw new AccessDeniedException("You do not have permission to create an administrator account.");
-            }
-        } else if (Objects.equals(role.getName(), Role.USER.getName())) {
-            if (isAdmin()) {
-
-                TNMUser user = TNMUser.builder()
-                        .id(IDGenerator.generateID('A')) // Generate the ID here
-                        .username(username.toLowerCase())
-                        .email(email.toLowerCase())
-                        .encryptedPassword("!PASSWORDLESS")
-                        .organizationId(organizationId)
-                        .roleId(role.getId())
-                        .enabled(true)
-                        .build();
-                if (this.TNMUserDAO.save(user)) {
-                    return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
-                } else {
-                    return organization(organizationId, null, null, null,"Sorry, an error occurred.");
-                }
-            } else if (isUser()) {
-//                    check if user is in the same organization
-                if (organizationId != null) {
-                    if (TNMUserDAO.findByName(username).getId().equals(organizationId)) {
-
-                        TNMUser user = TNMUser.builder()
-                                .id(IDGenerator.generateID('A')) // Generate the ID here
-                                .username(username.toLowerCase())
-                                .email(email.toLowerCase())
-                                .encryptedPassword("!PASSWORDLESS")
-                                .organizationId(organizationId)
-                                .roleId(role.getId())
-                                .enabled(true)
-                                .build();
-                        if (this.TNMUserDAO.save(user)) {
-                            return organization(organizationId, "Successfully created a new account with username '" + user.getUsername() + ".'", null, null, null);
-                        } else {
-                            return organization(organizationId, null, null, null,"Sorry, an error occurred.");
-                        }
-                    } else {
-                        throw new AccessDeniedException("You do not have permission to create an account for this organization.");
-                    }
-                } else {
-                    return organization(organizationId, null, null, null,"Sorry, an error occurred.");
-                }
-            } else {
-                throw new AccessDeniedException("You do not have permission to create an account.");
-            }
-        } else {
-            return organization(organizationId, null, null, null,"Sorry, an error occurred.");
+        TNMUser created;
+        try {
+            created = userManagementService.createForOrganization(username, email, access, organizationId);
+        } catch (IllegalArgumentException e) {
+            return organization(organizationId, null, null, null, e.getMessage());
         }
+
+        // Super-admin sends are exempt from public quotas; Manager-triggered sends stay throttled.
+        boolean sent = actor.isSuperAdmin()
+                ? magicLinkService.sendManagedWelcomeLink(created, request)
+                : magicLinkService.sendProfileWelcomeLink(created, request);
+        if (!sent) {
+            return organization(organizationId, null,
+                    "Created " + created.getUsername() + ", but the welcome email could not be sent.", null, null);
+        }
+        return organization(organizationId,
+                "Created " + created.getUsername() + " and sent their welcome email.", null, null, null);
     }
 
     @RequestMapping(value = "/admin/update-account", method = RequestMethod.POST)
@@ -1329,12 +1260,10 @@ public class AdminController {
         if (currentUser == null || currentUser.isDisabled() || targetUser == null) {
             throw new AccessDeniedException("You do not have permission to update this account.");
         }
-        if (currentUser.isSuperAdmin() || Objects.equals(currentUser.getId(), targetUser.getId())) return;
-        // An org manager must control every scope of a user they can edit, and cannot edit other managers.
-        if (currentUser.isAdmin() && !targetUser.isAdmin()
-                && !targetUser.getAccessibleOrganizationIds().isEmpty()
-                && currentUser.getAccessibleOrganizationIds().containsAll(targetUser.getAccessibleOrganizationIds())) return;
-        throw new AccessDeniedException("You do not have permission to update this account.");
+        // A Manager must manage every shul of a User or Manager they edit; Super admins are out of scope.
+        if (!currentUser.canManageAccount(targetUser)) {
+            throw new AccessDeniedException("You do not have permission to update this account.");
+        }
     }
 
     @RequestMapping(value = "/admin/update-settings", method = RequestMethod.POST)
