@@ -117,7 +117,12 @@ export default function MapScreen() {
             <Callout
               tooltip
               onPress={() =>
-                router.push({ pathname: '/shuls/[id]', params: { id: org.slug ?? org.id } } as never)
+                // withAnchor mounts the Shuls list (initialRouteName) under the
+                // detail so back returns to the list, as if opened from Shuls.
+                router.push(
+                  { pathname: '/shuls/[id]', params: { id: org.slug ?? org.id } } as never,
+                  { withAnchor: true },
+                )
               }>
               <View style={[styles.callout, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={[styles.calloutBanner, { backgroundColor: org.color ?? colors.tint }]} />
