@@ -17,6 +17,13 @@ public class WeeklyMinyanReviewEmailScheduler {
         WeeklyMinyanReviewEmailService.WeeklyMinyanReviewSendResult result =
                 weeklyMinyanReviewEmailService.sendScheduledWeeklyReviewEmails();
 
+        if (result.disabledBySetting()) {
+            log.info("Weekly minyan review email job skipped for {} to {}: disabled by the email.weekly-review.enabled setting",
+                    result.range().startDate(),
+                    result.range().endDate());
+            return;
+        }
+
         log.info("Weekly minyan review email job completed for {} to {}: {} sent, {} failed, {} skipped",
                 result.range().startDate(),
                 result.range().endDate(),

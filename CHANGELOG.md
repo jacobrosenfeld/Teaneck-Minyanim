@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Weekly review email toggle (#305)**: Added a super-admin "Scheduled Weekly Review Emails" setting on the Email Settings page (`email.weekly-review.enabled`, default enabled) so a server such as dev can skip the Saturday-night weekly minyan review digest. The skipped run is logged, and weekly digest test sends keep working while it is off.
 - **Weekly minyan review emails (#34)**: Added Saturday-night weekly schedule review emails for admins, with shul-scoped digests, super-admin summary digests, override links, per-account notification opt-outs, a manual weekly digest test sender with a super-admin shul picker, and settings-driven email branding.
 - **Elul Selichos timing patterns (#262)**: Added explicit `Selichos/Shacharis` support for linked morning Selichos, distinct Night Selichos display grouping for standalone late-night Selichos, API display/group/link metadata for web and mobile clients, importer classification for combined Selichos/Shacharis titles, and admin rule/manual override controls for the new type.
 - **Plag Mincha/Maariv guidance (#249)**: Early Mincha/Maariv rows near plag hamincha now show the applicable `Plag:` time with a public web tooltip explaining the she'at ha-dechak guidance; mobile continues to show the inline note only pending a mobile-specific guidance treatment.
