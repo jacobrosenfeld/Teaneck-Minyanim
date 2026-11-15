@@ -118,6 +118,17 @@ public class EmailSettingsController {
                                         new SettingOption("SMTP", "SMTP"),
                                         new SettingOption("SES", "AWS SES"))))),
                 new EmailSettingSection(
+                        "weekly-review",
+                        "Weekly Review Emails",
+                        "Control the automatic Saturday-night minyan review digest for this server.",
+                        "fa-calendar-week",
+                        List.of(field(
+                                SettingKey.EMAIL_WEEKLY_REVIEW_ENABLED,
+                                "select",
+                                List.of(
+                                        new SettingOption("true", "Enabled"),
+                                        new SettingOption("false", "Disabled"))))),
+                new EmailSettingSection(
                         "sender",
                         "Sender Defaults",
                         "Set the identity recipients see on transactional and admin emails.",

@@ -264,6 +264,10 @@ public class ApplicationSettingsService {
         return getBoolean(SettingKey.EMAIL_SMTP_STARTTLS_ENABLED);
     }
 
+    public boolean isWeeklyReviewEmailEnabled() {
+        return Boolean.TRUE.equals(getBoolean(SettingKey.EMAIL_WEEKLY_REVIEW_ENABLED));
+    }
+
     public String getEmailFromAddress() {
         return getString(SettingKey.EMAIL_FROM_ADDRESS);
     }
@@ -532,6 +536,9 @@ public class ApplicationSettingsService {
                 break;
             case EMAIL_SMTP_STARTTLS_ENABLED:
                 validateBoolean(value, "SMTP STARTTLS enabled");
+                break;
+            case EMAIL_WEEKLY_REVIEW_ENABLED:
+                validateBoolean(value, "Scheduled weekly review emails");
                 break;
             case EMAIL_FROM_ADDRESS:
                 validateEmail(value, "Email from address");

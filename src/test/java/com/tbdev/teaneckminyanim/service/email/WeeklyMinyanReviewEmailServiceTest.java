@@ -189,6 +189,51 @@ class WeeklyMinyanReviewEmailServiceTest {
     }
 
     @Test
+    void scheduledSendIsSkippedWhenDisabledBySetting() {
+        when(settingsService.isWeeklyReviewEmailEnabled()).thenReturn(false);
+
+        WeeklyMinyanReviewEmailService.WeeklyMinyanReviewSendResult result =
+                service.sendScheduledWeeklyReviewEmails();
+
+        assertTrue(result.disabledBySetting());
+        assertEquals(0, result.sentCount());
+        assertEquals(0, result.recipientCount());
+        verify(userService, never()).getWeeklyMinyanReviewEmailRecipients();
+        verifyNoInteractions(emailService, calendarImportService, materializationService);
+    }
+
+    @Test
+    void scheduledSendRunsWhenEnabledBySetting() {
+        when(settingsService.isWeeklyReviewEmailEnabled()).thenReturn(true);
+        when(userService.getWeeklyMinyanReviewEmailRecipients())
+                .thenReturn(List.of(user("A0", "super", null, Role.ADMIN)));
+        when(organizationService.getAll()).thenReturn(List.of());
+        when(calendarImportService.importAllEnabledOrganizations()).thenReturn(Map.of());
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(EmailProvider.SMTP, "sent"));
+
+        WeeklyMinyanReviewEmailService.WeeklyMinyanReviewSendResult result =
+                service.sendScheduledWeeklyReviewEmails();
+
+        assertFalse(result.disabledBySetting());
+        assertEquals(1, result.sentCount());
+        verify(materializationService).materializeAll();
+        verify(emailService).send(any());
+    }
+
+    @Test
+    void weeklyDigestTestStillSendsWhenScheduledEmailsAreDisabled() {
+        when(settingsService.isWeeklyReviewEmailEnabled()).thenReturn(false);
+        when(organizationService.getAll()).thenReturn(List.of(organization("org-a", "Congregation A", true)));
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(EmailProvider.SMTP, "sent"));
+
+        WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult result =
+                service.sendWeeklyReviewTestEmail(user("A0", "super", null, Role.ADMIN), false, LocalDate.of(2026, 9, 5));
+
+        assertTrue(result.success());
+        verify(emailService).send(any());
+    }
+
+    @Test
     void weeklyDigestTestSendsOnlyToRequestedAdminAccount() {
         TNMUser superAdmin = user("A0", "super", null, Role.ADMIN);
         Organization orgA = organization("org-a", "Congregation A", true);
