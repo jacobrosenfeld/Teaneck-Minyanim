@@ -85,7 +85,7 @@ public class CalendarImportService {
             Optional<Organization> orgOpt = organizationService.findById(organizationId);
             if (orgOpt.isEmpty()) {
                 result.success = false;
-                result.errorMessage = "Organization not found: " + organizationId;
+                result.errorMessage = "Shul not found: " + organizationId;
                 log.error(result.errorMessage);
                 return result;
             }
@@ -95,7 +95,7 @@ public class CalendarImportService {
             // Check if calendar URL is configured
             if (org.getCalendar() == null || org.getCalendar().trim().isEmpty()) {
                 result.success = false;
-                result.errorMessage = "No calendar URL configured for organization: " + org.getName();
+                result.errorMessage = "No calendar URL configured for shul: " + org.getName();
                 log.warn(result.errorMessage);
                 return result;
             }

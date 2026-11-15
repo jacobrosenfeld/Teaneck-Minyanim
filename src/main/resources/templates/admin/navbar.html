@@ -284,14 +284,14 @@
             <!-- Organizations Dropdown -->
             <div class="admin-navbar-dropdown" id="orgs-dropdown">
                 <button class="admin-navbar-dropdown-toggle" id="orgs-dropdown-toggle" type="button">
-                    <span>Organizations</span>
+                    <span>Shuls</span>
                     <svg class="admin-navbar-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
                 </button>
                 <div class="admin-navbar-dropdown-menu">
                     <div class="admin-navbar-dropdown-header">
-                        <input type="text" class="admin-navbar-dropdown-search" id="org-search" placeholder="Search organizations...">
+                        <input type="text" class="admin-navbar-dropdown-search" id="org-search" placeholder="Search shuls...">
                     </div>
                     <div id="org-list">
                         <a th:each="org : ${accessibleOrganizations}"
@@ -299,13 +299,13 @@
                            th:text="${org.name}"
                            th:data-org-name="${org.name.toLowerCase()}"
                            class="admin-navbar-dropdown-item org-item">
-                            Organization Name
+                            Shul Name
                         </a>
                     </div>
                     <div class="admin-navbar-dropdown-divider"></div>
                     <a th:if="${user.isSuperAdmin()}" href="/admin/new-organization" class="admin-navbar-dropdown-item new-org">
                         <i class="fas fa-plus" style="margin-right: 0.5rem;"></i>
-                        New Organization
+                        New Shul
                     </a>
                 </div>
             </div>
@@ -318,7 +318,7 @@
         <div class="admin-navbar-right">
             <span class="admin-navbar-time" th:text="${date}">Loading...</span>
             <div class="admin-navbar-org" th:if="${organization != null}" th:text="${organization.name}">
-                Organization
+                Shul
             </div>
         </div>
     </nav>

@@ -198,13 +198,13 @@ public class CalendarEventsAdminController {
         
         // Check authorization
         if (!userService.canAccessOrganization(orgId)) {
-            throw new AccessDeniedException("Not authorized to access this organization");
+            throw new AccessDeniedException("Not authorized to access this shul");
         }
         
         // Load organization
         Optional<Organization> orgOpt = organizationService.findById(orgId);
         if (orgOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Organization not found: " + orgId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Shul not found: " + orgId);
         }
         Organization org = orgOpt.get();
         mv.addObject("organization", org);
@@ -267,12 +267,12 @@ public class CalendarEventsAdminController {
         mv.addObject("user", userService.getCurrentUser());
 
         if (!userService.canAccessOrganization(orgId)) {
-            throw new AccessDeniedException("Not authorized to access this organization");
+            throw new AccessDeniedException("Not authorized to access this shul");
         }
 
         Optional<Organization> orgOpt = organizationService.findById(orgId);
         if (orgOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Organization not found: " + orgId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Shul not found: " + orgId);
         }
         Organization org = orgOpt.get();
         mv.addObject("organization", org);
@@ -332,7 +332,7 @@ public class CalendarEventsAdminController {
 
             Optional<Organization> orgOpt = organizationService.findById(orgId);
             if (orgOpt.isEmpty()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Organization not found");
+                redirectAttributes.addFlashAttribute("errorMessage", "Shul not found");
                 return new RedirectView(redirectPath);
             }
             Organization org = orgOpt.get();
@@ -360,7 +360,7 @@ public class CalendarEventsAdminController {
             if (locationId != null && !locationId.isBlank()) {
                 Location selectedLocation = locationService.findById(locationId);
                 if (selectedLocation == null || !orgId.equals(selectedLocation.getOrganizationId())) {
-                    redirectAttributes.addFlashAttribute("errorMessage", "Invalid location for this organization");
+                    redirectAttributes.addFlashAttribute("errorMessage", "Invalid location for this shul");
                     return new RedirectView(redirectPath);
                 }
                 resolvedLocationId = selectedLocation.getId();
@@ -427,12 +427,12 @@ public class CalendarEventsAdminController {
     @GetMapping(value = {"/admin/{orgId}/calendar-events/manual/template", "/admin/{orgId}/overrides/template"})
     public ResponseEntity<byte[]> downloadManualOverrideTemplate(@PathVariable String orgId) {
         if (!userService.canAccessOrganization(orgId)) {
-            throw new AccessDeniedException("Not authorized to access this organization");
+            throw new AccessDeniedException("Not authorized to access this shul");
         }
 
         Optional<Organization> orgOpt = organizationService.findById(orgId);
         if (orgOpt.isEmpty()) {
-            throw new AccessDeniedException("Organization not found");
+            throw new AccessDeniedException("Shul not found");
         }
 
         try {

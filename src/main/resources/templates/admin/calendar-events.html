@@ -357,7 +357,7 @@
             <span>Manage Calendar Entries</span>
         </a>
         <form method="post" th:action="@{/admin/{orgId}/calendar-events/rematerialize(orgId=${organization.id})}"
-              style="display: inline;" onsubmit="return confirm('Rematerialize calendar events for this organization?')">
+              style="display: inline;" onsubmit="return confirm('Rematerialize calendar events for this shul?')">
             <button type="submit" class="btn-modern btn-secondary">
                 <i class="fas fa-sync-alt"></i>
                 <span>Rematerialize</span>
