@@ -135,6 +135,43 @@ class ApplicationSettingsServiceTest {
     }
 
     @Test
+    void weeklyReviewEmailDayAndTime_parseStoredValues() {
+        stubExistingSettingsWithValues(Map.of(
+                SettingKey.EMAIL_WEEKLY_REVIEW_DAY, "SUNDAY",
+                SettingKey.EMAIL_WEEKLY_REVIEW_TIME, "08:30"));
+
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertEquals(java.time.DayOfWeek.SUNDAY, service.getWeeklyReviewEmailDay());
+        assertEquals(java.time.LocalTime.of(8, 30), service.getWeeklyReviewEmailTime());
+    }
+
+    @Test
+    void weeklyReviewEmailDayAndTime_fallBackToSaturdayTenPmWhenStoredValuesAreInvalid() {
+        stubExistingSettingsWithValues(Map.of(
+                SettingKey.EMAIL_WEEKLY_REVIEW_DAY, "FUNDAY",
+                SettingKey.EMAIL_WEEKLY_REVIEW_TIME, "25:99"));
+
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertEquals(java.time.DayOfWeek.SATURDAY, service.getWeeklyReviewEmailDay());
+        assertEquals(java.time.LocalTime.of(22, 0), service.getWeeklyReviewEmailTime());
+    }
+
+    @Test
+    void updateSetting_rejectsInvalidWeeklyReviewDayAndTime() {
+        stubExistingSettingsWithValues(Map.of());
+        ApplicationSettingsService service = new ApplicationSettingsService(repository, crypto);
+
+        assertThrows(ApplicationSettingsService.ValidationException.class,
+                () -> service.updateSetting(SettingKey.EMAIL_WEEKLY_REVIEW_DAY, "Funday"));
+        assertThrows(ApplicationSettingsService.ValidationException.class,
+                () -> service.updateSetting(SettingKey.EMAIL_WEEKLY_REVIEW_TIME, "7pm"));
+        assertThrows(ApplicationSettingsService.ValidationException.class,
+                () -> service.updateSetting(SettingKey.EMAIL_WEEKLY_REVIEW_TIME, "24:00"));
+    }
+
+    @Test
     void updateSetting_encryptsSensitiveValuesBeforeSaving() throws Exception {
         ApplicationSettings setting = setting(SettingKey.EMAIL_SMTP_PASSWORD, "");
         when(repository.findBySettingKey(SettingKey.EMAIL_SMTP_PASSWORD.getKey()))

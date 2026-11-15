@@ -160,6 +160,15 @@ class WeeklyMinyanReviewEmailServiceTest {
     }
 
     @Test
+    void sundaySendCoversTheWeekStartingThatDay() {
+        WeeklyMinyanReviewEmailService.DateRange range =
+                service.upcomingSundayThroughSaturday(LocalDate.of(2026, 11, 15));
+
+        assertEquals(LocalDate.of(2026, 11, 15), range.startDate());
+        assertEquals(LocalDate.of(2026, 11, 21), range.endDate());
+    }
+
+    @Test
     void refreshesImportsAndMaterializedEventsBeforeSendingScheduledDigest() {
         when(userService.getWeeklyMinyanReviewEmailRecipients())
                 .thenReturn(List.of(user("A0", "super", null, Role.ADMIN)));

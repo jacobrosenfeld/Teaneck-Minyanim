@@ -12,6 +12,7 @@ import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.minyan.Schedule;
 import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import com.tbdev.teaneckminyanim.service.auth.MagicLinkService;
+import com.tbdev.teaneckminyanim.service.email.WeeklyMinyanReviewEmailScheduler;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -74,6 +75,9 @@ public class AdminController {
 
     @Autowired
     private MagicLinkService magicLinkService;
+
+    @Autowired
+    private WeeklyMinyanReviewEmailScheduler weeklyReviewScheduler;
 
     @Autowired
     private UserManagementService userManagementService;
@@ -315,6 +319,9 @@ public class AdminController {
             }
 
             settingsService.updateSetting(key, settingValue);
+            if (key == SettingKey.TIMEZONE) {
+                weeklyReviewScheduler.reschedule();
+            }
 
             log.info("Application setting updated: {} = {} by user {}",
                     key.getKey(),

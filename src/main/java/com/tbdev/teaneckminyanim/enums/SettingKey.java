@@ -46,6 +46,8 @@ public enum SettingKey {
     EMAIL_SES_SECRET_ACCESS_KEY("email.ses.secret-access-key", SettingType.STRING, "", true),
     EMAIL_SES_CONFIGURATION_SET("email.ses.configuration-set", SettingType.STRING, ""),
     EMAIL_WEEKLY_REVIEW_ENABLED("email.weekly-review.enabled", SettingType.BOOLEAN, "true"),
+    EMAIL_WEEKLY_REVIEW_DAY("email.weekly-review.day", SettingType.STRING, "SATURDAY"),
+    EMAIL_WEEKLY_REVIEW_TIME("email.weekly-review.time", SettingType.STRING, "22:00"),
 
     // Calendar Import Settings
     CALENDAR_IMPORT_CRON("calendar.import.cron", SettingType.STRING, "0 0 2 * * SUN"),
@@ -168,6 +170,10 @@ public enum SettingKey {
                 return "AWS SES Configuration Set";
             case EMAIL_WEEKLY_REVIEW_ENABLED:
                 return "Scheduled Weekly Review Emails";
+            case EMAIL_WEEKLY_REVIEW_DAY:
+                return "Send Day";
+            case EMAIL_WEEKLY_REVIEW_TIME:
+                return "Send Time";
             case CALENDAR_IMPORT_CRON:
                 return "Calendar Import Schedule (Cron)";
             case CALENDAR_CLEANUP_DAYS:
@@ -243,7 +249,11 @@ public enum SettingKey {
             case EMAIL_SES_SECRET_ACCESS_KEY:
                 return "AWS secret access key used for SES API delivery";
             case EMAIL_SES_CONFIGURATION_SET:
-                return "Whether the weekly minyan review digest is sent to admins every Saturday at 10 PM (America/New_York). Turn off on dev or staging servers to avoid duplicate digests. Weekly digest test sends still work when this is off.";
+                return "Whether the weekly minyan review digest is sent to admins automatically on the send day and time below. Turn off on dev or staging servers to avoid duplicate digests. Weekly digest test sends still work when this is off.";
+            case EMAIL_WEEKLY_REVIEW_DAY:
+                return "Day of the week the weekly digest is sent. The digest covers the next Sunday through Saturday (the current week when sent on a Sunday).";
+            case EMAIL_WEEKLY_REVIEW_TIME:
+                return "Time of day the weekly digest is sent, in the site timezone set on the main Settings page.";
             case CALENDAR_IMPORT_CRON:
                 return "Cron expression for automatic calendar import schedule (e.g., '0 0 2 * * SUN' for Sundays at 2am)";
             case CALENDAR_CLEANUP_DAYS:

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import java.util.Optional;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
@@ -266,6 +268,26 @@ public class ApplicationSettingsService {
 
     public boolean isWeeklyReviewEmailEnabled() {
         return Boolean.TRUE.equals(getBoolean(SettingKey.EMAIL_WEEKLY_REVIEW_ENABLED));
+    }
+
+    public DayOfWeek getWeeklyReviewEmailDay() {
+        String value = getString(SettingKey.EMAIL_WEEKLY_REVIEW_DAY);
+        try {
+            return DayOfWeek.valueOf(value.trim().toUpperCase(Locale.ROOT));
+        } catch (RuntimeException e) {
+            log.warn("Invalid weekly review email day '{}', using default", value);
+            return DayOfWeek.valueOf(SettingKey.EMAIL_WEEKLY_REVIEW_DAY.getDefaultValue());
+        }
+    }
+
+    public LocalTime getWeeklyReviewEmailTime() {
+        String value = getString(SettingKey.EMAIL_WEEKLY_REVIEW_TIME);
+        try {
+            return LocalTime.parse(value.trim());
+        } catch (RuntimeException e) {
+            log.warn("Invalid weekly review email time '{}', using default", value);
+            return LocalTime.parse(SettingKey.EMAIL_WEEKLY_REVIEW_TIME.getDefaultValue());
+        }
     }
 
     public String getEmailFromAddress() {
@@ -539,6 +561,18 @@ public class ApplicationSettingsService {
                 break;
             case EMAIL_WEEKLY_REVIEW_ENABLED:
                 validateBoolean(value, "Scheduled weekly review emails");
+                break;
+            case EMAIL_WEEKLY_REVIEW_DAY:
+                try {
+                    DayOfWeek.valueOf(value.trim().toUpperCase(Locale.ROOT));
+                } catch (IllegalArgumentException e) {
+                    throw new ValidationException("Send day must be a day of the week.");
+                }
+                break;
+            case EMAIL_WEEKLY_REVIEW_TIME:
+                if (!value.trim().matches("([01]\\d|2[0-3]):[0-5]\\d")) {
+                    throw new ValidationException("Send time must be a time like 22:00.");
+                }
                 break;
             case EMAIL_FROM_ADDRESS:
                 validateEmail(value, "Email from address");
