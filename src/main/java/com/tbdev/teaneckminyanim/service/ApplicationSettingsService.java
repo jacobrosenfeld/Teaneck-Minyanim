@@ -7,12 +7,14 @@ import com.tbdev.teaneckminyanim.model.ApplicationSettings;
 import com.tbdev.teaneckminyanim.repo.ApplicationSettingsRepository;
 import com.tbdev.teaneckminyanim.security.SensitiveSettingCrypto;
 import com.tbdev.teaneckminyanim.security.SensitiveSettingCrypto.SensitiveSettingCryptoException;
+import com.tbdev.teaneckminyanim.service.calendar.CalendarImportSchedule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
+import java.util.Collection;
 import java.util.Optional;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -43,6 +45,7 @@ public class ApplicationSettingsService {
     private static final Pattern IOS_APP_ID_PATH_PATTERN = Pattern.compile("/id(\\d+)(?:[/?#]|$)");
     private static final Pattern IOS_APP_ID_QUERY_PATTERN = Pattern.compile("[?&]id=(\\d+)(?:[&#]|$)");
     private static final Pattern NUMERIC_ID_PATTERN = Pattern.compile("^\\d+$");
+    private static final Pattern GTM_CONTAINER_ID_PATTERN = Pattern.compile("^GTM-[A-Z0-9]+$");
 
     @Autowired
     public ApplicationSettingsService(
@@ -165,6 +168,49 @@ public class ApplicationSettingsService {
         return getString(SettingKey.CALENDAR_IMPORT_CRON);
     }
     
+    /**
+     * Mode the settings page uses to edit the import schedule. Unknown stored values read as SIMPLE.
+     */
+    public CalendarImportSchedule.Mode getCalendarImportScheduleMode() {
+        return CalendarImportSchedule.Mode.fromStored(getString(SettingKey.CALENDAR_IMPORT_SCHEDULE_MODE));
+    }
+
+    /**
+     * Validates and saves the calendar import schedule from the settings page.
+     * In SIMPLE mode the cron is generated from {@code frequency}, {@code days} and {@code time}
+     * (the {@code cron} argument is ignored); in ADVANCED mode {@code cron} is saved as entered.
+     * Nothing is saved unless every field is valid.
+     *
+     * @return the cron expression that was saved
+     */
+    public String saveCalendarImportSchedule(
+            String mode,
+            String frequency,
+            Collection<String> days,
+            String time,
+            String cron) throws ValidationException {
+        CalendarImportSchedule.Mode parsedMode;
+        String newCron;
+        try {
+            parsedMode = CalendarImportSchedule.Mode.fromString(mode);
+            if (parsedMode == CalendarImportSchedule.Mode.SIMPLE) {
+                newCron = CalendarImportSchedule.toCron(CalendarImportSchedule.fromForm(frequency, days, time));
+            } else {
+                newCron = cron == null ? "" : cron.trim();
+            }
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException(e.getMessage());
+        }
+        if (newCron.isEmpty()) {
+            throw new ValidationException("Enter a cron expression, or switch off Advanced to use the day and time picker.");
+        }
+        validateSettingValue(SettingKey.CALENDAR_IMPORT_CRON, newCron);
+
+        updateSetting(SettingKey.CALENDAR_IMPORT_CRON, newCron);
+        updateSetting(SettingKey.CALENDAR_IMPORT_SCHEDULE_MODE, parsedMode.name());
+        return newCron;
+    }
+
     public Integer getCalendarCleanupDays() {
         return getInteger(SettingKey.CALENDAR_CLEANUP_DAYS);
     }
@@ -236,6 +282,19 @@ public class ApplicationSettingsService {
 
     public String getRecaptchaSecretKey() {
         return getString(SettingKey.RECAPTCHA_SECRET_KEY);
+    }
+
+    /**
+     * Google Tag Manager container ID, trimmed. Returns an empty string when unset or when the
+     * stored value is not a valid container ID, so templates can treat empty as "no GTM".
+     */
+    public String getGtmContainerId() {
+        String value = getString(SettingKey.GTM_CONTAINER_ID);
+        if (value == null) {
+            return "";
+        }
+        String trimmed = value.trim();
+        return GTM_CONTAINER_ID_PATTERN.matcher(trimmed).matches() ? trimmed : "";
     }
 
     public boolean isRecaptchaEnabled() {
@@ -616,6 +675,19 @@ public class ApplicationSettingsService {
             case CALENDAR_IMPORT_CRON:
                 validateCronExpression(value);
                 break;
+            case CALENDAR_IMPORT_SCHEDULE_MODE:
+                try {
+                    CalendarImportSchedule.Mode.fromString(value);
+                } catch (IllegalArgumentException e) {
+                    throw new ValidationException(e.getMessage());
+                }
+                break;
+            case GTM_CONTAINER_ID:
+                if (!GTM_CONTAINER_ID_PATTERN.matcher(value).matches()) {
+                    throw new ValidationException(
+                            "GTM container ID must look like GTM-XXXXXXX (capital letters and digits), or be left blank.");
+                }
+                break;
             case CALENDAR_CLEANUP_DAYS:
                 validatePositiveInteger(value);
                 break;
@@ -630,6 +702,7 @@ public class ApplicationSettingsService {
             case FEEDBACK_MOBILE_APP_TOKEN:
             case RECAPTCHA_SITE_KEY:
             case RECAPTCHA_SECRET_KEY:
+            case GTM_CONTAINER_ID:
             case MOBILE_IOS_APP_URL:
             case MOBILE_GOOGLE_PLAY_URL:
             case EMAIL_PROVIDER:

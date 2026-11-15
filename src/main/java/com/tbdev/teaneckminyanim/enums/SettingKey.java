@@ -30,6 +30,7 @@ public enum SettingKey {
     FEEDBACK_MOBILE_APP_TOKEN("feedback.mobile-app-token", SettingType.STRING, "", true),
     RECAPTCHA_SITE_KEY("recaptcha.site-key", SettingType.STRING, ""),
     RECAPTCHA_SECRET_KEY("recaptcha.secret-key", SettingType.STRING, "", true),
+    GTM_CONTAINER_ID("analytics.gtm.container-id", SettingType.STRING, "GTM-T2P4J8V"),
 
     // Email Provider Settings
     EMAIL_PROVIDER("email.provider", SettingType.STRING, ""),
@@ -51,6 +52,7 @@ public enum SettingKey {
 
     // Calendar Import Settings
     CALENDAR_IMPORT_CRON("calendar.import.cron", SettingType.STRING, "0 0 2 * * SUN"),
+    CALENDAR_IMPORT_SCHEDULE_MODE("calendar.import.schedule.mode", SettingType.STRING, "SIMPLE"),
     CALENDAR_CLEANUP_DAYS("calendar.cleanup.days", SettingType.INTEGER, "30");
     
     private final String key;
@@ -142,6 +144,8 @@ public enum SettingKey {
                 return "reCAPTCHA Site Key";
             case RECAPTCHA_SECRET_KEY:
                 return "reCAPTCHA Secret Key";
+            case GTM_CONTAINER_ID:
+                return "Google Tag Manager Container ID";
             case EMAIL_PROVIDER:
                 return "Email Provider";
             case EMAIL_SMTP_HOST:
@@ -176,6 +180,8 @@ public enum SettingKey {
                 return "Send Time";
             case CALENDAR_IMPORT_CRON:
                 return "Calendar Import Schedule (Cron)";
+            case CALENDAR_IMPORT_SCHEDULE_MODE:
+                return "Calendar Import Schedule Mode";
             case CALENDAR_CLEANUP_DAYS:
                 return "Calendar Cleanup Threshold (Days)";
             default:
@@ -224,6 +230,8 @@ public enum SettingKey {
                 return "Public reCAPTCHA site key used by website feedback and subscription forms.";
             case RECAPTCHA_SECRET_KEY:
                 return "Private server-side reCAPTCHA secret key used to verify feedback and subscription form submissions.";
+            case GTM_CONTAINER_ID:
+                return "Google Tag Manager container ID loaded on public and admin pages (e.g., GTM-XXXXXXX). Leave blank to turn off Tag Manager.";
             case EMAIL_PROVIDER:
                 return "Email delivery provider. Supported values: SMTP or SES. Leave blank to disable email sending.";
             case EMAIL_SMTP_HOST:
@@ -255,7 +263,9 @@ public enum SettingKey {
             case EMAIL_WEEKLY_REVIEW_TIME:
                 return "Time of day the weekly digest is sent, in the site timezone set on the main Settings page.";
             case CALENDAR_IMPORT_CRON:
-                return "Cron expression for automatic calendar import schedule (e.g., '0 0 2 * * SUN' for Sundays at 2am)";
+                return "Cron expression for automatic calendar import schedule (e.g., '0 0 2 * * SUN' for Sundays at 2am). Runs in the site timezone.";
+            case CALENDAR_IMPORT_SCHEDULE_MODE:
+                return "Whether the settings page edits the import schedule with the simple day/time picker (SIMPLE) or a raw cron expression (ADVANCED)";
             case CALENDAR_CLEANUP_DAYS:
                 return "Number of days to keep old calendar entries before cleanup (must be > 0)";
             default:
@@ -275,7 +285,8 @@ public enum SettingKey {
             return "Timezone";
         } else if (key.startsWith("mobile.")) {
             return "Mobile Apps";
-        } else if (key.startsWith("mapbox.") || key.startsWith("feedback.") || key.startsWith("recaptcha.")) {
+        } else if (key.startsWith("mapbox.") || key.startsWith("feedback.") || key.startsWith("recaptcha.")
+                || key.startsWith("analytics.")) {
             return "External Services";
         } else if (key.startsWith("email.")) {
             return "Email";

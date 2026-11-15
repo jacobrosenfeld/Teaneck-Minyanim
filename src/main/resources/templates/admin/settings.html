@@ -362,6 +362,197 @@
                 overflow-wrap: anywhere;
             }
 
+            /* Calendar import schedule picker */
+            .schedule-editor {
+                padding: var(--space-5, 1.25rem);
+                border-bottom: 1px solid var(--border-color-light, #e9ecef);
+            }
+
+            .schedule-editor-header {
+                margin-bottom: var(--space-4, 1rem);
+            }
+
+            .schedule-grid {
+                display: grid;
+                gap: var(--space-4, 1rem);
+            }
+
+            .schedule-grid[hidden],
+            .schedule-row[hidden],
+            .schedule-advanced[hidden] {
+                display: none;
+            }
+
+            .schedule-row {
+                display: grid;
+                grid-template-columns: 8rem minmax(0, 1fr);
+                gap: var(--space-3, 0.75rem);
+                align-items: center;
+            }
+
+            .schedule-row-label {
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                font-weight: var(--font-weight-semibold, 600);
+                margin: 0;
+            }
+
+            .schedule-choices {
+                display: flex;
+                flex-wrap: wrap;
+                gap: var(--space-2, 0.5rem);
+                min-width: 0;
+                margin: 0;
+                padding: 0;
+                border: 0;
+            }
+
+            .schedule-choice {
+                position: relative;
+                margin: 0;
+            }
+
+            .schedule-choice input {
+                position: absolute;
+                opacity: 0;
+                width: 1px;
+                height: 1px;
+            }
+
+            .schedule-choice span {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 3.25rem;
+                height: 2.25rem;
+                padding: 0 var(--space-3, 0.75rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color-dark, #ced4da);
+                border-radius: var(--radius-full, 9999px);
+                font-size: var(--font-size-sm, 0.875rem);
+                cursor: pointer;
+                user-select: none;
+                transition: border-color var(--transition-fast, 150ms ease),
+                            background var(--transition-fast, 150ms ease),
+                            color var(--transition-fast, 150ms ease);
+            }
+
+            .schedule-choice input:checked + span {
+                color: #fff;
+                background: var(--color-primary, #275ed8);
+                border-color: var(--color-primary, #275ed8);
+            }
+
+            .schedule-choice input:focus-visible + span {
+                box-shadow: 0 0 0 3px rgba(39, 94, 216, 0.25);
+            }
+
+            .schedule-time {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+            }
+
+            .schedule-time .field-input {
+                width: 9rem;
+            }
+
+            .schedule-zone {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-1, 0.25rem);
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+            }
+
+            .schedule-advanced-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                margin: var(--space-4, 1rem) 0 0;
+                color: var(--text-primary, #212529);
+                font-size: var(--font-size-sm, 0.875rem);
+                cursor: pointer;
+            }
+
+            .schedule-advanced {
+                margin-top: var(--space-3, 0.75rem);
+            }
+
+            .schedule-advanced .field-input {
+                max-width: 22rem;
+                font-family: SFMono-Regular, Menlo, Consolas, monospace;
+            }
+
+            .schedule-help {
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin: var(--space-2, 0.5rem) 0 0;
+            }
+
+            .schedule-help code {
+                color: var(--text-primary, #212529);
+            }
+
+            .schedule-preview {
+                display: flex;
+                align-items: flex-start;
+                gap: var(--space-3, 0.75rem);
+                margin-top: var(--space-4, 1rem);
+                padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+                background: var(--bg-body, #f8f9fa);
+                border: 1px solid var(--border-color-light, #e9ecef);
+                border-radius: var(--radius-md, 0.375rem);
+            }
+
+            .schedule-preview > i {
+                color: var(--color-primary, #275ed8);
+                padding-top: 0.2rem;
+            }
+
+            .schedule-summary {
+                color: var(--text-primary, #212529);
+                font-weight: var(--font-weight-semibold, 600);
+                margin: 0;
+                overflow-wrap: anywhere;
+            }
+
+            .schedule-summary.error {
+                color: var(--color-danger, #f44336);
+            }
+
+            .schedule-next-run {
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin: var(--space-1, 0.25rem) 0 0;
+            }
+
+            .schedule-next-run:empty {
+                display: none;
+            }
+
+            .schedule-actions {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: var(--space-2, 0.5rem);
+                margin-top: var(--space-4, 1rem);
+            }
+
+            .schedule-actions .field-state {
+                margin-right: auto;
+                white-space: normal;
+            }
+
+            @container (max-width: 520px) {
+                .schedule-row {
+                    grid-template-columns: minmax(0, 1fr);
+                    gap: var(--space-2, 0.5rem);
+                }
+            }
+
             @media (max-width: 900px) {
                 .settings-section {
                     grid-template-columns: minmax(0, 1fr);
@@ -456,6 +647,109 @@
                 </div>
 
                 <div class="settings-panel">
+                    <form th:if="${section.id == 'calendar-import' and importSchedule != null}"
+                          id="import-schedule-form"
+                          class="schedule-editor"
+                          th:action="@{/admin/settings/calendar-import-schedule}"
+                          th:data-preview-url="@{/admin/settings/calendar-import-schedule/preview}"
+                          method="post"
+                          novalidate>
+                        <div class="schedule-editor-header">
+                            <span class="field-label">Import Schedule</span>
+                            <p class="field-description">
+                                When the automatic calendar import runs. The calendar is refreshed right after each import.
+                            </p>
+                        </div>
+
+                        <div id="schedule-simple" class="schedule-grid" th:hidden="${importSchedule.advanced()}">
+                            <div class="schedule-row">
+                                <p class="schedule-row-label" id="schedule-frequency-label">Frequency</p>
+                                <fieldset class="schedule-choices" aria-labelledby="schedule-frequency-label">
+                                    <label class="schedule-choice">
+                                        <input type="radio" name="frequency" value="DAILY"
+                                               th:checked="${!importSchedule.weekly()}">
+                                        <span>Daily</span>
+                                    </label>
+                                    <label class="schedule-choice">
+                                        <input type="radio" name="frequency" value="WEEKLY"
+                                               th:checked="${importSchedule.weekly()}">
+                                        <span>Weekly</span>
+                                    </label>
+                                </fieldset>
+                            </div>
+
+                            <div class="schedule-row" id="schedule-days-row" th:hidden="${!importSchedule.weekly()}">
+                                <p class="schedule-row-label" id="schedule-days-label">Days</p>
+                                <fieldset class="schedule-choices" aria-labelledby="schedule-days-label">
+                                    <label class="schedule-choice"
+                                           th:each="day : ${ {'SUN','MON','TUE','WED','THU','FRI','SAT'} }">
+                                        <input type="checkbox" name="days" th:value="${day}"
+                                               th:checked="${importSchedule.hasDay(day)}">
+                                        <span th:text="${#strings.capitalize(#strings.toLowerCase(day))}">Sun</span>
+                                    </label>
+                                </fieldset>
+                            </div>
+
+                            <div class="schedule-row">
+                                <label class="schedule-row-label" for="schedule-time">Time</label>
+                                <div class="schedule-time">
+                                    <input type="time" class="field-input" id="schedule-time" name="time"
+                                           step="60" th:value="${importSchedule.simple().timeValue()}">
+                                    <span class="schedule-zone">
+                                        <i class="fas fa-globe"></i>
+                                        <span th:text="${importSchedule.timezone()}">America/New_York</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <label class="schedule-advanced-toggle" for="schedule-advanced">
+                            <input type="checkbox" id="schedule-advanced" th:checked="${importSchedule.advanced()}">
+                            <span>Advanced: use a custom cron expression</span>
+                        </label>
+
+                        <div id="schedule-advanced-block" class="schedule-advanced" th:hidden="${!importSchedule.advanced()}">
+                            <label class="field-label" for="schedule-cron">Cron expression</label>
+                            <input type="text" class="field-input" id="schedule-cron" name="cron"
+                                   spellcheck="false" autocomplete="off" placeholder="0 0 2 * * SUN"
+                                   th:value="${importSchedule.cron()}">
+                            <p class="schedule-help">
+                                Six fields: second, minute, hour, day of month, month, day of week, in the site timezone.
+                                Examples: <code>0 0 2 * * SUN</code> (Sundays at 2:00 AM),
+                                <code>0 30 3 * * MON-FRI</code> (weekdays at 3:30 AM),
+                                <code>0 0 */6 * * *</code> (every 6 hours).
+                                <a href="https://docs.spring.io/spring-framework/reference/integration/scheduling.html#scheduling-cron-expression"
+                                   target="_blank" rel="noopener noreferrer">Spring cron syntax</a>
+                            </p>
+                        </div>
+
+                        <div class="schedule-preview" aria-live="polite">
+                            <i class="fas fa-calendar-check"></i>
+                            <div>
+                                <p class="schedule-summary" id="schedule-summary"
+                                   th:classappend="${importSchedule.valid() ? '' : 'error'}"
+                                   th:text="${importSchedule.summary()}">Runs every Sunday at 2:00 AM</p>
+                                <p class="schedule-next-run" id="schedule-next-run"
+                                   th:text="${importSchedule.nextRun() != null ? 'Next run: ' + importSchedule.nextRun() : ''}"></p>
+                            </div>
+                        </div>
+
+                        <div class="schedule-actions">
+                            <span class="field-state" id="schedule-state">
+                                <i class="far fa-circle"></i>
+                                <span>Saved schedule</span>
+                            </span>
+                            <button class="field-discard-button" type="button" id="schedule-discard" disabled
+                                    aria-label="Discard schedule changes">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <button class="field-save-button" type="submit" id="schedule-save"
+                                    aria-label="Save import schedule">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </form>
+
                     <form th:each="field : ${section.fields}"
                           class="setting-field-form"
                           th:action="@{/admin/settings/update-field}"
@@ -694,6 +988,251 @@
                 }
             });
         });
+
+        (function initImportSchedule() {
+            const form = document.getElementById('import-schedule-form');
+            if (!form) {
+                return;
+            }
+
+            const simpleBlock = document.getElementById('schedule-simple');
+            const daysRow = document.getElementById('schedule-days-row');
+            const advancedToggle = document.getElementById('schedule-advanced');
+            const advancedBlock = document.getElementById('schedule-advanced-block');
+            const cronInput = document.getElementById('schedule-cron');
+            const timeInput = document.getElementById('schedule-time');
+            const summary = document.getElementById('schedule-summary');
+            const nextRun = document.getElementById('schedule-next-run');
+            const state = document.getElementById('schedule-state');
+            const saveButton = document.getElementById('schedule-save');
+            const discardButton = document.getElementById('schedule-discard');
+            const previewUrl = form.dataset.previewUrl;
+            let previewTimer = null;
+            let previewRequest = 0;
+
+            function currentMode() {
+                return advancedToggle.checked ? 'ADVANCED' : 'SIMPLE';
+            }
+
+            function frequency() {
+                const checked = form.querySelector('input[name="frequency"]:checked');
+                return checked ? checked.value : 'WEEKLY';
+            }
+
+            function selectedDays() {
+                return Array.from(form.querySelectorAll('input[name="days"]:checked')).map(function(input) {
+                    return input.value;
+                });
+            }
+
+            // Mirrors CalendarImportSchedule.toCron on the server; null while the picker is incomplete.
+            function cronFromPicker() {
+                const match = /^(\d{2}):(\d{2})$/.exec(timeInput.value || '');
+                if (!match) {
+                    return null;
+                }
+                let dayField = '*';
+                if (frequency() === 'WEEKLY') {
+                    const days = selectedDays();
+                    if (days.length === 0) {
+                        return null;
+                    }
+                    dayField = days.join(',');
+                }
+                return '0 ' + parseInt(match[2], 10) + ' ' + parseInt(match[1], 10) + ' * * ' + dayField;
+            }
+
+            // Form values without the CSRF token, plus the mode derived from the Advanced checkbox.
+            function scheduleParams() {
+                const data = new URLSearchParams(new FormData(form));
+                data.delete('_csrf');
+                data.set('mode', currentMode());
+                return data;
+            }
+
+            function snapshot() {
+                return scheduleParams().toString();
+            }
+
+            let savedSnapshot = snapshot();
+
+            function setState(kind, icon, text) {
+                state.className = 'field-state' + (kind ? ' ' + kind : '');
+                state.querySelector('i').className = icon;
+                state.querySelector('span').textContent = text;
+            }
+
+            function updateDirtyState() {
+                const dirty = snapshot() !== savedSnapshot;
+                discardButton.disabled = !dirty;
+                if (dirty) {
+                    setState('unsaved', 'far fa-circle-dot', 'Unsaved');
+                } else {
+                    setState('', 'far fa-circle', 'Saved schedule');
+                }
+            }
+
+            function applyModeUi() {
+                const advanced = advancedToggle.checked;
+                simpleBlock.hidden = advanced;
+                advancedBlock.hidden = !advanced;
+                daysRow.hidden = frequency() !== 'WEEKLY';
+            }
+
+            function showPreview(result) {
+                summary.classList.toggle('error', !result.success);
+                summary.textContent = result.success ? result.summary : (result.message || 'Invalid schedule.');
+                nextRun.textContent = result.success && result.nextRun ? 'Next run: ' + result.nextRun : '';
+            }
+
+            async function fetchPreview(data) {
+                const response = await fetch(previewUrl + '?' + data.toString(), {
+                    headers: {'Accept': 'application/json'}
+                });
+                if (!response.ok) {
+                    throw new Error('Preview unavailable.');
+                }
+                return response.json();
+            }
+
+            function schedulePreview() {
+                clearTimeout(previewTimer);
+                previewTimer = setTimeout(async function() {
+                    const requestId = ++previewRequest;
+                    try {
+                        const result = await fetchPreview(scheduleParams());
+                        if (requestId === previewRequest) {
+                            showPreview(result);
+                        }
+                    } catch (error) {
+                        if (requestId === previewRequest) {
+                            showPreview({success: false, message: error.message});
+                        }
+                    }
+                }, 250);
+            }
+
+            function fillPicker(simple) {
+                form.querySelectorAll('input[name="frequency"]').forEach(function(input) {
+                    input.checked = input.value === simple.frequency;
+                });
+                form.querySelectorAll('input[name="days"]').forEach(function(input) {
+                    input.checked = simple.days.indexOf(input.value) !== -1;
+                });
+                timeInput.value = simple.time;
+            }
+
+            function onChange() {
+                applyModeUi();
+                updateDirtyState();
+                schedulePreview();
+            }
+
+            function onFieldEvent(event) {
+                if (event.target !== advancedToggle) {
+                    onChange();
+                }
+            }
+
+            form.addEventListener('input', onFieldEvent);
+            form.addEventListener('change', onFieldEvent);
+
+            advancedToggle.addEventListener('change', async function() {
+                if (advancedToggle.checked) {
+                    // Simple -> Advanced: start the cron box from the picker's schedule.
+                    const generated = cronFromPicker();
+                    if (generated) {
+                        cronInput.value = generated;
+                    }
+                    onChange();
+                    cronInput.focus();
+                    return;
+                }
+
+                // Advanced -> Simple: parse the cron back into the picker when it fits; otherwise confirm.
+                const warning = 'This custom schedule can\'t be shown with the day and time picker. '
+                        + 'Switching will replace it with the picker\'s schedule when you save. Continue?';
+                advancedToggle.disabled = true;
+                try {
+                    const check = new URLSearchParams();
+                    check.set('mode', 'ADVANCED');
+                    check.set('cron', cronInput.value);
+                    const result = await fetchPreview(check);
+                    if (result.success && result.simple) {
+                        fillPicker(result.simple);
+                    } else if (!window.confirm(warning)) {
+                        advancedToggle.checked = true;
+                    }
+                } catch (error) {
+                    if (!window.confirm(warning)) {
+                        advancedToggle.checked = true;
+                    }
+                } finally {
+                    advancedToggle.disabled = false;
+                    onChange();
+                }
+            });
+
+            // Make the saved values the ones the Discard button (form.reset) returns to.
+            function commitDefaults() {
+                form.querySelectorAll('input').forEach(function(input) {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        input.defaultChecked = input.checked;
+                    } else if (input.type !== 'hidden') {
+                        input.defaultValue = input.value;
+                    }
+                });
+            }
+
+            discardButton.addEventListener('click', function() {
+                form.reset();
+                onChange();
+            });
+
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                saveButton.classList.add('saving');
+                discardButton.disabled = true;
+                setState('', 'fas fa-spinner fa-spin', 'Saving');
+
+                try {
+                    const body = new URLSearchParams(new FormData(form));
+                    body.set('mode', currentMode());
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: body
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || 'Schedule could not be saved.');
+                    }
+
+                    cronInput.value = result.cron;
+                    if (result.simple) {
+                        fillPicker(result.simple);
+                    }
+                    commitDefaults();
+                    savedSnapshot = snapshot();
+                    applyModeUi();
+                    showPreview(result);
+                    setState('saved', 'fas fa-check-circle', 'Saved');
+                    if (window.showToast) {
+                        showToast('Import schedule saved', 'success');
+                    }
+                } catch (error) {
+                    setState('error', 'fas fa-exclamation-circle', error.message);
+                    discardButton.disabled = snapshot() === savedSnapshot;
+                    if (window.showToast) {
+                        showToast(error.message, 'error');
+                    }
+                } finally {
+                    saveButton.classList.remove('saving');
+                }
+            });
+
+            applyModeUi();
+        })();
     </script>
 </th:block>
 </body>
