@@ -589,4 +589,79 @@ class MinyanClassifierTest {
             assertTrue(result.reason.contains("No minyan pattern matched"));
         }
     }
+
+    // ---- Issue #225: location names must not become "Main"/"Second" qualifier notes ----
+
+    @Test
+    void testClassify_MainSanctuaryInTitleDoesNotAddMainNote() {
+        String[] titles = {
+            "Shacharis Main Sanctuary",
+            "Shacharis - Main Sanctuary",
+            "Mincha (Main Shul)",
+            "Maariv - Main Bais Medrash",
+            "Mincha/Maariv Main Beis Midrash",
+            "Selichos/Shacharis Main Sanctuary",
+            "Shacharis - Second Floor Chapel"
+        };
+        for (String title : titles) {
+            MinyanClassifier.ClassificationResult result =
+                classifier.classify(title, null, null, LocalDate.of(2025, 1, 15), LocalTime.of(7, 0));
+            assertTrue(result.classification.isMinyan(), "'" + title + "' should still classify as a minyan");
+            assertTrue(result.notes == null || !result.notes.matches("(?i).*\\b(main|second)\\b.*"),
+                "'" + title + "' must not get a Main/Second note from its location, got: " + result.notes);
+        }
+    }
+
+    @Test
+    void testClassify_RealMainMinyanQualifierIsKept() {
+        MinyanClassifier.ClassificationResult result =
+            classifier.classify("Main Minyan Shacharis", null, null, LocalDate.now(), LocalTime.of(7, 0),
+                java.util.List.of("Main Sanctuary"));
+
+        assertEquals(MinyanType.SHACHARIS, result.classification);
+        assertEquals("Main", result.notes);
+    }
+
+    @Test
+    void testClassify_OtherQualifiersSurviveLocationStripping() {
+        MinyanClassifier.ClassificationResult result =
+            classifier.classify("Early Shacharis - Main Sanctuary", null, null, LocalDate.now(), LocalTime.of(6, 0),
+                java.util.List.of("Main Sanctuary"));
+
+        assertEquals(MinyanType.SHACHARIS, result.classification);
+        assertEquals("Early Shacharis", result.notes);
+    }
+
+    @Test
+    void testClassify_OrgLocationNameInTitleIsNotAQualifier() {
+        // Without the location list, "Youth" in the room name reads as a qualifier.
+        MinyanClassifier.ClassificationResult withoutLocations =
+            classifier.classify("Maariv - Youth Lounge", null, null, LocalDate.now(), LocalTime.of(20, 0));
+        assertEquals("Youth", withoutLocations.notes);
+
+        MinyanClassifier.ClassificationResult withLocations =
+            classifier.classify("Maariv - Youth Lounge", null, null, LocalDate.now(), LocalTime.of(20, 0),
+                java.util.List.of("Youth Lounge"));
+        assertEquals(MinyanType.MAARIV, withLocations.classification);
+        assertNull(withLocations.notes);
+    }
+
+    @Test
+    void testClassify_LocationPhraseMatchesSpellingVariants() {
+        MinyanClassifier.ClassificationResult result =
+            classifier.classify("Mincha Kollel Bais Medrash", null, null, LocalDate.now(), LocalTime.of(13, 30),
+                java.util.List.of("Kollel Beis Midrash"));
+
+        assertEquals(MinyanType.MINCHA, result.classification);
+        assertNull(result.notes, "Kollel is part of the location name, not a qualifier");
+    }
+
+    @Test
+    void testClassify_NullLocationPhrasesBehaveLikeNone() {
+        MinyanClassifier.ClassificationResult result =
+            classifier.classify("Teen Minyan", null, null, LocalDate.now(), LocalTime.of(8, 0), null);
+
+        assertEquals(MinyanType.SHACHARIS, result.classification);
+        assertEquals("Teen Minyan", result.notes);
+    }
 }

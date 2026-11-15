@@ -1,9 +1,11 @@
 package com.tbdev.teaneckminyanim.service.calendar;
 
+import com.tbdev.teaneckminyanim.model.Location;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry;
 import com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository;
 import com.tbdev.teaneckminyanim.service.CalendarMaterializationService;
+import com.tbdev.teaneckminyanim.service.LocationService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +43,7 @@ public class CalendarImportService {
     private final OrganizationService organizationService;
     private final MinyanClassifier minyanClassifier;
     private final CalendarMaterializationService materializationService;
+    private final LocationService locationService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -293,6 +296,7 @@ public class CalendarImportService {
                                        String sourceUrl,
                                        ImportResult result) {
         Set<String> latestImportFingerprints = new HashSet<>();
+        List<Location> orgLocations = loadOrganizationLocations(organizationId);
         
         for (CalendarCsvParser.ParsedEntry parsed : parsedEntries) {
             try {
@@ -307,7 +311,7 @@ public class CalendarImportService {
                 if (existing.isPresent()) {
                     // Entry exists - update it
                     OrganizationCalendarEntry entry = existing.get();
-                    updateEntry(entry, parsed, sourceUrl);
+                    updateEntry(entry, parsed, sourceUrl, orgLocations);
                     entryRepository.save(entry);
                     result.updatedEntries++;
                     log.debug("Updated existing entry: {} on {}", entry.getTitle(), entry.getDate());
@@ -315,7 +319,7 @@ public class CalendarImportService {
                 } else {
                     // New entry - check for duplicates and create
                     OrganizationCalendarEntry newEntry = createEntry(
-                            organizationId, parsed, fingerprint, sourceUrl);
+                            organizationId, parsed, fingerprint, sourceUrl, orgLocations);
                     
                     // Check for similar entries (potential duplicates)
                     if (isDuplicate(organizationId, newEntry)) {
@@ -431,10 +435,15 @@ public class CalendarImportService {
     private OrganizationCalendarEntry createEntry(String organizationId,
                                                   CalendarCsvParser.ParsedEntry parsed,
                                                   String fingerprint,
-                                                  String sourceUrl) {
+                                                  String sourceUrl,
+                                                  List<Location> orgLocations) {
+        // Map the imported location text onto one of the org's Locations (null when unmatched)
+        String resolvedLocation = resolveLocationName(parsed, orgLocations);
+
         // Classify the entry
-        MinyanClassifier.ClassificationResult classificationResult = 
-            minyanClassifier.classify(parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate(), parsed.getStartTime());
+        MinyanClassifier.ClassificationResult classificationResult = minyanClassifier.classify(
+            parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate(), parsed.getStartTime(),
+            locationPhrases(parsed, resolvedLocation, orgLocations));
         
         // Normalize title to remove redundant words
         String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
@@ -457,7 +466,7 @@ public class CalendarImportService {
                 .title(normalizedTitle.isEmpty() ? parsed.getTitle() : normalizedTitle)
                 .type(parsed.getType())
                 .name(parsed.getName())
-                .location(parsed.getLocation())
+                .location(resolvedLocation)
                 .description(parsed.getDescription())
                 .hebrewDate(parsed.getHebrewDate())
                 .rawText(parsed.getRawText())
@@ -482,10 +491,18 @@ public class CalendarImportService {
      */
     private void updateEntry(OrganizationCalendarEntry entry,
                             CalendarCsvParser.ParsedEntry parsed,
-                            String sourceUrl) {
+                            String sourceUrl,
+                            List<Location> orgLocations) {
+        // Re-resolve the location on every import so rows saved with raw/unmatched text are
+        // corrected, unless an admin picked the location by hand.
+        String location = entry.isLocationManuallyEdited()
+                ? entry.getLocation()
+                : resolveLocationName(parsed, orgLocations);
+
         // Re-classify the entry
-        MinyanClassifier.ClassificationResult classificationResult = 
-            minyanClassifier.classify(parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate(), parsed.getStartTime());
+        MinyanClassifier.ClassificationResult classificationResult = minyanClassifier.classify(
+            parsed.getTitle(), parsed.getType(), parsed.getDescription(), parsed.getDate(), parsed.getStartTime(),
+            locationPhrases(parsed, location, orgLocations));
         
         // Normalize title to remove redundant words
         String normalizedTitle = minyanClassifier.normalizeTitle(parsed.getTitle(), classificationResult.classification);
@@ -521,7 +538,7 @@ public class CalendarImportService {
         entry.setTitle(normalizedTitle.isEmpty() ? parsed.getTitle() : normalizedTitle);
         entry.setType(parsed.getType());
         entry.setName(parsed.getName());
-        entry.setLocation(parsed.getLocation());
+        entry.setLocation(location);
         entry.setDescription(parsed.getDescription());
         entry.setHebrewDate(parsed.getHebrewDate());
         entry.setRawText(parsed.getRawText());
@@ -530,6 +547,55 @@ public class CalendarImportService {
         entry.setClassificationReason(classificationResult.reason);
         entry.setNotes(classificationResult.notes);
         entry.setUpdatedAt(LocalDateTime.now());
+    }
+
+    private List<Location> loadOrganizationLocations(String organizationId) {
+        try {
+            List<Location> locations = locationService.findMatching(organizationId);
+            return locations != null ? locations : List.of();
+        } catch (Exception e) {
+            log.warn("Could not load locations for {}; imported entries will have no location: {}",
+                    organizationId, e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * Resolve the imported location to the canonical name of one of the org's Locations.
+     * Uses the CSV location column when present, otherwise looks for a Location name in the
+     * title. Returns null when nothing maps, so unmatched text never shows as a location.
+     */
+    private String resolveLocationName(CalendarCsvParser.ParsedEntry parsed, List<Location> orgLocations) {
+        Optional<Location> match = (parsed.getLocation() != null && !parsed.getLocation().isBlank())
+                ? ImportedLocationMatcher.match(parsed.getLocation(), orgLocations)
+                : ImportedLocationMatcher.findInText(parsed.getTitle(), orgLocations);
+        if (match.isEmpty() && parsed.getLocation() != null && !parsed.getLocation().isBlank()) {
+            log.debug("Imported location '{}' did not match any location for org; leaving it unset",
+                    parsed.getLocation());
+        }
+        return match.map(Location::getName).orElse(null);
+    }
+
+    /**
+     * Location names the classifier must ignore when building notes: the raw CSV location text
+     * (matched or not), the resolved location, and every Location name the org has.
+     */
+    private List<String> locationPhrases(CalendarCsvParser.ParsedEntry parsed,
+                                         String resolvedLocation,
+                                         List<Location> orgLocations) {
+        List<String> phrases = new ArrayList<>();
+        if (parsed.getLocation() != null) {
+            phrases.add(parsed.getLocation());
+        }
+        if (resolvedLocation != null) {
+            phrases.add(resolvedLocation);
+        }
+        for (Location location : orgLocations) {
+            if (location != null && location.getName() != null) {
+                phrases.add(location.getName());
+            }
+        }
+        return phrases;
     }
 
     /**

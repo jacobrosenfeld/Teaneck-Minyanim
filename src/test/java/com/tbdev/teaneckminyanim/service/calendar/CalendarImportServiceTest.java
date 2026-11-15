@@ -2,10 +2,14 @@ package com.tbdev.teaneckminyanim.service.calendar;
 
 import com.sun.net.httpserver.HttpServer;
 import com.tbdev.teaneckminyanim.minyan.MinyanType;
+import com.tbdev.teaneckminyanim.model.Location;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.OrganizationCalendarEntry;
 import com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository;
+import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.CalendarMaterializationService;
+import com.tbdev.teaneckminyanim.service.LocationService;
+import com.tbdev.teaneckminyanim.service.ZmanimHandler;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
@@ -22,6 +26,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,9 +37,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,6 +70,9 @@ class CalendarImportServiceTest {
     @Mock
     private EntityManager entityManager;
 
+    @Mock
+    private LocationService locationService;
+
     private CalendarImportService service;
     private final List<HttpServer> servers = new ArrayList<>();
 
@@ -74,21 +84,23 @@ class CalendarImportServiceTest {
                 entryRepository,
                 organizationService,
                 minyanClassifier,
-                materializationService);
+                materializationService,
+                locationService);
         ReflectionTestUtils.setField(service, "entityManager", entityManager);
 
         when(urlBuilder.isValidCalendarUrl(anyString())).thenReturn(true);
         when(organizationService.findById(ORG_ID)).thenReturn(Optional.of(organization()));
-        when(minyanClassifier.classify(
+        lenient().when(minyanClassifier.classify(
                 nullable(String.class),
                 nullable(String.class),
                 nullable(String.class),
                 nullable(LocalDate.class),
-                any()))
+                any(),
+                anyCollection()))
                 .thenReturn(new MinyanClassifier.ClassificationResult(
                         MinyanType.SHACHARIS,
                         "test classification"));
-        when(minyanClassifier.normalizeTitle(nullable(String.class), any(MinyanType.class)))
+        lenient().when(minyanClassifier.normalizeTitle(nullable(String.class), any(MinyanType.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0, String.class));
         when(entryRepository.save(any(OrganizationCalendarEntry.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -142,6 +154,8 @@ class CalendarImportServiceTest {
                 .duplicateReason(SOURCE_DELETED_REASON)
                 .build();
 
+        when(locationService.findMatching(ORG_ID))
+                .thenReturn(List.of(new Location("L-bm", "Beis Midrash", ORG_ID)));
         when(urlBuilder.buildCsvExportUrl(anyString())).thenReturn(serveCsv(csv(date, "Shacharis", "Beis Midrash")));
         when(entryRepository.findByFingerprint(anyString()))
                 .thenAnswer(invocation -> {
@@ -253,6 +267,214 @@ class CalendarImportServiceTest {
         assertEquals(OrganizationCalendarEntry.SOURCE_RESTORED_REASON, restored.getDuplicateReason());
 
         verify(materializationService).syncImportedEntriesInRangeLive(ORG_ID, date, date);
+    }
+
+    // ---- Issue #225: location mapping and "Main" notes ----
+
+    @Test
+    void import_mainSanctuaryLocation_mapsToOrgLocationAndAddsNoMainNote() throws Exception {
+        useRealClassifier();
+        LocalDate date = LocalDate.now().plusDays(1);
+        when(locationService.findMatching(ORG_ID)).thenReturn(List.of(
+                new Location("L-main", "Main Sanctuary", ORG_ID),
+                new Location("L-bm", "Beis Medrash", ORG_ID)));
+        when(urlBuilder.buildCsvExportUrl(anyString()))
+                .thenReturn(serveCsv(csv(date, "Shacharis Main Sanctuary", "main sanctuary")));
+        stubNewEntryLookups(date);
+
+        service.importCalendarForOrganization(ORG_ID);
+
+        OrganizationCalendarEntry saved = capturedSave();
+        assertEquals(MinyanType.SHACHARIS, saved.getClassification());
+        assertEquals("Main Sanctuary", saved.getLocation(), "location should use the org's Location name");
+        assertNull(saved.getNotes(), "\"Main\" from the location name must not become a note");
+    }
+
+    @Test
+    void import_unmatchedLocation_leavesNoLocationAndNoNotesFromIt() throws Exception {
+        useRealClassifier();
+        LocalDate date = LocalDate.now().plusDays(1);
+        when(locationService.findMatching(ORG_ID)).thenReturn(List.of(
+                new Location("L-hall", "Social Hall", ORG_ID)));
+        when(urlBuilder.buildCsvExportUrl(anyString()))
+                .thenReturn(serveCsv(csv(date, "Mincha - Main Bais Medrash", "Main Bais Medrash")));
+        stubNewEntryLookups(date);
+
+        service.importCalendarForOrganization(ORG_ID);
+
+        OrganizationCalendarEntry saved = capturedSave();
+        assertEquals(MinyanType.MINCHA, saved.getClassification());
+        assertNull(saved.getLocation(), "unmapped location text must not be shown as a location");
+        assertNull(saved.getNotes(), "unmapped location text must not leak into notes");
+        assertTrue(saved.getRawText().contains("Main Bais Medrash"), "raw import text is still kept for admins");
+    }
+
+    @Test
+    void import_spellingVariantLocation_mapsToOrgLocation() throws Exception {
+        useRealClassifier();
+        LocalDate date = LocalDate.now().plusDays(1);
+        when(locationService.findMatching(ORG_ID)).thenReturn(List.of(
+                new Location("L-bm", "Beis Midrash", ORG_ID)));
+        when(urlBuilder.buildCsvExportUrl(anyString()))
+                .thenReturn(serveCsv(csv(date, "Maariv", "Bais Medrash")));
+        stubNewEntryLookups(date);
+
+        service.importCalendarForOrganization(ORG_ID);
+
+        assertEquals("Beis Midrash", capturedSave().getLocation());
+    }
+
+    @Test
+    void import_locationOnlyInTitle_mapsToOrgLocation() throws Exception {
+        useRealClassifier();
+        LocalDate date = LocalDate.now().plusDays(1);
+        when(locationService.findMatching(ORG_ID)).thenReturn(List.of(
+                new Location("L-main", "Main Sanctuary", ORG_ID)));
+        when(urlBuilder.buildCsvExportUrl(anyString()))
+                .thenReturn(serveCsv(csv(date, "Shacharis - Main Sanctuary", "")));
+        stubNewEntryLookups(date);
+
+        service.importCalendarForOrganization(ORG_ID);
+
+        OrganizationCalendarEntry saved = capturedSave();
+        assertEquals("Main Sanctuary", saved.getLocation());
+        assertNull(saved.getNotes());
+    }
+
+    @Test
+    void import_realQualifierStillBecomesNote() throws Exception {
+        useRealClassifier();
+        LocalDate date = LocalDate.now().plusDays(1);
+        when(locationService.findMatching(ORG_ID)).thenReturn(List.of(
+                new Location("L-main", "Main Sanctuary", ORG_ID)));
+        when(urlBuilder.buildCsvExportUrl(anyString()))
+                .thenReturn(serveCsv(csv(date, "Teen Minyan", "Main Sanctuary")));
+        stubNewEntryLookups(date);
+
+        service.importCalendarForOrganization(ORG_ID);
+
+        OrganizationCalendarEntry saved = capturedSave();
+        assertEquals("Main Sanctuary", saved.getLocation());
+        assertEquals("Teen Minyan", saved.getNotes());
+    }
+
+    @Test
+    void reimport_fixesExistingRowWithRawLocationAndMainNote() throws Exception {
+        useRealClassifier();
+        LocalDate date = LocalDate.now().plusDays(2);
+        OrganizationCalendarEntry existing = OrganizationCalendarEntry.builder()
+                .id(40L)
+                .organizationId(ORG_ID)
+                .date(date)
+                .title("Shacharis Main Sanctuary")
+                .location("Upstairs Main Sanctuary")
+                .notes("Main")
+                .classification(MinyanType.SHACHARIS)
+                .enabled(true)
+                .build();
+        when(locationService.findMatching(ORG_ID)).thenReturn(List.of(
+                new Location("L-main", "Main Sanctuary", ORG_ID)));
+        when(urlBuilder.buildCsvExportUrl(anyString()))
+                .thenReturn(serveCsv(csv(date, "Shacharis Main Sanctuary", "Upstairs Main Sanctuary")));
+        stubExistingEntryLookups(existing, date);
+
+        service.importCalendarForOrganization(ORG_ID);
+
+        assertEquals("Main Sanctuary", existing.getLocation());
+        assertNull(existing.getNotes(), "stale \"Main\" note must be cleared on re-import");
+        verify(materializationService).syncImportedEntriesInRangeLive(ORG_ID, date, date);
+    }
+
+    @Test
+    void reimport_clearsExistingUnmatchedLocation() throws Exception {
+        useRealClassifier();
+        LocalDate date = LocalDate.now().plusDays(2);
+        OrganizationCalendarEntry existing = OrganizationCalendarEntry.builder()
+                .id(41L)
+                .organizationId(ORG_ID)
+                .date(date)
+                .title("Mincha")
+                .location("Main Bais Medrash")
+                .notes("Main")
+                .classification(MinyanType.MINCHA)
+                .enabled(true)
+                .build();
+        when(locationService.findMatching(ORG_ID)).thenReturn(List.of());
+        when(urlBuilder.buildCsvExportUrl(anyString()))
+                .thenReturn(serveCsv(csv(date, "Mincha Main Bais Medrash", "Main Bais Medrash")));
+        stubExistingEntryLookups(existing, date);
+
+        service.importCalendarForOrganization(ORG_ID);
+
+        assertNull(existing.getLocation());
+        assertNull(existing.getNotes());
+    }
+
+    @Test
+    void reimport_keepsManuallyEditedLocation() throws Exception {
+        useRealClassifier();
+        LocalDate date = LocalDate.now().plusDays(2);
+        OrganizationCalendarEntry existing = OrganizationCalendarEntry.builder()
+                .id(42L)
+                .organizationId(ORG_ID)
+                .date(date)
+                .title("Shacharis")
+                .location("Social Hall")
+                .locationManuallyEdited(true)
+                .classification(MinyanType.SHACHARIS)
+                .enabled(true)
+                .build();
+        when(locationService.findMatching(ORG_ID)).thenReturn(List.of(
+                new Location("L-main", "Main Sanctuary", ORG_ID),
+                new Location("L-hall", "Social Hall", ORG_ID)));
+        when(urlBuilder.buildCsvExportUrl(anyString()))
+                .thenReturn(serveCsv(csv(date, "Shacharis Main Sanctuary", "Main Sanctuary")));
+        stubExistingEntryLookups(existing, date);
+
+        service.importCalendarForOrganization(ORG_ID);
+
+        assertEquals("Social Hall", existing.getLocation(), "admin-chosen location must survive re-import");
+        assertTrue(existing.isLocationManuallyEdited());
+        assertNull(existing.getNotes());
+    }
+
+    private void useRealClassifier() {
+        ApplicationSettingsService settings = new ApplicationSettingsService(null) {
+            @Override
+            public ZoneId getZoneId() {
+                return ZoneId.of("America/New_York");
+            }
+        };
+        service = new CalendarImportService(
+                urlBuilder,
+                new CalendarCsvParser(),
+                entryRepository,
+                organizationService,
+                new MinyanClassifier(new ZmanimHandler(), settings),
+                materializationService,
+                locationService);
+        ReflectionTestUtils.setField(service, "entityManager", entityManager);
+    }
+
+    private void stubNewEntryLookups(LocalDate date) {
+        when(entryRepository.findByFingerprint(anyString())).thenReturn(Optional.empty());
+        when(entryRepository.findByOrganizationIdAndDate(eq(ORG_ID), eq(date))).thenReturn(List.of());
+        when(entryRepository.findEntriesInRange(ORG_ID, date, date)).thenReturn(List.of());
+    }
+
+    private void stubExistingEntryLookups(OrganizationCalendarEntry existing, LocalDate date) {
+        when(entryRepository.findByFingerprint(anyString()))
+                .thenAnswer(invocation -> {
+                    existing.setFingerprint(invocation.getArgument(0, String.class));
+                    return Optional.of(existing);
+                });
+        when(entryRepository.findEntriesInRange(ORG_ID, date, date)).thenReturn(List.of(existing));
+    }
+
+    private OrganizationCalendarEntry capturedSave() {
+        ArgumentCaptor<OrganizationCalendarEntry> captor = ArgumentCaptor.forClass(OrganizationCalendarEntry.class);
+        verify(entryRepository).save(captor.capture());
+        return captor.getValue();
     }
 
     private Organization organization() {
