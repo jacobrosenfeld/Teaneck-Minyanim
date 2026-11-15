@@ -8,8 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Weekly review email toggle (#305)**: Added a super-admin "Scheduled Weekly Review Emails" setting on the Email Settings page (`email.weekly-review.enabled`, default enabled) so a server such as dev can skip the Saturday-night weekly minyan review digest. The skipped run is logged, and weekly digest test sends keep working while it is off.
-- **Weekly review email send day and time**: Super admins can choose the weekly digest's send day (weekday dropdown) and time (time picker) on the Email Settings page (`email.weekly-review.day` / `email.weekly-review.time`, default Saturday 10:00 PM). Changes reschedule the job immediately without a restart, and it follows the site timezone setting. A digest sent on a Sunday now covers that same Sunday-Saturday week instead of the following one.
 - **Weekly minyan review emails (#34)**: Added Saturday-night weekly schedule review emails for admins, with shul-scoped digests, super-admin summary digests, override links, per-account notification opt-outs, a manual weekly digest test sender with a super-admin shul picker, and settings-driven email branding.
 - **Elul Selichos timing patterns (#262)**: Added explicit `Selichos/Shacharis` support for linked morning Selichos, distinct Night Selichos display grouping for standalone late-night Selichos, API display/group/link metadata for web and mobile clients, importer classification for combined Selichos/Shacharis titles, and admin rule/manual override controls for the new type.
 - **Plag Mincha/Maariv guidance (#249)**: Early Mincha/Maariv rows near plag hamincha now show the applicable `Plag:` time with a public web tooltip explaining the she'at ha-dechak guidance; mobile continues to show the inline note only pending a mobile-specific guidance treatment.
@@ -79,6 +77,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - **Email credential encryption**: Sensitive email settings, including SMTP password and SES credentials, are now stored with reversible AES-GCM encryption using `APP_SETTINGS_ENCRYPTION_KEY`, with startup migration for existing plaintext values when the key is configured.
 - **Admin organization access control (#216)**: Organization managers and users can no longer view, edit, or route into admin panels for shuls outside their account by changing organization ids in URLs or form submissions.
+
+## [1.20.0] - 2026-11-15
+
+### Added
+- **Weekly review email toggle (#305, #306)**: Super admins can turn the scheduled weekly minyan review digest on or off per server from Email Settings → Weekly Review Emails (`email.weekly-review.enabled`, default on), so dev no longer sends duplicate digests alongside prod. Skipped runs are logged, and weekly digest test sends keep working while it is off.
+- **Weekly review email send day and time (#307)**: Super admins can pick the digest's send day (weekday dropdown) and time (time picker) instead of the hardcoded Saturday 10 PM (`email.weekly-review.day` / `email.weekly-review.time`, default Saturday 10:00 PM). Changes reschedule the job immediately without a restart, and the schedule follows the site Timezone setting. A digest sent on a Sunday now covers that same Sunday–Saturday week.
+
+### Changed
+- **Compact override tables (#279, #296, #310)**: Org and super-admin manual override rows now stay on one line. Text is smaller and tighter, dates show without the year (full date on hover), long location/notes/shul values truncate with a tooltip, and Disable/Enable/Delete are compact color-coded icon buttons (yellow pause, green play, red trash) matching the Notifications page. The "Full Day Replace" mode badge no longer wraps.
+- **Dev deploy workflow (#311)**: "Deploy to dev" can now be run manually for any branch, tag or commit, so open PRs can be tested on the dev site without merging them into `dev`. Pushes to `dev` still auto-deploy, and deploys no longer overlap. Feature PRs now target `main`; the testing flow is documented in `CLAUDE.md` and `AGENTS.md`.
+
+### Fixed
+- **Manager account permissions (#289, #300)**: Managers can create User or Manager accounts from a shul they manage (with the standard welcome email) and open Account Settings for Users and fellow Managers in their shuls. Permissions stay scoped server-side: Managers cannot manage Super admins, grant Super admin, create accounts for other shuls, or make account-wide changes to multi-shul accounts that include a shul they don't manage. The shul page only shows the role choices and actions the signed-in admin may use.
+- **Role chip colors (#293, #298)**: Role chips are color-coded by role (Super admin red, Manager blue, User gray) and match between User Management and shul profile pages via a shared fragment. A super admin listed on a shul page now shows "Super admin" instead of "Admin".
+- **Settings page overflow (#194, #299)**: Long setting values (coordinates, tokens, URLs) no longer overflow or get clipped at medium widths with the admin sidebar open; rows size to their panel and stack on narrow panels.
+- **Shul name pill (#242, #297)**: The admin navbar shul-name pill centers its text when the name wraps on narrow screens.
 
 ## [1.19.1] - 2026-11-05
 
