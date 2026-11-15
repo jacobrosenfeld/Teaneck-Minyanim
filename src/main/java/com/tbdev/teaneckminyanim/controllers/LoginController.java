@@ -76,6 +76,11 @@ public class LoginController {
     public boolean magicLinkEnabled() {
         return magicLinkEnabled;
     }
+
+    @ModelAttribute("passkeysEnabled")
+    public boolean passkeysEnabled() {
+        return passkeysEnabled;
+    }
     
     @GetMapping("/admin/login")
     public ModelAndView login(@RequestParam(value = "error",required = false) String error, @RequestParam(value = "logout",	required = false) boolean logout) {

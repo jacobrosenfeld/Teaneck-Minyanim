@@ -21,9 +21,33 @@ document.addEventListener('DOMContentLoaded', function () {
     var passwordToggle = document.getElementById('password-toggle');
     var passwordPanel = document.getElementById('login-form');
     var passwordField = document.getElementById('password-field');
+    var passkeyButton = document.getElementById('passkey-button');
+    var passkeyUnavailable = document.getElementById('passkey-unavailable');
 
     if (!identifierForm || !identifierField || !submitButton) {
         return;
+    }
+
+    if (passkeyButton) {
+        if (passkeysCanRunHere()) {
+            passkeyButton.classList.remove('d-none');
+            passkeyButton.addEventListener('click', async function () {
+                setLoading(true);
+                setStatus('Use your passkey to continue.', '');
+                try {
+                    // No identifier needed: the browser offers this site's discoverable passkeys.
+                    await authenticateWithPasskey(identifierForm);
+                } catch (error) {
+                    console.warn('Passkey authentication did not complete.', error);
+                    setStatus(passkeyErrorMessage(error), 'error');
+                    showRecoveryOptions();
+                    setLoading(false);
+                }
+            });
+        } else if (passkeyUnavailable) {
+            passkeyUnavailable.textContent = passkeyUnavailableMessage();
+            passkeyUnavailable.classList.remove('d-none');
+        }
     }
 
     identifierField.addEventListener('input', function () {
@@ -143,6 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
         submitButton.disabled = isLoading || normalizedIdentifier(identifierField.value).length === 0;
         submitButton.classList.toggle('is-loading', isLoading);
         identifierField.disabled = isLoading;
+        if (passkeyButton) passkeyButton.disabled = isLoading;
     }
 
     function setStatus(message, type) {
@@ -179,6 +204,13 @@ function passkeysCanRunHere() {
         && !!window.PublicKeyCredential
         && !!navigator.credentials
         && typeof navigator.credentials.get === 'function';
+}
+
+function passkeyErrorMessage(error) {
+    if (error && error.name === 'NotAllowedError') {
+        return 'Passkey sign-in was cancelled or timed out. Try again, or enter your email for a sign-in link.';
+    }
+    return 'Passkey was not completed. Try again, or enter your email for a sign-in link.';
 }
 
 function passkeyUnavailableMessage() {
