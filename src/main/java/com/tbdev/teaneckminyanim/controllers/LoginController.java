@@ -144,6 +144,11 @@ public class LoginController {
                     null,
                     List.of(new SimpleGrantedAuthority(user.role().getName())));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Session-fixation protection: never promote a pre-existing (possibly planted)
+            // session ID to an authenticated one. Rotate it, or start a fresh session.
+            if (request.getSession(false) != null) {
+                request.changeSessionId();
+            }
             request.getSession(true).setAttribute(
                     HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                     SecurityContextHolder.getContext());
