@@ -7,77 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- **Weekly minyan review emails (#34)**: Added Saturday-night weekly schedule review emails for admins, with shul-scoped digests, super-admin summary digests, override links, per-account notification opt-outs, a manual weekly digest test sender with a super-admin shul picker, and settings-driven email branding.
-- **Elul Selichos timing patterns (#262)**: Added explicit `Selichos/Shacharis` support for linked morning Selichos, distinct Night Selichos display grouping for standalone late-night Selichos, API display/group/link metadata for web and mobile clients, importer classification for combined Selichos/Shacharis titles, and admin rule/manual override controls for the new type.
-- **Plag Mincha/Maariv guidance (#249)**: Early Mincha/Maariv rows near plag hamincha now show the applicable `Plag:` time with a public web tooltip explaining the she'at ha-dechak guidance; mobile continues to show the inline note only pending a mobile-specific guidance treatment.
-- **Feedback infrastructure (#245)**: Added a public feedback API and shared Intercom-style public-site feedback popup that create GitHub issues labeled `user feedback` through server-side GitHub settings, separate minyan schedule/data issues from app/website functionality issues, replace the legacy floating top button on public pages, capture automatic debugging/PostHog metadata without exposing optional user emails in public issue content, hide the widget until GitHub settings are complete, and send private email notifications with the created issue link.
-- **Invisible reCAPTCHA protection**: Added External Services settings for reCAPTCHA site/secret keys and server-side verification for public feedback, newsletter subscription, and admin login submissions.
-- **Mobile feedback**: Added a settings-backed native app token gate plus an Expo bottom-tab feedback form that skips reCAPTCHA, captures app/device/source-route/PostHog metadata, and submits GitHub feedback issues through the shared API.
-- **iOS App Store submission runbook**: Added public-safe Expo/EAS instructions for building and submitting the mobile app to App Store Connect.
-- **Email handler (#35)**: Added settings-backed SMTP and AWS SES email delivery, a dedicated super-admin Email Settings page with per-field saves, masked email credential settings, a test email endpoint, and operator documentation for configuring providers.
-- **Candle lighting and havdala in zmanim (#234)**: Added KosherJava-calendar-driven candle lighting and havdala times to the public zmanim API, website zmanim panel, and mobile Zmanim screen, with optional display only on applicable Shabbos/Yom Tov dates. Candle lighting is rounded down to the minute, havdala is rounded up to the minute, and both display without seconds.
-- **Mobile app version telemetry**: PostHog mobile analytics now records app version/build, platform, and OS version metadata for iOS and Android events.
-- **iOS app website splash popup**: Added a dismissible public-site popup announcing the iOS app, using the site logo, App Store badge, and `https://l.teaneckminyanim.com/ios` download link.
-- **Public error preview routes**: Added `/test/errors/{code}` endpoints for `400`, `403`, `404`, `429`, `500`, and `503` so themed error pages can be validated on live environments without ad-hoc URL tricks.
-- **Manual override workflows (org + super admin)**: Added dedicated override pages for shul admins and super admins, including manual add/delete/toggle flows, start/end date range entry, and guidance that manual overrides do not require a location.
-- **Bulk XLSX override import + downloadable templates**: Added XLSX import on override pages with templates tailored for org admins and super admins (including shul-name-based mapping and validated minyan types).
-- **Mobile analytics compliance foundation (#146)**: Added first-launch in-app analytics disclosure with persisted consent state (`accepted|declined|unknown`) and platform tracking permission state, with runtime gating that keeps analytics disabled until policy requirements are met.
-- **Free mobile analytics stack (#146)**: Integrated PostHog React Native for mobile event telemetry with kill-switch config, consent-gated advertising ID registration, and sanitized event payload handling.
-- **Mobile store privacy checklist docs (#146)**: Added `docs/features/mobile-analytics-tracking-compliance.md` to align shipped behavior with App Store Connect and Play Console disclosures.
-- **Configurable Smart App Banner settings**: Added `mobile.ios.app.url` and `mobile.google.play.url` to `APPLICATION_SETTINGS`, with iOS app id parsing from the configured App Store URL and dynamic Safari Smart App Banner meta-tag rendering on all public (non-admin) pages.
-
-### Changed
-- **API docs server list**: Added `https://dev.teaneckminyanim.com` as the Dev server option in the generated OpenAPI docs.
-- **Public footer spacing**: Centered the footer contact email and added mobile bottom clearance so fixed floating action buttons do not cover footer content.
-- **Settings page modernization**: Updated the main super-admin Settings page to match the new email settings form style with section navigation, inline field controls, an in-flow Email Settings card, and per-field save/discard states.
-- **Account page modernization**: Updated account management to match the Settings page layout with breadcrumbs, section navigation, settings panels, and a first-class passkey security section.
-- **Error page UX refreshed with themed copy and graphics**: Browser error handling now renders status-specific themed messages, guidance, CTAs, and dedicated SVG icons for `400`, `403`, `404`, `429`, `500`, and `503` while keeping the shared template/navigation shell.
-- **Override page UI modernization**: Updated override tables and actions to match the admin design system styling used by calendar-entry management views.
-- **Build tooling baseline moved to Java 21**: Added Java 21 enforcement/toolchain setup for local and CI consistency.
-- **Calendar entries enable/disable is now live (window-scoped)**: Toggling imported calendar entries now syncs immediately to `calendar_events` (rolling window only), so the live schedule/API updates without rematerialization.
-- **Calendar entries toggle UX now preserves filters**: Enable/Disable actions on `/admin/{orgId}/calendar-entries` now update in place via AJAX, keeping active search/date/type/sort state.
-- **Calendar entries location updates now preserve filters**: Location changes on `/admin/{orgId}/calendar-entries` now apply in place via AJAX (no full-page reload), with the same toast feedback pattern as enable/disable.
-- **Mobile privacy policy disclosure text updated**: The public privacy policy now documents consent-gated mobile analytics, ATT behavior on iOS, and Android disclosure expectations.
-- **Mobile PostHog SDK range widened**: The mobile app now allows any PostHog React Native `4.x` release and refreshes the PostHog lockfile during EAS builds while continuing to block automatic `5.x` upgrades.
-- **Android release pipeline wiring (Issue #132)**: Mobile Expo config now injects `GOOGLE_MAPS_API_KEY` into the `react-native-maps` Android config plugin at build time, production builds load analytics values from `.env.production` (with fail-fast if analytics is enabled but PostHog key is missing), Android map screen explicitly uses Google provider, `eas submit` production profile now includes Android staged rollout defaults, and release runbook was added at `docs/mobile/android-release-checklist.md`.
-
-### Fixed
-- **Public shul minyan row spacing**: Public organization minyan rows are compact again after the Selichos layout update, keeping the time block beside the minyan label on desktop and tablet widths.
-- **Calendar event minyan type schema (#263)**: Updated the `calendar_events.minyan_type` MariaDB enum to include `SELICHOS_SHACHARIS` so manual override imports keep database-level type validation instead of failing with a data-truncation rollback.
-- **XLSX Selichos override imports (#263)**: Manual override XLSX templates now include standalone `SELICHOS` and linked `SELICHOS_SHACHARIS`, org/super-admin imports accept Selichos rows including full-day replacement days, and wrong-template uploads now fail fast with a clear page-specific error.
-- **Override import feedback visibility**: Org and super-admin override pages now show XLSX import success/error messages instead of silently hiding import failures after redirect.
-- **Selichos/Shacharis shul-page grouping (#262)**: Morning Selichos/Shacharis rows now render inside the Shacharis section on shul pages, use the `Selichos & Shacharis` row label, and show nearby inferred Shacharis times as approximate links while suppressing the duplicate standalone Shacharis row.
-- **Manual override imports now preserve same-time duplicate rows**: XLSX and CSV manual override upserts now choose existing MANUAL rows using location/notes-aware matching instead of only org/date/type/time, so duplicate-time minyanim like concurrent `8:00` Shacharis rows no longer overwrite each other during import.
-- **Email settings encryption startup**: Fixed the sensitive-settings crypto component constructor wiring so Spring can instantiate it during application startup.
-- **Deleted source calendar events (#240)**: Scheduled calendar imports now reconcile the successful feed coverage window, mark imported rows missing from the source calendar as source-deleted/disabled, disable stale imported `calendar_events` rows, and allow admins to manually re-enable source-removed imported rows when needed.
-- **Mobile admin panel responsiveness (#238)**: Added reusable responsive admin table primitives, migrated high-risk admin tables onto shared scroll/action wrappers, kept header actions within narrow mobile viewports, exposed super-admin navigation links in the mobile sidebar, and moved the Geocode All Organizations action to the super-admin Maintenance page.
-- **Admin statistic number formatting**: Large counts in admin statistic cards and count pills now render with thousands separators, including Maintenance, calendar entries, schedule preview, master calendar, and override views.
-- **Calendar entries initial date sort**: The calendar entries page now renders its default date sort in the same ascending order shown by the active Date header, so admins no longer need to click the header twice after page load.
-- **Teen minyan calendar classification (#195)**: Imported calendar entries titled `Teen Minyan` or `Teen-minyan` now classify as Shacharis even when their description mentions Kiddush, while standalone Kiddush entries remain non-minyan events.
-- **Maintenance rematerialize/reimport follow-up (#211)**: The master calendar "Rematerialize All" button now posts to a handled super-admin route, and destructive calendar reimports clear stale imported `calendar_events` rows before live-syncing the fresh source entries.
-- **Rule-based schedule edits now go live immediately (#228)**: Creating, updating, enabling, disabling, or deleting a rule-based minyan now rebuilds that shul's RULES materialized rows inside the rolling window, and new minyan creation now preserves Rosh Chodesh/Yom Tov times in the correct fields.
-- **Mincha/Maariv Shkiya notes are final schedule enrichment (#235)**: Shkiya is now added for final MINCHA_MAARIV schedule responses across imported, rule-based, and manual events, with stale import-time Shkiya/Plag fragments stripped before the current display note is appended.
-- **Dependabot security refresh**: Upgraded embedded Tomcat to `10.1.55` for the latest critical runtime advisories and moved the mobile app to Expo SDK 57 / React Native `0.86.3` with patched npm dependency resolutions.
-- **Backend Dependabot runtime alerts**: Upgraded Spring Boot to `3.5.14`, Spring Security to `6.5.10`, Thymeleaf to `3.1.5.RELEASE`, and Commons Lang to `3.18.0` to pick up patched backend runtime dependencies for the latest Spring, Tomcat, Thymeleaf, and utility-library advisories.
-- **Duplicate imported minyan rows in effective schedules (#236)**: Imported-event materialization now deletes duplicate `calendar_events` rows with the same source reference, and the effective schedule also collapses exact duplicate display rows after source-precedence rules are applied while preserving same-time minyanim that differ by location or notes.
-- **404 -> 500 regression path in admin calendar events**: Replaced references to missing `error/404` view with proper `404 Not Found` status exceptions when organizations are missing, preventing template-resolution failures that surfaced as server errors.
-- **API error content negotiation on `/error`**: Requests under `/api/**` now return JSON error payloads (including `Retry-After` on `429`) instead of HTML error pages.
-- **Dependabot alerts #100 and #103 (CVE-2026-22731, CVE-2026-22733)**: Upgraded Spring Boot parent to `3.5.12` to pick up patched Actuator behavior and close both authentication-bypass advisories.
-- **Dependabot alert #98 (CVE-2026-24734)**: Spring Boot upgrade also lifts embedded Tomcat to a patched 10.1.x release outside the vulnerable range.
-- **Dependabot alert #102 (CVE-2026-22732)**: Pinned Spring Security to `6.5.9` via Maven property override so transitive `spring-security-web` is upgraded out of the vulnerable range.
-- **iOS PostHog release telemetry under ATT denial**: iOS analytics now enables after in-app consent even when ATT is denied/unavailable, advertising ID registration remains restricted to ATT-authorized sessions only, and SDK opt-in/opt-out transitions are now awaited to prevent startup race conditions that could leave capture disabled.
-- **Mobile PostHog production delivery hardening**: Analytics initialization now waits for SDK readiness before applying opt-in, Expo config now embeds resolved analytics settings into `expo.extra` as a runtime fallback when `EXPO_PUBLIC_*` injection is missing, and production builds/updates now fail fast unless analytics is explicitly configured (including required PostHog host/key when enabled) to prevent silent no-telemetry releases.
-- **Super admin shul picker reliability**: Fixed dropdown/search initialization issues on override pages (including Turbolinks navigation handling) and improved search input behavior.
-- **Super admin location scoping**: Location options now correctly scope to the selected shul instead of mixing locations across organizations.
-- **Scheduled imports no longer undo manual disabled choices**: Added persistent manual-enable flag on imported entries so weekly sync honors admin enable/disable decisions until a full reimport.
-- **Imported materialization drift correction**: Materialization now syncs existing imported `calendar_events` rows (including `enabled`) instead of skipping already-materialized entries.
-- **Calendar Entries admin render regression**: Removed fragile per-row `#httpServletRequest` expression from toggle form and switched redirect-state fallback to `Referer`, preventing mixed partial admin render/error-template bleed-through.
-
-### Security
-- **Email credential encryption**: Sensitive email settings, including SMTP password and SES credentials, are now stored with reversible AES-GCM encryption using `APP_SETTINGS_ENCRYPTION_KEY`, with startup migration for existing plaintext values when the key is configured.
-- **Admin organization access control (#216)**: Organization managers and users can no longer view, edit, or route into admin panels for shuls outside their account by changing organization ids in URLs or form submissions.
-
 ## [1.20.0] - 2026-11-15
 
 ### Added
@@ -125,6 +54,207 @@ See the [rollout and acceptance checklist](docs/features/user-management-and-aut
 - **Account email validation**: Replaced backtracking regular expressions in account management and bootstrap with bounded, linear checks.
 - **Authentication release hardening (#243)**: Enabled global CSRF protection for browser routes, made logout and legacy mutations POST-only, made magic-link consumption atomic, added IP/identifier rate limits and token cleanup, added structured auth audit events, removed unsafe bootstrap defaults, and disabled password login unless explicitly enabled as an emergency rollback.
 - **Admin auth hardening (#243)**: Disabled accounts now load into Spring Security as disabled users, magic-link tokens are stored as single-use SHA-256 hashes with 15-minute expiry, and the hard-coded remember-me key was removed from admin login configuration.
+
+## [1.18.0] - 2026-09-06
+
+_Sections 1.9.3 through 1.18.0 were reconstructed from git history: each entry is listed under the version `main` carried when it first appeared there, dated by when that version first reached `main`._
+
+### Added
+- **Weekly minyan review emails (#34)**: Added Saturday-night weekly schedule review emails for admins, with shul-scoped digests, super-admin summary digests, override links, per-account notification opt-outs, a manual weekly digest test sender with a super-admin shul picker, and settings-driven email branding.
+
+## [1.17.2] - 2026-09-06
+
+### Fixed
+- **Public shul minyan row spacing**: Public organization minyan rows are compact again after the Selichos layout update, keeping the time block beside the minyan label on desktop and tablet widths.
+
+## [1.17.1] - 2026-09-06
+
+### Fixed
+- **Calendar event minyan type schema (#263)**: Updated the `calendar_events.minyan_type` MariaDB enum to include `SELICHOS_SHACHARIS` so manual override imports keep database-level type validation instead of failing with a data-truncation rollback.
+
+## [1.17.0] - 2026-09-03
+
+### Added
+- **Mobile feedback**: Added a settings-backed native app token gate plus an Expo bottom-tab feedback form that skips reCAPTCHA, captures app/device/source-route/PostHog metadata, and submits GitHub feedback issues through the shared API.
+- **iOS App Store submission runbook**: Added public-safe Expo/EAS instructions for building and submitting the mobile app to App Store Connect.
+
+### Fixed
+- **Override import feedback visibility**: Org and super-admin override pages now show XLSX import success/error messages instead of silently hiding import failures after redirect.
+
+## [1.16.0] - 2026-08-30
+
+### Added
+- **Elul Selichos timing patterns (#262)**: Added explicit `Selichos/Shacharis` support for linked morning Selichos, distinct Night Selichos display grouping for standalone late-night Selichos, API display/group/link metadata for web and mobile clients, importer classification for combined Selichos/Shacharis titles, and admin rule/manual override controls for the new type.
+- **Plag Mincha/Maariv guidance (#249)**: Early Mincha/Maariv rows near plag hamincha now show the applicable `Plag:` time with a public web tooltip explaining the she'at ha-dechak guidance; mobile continues to show the inline note only pending a mobile-specific guidance treatment.
+
+### Fixed
+- **XLSX Selichos override imports (#263)**: Manual override XLSX templates now include standalone `SELICHOS` and linked `SELICHOS_SHACHARIS`, org/super-admin imports accept Selichos rows including full-day replacement days, and wrong-template uploads now fail fast with a clear page-specific error.
+- **Selichos/Shacharis shul-page grouping (#262)**: Morning Selichos/Shacharis rows now render inside the Shacharis section on shul pages, use the `Selichos & Shacharis` row label, and show nearby inferred Shacharis times as approximate links while suppressing the duplicate standalone Shacharis row.
+
+## [1.14.0] - 2026-06-07
+
+### Changed
+- **Account page modernization**: Updated account management to match the Settings page layout with breadcrumbs, section navigation, settings panels, and a first-class passkey security section.
+
+## [1.13.1] - 2026-06-07
+
+### Fixed
+- **Manual override imports now preserve same-time duplicate rows**: XLSX and CSV manual override upserts now choose existing MANUAL rows using location/notes-aware matching instead of only org/date/type/time, so duplicate-time minyanim like concurrent `8:00` Shacharis rows no longer overwrite each other during import.
+
+## [1.13.0] - 2026-06-02
+
+### Added
+- **Feedback infrastructure (#245)**: Added a public feedback API and shared Intercom-style public-site feedback popup that create GitHub issues labeled `user feedback` through server-side GitHub settings, separate minyan schedule/data issues from app/website functionality issues, replace the legacy floating top button on public pages, capture automatic debugging/PostHog metadata without exposing optional user emails in public issue content, hide the widget until GitHub settings are complete, and send private email notifications with the created issue link.
+- **Invisible reCAPTCHA protection**: Added External Services settings for reCAPTCHA site/secret keys and server-side verification for public feedback, newsletter subscription, and admin login submissions.
+
+### Changed
+- **API docs server list**: Added `https://dev.teaneckminyanim.com` as the Dev server option in the generated OpenAPI docs.
+- **Public footer spacing**: Centered the footer contact email and added mobile bottom clearance so fixed floating action buttons do not cover footer content.
+
+## [1.12.0] - 2026-06-01
+
+### Added
+- **Email handler (#35)**: Added settings-backed SMTP and AWS SES email delivery, a dedicated super-admin Email Settings page with per-field saves, masked email credential settings, a test email endpoint, and operator documentation for configuring providers.
+
+### Changed
+- **Settings page modernization**: Updated the main super-admin Settings page to match the new email settings form style with section navigation, inline field controls, an in-flow Email Settings card, and per-field save/discard states.
+
+### Fixed
+- **Email settings encryption startup**: Fixed the sensitive-settings crypto component constructor wiring so Spring can instantiate it during application startup.
+
+### Security
+- **Email credential encryption**: Sensitive email settings, including SMTP password and SES credentials, are now stored with reversible AES-GCM encryption using `APP_SETTINGS_ENCRYPTION_KEY`, with startup migration for existing plaintext values when the key is configured.
+
+## [1.11.0] - 2026-05-31
+
+### Added
+- **Candle lighting and havdala in zmanim (#234)**: Added KosherJava-calendar-driven candle lighting and havdala times to the public zmanim API, website zmanim panel, and mobile Zmanim screen, with optional display only on applicable Shabbos/Yom Tov dates. Candle lighting is rounded down to the minute, havdala is rounded up to the minute, and both display without seconds.
+
+## [1.10.13] - 2026-05-31
+
+### Fixed
+- **Deleted source calendar events (#240)**: Scheduled calendar imports now reconcile the successful feed coverage window, mark imported rows missing from the source calendar as source-deleted/disabled, disable stale imported `calendar_events` rows, and allow admins to manually re-enable source-removed imported rows when needed.
+
+## [1.10.12] - 2026-05-31
+
+### Fixed
+- **Mobile admin panel responsiveness (#238)**: Added reusable responsive admin table primitives, migrated high-risk admin tables onto shared scroll/action wrappers, kept header actions within narrow mobile viewports, exposed super-admin navigation links in the mobile sidebar, and moved the Geocode All Organizations action to the super-admin Maintenance page.
+- **Admin statistic number formatting**: Large counts in admin statistic cards and count pills now render with thousands separators, including Maintenance, calendar entries, schedule preview, master calendar, and override views.
+- **Calendar entries initial date sort**: The calendar entries page now renders its default date sort in the same ascending order shown by the active Date header, so admins no longer need to click the header twice after page load.
+- **Teen minyan calendar classification (#195)**: Imported calendar entries titled `Teen Minyan` or `Teen-minyan` now classify as Shacharis even when their description mentions Kiddush, while standalone Kiddush entries remain non-minyan events.
+
+## [1.10.10] - 2026-05-25
+
+### Fixed
+- **Maintenance rematerialize/reimport follow-up (#211)**: The master calendar "Rematerialize All" button now posts to a handled super-admin route, and destructive calendar reimports clear stale imported `calendar_events` rows before live-syncing the fresh source entries.
+
+### Security
+- **Admin organization access control (#216)**: Organization managers and users can no longer view, edit, or route into admin panels for shuls outside their account by changing organization ids in URLs or form submissions.
+
+## [1.10.8] - 2026-05-25
+
+### Added
+- **Mobile app version telemetry**: PostHog mobile analytics now records app version/build, platform, and OS version metadata for iOS and Android events.
+
+### Fixed
+- **Rule-based schedule edits now go live immediately (#228)**: Creating, updating, enabling, disabling, or deleting a rule-based minyan now rebuilds that shul's RULES materialized rows inside the rolling window, and new minyan creation now preserves Rosh Chodesh/Yom Tov times in the correct fields.
+- **Mincha/Maariv Shkiya notes are final schedule enrichment (#235)**: Shkiya is now added for final MINCHA_MAARIV schedule responses across imported, rule-based, and manual events, with stale import-time Shkiya/Plag fragments stripped before the current display note is appended.
+
+## [1.10.7] - 2026-05-25
+
+### Fixed
+- **Dependabot security refresh**: Upgraded embedded Tomcat to `10.1.55` for the latest critical runtime advisories and moved the mobile app to Expo SDK 57 / React Native `0.86.3` with patched npm dependency resolutions.
+
+## [1.10.6] - 2026-05-25
+
+### Added
+- **iOS app website splash popup**: Added a dismissible public-site popup announcing the iOS app, using the site logo, App Store badge, and `https://l.teaneckminyanim.com/ios` download link.
+
+### Changed
+- **Mobile PostHog SDK range widened**: The mobile app now allows any PostHog React Native `4.x` release and refreshes the PostHog lockfile during EAS builds while continuing to block automatic `5.x` upgrades.
+
+### Fixed
+- **Mobile PostHog production delivery hardening**: Analytics initialization now waits for SDK readiness before applying opt-in, Expo config now embeds resolved analytics settings into `expo.extra` as a runtime fallback when `EXPO_PUBLIC_*` injection is missing, and production builds/updates now fail fast unless analytics is explicitly configured (including required PostHog host/key when enabled) to prevent silent no-telemetry releases.
+
+## [1.10.5] - 2026-05-17
+
+### Fixed
+- **Backend Dependabot runtime alerts**: Upgraded Spring Boot to `3.5.14`, Spring Security to `6.5.10`, Thymeleaf to `3.1.5.RELEASE`, and Commons Lang to `3.18.0` to pick up patched backend runtime dependencies for the latest Spring, Tomcat, Thymeleaf, and utility-library advisories.
+
+## [1.10.4] - 2026-05-17
+
+### Fixed
+- **Duplicate imported minyan rows in effective schedules (#236)**: Imported-event materialization now deletes duplicate `calendar_events` rows with the same source reference, and the effective schedule also collapses exact duplicate display rows after source-precedence rules are applied while preserving same-time minyanim that differ by location or notes.
+
+## [1.10.3] - 2026-03-27
+
+### Added
+- **Public error preview routes**: Added `/test/errors/{code}` endpoints for `400`, `403`, `404`, `429`, `500`, and `503` so themed error pages can be validated on live environments without ad-hoc URL tricks.
+- **Configurable Smart App Banner settings**: Added `mobile.ios.app.url` and `mobile.google.play.url` to `APPLICATION_SETTINGS`, with iOS app id parsing from the configured App Store URL and dynamic Safari Smart App Banner meta-tag rendering on all public (non-admin) pages.
+
+### Changed
+- **Error page UX refreshed with themed copy and graphics**: Browser error handling now renders status-specific themed messages, guidance, CTAs, and dedicated SVG icons for `400`, `403`, `404`, `429`, `500`, and `503` while keeping the shared template/navigation shell.
+- **Android release pipeline wiring (Issue #132)**: Mobile Expo config now injects `GOOGLE_MAPS_API_KEY` into the `react-native-maps` Android config plugin at build time, production builds load analytics values from `.env.production` (with fail-fast if analytics is enabled but PostHog key is missing), Android map screen explicitly uses Google provider, `eas submit` production profile now includes Android staged rollout defaults, and release runbook was added at `docs/mobile/android-release-checklist.md`.
+
+### Fixed
+- **404 -> 500 regression path in admin calendar events**: Replaced references to missing `error/404` view with proper `404 Not Found` status exceptions when organizations are missing, preventing template-resolution failures that surfaced as server errors.
+- **API error content negotiation on `/error`**: Requests under `/api/**` now return JSON error payloads (including `Retry-After` on `429`) instead of HTML error pages.
+
+## [1.10.0] - 2026-03-24
+
+### Added
+- **Mobile analytics compliance foundation (#146)**: Added first-launch in-app analytics disclosure with persisted consent state (`accepted|declined|unknown`) and platform tracking permission state, with runtime gating that keeps analytics disabled until policy requirements are met.
+- **Free mobile analytics stack (#146)**: Integrated PostHog React Native for mobile event telemetry with kill-switch config, consent-gated advertising ID registration, and sanitized event payload handling.
+- **Mobile store privacy checklist docs (#146)**: Added `docs/features/mobile-analytics-tracking-compliance.md` to align shipped behavior with App Store Connect and Play Console disclosures.
+
+### Changed
+- **Mobile privacy policy disclosure text updated**: The public privacy policy now documents consent-gated mobile analytics, ATT behavior on iOS, and Android disclosure expectations.
+
+### Fixed
+- **iOS PostHog release telemetry under ATT denial**: iOS analytics now enables after in-app consent even when ATT is denied/unavailable, advertising ID registration remains restricted to ATT-authorized sessions only, and SDK opt-in/opt-out transitions are now awaited to prevent startup race conditions that could leave capture disabled.
+
+## [1.9.7] - 2026-03-23
+
+### Fixed
+- **Dependabot alerts #100 and #103 (CVE-2026-22731, CVE-2026-22733)**: Upgraded Spring Boot parent to `3.5.12` to pick up patched Actuator behavior and close both authentication-bypass advisories.
+- **Dependabot alert #98 (CVE-2026-24734)**: Spring Boot upgrade also lifts embedded Tomcat to a patched 10.1.x release outside the vulnerable range.
+
+## [1.9.6] - 2026-03-23
+
+### Fixed
+- **Dependabot alert #102 (CVE-2026-22732)**: Pinned Spring Security to `6.5.9` via Maven property override so transitive `spring-security-web` is upgraded out of the vulnerable range.
+
+## [1.9.5] - 2026-03-23
+
+### Changed
+- **Calendar entries location updates now preserve filters**: Location changes on `/admin/{orgId}/calendar-entries` now apply in place via AJAX (no full-page reload), with the same toast feedback pattern as enable/disable.
+
+### Fixed
+- **Calendar Entries admin render regression**: Removed fragile per-row `#httpServletRequest` expression from toggle form and switched redirect-state fallback to `Referer`, preventing mixed partial admin render/error-template bleed-through.
+
+## [1.9.4] - 2026-03-23
+
+### Changed
+- **Calendar entries enable/disable is now live (window-scoped)**: Toggling imported calendar entries now syncs immediately to `calendar_events` (rolling window only), so the live schedule/API updates without rematerialization.
+- **Calendar entries toggle UX now preserves filters**: Enable/Disable actions on `/admin/{orgId}/calendar-entries` now update in place via AJAX, keeping active search/date/type/sort state.
+
+### Fixed
+- **Scheduled imports no longer undo manual disabled choices**: Added persistent manual-enable flag on imported entries so weekly sync honors admin enable/disable decisions until a full reimport.
+- **Imported materialization drift correction**: Materialization now syncs existing imported `calendar_events` rows (including `enabled`) instead of skipping already-materialized entries.
+
+## [1.9.3] - 2026-03-23
+
+### Added
+- **Manual override workflows (org + super admin)**: Added dedicated override pages for shul admins and super admins, including manual add/delete/toggle flows, start/end date range entry, and guidance that manual overrides do not require a location.
+- **Bulk XLSX override import + downloadable templates**: Added XLSX import on override pages with templates tailored for org admins and super admins (including shul-name-based mapping and validated minyan types).
+
+### Changed
+- **Override page UI modernization**: Updated override tables and actions to match the admin design system styling used by calendar-entry management views.
+- **Build tooling baseline moved to Java 21**: Added Java 21 enforcement/toolchain setup for local and CI consistency.
+
+### Fixed
+- **Super admin shul picker reliability**: Fixed dropdown/search initialization issues on override pages (including Turbolinks navigation handling) and improved search input behavior.
+- **Super admin location scoping**: Location options now correctly scope to the selected shul instead of mixing locations across organizations.
 
 ## [1.9.2] - 2026-03-20
 
