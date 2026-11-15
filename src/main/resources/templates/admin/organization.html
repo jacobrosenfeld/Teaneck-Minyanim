@@ -1,245 +1,688 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" 
-      xmlns:sec="http://www.w3.org/1999/xhtml"
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{admin/layout}">
 <head>
-    <title th:text="${organization.name}">Organization</title>
+    <title th:text="|${organization.name} - ${siteName ?: 'Minyanim Platform'}|">Shul</title>
+
+    <th:block layout:fragment="styles">
+        <style>
+            .shul-shell {
+                max-width: 1120px;
+                margin: 0 auto;
+            }
+
+            .shul-breadcrumb {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: var(--space-2, 0.5rem);
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin-bottom: var(--space-5, 1.25rem);
+            }
+
+            .shul-breadcrumb a {
+                color: var(--text-secondary, #6c757d);
+                text-decoration: none;
+            }
+
+            .shul-breadcrumb a:hover {
+                color: var(--text-primary, #212529);
+            }
+
+            .shul-title {
+                display: flex;
+                align-items: center;
+                gap: var(--space-3, 0.75rem);
+                min-width: 0;
+                overflow-wrap: anywhere;
+            }
+
+            .shul-color-dot {
+                flex: 0 0 auto;
+                width: 0.875rem;
+                height: 0.875rem;
+                border-radius: var(--radius-full, 9999px);
+                box-shadow: 0 0 0 3px var(--bg-surface, #fff), 0 0 0 4px var(--border-color, #dee2e6);
+            }
+
+            .shul-tabs {
+                display: flex;
+                align-items: center;
+                gap: var(--space-5, 1.25rem);
+                margin-bottom: var(--space-6, 1.5rem);
+                border-bottom: 1px solid var(--border-color, #dee2e6);
+                overflow-x: auto;
+            }
+
+            .shul-tab {
+                color: var(--text-secondary, #6c757d);
+                padding: 0 0 var(--space-3, 0.75rem);
+                border-bottom: 2px solid transparent;
+                white-space: nowrap;
+                text-decoration: none;
+            }
+
+            .shul-tab:first-child {
+                color: var(--text-primary, #212529);
+                border-color: var(--text-primary, #212529);
+            }
+
+            .shul-tab:hover {
+                color: var(--text-primary, #212529);
+                text-decoration: none;
+            }
+
+            .shul-section {
+                display: grid;
+                grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
+                gap: var(--space-8, 2rem);
+                align-items: start;
+                margin-bottom: var(--space-6, 1.5rem);
+                scroll-margin-top: calc(var(--navbar-height, 3.5rem) + var(--space-4, 1rem));
+            }
+
+            .shul-section-copy {
+                position: sticky;
+                top: calc(var(--navbar-height, 3.5rem) + var(--space-5, 1.25rem));
+            }
+
+            .shul-section-title {
+                display: flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                font-size: var(--font-size-xl, 1.25rem);
+                margin-bottom: var(--space-2, 0.5rem);
+            }
+
+            .shul-section-title i {
+                color: var(--color-primary, #275ed8);
+                width: 1.2rem;
+                text-align: center;
+            }
+
+            .shul-section-description {
+                color: var(--text-secondary, #6c757d);
+                margin: 0;
+            }
+
+            .shul-section-copy .btn-modern {
+                margin-top: var(--space-4, 1rem);
+            }
+
+            .shul-panel {
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-lg, 0.5rem);
+                box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+                overflow: hidden;
+                min-width: 0;
+                /* Field rows size against the panel, not the viewport (the sidebar changes the available width). */
+                container-type: inline-size;
+            }
+
+            .shul-field {
+                display: grid;
+                grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
+                gap: var(--space-4, 1rem);
+                align-items: center;
+                padding: var(--space-4, 1rem) var(--space-5, 1.25rem);
+                border-bottom: 1px solid var(--border-color-light, #e9ecef);
+            }
+
+            .shul-field > * {
+                min-width: 0;
+            }
+
+            .shul-field:last-child {
+                border-bottom: 0;
+            }
+
+            .shul-field-label {
+                display: block;
+                color: var(--text-primary, #212529);
+                font-weight: var(--font-weight-semibold, 600);
+                margin-bottom: var(--space-1, 0.25rem);
+                overflow-wrap: anywhere;
+            }
+
+            .shul-field-description {
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+                margin: 0;
+                overflow-wrap: anywhere;
+            }
+
+            .shul-input {
+                min-width: 0;
+                width: 100%;
+                height: 2.75rem;
+                padding: 0 var(--space-3, 0.75rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color-dark, #ced4da);
+                border-radius: var(--radius-md, 0.375rem);
+                font-size: var(--font-size-base, 1rem);
+            }
+
+            .shul-input:focus {
+                border-color: var(--text-primary, #212529);
+                box-shadow: 0 0 0 2px rgba(33, 37, 41, 0.08);
+                outline: none;
+            }
+
+            .shul-input:invalid:not(:placeholder-shown) {
+                border-color: var(--color-danger, #f44336);
+            }
+
+            .shul-input-color {
+                width: 4.5rem;
+                padding: 0.25rem;
+                cursor: pointer;
+            }
+
+            .shul-color-control {
+                display: flex;
+                align-items: center;
+                gap: var(--space-3, 0.75rem);
+                color: var(--text-secondary, #6c757d);
+                font-family: var(--font-mono, monospace);
+                font-size: var(--font-size-sm, 0.875rem);
+            }
+
+            .shul-switch {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-3, 0.75rem);
+                margin: 0;
+                cursor: pointer;
+                color: var(--text-primary, #212529);
+            }
+
+            .shul-switch input {
+                position: absolute;
+                opacity: 0;
+                width: 1px;
+                height: 1px;
+            }
+
+            .shul-switch-track {
+                position: relative;
+                flex: 0 0 auto;
+                width: 2.75rem;
+                height: 1.5rem;
+                background: var(--border-color-dark, #ced4da);
+                border-radius: var(--radius-full, 9999px);
+                transition: background var(--transition-fast, 150ms ease);
+            }
+
+            .shul-switch-track::after {
+                content: "";
+                position: absolute;
+                top: 0.1875rem;
+                left: 0.1875rem;
+                width: 1.125rem;
+                height: 1.125rem;
+                background: var(--bg-surface, #fff);
+                border-radius: var(--radius-full, 9999px);
+                box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.15));
+                transition: transform var(--transition-fast, 150ms ease);
+            }
+
+            .shul-switch input:checked + .shul-switch-track {
+                background: var(--color-primary, #275ed8);
+            }
+
+            .shul-switch input:checked + .shul-switch-track::after {
+                transform: translateX(1.25rem);
+            }
+
+            .shul-switch input:focus-visible + .shul-switch-track {
+                outline: 2px solid var(--color-primary, #275ed8);
+                outline-offset: 2px;
+            }
+
+            .shul-save-bar {
+                position: sticky;
+                bottom: 0;
+                z-index: 5;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                flex-wrap: wrap;
+                gap: var(--space-3, 0.75rem);
+                margin: 0 0 var(--space-8, 2rem);
+                padding: var(--space-3, 0.75rem) var(--space-5, 1.25rem);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-lg, 0.5rem);
+                box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
+            }
+
+            .shul-save-state {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-2, 0.5rem);
+                margin-right: auto;
+                color: var(--text-secondary, #6c757d);
+                font-size: var(--font-size-sm, 0.875rem);
+            }
+
+            .shul-save-state.unsaved {
+                color: var(--color-warning, #ff9800);
+            }
+
+            .shul-save-bar .alert {
+                flex: 1 1 100%;
+                margin: 0;
+            }
+
+            .shul-accounts-table {
+                margin: 0;
+            }
+
+            .shul-accounts-table form {
+                margin: 0;
+            }
+
+            .shul-empty {
+                padding: var(--space-6, 1.5rem);
+                color: var(--text-secondary, #6c757d);
+                text-align: center;
+            }
+
+            @media (max-width: 900px) {
+                .shul-section {
+                    grid-template-columns: minmax(0, 1fr);
+                    gap: var(--space-3, 0.75rem);
+                }
+
+                .shul-section-copy {
+                    position: static;
+                }
+            }
+
+            /* Stack label above control when the panel itself is narrow. */
+            @container (max-width: 640px) {
+                .shul-field {
+                    grid-template-columns: minmax(0, 1fr);
+                    gap: var(--space-2, 0.5rem);
+                }
+            }
+
+            @media (max-width: 480px) {
+                .shul-save-bar .btn-modern {
+                    width: 100%;
+                }
+
+                .shul-save-state {
+                    margin-right: 0;
+                }
+            }
+        </style>
+    </th:block>
 </head>
 
 <body>
-    <div layout:fragment="content">
-        <!-- Success/error messages shown via JS toast (see scripts block) -->
+<div layout:fragment="content">
+    <div class="shul-shell">
+        <div class="shul-breadcrumb" th:if="${user != null and user.isSuperAdmin()}">
+            <a th:href="@{/admin/organizations}">Shuls</a>
+            <span>/</span>
+            <span th:text="${organization.name}">Shul</span>
+        </div>
 
-        <!-- Page Header -->
         <div class="page-header">
             <div>
-                <h1 class="page-title" th:text="${organization.name}">Organization Name</h1>
-                <p class="page-description">Edit profile, attributes, and associated accounts.</p>
+                <h1 class="page-title shul-title">
+                    <span class="shul-color-dot" aria-hidden="true"
+                          th:if="${organization.orgColor != null and organization.orgColor.matches('#[0-9a-fA-F]{3,8}')}"
+                          th:style="'background-color: ' + ${organization.orgColor}"></span>
+                    <span th:text="${organization.name}">Shul name</span>
+                </h1>
+                <p class="page-description">Edit this shul's public profile, calendar import, and associated accounts.</p>
+            </div>
+            <div class="page-actions">
+                <a class="btn-modern btn-outline" th:href="@{/orgs/{id}(id=${organization.id})}" target="_blank" rel="noopener">
+                    <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                    <span>View public page</span>
+                </a>
             </div>
         </div>
 
-        <div class="row justify-content-center" style="--space-gap: var(--space-6);">
-            <!-- Main Form Column -->
-            <div class="col-lg-10 col-md-10">
-                <div class="card-modern">
-                    <div class="card-modern-body">
-                        <form th:action="@{/admin/update-organization}" method="post">
-                            <input type="hidden" name="id" th:value="${organization.id}">
-                            
-                            <!-- Organization Details Section -->
-                            <div class="form-section">
-                                <h5 class="form-section-title">Organization Details</h5>
-                                
-                                <div class="form-group">
-                                    <label for="name" class="form-label">Organization Name</label>
-                                    <input type="text" class="form-control" name="name" id="name" required th:value="${organization.name}">
-                                    <small class="form-text">This is the public display name for the organization.</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="address" class="form-label">Organization Address</label>
-                                    <input type="text" class="form-control" name="address" id="address" th:value="${organization.address}">
-                                    <small class="form-text">This is the publicly displayed address for the organization.</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="site-url" class="form-label">Website</label>
-                                    <input type="text" class="form-control" name="site-url" id="site-url" th:value="${organization.websiteURIStr}">
-                                    <small class="form-text">Optional: This website link will be displayed publically. Make sure NOT to include http://</small>
-                                </div>
+        <nav class="shul-tabs" aria-label="Shul sections">
+            <a class="shul-tab" href="#shul-profile">Profile</a>
+            <a class="shul-tab" href="#shul-appearance">Nusach &amp; color</a>
+            <a class="shul-tab" href="#shul-calendar">Calendar import</a>
+            <a class="shul-tab" href="#shul-accounts" th:if="${user.isAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">Accounts</a>
+        </nav>
 
-                                <div class="form-group">
-                                    <label for="whatsapp" class="form-label">WhatsApp Link</label>
-                                    <input type="text" class="form-control" name="whatsapp" id="whatsapp" th:value="${organization.whatsapp}" placeholder="https://chat.whatsapp.com/...">
-                                    <small class="form-text">Optional: Full WhatsApp group invite link. Will be shown as a button on the organization's public page.</small>
-                                </div>
+        <form id="shul-profile-form" th:action="@{/admin/update-organization}" method="post">
+            <input type="hidden" name="id" th:value="${organization.id}">
 
-                                <div class="form-group">
-                                    <label for="url-slug" class="form-label">URL Slug</label>
-                                    <input type="text" class="form-control" name="url-slug" id="url-slug" th:value="${organization.urlSlug}" pattern="[a-z0-9\-]+">
-                                    <small class="form-text">Human-readable URL for this organization (e.g., "keter-torah"). Only lowercase letters, numbers, and hyphens allowed. Leave blank to auto-generate from organization name.</small>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="nusach" class="form-label">Nusach</label>
-                                            <select class="form-control" name="nusach" id="nusach">
-                                                <option value="unspecified" th:selected="${organization.getNusach().isUnspecified()}">None specified</option>
-                                                <option value="arizal" th:selected="${organization.getNusach().isArizal()}">Arizal</option>
-                                                <option value="edot_hamizrach" th:selected="${organization.getNusach().isEdotHamizrach()}">Edot HaMizrach</option>
-                                                <option value="sefard" th:selected="${organization.getNusach().isSefard()}">Sefard</option>
-                                                <option value="ashkenaz" th:selected="${organization.getNusach().isAshkenaz()}">Ashkenaz</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="orgColor" class="form-label">Shul Color</label>
-                                            <input type="color" class="form-control form-control-color" name="orgColor" id="orgColor" th:value="${organization.getOrgColor()}" title="Choose your color">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Calendar Import Settings Section -->
-                            <div class="form-section">
-                                <h5 class="form-section-title">Calendar Import Settings</h5>
-                                <p class="text-muted small mb-3">Import minyan times from your calendar system instead of using rule-based generation.</p>
-                                
-                                <div class="form-group">
-                                    <label for="calendar" class="form-label">Calendar URL</label>
-                                    <input type="url" class="form-control" name="calendar" id="calendar" th:value="${organization.calendar}" placeholder="https://example.com/calendar">
-                                    <small class="form-text">
-                                        Enter the base URL of your calendar system. The system will automatically append parameters to fetch CSV exports.
-                                        <br>Example: https://www.torahtimes.org/calendar (for Torah Times calendar)
-                                    </small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input" name="useScrapedCalendar" id="useScrapedCalendar" 
-                                               th:checked="${organization.useScrapedCalendar}">
-                                        <label class="custom-control-label" for="useScrapedCalendar">
-                                            Enable Calendar Import
-                                        </label>
-                                    </div>
-                                    <small class="form-text">
-                                        When enabled, minyan times will be imported from the calendar URL instead of using rule-based schedules.
-                                    </small>
-                                </div>
-                            </div>
-                            
-                            <div th:if="${updateError}" class="alert alert-danger mt-3">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span th:text="${updateError}"></span>
-                            </div>
-                            
-                            <button type="submit" class="btn-modern btn-primary">
-                                <i class="fas fa-save"></i>
-                                <span>Update Organization</span>
-                            </button>
-                        </form>
-                    </div>
+            <!-- Profile -->
+            <section class="shul-section" id="shul-profile">
+                <div class="shul-section-copy">
+                    <h2 class="shul-section-title">
+                        <i class="fas fa-synagogue" aria-hidden="true"></i>
+                        <span>Profile</span>
+                    </h2>
+                    <p class="shul-section-description">How this shul appears on the public site and in the mobile app.</p>
                 </div>
 
-                <!-- Associated Accounts Section -->
-                <div class="card-modern mt-4" th:if="${user.isAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
-                    <div class="card-modern-header">
-                        <div class="d-flex align-items-center">
-                            <h5 class="mb-0">Associated Accounts</h5>
-                            <div class="ml-auto">
-                                <button type="button" class="btn-modern btn-sm btn-outline" data-toggle="modal" data-target="#add-account-modal">
-                                    <i class="fas fa-plus"></i>
-                                    <span>Add Account</span>
-                                </button>
-                            </div>
+                <div class="shul-panel">
+                    <div class="shul-field">
+                        <div>
+                            <label for="name" class="shul-field-label">Shul name</label>
+                            <p class="shul-field-description">The public display name for the shul.</p>
                         </div>
+                        <input type="text" class="shul-input" name="name" id="name" required th:value="${organization.name}">
                     </div>
-                    <div class="card-modern-body">
-                        <div class="table-modern-wrapper">
-                            <table class="table-modern table-admin-list">
-                                <thead>
-                                    <tr>
-                                        <th class="table-cell-nowrap">ID</th>
-                                        <th>Username</th>
-                                        <th>Email</th>
-                                        <th class="table-cell-nowrap">Role</th>
-                                        <th class="table-cell-nowrap">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="member: ${associatedusers}">
-                                        <td class="table-cell-nowrap" th:text="${member.id}"></td>
-                                        <td th:text="${member.username}"></td>
-                                        <td th:text="${member.email}"></td>
-                                        <td>
-                                            <span th:replace="~{admin/fragments/role-chip :: roleChip(${member})}"></span>
-                                        </td>
-                                        <td>
-                                            <div class="table-actions table-actions-nowrap"
-                                                 th:if="${manageableAccountIds != null and manageableAccountIds.contains(member.id)}">
-                                                <button type="button" class="btn-modern btn-sm btn-warning"
-                                                        th:if="${member.id != user.id}"
-                                                        th:disabled="${associatedusers.size() <= 1}"
-                                                        data-toggle="modal"
-                                                        th:data-target="${'#disable-account-modal-' + member.id}">
-                                                    <i class="fas fa-ban"></i> Disable
-                                                </button>
-                                                <a class="btn-modern btn-sm btn-secondary" role="button" th:href="@{/admin/account(id=${member.id})}">
-                                                    <i class="fas fa-cog"></i> Manage
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+
+                    <div class="shul-field">
+                        <div>
+                            <label for="address" class="shul-field-label">Address</label>
+                            <p class="shul-field-description">Shown publicly and used to place the shul on the map.</p>
+                        </div>
+                        <input type="text" class="shul-input" name="address" id="address" th:value="${organization.address}">
+                    </div>
+
+                    <div class="shul-field">
+                        <div>
+                            <label for="site-url" class="shul-field-label">Website</label>
+                            <p class="shul-field-description">Optional. Shown publicly. Leave out http:// (for example, kehilla.org).</p>
+                        </div>
+                        <input type="text" class="shul-input" name="site-url" id="site-url" th:value="${organization.websiteURIStr}" placeholder="kehilla.org">
+                    </div>
+
+                    <div class="shul-field">
+                        <div>
+                            <label for="whatsapp" class="shul-field-label">WhatsApp link</label>
+                            <p class="shul-field-description">Optional. Full group invite link, shown as a button on the shul's public page.</p>
+                        </div>
+                        <input type="text" class="shul-input" name="whatsapp" id="whatsapp" th:value="${organization.whatsapp}" placeholder="https://chat.whatsapp.com/...">
+                    </div>
+
+                    <div class="shul-field">
+                        <div>
+                            <label for="url-slug" class="shul-field-label">URL slug</label>
+                            <p class="shul-field-description">Readable link for this shul, such as "keter-torah". Lowercase letters, numbers, and hyphens only. Leave blank to generate one from the shul name.</p>
+                        </div>
+                        <input type="text" class="shul-input" name="url-slug" id="url-slug" th:value="${organization.urlSlug}" pattern="[a-z0-9\-]+" placeholder="keter-torah">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Nusach & color -->
+            <section class="shul-section" id="shul-appearance">
+                <div class="shul-section-copy">
+                    <h2 class="shul-section-title">
+                        <i class="fas fa-palette" aria-hidden="true"></i>
+                        <span>Nusach &amp; color</span>
+                    </h2>
+                    <p class="shul-section-description">The shul's default nusach and the color used for its minyanim on the public schedule.</p>
+                </div>
+
+                <div class="shul-panel">
+                    <div class="shul-field">
+                        <div>
+                            <label for="nusach" class="shul-field-label">Nusach</label>
+                            <p class="shul-field-description">Used for minyanim that don't set their own nusach.</p>
+                        </div>
+                        <select class="shul-input" name="nusach" id="nusach">
+                            <option value="unspecified" th:selected="${organization.getNusach().isUnspecified()}">None specified</option>
+                            <option value="arizal" th:selected="${organization.getNusach().isArizal()}">Arizal</option>
+                            <option value="edot_hamizrach" th:selected="${organization.getNusach().isEdotHamizrach()}">Edot HaMizrach</option>
+                            <option value="sefard" th:selected="${organization.getNusach().isSefard()}">Sefard</option>
+                            <option value="ashkenaz" th:selected="${organization.getNusach().isAshkenaz()}">Ashkenaz</option>
+                        </select>
+                    </div>
+
+                    <div class="shul-field">
+                        <div>
+                            <label for="orgColor" class="shul-field-label">Shul color</label>
+                            <p class="shul-field-description">Accent color for this shul across the site.</p>
+                        </div>
+                        <div class="shul-color-control">
+                            <input type="color" class="shul-input shul-input-color" name="orgColor" id="orgColor" th:value="${organization.getOrgColor()}" title="Choose your color">
+                            <span id="orgColor-value" th:text="${organization.getOrgColor()}" aria-hidden="true">#275ed8</span>
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <!-- Calendar import -->
+            <section class="shul-section" id="shul-calendar">
+                <div class="shul-section-copy">
+                    <h2 class="shul-section-title">
+                        <i class="fas fa-calendar-days" aria-hidden="true"></i>
+                        <span>Calendar import</span>
+                    </h2>
+                    <p class="shul-section-description">Import minyan times from your shul's calendar instead of using rule-based schedules.</p>
+                </div>
+
+                <div class="shul-panel">
+                    <div class="shul-field">
+                        <div>
+                            <label for="calendar" class="shul-field-label">Calendar URL</label>
+                            <p class="shul-field-description">Base URL of your calendar system, for example https://www.torahtimes.org/calendar. CSV export parameters are added automatically.</p>
+                        </div>
+                        <input type="url" class="shul-input" name="calendar" id="calendar" th:value="${organization.calendar}" placeholder="https://example.com/calendar">
+                    </div>
+
+                    <div class="shul-field">
+                        <div>
+                            <span class="shul-field-label" id="useScrapedCalendar-label">Enable calendar import</span>
+                            <p class="shul-field-description">When on, minyan times come from the calendar URL instead of rule-based schedules.</p>
+                        </div>
+                        <label class="shul-switch" for="useScrapedCalendar">
+                            <input type="checkbox" name="useScrapedCalendar" id="useScrapedCalendar"
+                                   aria-labelledby="useScrapedCalendar-label"
+                                   th:checked="${organization.useScrapedCalendar}">
+                            <span class="shul-switch-track" aria-hidden="true"></span>
+                            <span id="useScrapedCalendar-state" th:text="${organization.useScrapedCalendar ? 'On' : 'Off'}">Off</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <div class="shul-save-bar">
+                <span class="shul-save-state" id="shul-save-state" role="status">
+                    <i class="far fa-circle" aria-hidden="true"></i>
+                    <span>No unsaved changes</span>
+                </span>
+                <div th:if="${updateError}" class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                    <span th:text="${updateError}"></span>
+                </div>
+                <button type="submit" class="btn-modern btn-primary">
+                    <i class="fas fa-save" aria-hidden="true"></i>
+                    <span>Save changes</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Associated accounts -->
+        <section class="shul-section" id="shul-accounts" th:if="${user.isAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+            <div class="shul-section-copy">
+                <h2 class="shul-section-title">
+                    <i class="fas fa-users" aria-hidden="true"></i>
+                    <span>Accounts</span>
+                </h2>
+                <p class="shul-section-description">People who can sign in and manage this shul.</p>
+                <button type="button" class="btn-modern btn-outline" data-toggle="modal" data-target="#add-account-modal">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    <span>Add account</span>
+                </button>
             </div>
 
-        </div>
+            <div class="shul-panel">
+                <div class="table-modern-wrapper">
+                    <table class="table-modern table-admin-list shul-accounts-table">
+                        <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th class="table-cell-nowrap">Role</th>
+                            <th class="table-cell-nowrap">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="member: ${associatedusers}">
+                            <td th:text="${member.username}"></td>
+                            <td th:text="${member.email}"></td>
+                            <td>
+                                <span th:replace="~{admin/fragments/role-chip :: roleChip(${member})}"></span>
+                            </td>
+                            <td>
+                                <div class="table-actions table-actions-nowrap"
+                                     th:if="${manageableAccountIds != null and manageableAccountIds.contains(member.id)}">
+                                    <form method="post" th:action="@{/admin/account/disable}"
+                                          th:if="${member.id != user.id}"
+                                          th:id="${'disable-account-form-' + member.id}">
+                                        <input type="hidden" name="id" th:value="${member.id}">
+                                        <input type="hidden" name="rd" th:value="${'/admin/organization?id=' + organization.id}">
+                                        <button type="button" class="btn-modern btn-sm btn-warning"
+                                                th:disabled="${associatedusers.size() <= 1}"
+                                                th:title="${associatedusers.size() <= 1 ? 'A shul needs at least one account' : null}"
+                                                data-confirm
+                                                data-confirm-severity="warning"
+                                                data-confirm-icon="fa-ban"
+                                                th:data-confirm-title="|Disable ${member.username}?|"
+                                                data-confirm-message="They will no longer be able to sign in. You can enable the account again from its settings page."
+                                                data-confirm-label="Disable account"
+                                                th:data-confirm-detail="${member.email != null ? member.username + ' · ' + member.email : member.username}">
+                                            <i class="fas fa-ban" aria-hidden="true"></i> Disable
+                                        </button>
+                                    </form>
+                                    <a class="btn-modern btn-sm btn-secondary" role="button" th:href="@{/admin/account(id=${member.id})}">
+                                        <i class="fas fa-cog" aria-hidden="true"></i> Manage
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="shul-empty" th:if="${associatedusers == null or #lists.isEmpty(associatedusers)}">
+                    No accounts are assigned to this shul yet.
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
 
-        <!-- Modals -->
-        <!-- Add Account Modal -->
-        <div class="modal fade" id="add-account-modal" tabindex="-1" aria-labelledby="add-account-modal-label" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="add-account-modal-label">Add an Account</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
+<th:block layout:fragment="modals">
+    <th:block th:replace="~{admin/fragments/confirm-modal :: confirmModal}"></th:block>
+
+    <!-- Add Account Modal -->
+    <div class="modal fade admin-modal" id="add-account-modal" tabindex="-1" aria-labelledby="add-account-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="admin-modal-heading">
+                        <span class="admin-modal-icon" aria-hidden="true"><i class="fas fa-user-plus"></i></span>
+                        <h5 class="modal-title" id="add-account-modal-label">Add an account</h5>
                     </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <form method="post" th:action="@{/admin/create-account(oid=${organization.id})}">
                     <div class="modal-body">
                         <p>This passwordless account will be assigned to <span th:text="${organization.name}"></span>. A welcome email with a secure activation link is sent automatically.<span th:if="${user.isSuperAdmin()}"> Use <a href="/admin/accounts">User Management</a> to grant Super admin access or assign more shuls.</span></p>
-                        <form method="post" th:action="@{/admin/create-account(oid=${organization.id})}">
-                            <div class="form-group">
-                                <label for="new-account-username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="new-account-username" name="username" required>
-                                <small class="form-text">This is how the user will log into the admin panel.</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="new-account-email" class="form-label">Email address</label>
-                                <input type="email" class="form-control" id="new-account-email" name="email" required>
-                                <small class="form-text">This address receives sign-in and recovery links.</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="new-account-role" class="form-label">Role</label>
-                                <select class="form-control" id="new-account-role" name="r" required>
-                                    <option value="u" selected>User</option>
-                                    <option value="m">Manager</option>
-                                </select>
-                                <small class="form-text">Managers can also manage this shul's accounts.</small>
-                            </div>
-                            <div th:if="${addAccountError}" class="alert alert-danger">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span th:text="${addAccountError}"></span>
-                            </div>
-                            <hr>
-                            <button type="submit" class="btn-modern btn-primary">
-                                <i class="fas fa-user-plus"></i> Create Account
-                            </button>
-                        </form>
+                        <div class="form-group">
+                            <label for="new-account-username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="new-account-username" name="username" required>
+                            <small class="form-text">This is how the user will log into the admin panel.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-account-email" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="new-account-email" name="email" required>
+                            <small class="form-text">This address receives sign-in and recovery links.</small>
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="new-account-role" class="form-label">Role</label>
+                            <select class="form-control" id="new-account-role" name="r" required>
+                                <option value="u" selected>User</option>
+                                <option value="m">Manager</option>
+                            </select>
+                            <small class="form-text">Managers can also manage this shul's accounts.</small>
+                        </div>
+                        <div th:if="${addAccountError}" class="alert alert-danger mt-3 mb-0" role="alert">
+                            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                            <span th:text="${addAccountError}"></span>
+                        </div>
                     </div>
-                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-modern btn-outline" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-modern btn-primary">
+                            <i class="fas fa-user-plus" aria-hidden="true"></i> Create account
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <script th:if="${addAccountError}">
-            $(document).ready(function() {
-                $('#add-account-modal').modal('show');
-            });
-        </script>
     </div>
-</body>
+</th:block>
 
 <th:block layout:fragment="scripts">
     <script th:inline="javascript">
-        /*[[${mainSuccess}]]*/ && window.showToast && showToast(/*[[${mainSuccess}]]*/ '', 'success');
-        /*[[${mainError}]]*/ && window.showToast && showToast(/*[[${mainError}]]*/ '', 'error');
+        (function () {
+            var success = /*[[${mainSuccess ?: successMessage}]]*/ null;
+            var error = /*[[${mainError ?: errorMessage}]]*/ null;
+            var reopenAddAccount = /*[[${addAccountError != null}]]*/ false;
+
+            function init() {
+                if (success && window.showToast) showToast(success, 'success');
+                if (error && window.showToast) showToast(error, 'error');
+                if (reopenAddAccount && window.jQuery) jQuery('#add-account-modal').modal('show');
+
+                var form = document.getElementById('shul-profile-form');
+                if (!form) return;
+
+                var color = document.getElementById('orgColor');
+                var colorValue = document.getElementById('orgColor-value');
+                if (color && colorValue) {
+                    color.addEventListener('input', function () { colorValue.textContent = color.value; });
+                }
+
+                var toggle = document.getElementById('useScrapedCalendar');
+                var toggleState = document.getElementById('useScrapedCalendar-state');
+                if (toggle && toggleState) {
+                    toggle.addEventListener('change', function () { toggleState.textContent = toggle.checked ? 'On' : 'Off'; });
+                }
+
+                var saveState = document.getElementById('shul-save-state');
+                var initial = new URLSearchParams(new FormData(form)).toString();
+                var dirty = false;
+                function refresh() {
+                    dirty = new URLSearchParams(new FormData(form)).toString() !== initial;
+                    if (!saveState) return;
+                    saveState.className = 'shul-save-state' + (dirty ? ' unsaved' : '');
+                    saveState.querySelector('i').className = dirty ? 'fas fa-circle-dot' : 'far fa-circle';
+                    saveState.querySelector('span').textContent = dirty ? 'Unsaved changes' : 'No unsaved changes';
+                }
+                form.addEventListener('input', refresh);
+                form.addEventListener('change', refresh);
+                form.addEventListener('submit', function () { dirty = false; });
+                window.addEventListener('beforeunload', function (event) {
+                    if (!dirty) return;
+                    event.preventDefault();
+                    event.returnValue = '';
+                });
+            }
+
+            // The layout defines showToast on DOMContentLoaded, so wait for it.
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
     </script>
 </th:block>
+</body>
 </html>
