@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Shared, color-coded role chip for admin pages (User Management, shul profile accounts list).
+  Colors live in design-system.css (.role-chip-*), so every page renders the same chip per role.
+  Usage: <span th:replace="~{admin/fragments/role-chip :: roleChip(${account})}"></span>
+-->
+<span th:fragment="roleChip(account)"
+      th:with="roleKey=${account.isSuperAdmin() ? 'super-admin' : (account.isAdmin() ? 'manager' : 'user')}"
+      th:class="|badge-modern role-chip role-chip-${roleKey}|"
+      th:text="${account.isSuperAdmin() ? 'Super admin' : account.getRoleDisplayName()}">User</span>
+</body>
+</html>

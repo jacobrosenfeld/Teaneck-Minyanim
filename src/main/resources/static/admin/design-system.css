@@ -476,6 +476,24 @@ small, .text-sm {
     color: var(--color-gray-700);
 }
 
+/* Role chips (templates/admin/fragments/role-chip.html).
+   Reuse the badge palette above; the doubled class selector keeps Bootstrap's
+   later-loaded .badge-* rules from overriding them. */
+.badge-modern.role-chip-super-admin {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.badge-modern.role-chip-manager {
+    background-color: var(--color-primary-lighter);
+    color: var(--color-primary-dark);
+}
+
+.badge-modern.role-chip-user {
+    background-color: var(--color-gray-200);
+    color: var(--color-gray-700);
+}
+
 /* ============================================
    Alerts
    ============================================ */

@@ -52,7 +52,11 @@ public class WeeklyMinyanReviewEmailService {
     private final EmailService emailService;
 
     public WeeklyMinyanReviewSendResult sendScheduledWeeklyReviewEmails() {
-        return sendWeeklyReviewEmails(true, LocalDate.now(settingsService.getZoneId()));
+        LocalDate today = LocalDate.now(settingsService.getZoneId());
+        if (!settingsService.isWeeklyReviewEmailEnabled()) {
+            return WeeklyMinyanReviewSendResult.disabled(upcomingSundayThroughSaturday(today));
+        }
+        return sendWeeklyReviewEmails(true, today);
     }
 
     public WeeklyMinyanReviewSendResult sendWeeklyReviewEmails(boolean refreshBeforeSend, LocalDate referenceDate) {
@@ -61,7 +65,7 @@ public class WeeklyMinyanReviewEmailService {
         if (refreshBeforeSend) {
             String refreshError = refreshSchedulesForDigest("Weekly minyan review");
             if (refreshError != null) {
-                return new WeeklyMinyanReviewSendResult(range, 0, 0, 0, 0, false, refreshError);
+                return new WeeklyMinyanReviewSendResult(range, 0, 0, 0, 0, false, refreshError, false);
             }
         }
 
@@ -105,7 +109,7 @@ public class WeeklyMinyanReviewEmailService {
 
         }
 
-        return new WeeklyMinyanReviewSendResult(range, recipients.size(), sent, failed, skipped, true, null);
+        return new WeeklyMinyanReviewSendResult(range, recipients.size(), sent, failed, skipped, true, null, false);
     }
 
     public WeeklyMinyanReviewTestSendResult sendWeeklyReviewTestEmail(TNMUser recipient, boolean refreshBeforeSend) {
@@ -214,7 +218,7 @@ public class WeeklyMinyanReviewEmailService {
     }
 
     public DateRange upcomingSundayThroughSaturday(LocalDate referenceDate) {
-        LocalDate start = referenceDate.with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
+        LocalDate start = referenceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
         return new DateRange(start, start.plusDays(6));
     }
 
@@ -774,7 +778,12 @@ public class WeeklyMinyanReviewEmailService {
             int failedCount,
             int skippedCount,
             boolean refreshSucceeded,
-            String refreshError) {
+            String refreshError,
+            boolean disabledBySetting) {
+
+        static WeeklyMinyanReviewSendResult disabled(DateRange range) {
+            return new WeeklyMinyanReviewSendResult(range, 0, 0, 0, 0, true, null, true);
+        }
     }
 
     public record WeeklyMinyanReviewTestSendResult(

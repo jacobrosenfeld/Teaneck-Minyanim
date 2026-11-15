@@ -23,7 +23,7 @@
                              th:attr="data-search=|${account.username} ${account.email} ${organizationNames.get(account.id)}|">
                         <summary class="user-summary">
                             <div class="user-identity"><strong th:text="${account.username}"></strong><div class="user-meta" th:text="${account.email}"></div></div>
-                            <span class="badge-modern badge-secondary" th:text="${account.isSuperAdmin() ? 'Super admin' : account.getRoleDisplayName()}"></span>
+                            <span th:replace="~{admin/fragments/role-chip :: roleChip(${account})}"></span>
                             <span th:text="${account.enabled ? 'Enabled' : 'Disabled'}"></span>
                             <div class="user-meta" th:text="${organizationNames.get(account.id)}"></div>
                         </summary>
@@ -91,9 +91,9 @@
         <section class="settings-section" id="roles">
             <div class="section-copy"><h2 class="section-title">Role guide</h2><p class="section-description">Roles apply across every assigned shul.</p></div>
             <div class="settings-panel">
-                <div class="account-card"><div><div class="account-card-title">User</div><p class="account-card-description">Maintains schedules, locations, and organization details for assigned shuls.</p></div></div>
-                <div class="account-card"><div><div class="account-card-title">Manager</div><p class="account-card-description">User access plus account maintenance for users whose shuls are all within their assigned scope. Permission assignment and authentication recovery are controlled by super admins.</p></div></div>
-                <div class="account-card"><div><div class="account-card-title">Super admin</div><p class="account-card-description">Full access to all shuls, user permissions, and platform settings.</p></div></div>
+                <div class="account-card"><div><div class="account-card-title"><span class="badge-modern role-chip role-chip-user">User</span></div><p class="account-card-description">Maintains schedules, locations, and organization details for assigned shuls.</p></div></div>
+                <div class="account-card"><div><div class="account-card-title"><span class="badge-modern role-chip role-chip-manager">Manager</span></div><p class="account-card-description">User access plus account maintenance for users whose shuls are all within their assigned scope. Permission assignment and authentication recovery are controlled by super admins.</p></div></div>
+                <div class="account-card"><div><div class="account-card-title"><span class="badge-modern role-chip role-chip-super-admin">Super admin</span></div><p class="account-card-description">Full access to all shuls, user permissions, and platform settings.</p></div></div>
             </div>
         </section>
     </div>

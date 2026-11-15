@@ -13,8 +13,13 @@ import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMSettingsService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
+import com.tbdev.teaneckminyanim.service.UserManagementService;
+import com.tbdev.teaneckminyanim.service.auth.MagicLinkService;
 import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
+import com.tbdev.teaneckminyanim.repo.AuthAuditEventRepository;
+import com.tbdev.teaneckminyanim.repo.MagicLinkTokenRepository;
 import com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository;
+import com.tbdev.teaneckminyanim.repo.TNMUserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,13 +35,21 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 
 import static com.tbdev.teaneckminyanim.enums.Role.ADMIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,6 +58,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class AdminControllerAuthorizationTest {
 
@@ -54,6 +72,9 @@ class AdminControllerAuthorizationTest {
     private MinyanService minyanService;
     private ApplicationSettingsService settingsService;
     private OrganizationCalendarEntryRepository calendarEntryRepository;
+    private TNMUserRepository userRepository;
+    private MagicLinkService magicLinkService;
+    private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
@@ -83,6 +104,291 @@ class AdminControllerAuthorizationTest {
         calendarEntryRepository = mock(OrganizationCalendarEntryRepository.class);
         when(applicationContext.getBean(OrganizationCalendarEntryRepository.class)).thenReturn(calendarEntryRepository);
         ReflectionTestUtils.setField(controller, "applicationContext", applicationContext);
+
+        userRepository = mock(TNMUserRepository.class);
+        when(userRepository.findAll()).thenReturn(List.of());
+        when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        UserManagementService userManagementService = new UserManagementService(
+                userService, userRepository, organizationService, mock(PasskeyCredentialService.class),
+                mock(MagicLinkTokenRepository.class), mock(AuthAuditEventRepository.class));
+        magicLinkService = mock(MagicLinkService.class);
+        when(magicLinkService.sendProfileWelcomeLink(any(), any())).thenReturn(true);
+        when(magicLinkService.sendManagedWelcomeLink(any(), any())).thenReturn(true);
+        ReflectionTestUtils.setField(controller, "userManagementService", userManagementService);
+        ReflectionTestUtils.setField(controller, "magicLinkService", magicLinkService);
+        mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new AccessDeniedAdvice())
+                .setSingleView(new org.springframework.web.servlet.view.AbstractView() {
+                    @Override
+                    protected void renderMergedOutputModel(java.util.Map<String, Object> model,
+                                                           jakarta.servlet.http.HttpServletRequest request,
+                                                           jakarta.servlet.http.HttpServletResponse response) {
+                        // Authorization outcome is asserted via status; template rendering is covered elsewhere.
+                    }
+                })
+                .build();
+    }
+
+    /** Mirrors Spring Security's ExceptionTranslationFilter: AccessDeniedException becomes HTTP 403. */
+    @RestControllerAdvice
+    static class AccessDeniedAdvice {
+        @ExceptionHandler(AccessDeniedException.class)
+        ResponseEntity<String> denied(AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
+
+    // --- #289: account creation and Account Settings scope, exercised with direct requests ---
+
+    @Test
+    void managerCreatesUserInOwnShulAndWelcomeEmailIsSent() throws Exception {
+        signIn(user("A1", "manager", "org-a", ADMIN));
+        stubOrganizations("org-a");
+
+        mvc.perform(post("/admin/create-account").param("oid", "org-a").param("r", "u")
+                        .param("username", "newuser1").param("email", "New.User@Example.com"))
+                .andExpect(status().isOk());
+
+        verify(userRepository).save(argThat(saved -> saved.role() == Role.USER
+                && "org-a".equals(saved.getOrganizationId())
+                && saved.getAdditionalOrganizationIds().isEmpty()
+                && "newuser1".equals(saved.getUsername())
+                && "new.user@example.com".equals(saved.getEmail())
+                && "!PASSWORDLESS".equals(saved.getEncryptedPassword())));
+        verify(magicLinkService).sendProfileWelcomeLink(
+                argThat(created -> "newuser1".equals(created.getUsername())), any());
+        verify(magicLinkService, never()).sendManagedWelcomeLink(any(), any());
+    }
+
+    @Test
+    void managerCreatesManagerInOwnShul() throws Exception {
+        signIn(user("A1", "manager", "org-a", ADMIN));
+        stubOrganizations("org-a");
+
+        mvc.perform(post("/admin/create-account").param("oid", "org-a").param("r", "m")
+                        .param("username", "newmanager").param("email", "newmanager@example.com"))
+                .andExpect(status().isOk());
+
+        verify(userRepository).save(argThat(saved -> saved.role() == ADMIN
+                && !saved.isSuperAdmin()
+                && Set.of("org-a").equals(saved.getAccessibleOrganizationIds())));
+        verify(magicLinkService).sendProfileWelcomeLink(any(), any());
+    }
+
+    @Test
+    void managerCanCreateInSecondAssignedShul() throws Exception {
+        TNMUser manager = user("A1", "manager", "org-a", ADMIN);
+        manager.getAdditionalOrganizationIds().add("org-b");
+        signIn(manager);
+        stubOrganizations("org-a", "org-b");
+
+        mvc.perform(post("/admin/create-account").param("oid", "org-b").param("r", "u")
+                        .param("username", "seconduser").param("email", "second@example.com"))
+                .andExpect(status().isOk());
+
+        verify(userRepository).save(argThat(saved -> Set.of("org-b").equals(saved.getAccessibleOrganizationIds())));
+    }
+
+    @Test
+    void managerCannotCreateAccountForUnrelatedShul() throws Exception {
+        signIn(user("A1", "manager", "org-a", ADMIN));
+        stubOrganizations("org-a", "org-c");
+
+        mvc.perform(post("/admin/create-account").param("oid", "org-c").param("r", "u")
+                        .param("username", "outsider1").param("email", "outsider@example.com"))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/admin/create-account").param("oid", "").param("r", "m")
+                        .param("username", "outsider1").param("email", "outsider@example.com"))
+                .andExpect(status().isForbidden());
+
+        verify(userRepository, never()).save(any());
+        verifyNoInteractions(magicLinkService);
+    }
+
+    @Test
+    void managerCannotGrantSuperAdminWhenCreatingAccount() throws Exception {
+        signIn(user("A1", "manager", "org-a", ADMIN));
+        stubOrganizations("org-a");
+
+        for (String role : List.of("s", "SUPER_ADMIN", "super", "")) {
+            mvc.perform(post("/admin/create-account").param("oid", "org-a").param("r", role)
+                            .param("username", "wouldbesuper").param("email", "super2@example.com"))
+                    .andExpect(status().isOk());
+        }
+        mvc.perform(post("/admin/create-account").param("oid", "org-a")
+                        .param("username", "wouldbesuper").param("email", "super2@example.com"))
+                .andExpect(status().isOk());
+
+        verify(userRepository, never()).save(any());
+        verifyNoInteractions(magicLinkService);
+    }
+
+    @Test
+    void userCannotCreateAccounts() throws Exception {
+        signIn(user("A2", "plainuser", "org-a", Role.USER));
+        stubOrganizations("org-a");
+
+        mvc.perform(post("/admin/create-account").param("oid", "org-a").param("r", "u")
+                        .param("username", "newuser1").param("email", "new@example.com"))
+                .andExpect(status().isForbidden());
+
+        verify(userRepository, never()).save(any());
+        verifyNoInteractions(magicLinkService);
+    }
+
+    @Test
+    void superAdminCreatesFromOrganizationPageWithManagedWelcome() throws Exception {
+        signIn(user("A0", "super", null, ADMIN));
+        stubOrganizations("org-c");
+
+        mvc.perform(post("/admin/create-account").param("oid", "org-c").param("r", "m")
+                        .param("username", "cmanager").param("email", "cmanager@example.com"))
+                .andExpect(status().isOk());
+
+        verify(userRepository).save(argThat(saved -> saved.role() == ADMIN
+                && "org-c".equals(saved.getOrganizationId())));
+        verify(magicLinkService).sendManagedWelcomeLink(any(), any());
+    }
+
+    @Test
+    void managerCanOpenAndEditPeerManagerInOwnShul() throws Exception {
+        signIn(user("A1", "manager", "org-a", ADMIN));
+        stubOrganizations("org-a");
+        TNMUser peer = user("A2", "peermanager", "org-a", ADMIN);
+        when(userService.findById("A2")).thenReturn(peer);
+        when(userService.update(any())).thenReturn(true);
+
+        mvc.perform(get("/admin/account").param("id", "A2")).andExpect(status().isOk());
+        mvc.perform(post("/admin/update-account").param("id", "A2")
+                        .param("username", "peermanager2").param("email", "peermanager@example.com"))
+                .andExpect(status().isOk());
+        mvc.perform(post("/admin/account/notifications").param("id", "A2"))
+                .andExpect(status().isOk());
+        mvc.perform(post("/admin/account/disable").param("id", "A2"))
+                .andExpect(status().isOk());
+
+        verify(userService, atLeastOnce()).update(argThat(updated ->
+                "A2".equals(updated.getId()) && updated.role() == ADMIN && "org-a".equals(updated.getOrganizationId())));
+        assertEquals("peermanager2", peer.getUsername());
+        assertFalse(peer.isEnabled());
+    }
+
+    @Test
+    void managerCannotDeleteOrResetPeerManagerCredentials() throws Exception {
+        signIn(user("A1", "manager", "org-a", ADMIN));
+        TNMUser peer = user("A2", "peermanager", "org-a", ADMIN);
+        peer.setEnabled(false);
+        when(userService.findById("A2")).thenReturn(peer);
+
+        mvc.perform(post("/admin/delete-account").param("id", "A2")).andExpect(status().isForbidden());
+        mvc.perform(post("/admin/accounts/A2/changepassword")
+                        .param("password", "NewPass123").param("cpassword", "NewPass123"))
+                .andExpect(status().isForbidden());
+
+        verify(userService, never()).delete(any());
+        verify(userService, never()).update(any());
+    }
+
+    @Test
+    void managerCannotManageSuperAdmin() throws Exception {
+        signIn(user("A1", "manager", "org-a", ADMIN));
+        TNMUser superAdmin = user("A0", "super", null, ADMIN);
+        when(userService.findById("A0")).thenReturn(superAdmin);
+
+        mvc.perform(get("/admin/account").param("id", "A0")).andExpect(status().isForbidden());
+        mvc.perform(post("/admin/update-account").param("id", "A0")
+                        .param("username", "superadmin").param("email", "super@example.com"))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/admin/account/notifications").param("id", "A0")).andExpect(status().isForbidden());
+        mvc.perform(post("/admin/account/disable").param("id", "A0")).andExpect(status().isForbidden());
+        mvc.perform(post("/admin/account/enable").param("id", "A0")).andExpect(status().isForbidden());
+        mvc.perform(post("/admin/delete-account").param("id", "A0")).andExpect(status().isForbidden());
+
+        verify(userService, never()).update(any());
+        verify(userService, never()).delete(any());
+    }
+
+    @Test
+    void managerCannotEditMultiShulAccountThatIncludesUnmanagedShul() throws Exception {
+        signIn(user("A1", "manager", "org-a", ADMIN));
+        TNMUser multiShulManager = user("A2", "multimanager", "org-a", ADMIN);
+        multiShulManager.getAdditionalOrganizationIds().add("org-b");
+        TNMUser multiShulUser = user("A3", "multiuser", "org-a", Role.USER);
+        multiShulUser.getAdditionalOrganizationIds().add("org-b");
+        when(userService.findById("A2")).thenReturn(multiShulManager);
+        when(userService.findById("A3")).thenReturn(multiShulUser);
+
+        for (String id : List.of("A2", "A3")) {
+            mvc.perform(get("/admin/account").param("id", id)).andExpect(status().isForbidden());
+            mvc.perform(post("/admin/update-account").param("id", id)
+                            .param("username", "renamed1").param("email", "renamed@example.com"))
+                    .andExpect(status().isForbidden());
+            mvc.perform(post("/admin/account/disable").param("id", id)).andExpect(status().isForbidden());
+        }
+
+        verify(userService, never()).update(any());
+    }
+
+    @Test
+    void managerWhoManagesEveryShulCanOpenMultiShulManager() throws Exception {
+        TNMUser manager = user("A1", "manager", "org-a", ADMIN);
+        manager.getAdditionalOrganizationIds().add("org-b");
+        signIn(manager);
+        stubOrganizations("org-a", "org-b");
+        TNMUser multiShulManager = user("A2", "multimanager", "org-b", ADMIN);
+        multiShulManager.getAdditionalOrganizationIds().add("org-a");
+        when(userService.findById("A2")).thenReturn(multiShulManager);
+
+        mvc.perform(get("/admin/account").param("id", "A2")).andExpect(status().isOk());
+    }
+
+    @Test
+    void userCannotManageAnotherUserButCanManageSelf() throws Exception {
+        TNMUser actor = signIn(user("A2", "plainuser", "org-a", Role.USER));
+        stubOrganizations("org-a");
+        TNMUser other = user("A3", "otheruser", "org-a", Role.USER);
+        when(userService.findById("A2")).thenReturn(actor);
+        when(userService.findById("A3")).thenReturn(other);
+
+        mvc.perform(get("/admin/account").param("id", "A3")).andExpect(status().isForbidden());
+        mvc.perform(post("/admin/update-account").param("id", "A3")
+                        .param("username", "otheruser").param("email", "other@example.com"))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/admin/account/notifications").param("id", "A3")).andExpect(status().isForbidden());
+        verify(userService, never()).update(any());
+
+        mvc.perform(get("/admin/account").param("id", "A2")).andExpect(status().isOk());
+    }
+
+    @Test
+    void organizationPageOffersManageOnlyForAccountsInActorScope() throws Exception {
+        TNMUser manager = signIn(user("A1", "manager", "org-a", ADMIN));
+        Organization orgA = organization("org-a");
+        when(organizationService.findById("org-a")).thenReturn(Optional.of(orgA));
+        TNMUser peer = user("A2", "peermanager", "org-a", ADMIN);
+        TNMUser plain = user("A3", "plainuser", "org-a", Role.USER);
+        TNMUser multi = user("A4", "multiuser", "org-a", Role.USER);
+        multi.getAdditionalOrganizationIds().add("org-b");
+        when(organizationService.getUsersForOrganization(orgA)).thenReturn(List.of(manager, peer, plain, multi));
+
+        ModelAndView view = controller.organization("org-a", null, null, null, null);
+
+        assertEquals(Set.of("A1", "A2", "A3"), view.getModel().get("manageableAccountIds"));
+    }
+
+    private TNMUser signIn(TNMUser actor) {
+        authenticate(actor.getUsername(), actor.role());
+        when(userService.findByName(actor.getUsername())).thenReturn(actor);
+        when(userService.getCurrentUser()).thenReturn(actor);
+        return actor;
+    }
+
+    private void stubOrganizations(String... ids) {
+        for (String id : ids) {
+            when(organizationService.findById(id)).thenReturn(Optional.of(organization(id)));
+        }
+        when(organizationService.getAll()).thenReturn(new ArrayList<>(
+                Arrays.stream(ids).map(this::organization).toList()));
     }
 
     @AfterEach

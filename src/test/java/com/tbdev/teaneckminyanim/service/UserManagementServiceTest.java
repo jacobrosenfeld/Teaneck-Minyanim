@@ -138,6 +138,72 @@ class UserManagementServiceTest {
         verify(repository, never()).delete(any());
     }
 
+    @Test
+    void managerCreatesUserOrManagerScopedToOneManagedShul() {
+        actor.setOrganizationId("one");
+        actor.getAdditionalOrganizationIds().add("two");
+
+        TNMUser user = service.createForOrganization("newuser", "New@Example.com", "USER", "two");
+        TNMUser manager = service.createForOrganization("newmanager", "mgr@example.com", "MANAGER", "one");
+
+        assertEquals(Role.USER, user.role());
+        assertEquals(Set.of("two"), user.getAccessibleOrganizationIds());
+        assertEquals("!PASSWORDLESS", user.getEncryptedPassword());
+        assertEquals(Role.ADMIN, manager.role());
+        assertFalse(manager.isSuperAdmin());
+        assertEquals(Set.of("one"), manager.getAccessibleOrganizationIds());
+    }
+
+    @Test
+    void organizationCreateRejectsUnrelatedShulSuperAdminAndNonManagers() {
+        actor.setOrganizationId("one");
+        assertThrows(AccessDeniedException.class,
+                () -> service.createForOrganization("newuser", "a@example.com", "USER", "two"));
+        assertThrows(AccessDeniedException.class,
+                () -> service.createForOrganization("newuser", "a@example.com", "USER", null));
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createForOrganization("newuser", "a@example.com", "SUPER_ADMIN", "one"));
+        actor.setRoleId(Role.USER.getId());
+        assertThrows(AccessDeniedException.class,
+                () -> service.createForOrganization("newuser", "a@example.com", "USER", "one"));
+        actor.setRoleId(Role.ADMIN.getId());
+        actor.setEnabled(false);
+        assertThrows(AccessDeniedException.class,
+                () -> service.createForOrganization("newuser", "a@example.com", "USER", "one"));
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void superAdminOrganizationCreateRequiresExistingShul() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createForOrganization("newuser", "a@example.com", "USER", "missing"));
+        assertEquals(Set.of("two"),
+                service.createForOrganization("newuser", "a@example.com", "MANAGER", "two").getAccessibleOrganizationIds());
+    }
+
+    @Test
+    void accountSettingsScopeCoversPeersButNotSuperAdminsOrBroaderScopes() {
+        TNMUser manager = user("manager", "one", Role.ADMIN);
+        TNMUser peer = user("peer", "one", Role.ADMIN);
+        TNMUser plain = user("plain", "one", Role.USER);
+        TNMUser broader = user("broader", "one", Role.ADMIN);
+        broader.getAdditionalOrganizationIds().add("two");
+        TNMUser otherShul = user("other", "two", Role.USER);
+
+        assertTrue(manager.canManageAccount(manager));
+        assertTrue(manager.canManageAccount(peer));
+        assertTrue(manager.canManageAccount(plain));
+        assertFalse(manager.canManageAccount(actor));
+        assertFalse(manager.canManageAccount(broader));
+        assertFalse(manager.canManageAccount(otherShul));
+        assertFalse(plain.canManageAccount(peer));
+        assertFalse(plain.canManageAccount(user("plain2", "one", Role.USER)));
+        assertTrue(plain.canManageAccount(plain));
+        assertTrue(actor.canManageAccount(broader));
+        manager.setEnabled(false);
+        assertFalse(manager.canManageAccount(peer));
+    }
+
     private TNMUser user(String id, String org, Role role) {
         return TNMUser.builder().id(id).username(id).email(id + "@example.com")
                 .organizationId(org).roleId(role.getId()).build();

@@ -51,6 +51,34 @@ public class UserManagementService {
         return repository.save(target);
     }
 
+    /**
+     * Creates a User or Manager scoped to a single shul from that shul's organization page.
+     * Super admins may use any existing shul; Managers only a shul they manage. Super admin
+     * access cannot be granted here.
+     */
+    @Transactional
+    public TNMUser createForOrganization(String username, String email, String access, String organizationId) {
+        TNMUser actor = users.getCurrentUser();
+        if (actor == null || actor.isDisabled() || !actor.isAdmin()) {
+            throw new AccessDeniedException("You do not have permission to create an account.");
+        }
+        if (!actor.canAccessOrganization(organizationId)) {
+            throw new AccessDeniedException("You do not have permission to create an account for this shul.");
+        }
+        if (!"USER".equals(access) && !"MANAGER".equals(access)) {
+            throw new IllegalArgumentException("Choose User or Manager.");
+        }
+        if (organizations.findById(organizationId).isEmpty()) {
+            throw new IllegalArgumentException("Select an existing shul.");
+        }
+        TNMUser target = TNMUser.builder().id(IDGenerator.generateID('A'))
+                // Deliberately unusable by BCrypt; initial access is through an emailed link.
+                .encryptedPassword("!PASSWORDLESS").build();
+        updateProfile(target, username, email);
+        assignAccess(target, access, Set.of(organizationId));
+        return repository.save(target);
+    }
+
     @Transactional
     public UserUpdateResult update(String id, String email, String access, Set<String> organizationIds) {
         TNMUser actor = requireSuperAdmin();

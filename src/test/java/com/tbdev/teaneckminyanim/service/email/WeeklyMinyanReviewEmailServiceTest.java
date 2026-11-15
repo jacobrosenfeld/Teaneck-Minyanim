@@ -160,6 +160,15 @@ class WeeklyMinyanReviewEmailServiceTest {
     }
 
     @Test
+    void sundaySendCoversTheWeekStartingThatDay() {
+        WeeklyMinyanReviewEmailService.DateRange range =
+                service.upcomingSundayThroughSaturday(LocalDate.of(2026, 11, 15));
+
+        assertEquals(LocalDate.of(2026, 11, 15), range.startDate());
+        assertEquals(LocalDate.of(2026, 11, 21), range.endDate());
+    }
+
+    @Test
     void refreshesImportsAndMaterializedEventsBeforeSendingScheduledDigest() {
         when(userService.getWeeklyMinyanReviewEmailRecipients())
                 .thenReturn(List.of(user("A0", "super", null, Role.ADMIN)));
@@ -186,6 +195,51 @@ class WeeklyMinyanReviewEmailServiceTest {
         assertFalse(result.refreshSucceeded());
         assertEquals("import failed", result.refreshError());
         verifyNoInteractions(emailService);
+    }
+
+    @Test
+    void scheduledSendIsSkippedWhenDisabledBySetting() {
+        when(settingsService.isWeeklyReviewEmailEnabled()).thenReturn(false);
+
+        WeeklyMinyanReviewEmailService.WeeklyMinyanReviewSendResult result =
+                service.sendScheduledWeeklyReviewEmails();
+
+        assertTrue(result.disabledBySetting());
+        assertEquals(0, result.sentCount());
+        assertEquals(0, result.recipientCount());
+        verify(userService, never()).getWeeklyMinyanReviewEmailRecipients();
+        verifyNoInteractions(emailService, calendarImportService, materializationService);
+    }
+
+    @Test
+    void scheduledSendRunsWhenEnabledBySetting() {
+        when(settingsService.isWeeklyReviewEmailEnabled()).thenReturn(true);
+        when(userService.getWeeklyMinyanReviewEmailRecipients())
+                .thenReturn(List.of(user("A0", "super", null, Role.ADMIN)));
+        when(organizationService.getAll()).thenReturn(List.of());
+        when(calendarImportService.importAllEnabledOrganizations()).thenReturn(Map.of());
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(EmailProvider.SMTP, "sent"));
+
+        WeeklyMinyanReviewEmailService.WeeklyMinyanReviewSendResult result =
+                service.sendScheduledWeeklyReviewEmails();
+
+        assertFalse(result.disabledBySetting());
+        assertEquals(1, result.sentCount());
+        verify(materializationService).materializeAll();
+        verify(emailService).send(any());
+    }
+
+    @Test
+    void weeklyDigestTestStillSendsWhenScheduledEmailsAreDisabled() {
+        when(settingsService.isWeeklyReviewEmailEnabled()).thenReturn(false);
+        when(organizationService.getAll()).thenReturn(List.of(organization("org-a", "Congregation A", true)));
+        when(emailService.send(any())).thenReturn(EmailSendResult.success(EmailProvider.SMTP, "sent"));
+
+        WeeklyMinyanReviewEmailService.WeeklyMinyanReviewTestSendResult result =
+                service.sendWeeklyReviewTestEmail(user("A0", "super", null, Role.ADMIN), false, LocalDate.of(2026, 9, 5));
+
+        assertTrue(result.success());
+        verify(emailService).send(any());
     }
 
     @Test

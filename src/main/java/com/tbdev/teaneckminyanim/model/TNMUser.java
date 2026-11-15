@@ -54,6 +54,20 @@ public class TNMUser {
         return isEnabled() && id != null && (isSuperAdmin() || getAccessibleOrganizationIds().contains(id));
     }
 
+    /**
+     * Account Settings scope. Anyone may manage their own account and super admins may manage any account.
+     * A Manager may manage Users and fellow Managers only when they manage every shul assigned to that
+     * account, so account-wide changes never reach a shul outside the Manager's scope. Super admin
+     * accounts are never manageable by scoped accounts.
+     */
+    public boolean canManageAccount(TNMUser target) {
+        if (target == null || isDisabled()) return false;
+        if (isSuperAdmin() || (getId() != null && getId().equals(target.getId()))) return true;
+        Set<String> targetScope = target.getAccessibleOrganizationIds();
+        return isAdmin() && !target.isSuperAdmin() && !targetScope.isEmpty()
+                && getAccessibleOrganizationIds().containsAll(targetScope);
+    }
+
     @Column(name = "ROLE_ID")
     private Integer roleId;
 

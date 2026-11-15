@@ -475,7 +475,7 @@
                 <a class="settings-tab" th:if="${user.isSuperAdmin()}" href="#permissions">Permissions</a>
                 <a class="settings-tab" href="#notifications">Notifications</a>
                 <a class="settings-tab" href="#access">Access</a>
-                <a class="settings-tab" th:if="${user.isAdmin()}" href="#account-status">Status</a>
+                <a class="settings-tab" th:if="${user.isAdmin() and user.id != queriedaccount.id}" href="#account-status">Status</a>
             </nav>
 
             <section class="settings-section" id="security">
@@ -630,7 +630,7 @@
                     <div class="account-field-row">
                         <div>
                             <label for="weekly-minyan-review-emails-enabled" class="field-label">Weekly minyan review</label>
-                            <p class="field-description">Send the Saturday-night schedule review email with override links.</p>
+                            <p class="field-description">Send the weekly schedule review email with override links.</p>
                         </div>
                         <div class="form-check-modern" style="margin-bottom: 0;">
                             <input id="weekly-minyan-review-emails-enabled"
@@ -700,7 +700,7 @@
                 </div>
             </section>
 
-            <section class="settings-section" id="account-status" th:if="${user.isAdmin()}">
+            <section class="settings-section" id="account-status" th:if="${user.isAdmin() and user.id != queriedaccount.id}">
                 <div class="section-copy">
                     <h2 class="section-title">
                         <i class="fas fa-user-lock"></i>

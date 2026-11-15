@@ -7,6 +7,7 @@ import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
+import com.tbdev.teaneckminyanim.service.email.WeeklyMinyanReviewEmailScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -36,6 +42,7 @@ public class EmailSettingsController {
     private final TNMUserService userService;
     private final OrganizationService organizationService;
     private final VersionService versionService;
+    private final WeeklyMinyanReviewEmailScheduler weeklyReviewScheduler;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -89,6 +96,9 @@ public class EmailSettingsController {
 
             settingsService.updateSetting(key, settingValue);
             log.info("Email setting updated: {} by user {}", key.getKey(), user.getUsername());
+            if (key == SettingKey.EMAIL_WEEKLY_REVIEW_DAY || key == SettingKey.EMAIL_WEEKLY_REVIEW_TIME) {
+                weeklyReviewScheduler.reschedule();
+            }
             return ResponseEntity.ok(FieldUpdateResponse.success(
                     key.getKey(),
                     displayValue(key),
@@ -117,6 +127,20 @@ public class EmailSettingsController {
                                         new SettingOption("", "Disabled"),
                                         new SettingOption("SMTP", "SMTP"),
                                         new SettingOption("SES", "AWS SES"))))),
+                new EmailSettingSection(
+                        "weekly-review",
+                        "Weekly Review Emails",
+                        "Control when the automatic minyan review digest is sent from this server.",
+                        "fa-calendar-week",
+                        List.of(
+                                field(
+                                        SettingKey.EMAIL_WEEKLY_REVIEW_ENABLED,
+                                        "select",
+                                        List.of(
+                                                new SettingOption("true", "Enabled"),
+                                                new SettingOption("false", "Disabled"))),
+                                field(SettingKey.EMAIL_WEEKLY_REVIEW_DAY, "select", dayOptions()),
+                                field(SettingKey.EMAIL_WEEKLY_REVIEW_TIME, "time"))),
                 new EmailSettingSection(
                         "sender",
                         "Sender Defaults",
@@ -188,7 +212,30 @@ public class EmailSettingsController {
         if (value == null || value.isBlank()) {
             return "Not set";
         }
+        try {
+            if (key == SettingKey.EMAIL_WEEKLY_REVIEW_DAY) {
+                return dayLabel(DayOfWeek.valueOf(value.trim().toUpperCase(Locale.ROOT)));
+            }
+            if (key == SettingKey.EMAIL_WEEKLY_REVIEW_TIME) {
+                return LocalTime.parse(value.trim()).format(DateTimeFormatter.ofPattern("h:mm a", Locale.US));
+            }
+        } catch (RuntimeException e) {
+            return value;
+        }
         return key.maskValue(value);
+    }
+
+    private static List<SettingOption> dayOptions() {
+        List<SettingOption> options = new ArrayList<>();
+        DayOfWeek day = DayOfWeek.SUNDAY;
+        for (int i = 0; i < 7; i++, day = day.plus(1)) {
+            options.add(new SettingOption(day.name(), dayLabel(day)));
+        }
+        return options;
+    }
+
+    private static String dayLabel(DayOfWeek day) {
+        return day.getDisplayName(TextStyle.FULL, Locale.US);
     }
 
     private boolean isEmailSetting(SettingKey key) {

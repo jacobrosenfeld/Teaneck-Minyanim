@@ -15,7 +15,7 @@ The primary `ACCOUNT.ORGANIZATION_ID` remains the default landing shul. Addition
 
 The shul switcher, organization account lists, schedule/location/calendar/override access, and scheduled weekly digest delivery honor the assignments. Scheduled digests send one email per assigned enabled shul. Super admins can select a shul in the manual weekly digest test.
 
-Only super admins assign permissions or reset another account’s sign-in credentials. Managers may maintain ordinary users only when they manage **all** of that user's shuls, and may not maintain other managers. Disabling/deleting oneself or removing one's own super-admin role is blocked. Disabled/deleted users and stale-role sessions are logged out on their next request; shul access is checked against current database assignments.
+Only super admins assign permissions, grant Super admin, delete Manager accounts, or reset another account’s sign-in credentials. Starting with #289, Managers may create Users or Managers for a shul they manage from its organization page (a welcome email is sent automatically), and may maintain Users and fellow Managers only when they manage **all** of that account's shuls. Super admin accounts are never manageable by Managers. Disabling/deleting oneself or removing one's own super-admin role is blocked. Disabled/deleted users and stale-role sessions are logged out on their next request; shul access is checked against current database assignments.
 
 Browser mutations require CSRF tokens across the application. Legacy enable, disable, delete, logout, and minyan creation routes are POST-only; only the stateless public API and newsletter subscription endpoints are excluded from CSRF.
 
