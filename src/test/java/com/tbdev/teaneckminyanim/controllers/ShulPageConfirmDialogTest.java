@@ -173,6 +173,50 @@ class ShulPageConfirmDialogTest {
     }
 
     @Test
+    void otherRdHandlersIgnoreOffSiteTargetsAndKeepTheirDefaults() throws Exception {
+        TNMUserService users = mock(TNMUserService.class);
+        TNMUser manager = account("actor", "shulmanager", Role.ADMIN);
+        TNMUser peer = account("peer", "peermanager", Role.USER);
+        when(users.findByName("shulmanager")).thenReturn(manager);
+        when(users.findById("peer")).thenReturn(peer);
+        when(users.update(any())).thenReturn(true);
+        signIn("shulmanager");
+
+        AdminController controller = adminController(users);
+        com.tbdev.teaneckminyanim.service.OrganizationService organizations =
+                mock(com.tbdev.teaneckminyanim.service.OrganizationService.class);
+        Organization one = new Organization();
+        one.setId("one");
+        one.setName("Shul One");
+        when(organizations.findById("one")).thenReturn(java.util.Optional.of(one));
+        ReflectionTestUtils.setField(controller, "organizationService", organizations);
+        MockMvc mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setSingleView(new org.springframework.web.servlet.view.AbstractView() {
+                    @Override
+                    protected void renderMergedOutputModel(java.util.Map<String, Object> model,
+                                                           jakarta.servlet.http.HttpServletRequest request,
+                                                           jakarta.servlet.http.HttpServletResponse response) {
+                    }
+                })
+                .build();
+
+        for (String path : List.of("/admin/enable-organization", "/admin/disable-organization")) {
+            mvc.perform(post(path).param("id", "one").param("rd", "https://evil.example/admin"))
+                    .andExpect(redirectedUrl("/admin/organization?id=one"));
+            mvc.perform(post(path).param("id", "one").param("rd", "//evil.example"))
+                    .andExpect(redirectedUrl("/admin/organization?id=one"));
+            mvc.perform(post(path).param("id", "one").param("rd", "/admin/organizations"))
+                    .andExpect(redirectedUrl("/admin/organizations"));
+        }
+
+        var enabled = mvc.perform(post("/admin/account/enable").param("id", "peer").param("rd", "//evil.example"))
+                .andExpect(status().isOk()).andReturn();
+        assertEquals("account", enabled.getModelAndView().getViewName());
+        mvc.perform(post("/admin/account/enable").param("id", "peer").param("rd", "/admin/organization?id=one"))
+                .andExpect(redirectedUrl("/admin/organization?id=one"));
+    }
+
+    @Test
     void safeAdminRedirectAcceptsOnlyAdminPaths() {
         assertEquals("/admin/organization?id=one", AdminController.safeAdminRedirect("/admin/organization?id=one"));
         assertEquals("/admin/accounts", AdminController.safeAdminRedirect(" /admin/accounts "));

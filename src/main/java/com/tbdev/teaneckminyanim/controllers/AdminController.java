@@ -987,7 +987,8 @@ public class AdminController {
         organization.get().setEnabled(false);
         this.organizationService.update(organization.get());
 
-        RedirectView redirectView = new RedirectView(redirect != null ? redirect : "/admin/organization?id=" + id, true);
+        String safeRedirect = safeAdminRedirect(redirect);
+        RedirectView redirectView = new RedirectView(safeRedirect != null ? safeRedirect : "/admin/organization?id=" + id, true);
         return new ModelAndView(redirectView);
     }
 
@@ -1006,7 +1007,8 @@ public class AdminController {
         organization.get().setEnabled(true);
         this.organizationService.update(organization.get());
 
-        RedirectView redirectView = new RedirectView(redirect != null ? redirect : "/admin/organization?id=" + id, true);
+        String safeRedirect = safeAdminRedirect(redirect);
+        RedirectView redirectView = new RedirectView(safeRedirect != null ? safeRedirect : "/admin/organization?id=" + id, true);
         return new ModelAndView(redirectView);
     }
 
@@ -1181,9 +1183,9 @@ public class AdminController {
         account.setEnabled(true);
         this.TNMUserDAO.update(account);
 
-        if (redirect != null) {
-            RedirectView redirectView = new RedirectView(redirect, true);
-            return new ModelAndView(redirectView);
+        String safeRedirect = safeAdminRedirect(redirect);
+        if (safeRedirect != null) {
+            return new ModelAndView(new RedirectView(safeRedirect, true));
         }
 
         return account(id, "Account enabled successfully.", null, null);
@@ -1825,8 +1827,9 @@ public class AdminController {
         calendarMaterializationService.syncRulesForOrganizationLive(minyan.getOrganizationId());
 
         ModelAndView mv = new ModelAndView();
-        if (rd != null) {
-            mv.setViewName("redirect:" + rd);
+        String safeRedirect = safeAdminRedirect(rd);
+        if (safeRedirect != null) {
+            mv.setViewName("redirect:" + safeRedirect);
         } else {
             mv.setViewName("redirect:/admin/" + minyan.getOrganizationId() + "/minyanim");
         }
@@ -1850,8 +1853,9 @@ public class AdminController {
         calendarMaterializationService.syncRulesForOrganizationLive(minyan.getOrganizationId());
 
         ModelAndView mv = new ModelAndView();
-        if (rd != null) {
-            mv.setViewName("redirect:" + rd);
+        String safeRedirect = safeAdminRedirect(rd);
+        if (safeRedirect != null) {
+            mv.setViewName("redirect:" + safeRedirect);
         } else {
             mv.setViewName("redirect:/admin/" + minyan.getOrganizationId() + "/minyanim");
         }

@@ -184,9 +184,10 @@ class UserManagementWebTest {
         assertTrue(html.contains("href=\"/admin/account?id=peer\""));
         assertTrue(html.contains("href=\"/admin/account?id=actor\""));
         assertFalse(html.contains("href=\"/admin/account?id=broader\""));
-        assertFalse(html.contains("#disable-account-modal-actor"));
-        assertTrue(html.contains("#disable-account-modal-peer"));
-        assertFalse(html.contains("#disable-account-modal-broader"));
+        // Disable uses the shared confirm dialog (#303); the form only renders for manageable non-self rows.
+        assertFalse(html.contains("id=\"disable-account-form-actor\""));
+        assertTrue(html.contains("id=\"disable-account-form-peer\""));
+        assertFalse(html.contains("id=\"disable-account-form-broader\""));
         // Each row's chip must reflect that row's account, not the signed-in viewer (a Manager here).
         assertEquals(2, html.split("role-chip-manager\"", -1).length - 1);
         assertEquals(1, html.split("role-chip-user\"", -1).length - 1);
