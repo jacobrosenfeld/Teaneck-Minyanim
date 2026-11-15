@@ -218,7 +218,7 @@ public class WeeklyMinyanReviewEmailService {
     }
 
     public DateRange upcomingSundayThroughSaturday(LocalDate referenceDate) {
-        LocalDate start = referenceDate.with(TemporalAdjusters.next(DayOfWeek.SUNDAY));
+        LocalDate start = referenceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
         return new DateRange(start, start.plusDays(6));
     }
 

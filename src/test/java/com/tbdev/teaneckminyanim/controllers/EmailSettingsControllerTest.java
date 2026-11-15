@@ -7,6 +7,7 @@ import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
+import com.tbdev.teaneckminyanim.service.email.WeeklyMinyanReviewEmailScheduler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,7 @@ class EmailSettingsControllerTest {
     private ApplicationSettingsService settingsService;
     private TNMUserService userService;
     private EmailSettingsController controller;
+    private WeeklyMinyanReviewEmailScheduler weeklyReviewScheduler;
 
     @BeforeEach
     void setUp() {
@@ -51,7 +53,10 @@ class EmailSettingsControllerTest {
         lenient().when(organizationService.getAll()).thenReturn(List.of());
         lenient().when(versionService.getVersion()).thenReturn("test-version");
 
-        controller = new EmailSettingsController(settingsService, userService, organizationService, versionService);
+        weeklyReviewScheduler = mock(WeeklyMinyanReviewEmailScheduler.class);
+
+        controller = new EmailSettingsController(
+                settingsService, userService, organizationService, versionService, weeklyReviewScheduler);
     }
 
     @AfterEach
@@ -101,6 +106,25 @@ class EmailSettingsControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(settingsService).updateSetting(SettingKey.EMAIL_PROVIDER, "SMTP");
+        verify(weeklyReviewScheduler, never()).reschedule();
+    }
+
+    @Test
+    void savingWeeklyReviewDayOrTimeReschedulesTheWeeklyEmail() throws Exception {
+        authenticate("super");
+        when(userService.findByName("super")).thenReturn(user("super", null, Role.ADMIN));
+        when(settingsService.getString(SettingKey.EMAIL_WEEKLY_REVIEW_DAY)).thenReturn("SUNDAY");
+        when(settingsService.getString(SettingKey.EMAIL_WEEKLY_REVIEW_TIME)).thenReturn("08:30");
+
+        ResponseEntity<EmailSettingsController.FieldUpdateResponse> day =
+                controller.updateField(SettingKey.EMAIL_WEEKLY_REVIEW_DAY.getKey(), "SUNDAY");
+        ResponseEntity<EmailSettingsController.FieldUpdateResponse> time =
+                controller.updateField(SettingKey.EMAIL_WEEKLY_REVIEW_TIME.getKey(), "08:30");
+
+        assertEquals(HttpStatus.OK, day.getStatusCode());
+        assertEquals("Sunday", day.getBody().displayValue());
+        assertEquals("8:30 AM", time.getBody().displayValue());
+        verify(weeklyReviewScheduler, org.mockito.Mockito.times(2)).reschedule();
     }
 
     @Test
