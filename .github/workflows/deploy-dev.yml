@@ -1,8 +1,19 @@
 name: Deploy to dev
+run-name: Deploy ${{ inputs.ref || github.ref_name }} to dev
 
 on:
   push:
     branches: [dev]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag, or commit SHA to deploy to the dev site
+        required: true
+        default: dev
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -13,6 +24,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
 
       - uses: actions/setup-java@v4
         with:
