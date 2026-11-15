@@ -77,12 +77,6 @@
             text-align: center;
         }
 
-        .override-row-actions {
-            display: flex;
-            gap: var(--space-2);
-            flex-wrap: wrap;
-        }
-
         .overrides-table {
             width: 100%;
             border-collapse: separate;
@@ -92,7 +86,7 @@
         }
 
         .overrides-table th {
-            padding: var(--space-3) var(--space-4);
+            padding: var(--space-3) 10px;
             text-align: left;
             font-size: var(--font-size-xs);
             font-weight: var(--font-weight-semibold);
@@ -105,9 +99,28 @@
         }
 
         .overrides-table td {
-            padding: var(--space-3) var(--space-4);
+            padding: var(--space-2) 10px;
             border-bottom: 1px solid var(--border-color-light);
             vertical-align: middle;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .overrides-table form {
+            margin: 0;
+        }
+
+        .cell-truncate {
+            display: inline-block;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: bottom;
+        }
+
+        .cell-truncate-sm {
+            max-width: 140px;
         }
 
         .overrides-table tbody tr {
@@ -380,7 +393,7 @@
                 </thead>
                 <tbody>
                 <tr th:each="event : ${manualEvents}" th:classappend="${!event.enabled} ? 'row-disabled' : ''">
-                    <td th:text="${#temporals.format(event.date, 'EEE, MMM d, yyyy')}">Date</td>
+                    <td th:text="${#temporals.format(event.date, 'EEE, MMM d')}" th:title="${#temporals.format(event.date, 'EEEE, MMMM d, yyyy')}">Date</td>
                     <td th:text="${#temporals.format(event.startTime, 'h:mm a')}">Time</td>
                     <td>
                         <span class="type-badge"
@@ -398,8 +411,12 @@
                             Mode
                         </span>
                     </td>
-                    <td th:text="${event.locationName != null and !#strings.isEmpty(event.locationName) ? event.locationName : '—'}">Location</td>
-                    <td th:text="${event.notes != null and !#strings.isEmpty(event.notes) ? event.notes : '—'}">Notes</td>
+                    <td><span class="cell-truncate cell-truncate-sm"
+                              th:with="loc=${event.locationName != null and !#strings.isEmpty(event.locationName) ? event.locationName : '—'}"
+                              th:text="${loc}" th:title="${loc}">Location</span></td>
+                    <td><span class="cell-truncate"
+                              th:with="note=${event.notes != null and !#strings.isEmpty(event.notes) ? event.notes : '—'}"
+                              th:text="${note}" th:title="${note}">Notes</span></td>
                     <td>
                         <span class="status-badge"
                               th:classappend="${event.enabled} ? 'status-enabled' : 'status-disabled'"
@@ -408,19 +425,21 @@
                         </span>
                     </td>
                     <td>
-                        <div class="override-row-actions">
+                        <div class="table-actions table-actions-nowrap">
                             <form method="post"
                                   th:action="@{/admin/{orgId}/overrides/{eventId}/toggle(orgId=${organization.id},eventId=${event.id})}">
-                                <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);"
-                                        th:text="${event.enabled ? 'Disable' : 'Enable'}">
-                                    Disable
+                                <button type="submit" class="btn-modern btn-sm"
+                                        th:classappend="${event.enabled} ? 'btn-warning' : 'btn-success'"
+                                        th:title="${event.enabled ? 'Disable' : 'Enable'}"
+                                        th:aria-label="${event.enabled ? 'Disable override' : 'Enable override'}">
+                                    <i th:class="${event.enabled} ? 'fas fa-pause-circle' : 'fas fa-play-circle'" aria-hidden="true"></i>
                                 </button>
                             </form>
                             <form method="post"
                                   th:action="@{/admin/{orgId}/overrides/{eventId}/delete(orgId=${organization.id},eventId=${event.id})}"
                                   onsubmit="return confirm('Delete this manual override?')">
-                                <button type="submit" class="btn-modern btn-secondary" style="padding: var(--space-1) var(--space-3);">
-                                    Delete
+                                <button type="submit" class="btn-modern btn-sm btn-danger" title="Delete" aria-label="Delete override">
+                                    <i class="fas fa-trash" aria-hidden="true"></i>
                                 </button>
                             </form>
                         </div>
