@@ -178,10 +178,17 @@ mvn test
 
 | Branch | Auto-deploy | Purpose |
 |--------|-------------|---------|
-| `main` | Yes → production | Stable releases only. Merge PRs here when ready to ship. |
-| `dev`  | Yes → dev site | Live testing environment. Merge feature branches here to verify changes against a real server before promoting to `main`. |
+| `main` | Yes → production | Stable releases only. Feature PRs target `main` and merge only once approved. |
+| `dev`  | Yes → dev site | Shared test slot. Pushing to `dev` still auto-deploys, but feature work is tested on dev **without** merging (see below). |
+| `test/*` | No (deploy manually) | Throwaway combined branches for testing several open PRs together. Never merged. |
 
-**Not every commit needs to go through `dev`.** Most work can stay on feature branches and be reviewed/tested locally. Only merge to `dev` when you want to verify something live (e.g., server-specific behavior, deploy pipeline, or integration testing). When satisfied, open a PR from the feature branch directly to `main` (or promote `dev` → `main`).
+**Testing flow (PRs stay open while testing):**
+1. Open feature PRs against **`main`**. Never open a feature PR against `dev` just to test it, because merging it closes the PR.
+2. To test a branch live, run the **Deploy to dev** workflow manually (Actions → Deploy to dev → Run workflow) and enter the branch name in `ref`. The dev site then runs that branch; nothing is merged.
+3. To test several open PRs at once, create `test/<name>` from `main`, merge the PR branches into it, and deploy that ref. Fix problems on the original feature branch, then rebuild the `test/*` branch. Delete it when done.
+4. Review feedback goes on the open PR, and fixes are pushed to the same branch. Merge to `main` once approved.
+
+**Caveats:** dev is a single server, so only one ref is live at a time, and the most recent deploy wins (including an automatic deploy from a push to `dev`). The dev database is shared and Hibernate `ddl-auto=update` keeps any columns or tables a branch added after you switch away. That's harmless for additive changes, but avoid deploying branches with destructive schema changes to dev without a plan.
 
 ## Important Context
 - **Deprecated Code**: `TimeRule` contains TODOs about deprecated Java Date methods
