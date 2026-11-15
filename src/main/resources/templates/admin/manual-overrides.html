@@ -436,9 +436,15 @@
                                 </button>
                             </form>
                             <form method="post"
-                                  th:action="@{/admin/{orgId}/overrides/{eventId}/delete(orgId=${organization.id},eventId=${event.id})}"
-                                  onsubmit="return confirm('Delete this manual override?')">
-                                <button type="submit" class="btn-modern btn-sm btn-danger" title="Delete" aria-label="Delete override">
+                                  th:action="@{/admin/{orgId}/overrides/{eventId}/delete(orgId=${organization.id},eventId=${event.id})}">
+                                <button type="button" class="btn-modern btn-sm btn-danger" title="Delete" aria-label="Delete override"
+                                        data-confirm
+                                        data-confirm-title="Delete manual override?"
+                                        data-confirm-message="This removes the manual override from the calendar. Minyanim from rules or imports for that day are not deleted."
+                                        data-confirm-label="Delete override"
+                                        data-confirm-severity="danger"
+                                        data-confirm-icon="fa-trash"
+                                        th:data-confirm-detail="${event.minyanType.displayName() + ' · ' + #temporals.format(event.date, 'EEE, MMM d, yyyy') + ' · ' + #temporals.format(event.startTime, 'h:mm a')}">
                                     <i class="fas fa-trash" aria-hidden="true"></i>
                                 </button>
                             </form>
@@ -454,5 +460,8 @@
         </div>
     </div>
 </div>
+<th:block layout:fragment="modals">
+    <th:block th:replace="~{admin/fragments/confirm-modal :: confirmModal}"></th:block>
+</th:block>
 </body>
 </html>
