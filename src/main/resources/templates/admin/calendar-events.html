@@ -357,8 +357,13 @@
             <span>Manage Calendar Entries</span>
         </a>
         <form method="post" th:action="@{/admin/{orgId}/calendar-events/rematerialize(orgId=${organization.id})}"
-              style="display: inline;" onsubmit="return confirm('Rematerialize calendar events for this shul?')">
-            <button type="submit" class="btn-modern btn-secondary">
+              style="display: inline;">
+            <button type="button" class="btn-modern btn-secondary"
+                    data-confirm data-confirm-severity="primary" data-confirm-icon="fa-sync-alt"
+                    data-confirm-title="Rematerialize calendar events?"
+                    data-confirm-message="Rule-based events for this shul are rebuilt. Imported and manual events are kept."
+                    data-confirm-label="Rematerialize"
+                    th:data-confirm-detail="${organization.name}">
                 <i class="fas fa-sync-alt"></i>
                 <span>Rematerialize</span>
             </button>

@@ -353,10 +353,13 @@
                th:text="|Materialized calendar events across all shuls on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
         </div>
         <div class="page-actions">
-            <form method="post" action="/admin/calendar-events/rematerialize-all"
-                  style="display: inline;"
-                  onsubmit="return confirm('Rematerialize calendar events for ALL shuls? This may take a moment.')">
-                <button type="submit" class="btn-modern btn-secondary">
+            <form method="post" th:action="@{/admin/calendar-events/rematerialize-all}"
+                  style="display: inline;">
+                <button type="button" class="btn-modern btn-secondary"
+                        data-confirm data-confirm-severity="primary" data-confirm-icon="fa-sync-alt"
+                        data-confirm-title="Rematerialize all shuls?"
+                        data-confirm-message="Rule-based calendar events are rebuilt for every shul. Imported and manual events are kept. This may take a moment."
+                        data-confirm-label="Rematerialize all">
                     <i class="fas fa-sync-alt"></i>
                     <span>Rematerialize All</span>
                 </button>
@@ -562,9 +565,13 @@
                             <form th:if="${event.source.name() == 'MANUAL'}"
                                   method="post"
                                   th:action="@{/admin/{orgId}/calendar-events/{eventId}/delete(orgId=${event.organizationId},eventId=${event.id})}"
-                                  style="display: inline;"
-                                  onsubmit="return confirm('Delete this manual event?')">
-                                <button type="submit" class="mc-btn mc-btn-delete">Delete</button>
+                                  style="display: inline;">
+                                <button type="button" class="mc-btn mc-btn-delete"
+                                        data-confirm data-confirm-severity="danger" data-confirm-icon="fa-trash"
+                                        data-confirm-title="Delete this manual event?"
+                                        data-confirm-message="The manual event is removed from the calendar. It cannot be undone."
+                                        data-confirm-label="Delete event"
+                                        th:data-confirm-detail="${event.minyanType.displayName() + ' · ' + #temporals.format(event.date, 'EEE, MMM d, yyyy') + ' · ' + #temporals.format(event.startTime, 'h:mm a')}">Delete</button>
                             </form>
                         </td>
                     </tr>

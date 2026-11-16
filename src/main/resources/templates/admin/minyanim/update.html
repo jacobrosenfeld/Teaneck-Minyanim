@@ -735,7 +735,12 @@
                                             <button type="submit" class="btn btn-primary">Update</button>
                                         </div>
                                         <div class="btn-group ml-auto" role="group">
-                                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#delete-modal">
+                                            <button type="button" class="btn btn-danger"
+                                                    data-confirm data-confirm-form="#delete-minyan-form"
+                                                    data-confirm-severity="danger" data-confirm-icon="fa-trash"
+                                                    data-confirm-title="Delete this minyan?"
+                                                    data-confirm-message="This removes the minyan and its schedule. It cannot be undone."
+                                                    data-confirm-label="Delete minyan">
                                                 Delete Minyan
                                             </button>
                                         </div>
@@ -763,13 +768,16 @@
                 <!--/row-->
 
 <!-- Modals -->
-<div class="modal fade" id="dynamic-time-help-modal" tabindex="-1" aria-labelledby="dynamic-time-help-modal-label" aria-hidden="true">
-        <div class="modal-dialog">
+<div class="modal fade admin-modal admin-modal-lg" id="dynamic-time-help-modal" tabindex="-1" aria-labelledby="dynamic-time-help-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="dynamic-time-help-modal-label">Minyan Times</h5>
+                    <div class="admin-modal-heading">
+                        <span class="admin-modal-icon" aria-hidden="true"><i class="fas fa-circle-info"></i></span>
+                        <h5 class="modal-title" id="dynamic-time-help-modal-label">Minyan times</h5>
+                    </div>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <i class="fas fa-xmark" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -790,34 +798,15 @@
                     </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn-modern btn-outline" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="delete-modal" tabindex="-1" aria-labelledby="delete-modal-label" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="delete-modal-label">Delete this minyan?</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                This action cannot be undone.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <form th:action="@{|/admin/${organization.id}/minyanim/${minyan.id}/delete|}" method="post">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Submitted by the Delete Minyan button through the shared confirm dialog. -->
+<form id="delete-minyan-form" th:action="@{|/admin/${organization.id}/minyanim/${minyan.id}/delete|}" method="post" hidden></form>
 </div>
 
 <div layout:fragment="scripts">

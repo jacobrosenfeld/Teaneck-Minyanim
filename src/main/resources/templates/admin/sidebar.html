@@ -64,14 +64,21 @@
             <div class="admin-sidebar-section" th:if="${user.isSuperAdmin()}">
                 <div class="admin-sidebar-section-title">Shul Actions</div>
             </div>
-            <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and organization.isEnabled()}" href="#"
-               data-toggle="modal" data-target="#disable-organization-modal">
+            <form th:if="${user.isSuperAdmin() and organization.isEnabled()}" th:action="@{/admin/disable-organization}" method="post"
+                  th:with="shulName=${organization.name}">
+                <input type="hidden" name="id" th:value="${organization.id}">
+                <button class="admin-sidebar-link" type="button"
+                        data-confirm data-confirm-severity="danger" data-confirm-icon="fa-ban"
+                        th:data-confirm-title="|Disable ${shulName}?|"
+                        data-confirm-message="Its minyanim stop showing on the site, and sign-in for its accounts is turned off. You can enable the shul again later."
+                        data-confirm-label="Disable shul">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 9l-6 6"/>
                 </svg>
-                <span>Disable Shul</span>
-            </a>
+                    <span>Disable Shul</span>
+                </button>
+            </form>
 
             <form th:if="${user.isSuperAdmin() and !organization.enabled}" th:action="@{/admin/enable-organization}" method="post">
                 <input type="hidden" name="id" th:value="${organization.id}">
@@ -93,14 +100,20 @@
                 <span>Delete Shul</span>
             </a>
 
-            <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and !organization.enabled}"
-               href="#" data-toggle="modal" data-target="#delete-organization-modal"
-               style="color: var(--color-danger, #dc3545);">
+            <form th:if="${user.isSuperAdmin() and !organization.enabled}" th:action="@{/admin/delete-organization}" method="post"
+                  th:with="shulName=${organization.name}">
+                <input type="hidden" name="id" th:value="${organization.id}">
+                <button class="admin-sidebar-link" type="button" style="color: var(--color-danger, #dc3545);"
+                        data-confirm data-confirm-severity="danger" data-confirm-icon="fa-trash"
+                        th:data-confirm-title="|Delete ${shulName}?|"
+                        data-confirm-message="This permanently removes all data for this shul and its accounts. It cannot be undone."
+                        data-confirm-label="Delete shul">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
-                <span>Delete Shul</span>
-            </a>
+                    <span>Delete Shul</span>
+                </button>
+            </form>
             
             <div class="admin-sidebar-divider"></div>
         </div>
@@ -232,52 +245,6 @@
         </button>
         </form>
     </nav>
-</div>
-
-<div th:if="${organization != null}" class="modal fade" id="disable-organization-modal" tabindex="-1" aria-labelledby="disable-organization-modal-label" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="disable-organization-modal-label" th:text="${'Disable ' + organization.name + '?'}"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Do you want to disable this shul's data from being shown on the site? Its login access will also be disabled.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                <form th:action="@{/admin/disable-organization}" method="post">
-                    <input type="hidden" name="id" th:value="${organization.id}">
-                    <button type="submit" class="btn btn-warning">Disable</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div th:if="${organization != null}" class="modal fade" id="delete-organization-modal" tabindex="-1" aria-labelledby="delete-organization-modal-label" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="delete-organization-modal-label" th:text="${'Delete ' + organization.name + '?'}"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                This will permanently remove all data for this shul and its accounts. This action cannot be undone.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                <form th:action="@{/admin/delete-organization}" method="post">
-                    <input type="hidden" name="id" th:value="${organization.id}">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script>

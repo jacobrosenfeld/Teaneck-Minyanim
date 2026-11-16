@@ -19,11 +19,12 @@ class AdminShulWordingTemplateTest {
 
     private static final Path TEMPLATES = Path.of("src/main/resources/templates");
 
-    /** "Organization(s)" as a visible word: between tags, or as placeholder/title/confirm text. */
+    /** "Organization(s)" as a visible word: between tags, or as placeholder/title/confirm-dialog text. */
     private static final Pattern VISIBLE_ORGANIZATION = Pattern.compile(
             ">\\s*[^<>]*\\b[Oo]rgani[sz]ations?\\b[^<>${}]*<"
                     + "|(placeholder|title)=\"[^\"]*\\b[Oo]rgani[sz]ations?\\b"
-                    + "|confirm\\('[^']*\\b[Oo]rgani[sz]ations?\\b");
+                    + "|confirm\\('[^']*\\b[Oo]rgani[sz]ations?\\b"
+                    + "|(?<!th:)data-confirm-[a-z]+=\"[^\"]*\\b[Oo]rgani[sz]ations?\\b");
 
     private static String read(String relative) throws IOException {
         String html = Files.readString(TEMPLATES.resolve(relative));
@@ -65,7 +66,8 @@ class AdminShulWordingTemplateTest {
         String sidebar = read("admin/sidebar.html");
         assertTrue(sidebar.contains("@{/admin/organizations}"));
         assertTrue(sidebar.contains("@{/admin/new-organization}"));
-        assertTrue(sidebar.contains("data-target=\"#delete-organization-modal\""));
+        assertTrue(sidebar.contains("@{/admin/disable-organization}"));
+        assertTrue(sidebar.contains("@{/admin/delete-organization}"));
 
         String allEvents = read("admin/calendar-events-all.html");
         assertTrue(allEvents.contains("<select name=\"organizationId\">"));

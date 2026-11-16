@@ -377,9 +377,13 @@
                     <span>Refresh</span>
                 </button>
             </form>
-            <form th:action="@{/admin/{orgId}/calendar/reimport-all(orgId=${organization.id})}" method="post"
-                  onsubmit="return confirm('Delete ALL existing entries and reimport from scratch? Manual location edits will be lost.');">
-                <button type="submit" class="btn-modern btn-secondary btn-sm"
+            <form th:action="@{/admin/{orgId}/calendar/reimport-all(orgId=${organization.id})}" method="post">
+                <button type="button" class="btn-modern btn-secondary btn-sm"
+                        data-confirm data-confirm-severity="danger" data-confirm-icon="fa-redo"
+                        data-confirm-title="Reimport all entries?"
+                        data-confirm-message="This deletes ALL existing calendar entries for this shul and reimports them from scratch. Manual location edits will be lost."
+                        data-confirm-label="Reimport all"
+                        th:data-confirm-detail="${organization.name}"
                         th:disabled="${organization.calendar == null or organization.calendar.isEmpty()}">
                     <i class="fas fa-redo"></i>
                     <span>Reimport All</span>

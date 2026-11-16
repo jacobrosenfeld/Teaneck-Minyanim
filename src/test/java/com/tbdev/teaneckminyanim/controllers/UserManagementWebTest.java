@@ -36,9 +36,18 @@ class UserManagementWebTest {
     void accountDialogsUseAdminDesignSystemStyling() throws Exception {
         String template = Files.readString(Path.of("src/main/resources/templates/account.html"));
 
-        assertTrue(template.contains("modal fade account-modal"));
-        assertTrue(template.contains("account-modal-icon danger"));
-        assertTrue(template.contains("account-modal-icon warning"));
+        // Disable, enable and delete confirm through the shared dialog; the password form uses .admin-modal.
+        assertTrue(template.contains("modal fade admin-modal\" id=\"change-password-modal\""));
+        assertTrue(template.contains("admin-modal-heading"));
+        assertFalse(template.contains("account-modal"));
+        assertFalse(template.contains("id=\"disable-account-modal\""));
+        assertFalse(template.contains("id=\"enable-account-modal\""));
+        assertFalse(template.contains("id=\"delete-account-modal\""));
+        assertTrue(template.contains("th:action=\"@{/admin/account/disable}\""));
+        assertTrue(template.contains("th:action=\"@{/admin/account/enable}\""));
+        assertTrue(template.contains("th:action=\"@{/admin/delete-account}\""));
+        assertTrue(template.contains("data-confirm-label=\"Disable account\""));
+        assertTrue(template.contains("data-confirm-label=\"Delete account\""));
         assertTrue(template.contains("modal-dialog modal-dialog-centered"));
         assertTrue(template.contains("btn-modern btn-outline"));
         assertTrue(template.contains("btn-modern btn-danger"));
@@ -184,9 +193,10 @@ class UserManagementWebTest {
         assertTrue(html.contains("href=\"/admin/account?id=peer\""));
         assertTrue(html.contains("href=\"/admin/account?id=actor\""));
         assertFalse(html.contains("href=\"/admin/account?id=broader\""));
-        assertFalse(html.contains("#disable-account-modal-actor"));
-        assertTrue(html.contains("#disable-account-modal-peer"));
-        assertFalse(html.contains("#disable-account-modal-broader"));
+        // Disable uses the shared confirm dialog (#303); the form only renders for manageable non-self rows.
+        assertFalse(html.contains("id=\"disable-account-form-actor\""));
+        assertTrue(html.contains("id=\"disable-account-form-peer\""));
+        assertFalse(html.contains("id=\"disable-account-form-broader\""));
         // Each row's chip must reflect that row's account, not the signed-in viewer (a Manager here).
         assertEquals(2, html.split("role-chip-manager\"", -1).length - 1);
         assertEquals(1, html.split("role-chip-user\"", -1).length - 1);

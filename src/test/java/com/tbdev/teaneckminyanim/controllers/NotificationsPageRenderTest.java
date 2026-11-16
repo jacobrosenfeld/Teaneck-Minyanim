@@ -124,8 +124,13 @@ class NotificationsPageRenderTest {
         assertTrue(html.matches("(?s).*nt-stat-num\">2</div>\\s*<div class=\"nt-stat-label\">Expired.*"));
 
         // Modern modals and inputs, no old inline-styled Bootstrap controls
-        assertTrue(html.contains("modal fade nt-modal\" id=\"createNotificationModal\""));
-        assertTrue(html.contains("modal fade nt-modal\" id=\"editNotificationModal\""));
+        assertTrue(html.contains("modal fade admin-modal admin-modal-lg nt-modal\" id=\"createNotificationModal\""));
+        assertTrue(html.contains("modal fade admin-modal admin-modal-lg nt-modal\" id=\"editNotificationModal\""));
+        // Toggle and delete confirm through the shared dialog, not page-local modals.
+        assertFalse(html.contains("confirmToggleModal"));
+        assertFalse(html.contains("confirmDeleteModal"));
+        assertTrue(html.contains("AdminConfirm.ask"));
+        assertTrue(html.contains("id=\"confirm-modal\""));
         assertFalse(html.contains("class=\"form-control\""));
         assertFalse(html.contains("var(--color-bg-secondary)"));
 

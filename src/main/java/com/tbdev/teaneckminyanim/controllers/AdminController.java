@@ -1003,7 +1003,8 @@ public class AdminController {
         organization.get().setEnabled(false);
         this.organizationService.update(organization.get());
 
-        RedirectView redirectView = new RedirectView(redirect != null ? redirect : "/admin/organization?id=" + id, true);
+        String safeRedirect = safeAdminRedirect(redirect);
+        RedirectView redirectView = new RedirectView(safeRedirect != null ? safeRedirect : "/admin/organization?id=" + id, true);
         return new ModelAndView(redirectView);
     }
 
@@ -1022,7 +1023,8 @@ public class AdminController {
         organization.get().setEnabled(true);
         this.organizationService.update(organization.get());
 
-        RedirectView redirectView = new RedirectView(redirect != null ? redirect : "/admin/organization?id=" + id, true);
+        String safeRedirect = safeAdminRedirect(redirect);
+        RedirectView redirectView = new RedirectView(safeRedirect != null ? safeRedirect : "/admin/organization?id=" + id, true);
         return new ModelAndView(redirectView);
     }
 
@@ -1104,8 +1106,13 @@ public class AdminController {
             throw new AccessDeniedException("You do not have permission to disable this account.");
         }
 
+        String safeRedirect = safeAdminRedirect(redirect);
+
         TNMUser account = this.TNMUserDAO.findById(id);
         if (account == null) {
+            if (safeRedirect != null) {
+                return redirectWithFlash(safeRedirect, "errorMessage", "Account not found.");
+            }
             return accounts(null, "Account not found.");
         }
 
@@ -1115,14 +1122,64 @@ public class AdminController {
         }
 
         account.setEnabled(false);
-        this.TNMUserDAO.update(account);
+        boolean updated = this.TNMUserDAO.update(account);
 
-        if (redirect != null) {
-            RedirectView redirectView = new RedirectView(redirect, true);
-            return new ModelAndView(redirectView);
+        if (safeRedirect != null) {
+            return updated
+                    ? redirectWithFlash(safeRedirect, "successMessage", "Disabled " + account.getUsername() + ".")
+                    : redirectWithFlash(safeRedirect, "errorMessage", "Sorry, " + account.getUsername() + " could not be disabled.");
         }
 
         return account(id, "Account disabled successfully.", null, null);
+    }
+
+    /**
+     * Returns {@code rd} only when it is a same-site path inside the admin panel, such as
+     * {@code /admin/organization?id=abc}. Absolute URLs, protocol-relative {@code //host} values,
+     * backslashes, control characters and paths outside {@code /admin} return {@code null}, so
+     * callers fall back to their default page instead of redirecting off-site.
+     */
+    static String safeAdminRedirect(String rd) {
+        if (rd == null || rd.isBlank()) {
+            return null;
+        }
+        String candidate = rd.trim();
+        if (!(candidate.equals("/admin") || candidate.startsWith("/admin/") || candidate.startsWith("/admin?"))) {
+            return null;
+        }
+        for (int i = 0; i < candidate.length(); i++) {
+            char c = candidate.charAt(i);
+            if (c == '\\' || Character.isISOControl(c) || Character.isWhitespace(c)) {
+                return null;
+            }
+        }
+        try {
+            URI uri = new URI(candidate);
+            if (uri.getScheme() != null || uri.getRawAuthority() != null) {
+                return null;
+            }
+            String path = uri.getPath();
+            if (path == null || path.contains("/../") || path.endsWith("/..")) {
+                return null;
+            }
+        } catch (URISyntaxException e) {
+            return null;
+        }
+        return candidate;
+    }
+
+    /** Redirects to a path already checked by {@link #safeAdminRedirect} and carries one flash message. */
+    private ModelAndView redirectWithFlash(String safePath, String key, String message) {
+        org.springframework.web.context.request.RequestAttributes attributes =
+                org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        if (attributes instanceof org.springframework.web.context.request.ServletRequestAttributes servletAttributes) {
+            org.springframework.web.servlet.FlashMap flash =
+                    org.springframework.web.servlet.support.RequestContextUtils.getOutputFlashMap(servletAttributes.getRequest());
+            if (flash != null) {
+                flash.put(key, message);
+            }
+        }
+        return new ModelAndView(new RedirectView(safePath, true));
     }
 
     @PostMapping("/admin/account/enable")
@@ -1142,9 +1199,9 @@ public class AdminController {
         account.setEnabled(true);
         this.TNMUserDAO.update(account);
 
-        if (redirect != null) {
-            RedirectView redirectView = new RedirectView(redirect, true);
-            return new ModelAndView(redirectView);
+        String safeRedirect = safeAdminRedirect(redirect);
+        if (safeRedirect != null) {
+            return new ModelAndView(new RedirectView(safeRedirect, true));
         }
 
         return account(id, "Account enabled successfully.", null, null);
@@ -1794,8 +1851,9 @@ public class AdminController {
         calendarMaterializationService.syncRulesForOrganizationLive(minyan.getOrganizationId());
 
         ModelAndView mv = new ModelAndView();
-        if (rd != null) {
-            mv.setViewName("redirect:" + rd);
+        String safeRedirect = safeAdminRedirect(rd);
+        if (safeRedirect != null) {
+            mv.setViewName("redirect:" + safeRedirect);
         } else {
             mv.setViewName("redirect:/admin/" + minyan.getOrganizationId() + "/minyanim");
         }
@@ -1819,8 +1877,9 @@ public class AdminController {
         calendarMaterializationService.syncRulesForOrganizationLive(minyan.getOrganizationId());
 
         ModelAndView mv = new ModelAndView();
-        if (rd != null) {
-            mv.setViewName("redirect:" + rd);
+        String safeRedirect = safeAdminRedirect(rd);
+        if (safeRedirect != null) {
+            mv.setViewName("redirect:" + safeRedirect);
         } else {
             mv.setViewName("redirect:/admin/" + minyan.getOrganizationId() + "/minyanim");
         }

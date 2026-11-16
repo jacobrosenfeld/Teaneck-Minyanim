@@ -509,7 +509,7 @@
                 <tr th:each="event : ${manualEvents}" th:classappend="${!event.enabled} ? 'row-disabled' : ''">
                     <td><span class="cell-truncate cell-truncate-sm"
                               th:with="shul=${orgNames[event.organizationId] ?: event.organizationId}"
-                              th:text="${shul}" th:title="${shul}">Org</span></td>
+                              th:text="${shul}" th:title="${shul}">Shul</span></td>
                     <td th:text="${#temporals.format(event.date, 'EEE, MMM d')}" th:title="${#temporals.format(event.date, 'EEEE, MMMM d, yyyy')}">Date</td>
                     <td th:text="${#temporals.format(event.startTime, 'h:mm a')}">Time</td>
                     <td>
@@ -551,9 +551,15 @@
                                     <i th:class="${event.enabled} ? 'fas fa-pause-circle' : 'fas fa-play-circle'" aria-hidden="true"></i>
                                 </button>
                             </form>
-                            <form method="post" th:action="@{/admin/super/overrides/{eventId}/delete(eventId=${event.id})}"
-                                  onsubmit="return confirm('Delete this manual override?')">
-                                <button type="submit" class="btn-modern btn-sm btn-danger" title="Delete" aria-label="Delete override">
+                            <form method="post" th:action="@{/admin/super/overrides/{eventId}/delete(eventId=${event.id})}">
+                                <button type="button" class="btn-modern btn-sm btn-danger" title="Delete" aria-label="Delete override"
+                                        data-confirm
+                                        data-confirm-title="Delete manual override?"
+                                        data-confirm-message="This removes the manual override from the calendar. Minyanim from rules or imports for that day are not deleted."
+                                        data-confirm-label="Delete override"
+                                        data-confirm-severity="danger"
+                                        data-confirm-icon="fa-trash"
+                                        th:data-confirm-detail="${(orgNames[event.organizationId] ?: event.organizationId) + ' · ' + event.minyanType.displayName() + ' · ' + #temporals.format(event.date, 'EEE, MMM d, yyyy') + ' · ' + #temporals.format(event.startTime, 'h:mm a')}">
                                     <i class="fas fa-trash" aria-hidden="true"></i>
                                 </button>
                             </form>
@@ -569,6 +575,7 @@
         </div>
     </div>
 </div>
+
 
 <th:block layout:fragment="scripts">
 <script>
@@ -719,8 +726,6 @@
             event.preventDefault();
             if (window.showToast) {
                 window.showToast('Please select a shul before saving.', 'warning');
-            } else {
-                alert('Please select a shul before saving.');
             }
             openOrgPicker();
         });

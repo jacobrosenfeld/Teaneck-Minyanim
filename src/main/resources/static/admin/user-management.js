@@ -25,11 +25,6 @@ document.addEventListener('DOMContentLoaded', function () {
             updateScope();
         }
     });
-    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-            if (!window.confirm(form.dataset.confirm)) event.preventDefault();
-        });
-    });
     const createForm = document.querySelector('#new-user [data-open-create-user]');
     if (createForm?.dataset.openCreateUser === 'true') {
         document.getElementById('new-user')?.scrollIntoView();

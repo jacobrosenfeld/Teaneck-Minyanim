@@ -231,181 +231,6 @@
                 border-left: 4px solid var(--color-danger, #dc3545);
             }
 
-            .account-modal .modal-dialog {
-                max-width: 34rem;
-            }
-
-            .account-modal .modal-content {
-                overflow: hidden;
-                border: 1px solid var(--border-color-light, #e9ecef);
-                border-radius: var(--radius-xl, 0.75rem);
-                background: var(--bg-surface, #fff);
-                box-shadow: var(--shadow-xl, 0 20px 25px rgba(0, 0, 0, 0.14));
-            }
-
-            .account-modal .modal-header {
-                align-items: flex-start;
-                gap: var(--space-4, 1rem);
-                padding: var(--space-6, 1.5rem) var(--space-6, 1.5rem) var(--space-4, 1rem);
-                border: 0;
-            }
-
-            .account-modal-heading {
-                display: flex;
-                align-items: center;
-                gap: var(--space-3, 0.75rem);
-                min-width: 0;
-            }
-
-            .account-modal-icon {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                flex: 0 0 2.5rem;
-                width: 2.5rem;
-                height: 2.5rem;
-                border-radius: var(--radius-full, 9999px);
-                color: var(--color-primary, #275ed8);
-                background: var(--color-primary-lighter, #e3ecfa);
-            }
-
-            .account-modal-icon.danger {
-                color: #b42318;
-                background: #fef3f2;
-            }
-
-            .account-modal-icon.warning {
-                color: #b54708;
-                background: #fffaeb;
-            }
-
-            .account-modal-icon.success {
-                color: #027a48;
-                background: #ecfdf3;
-            }
-
-            .account-modal .modal-title {
-                margin: 0;
-                color: var(--text-primary, #212529);
-                font-size: var(--font-size-xl, 1.25rem);
-                font-weight: var(--font-weight-semibold, 600);
-                line-height: var(--line-height-tight, 1.25);
-            }
-
-            .account-modal .close {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                flex: 0 0 2rem;
-                width: 2rem;
-                height: 2rem;
-                margin: 0 0 0 auto;
-                padding: 0;
-                border: 0;
-                border-radius: var(--radius-full, 9999px);
-                color: var(--text-secondary, #6c757d);
-                background: transparent;
-                font-size: var(--font-size-base, 1rem);
-                opacity: 1;
-                text-shadow: none;
-                transition: background-color var(--transition-fast, 150ms ease), color var(--transition-fast, 150ms ease);
-            }
-
-            .account-modal .close:hover {
-                color: var(--text-primary, #212529);
-                background: var(--bg-hover, #f5f5f5);
-            }
-
-            .account-modal .modal-body {
-                padding: 0 var(--space-6, 1.5rem) var(--space-6, 1.5rem);
-                color: var(--text-secondary, #6c757d);
-                font-size: var(--font-size-base, 1rem);
-                line-height: var(--line-height-relaxed, 1.75);
-            }
-
-            .account-modal-warning {
-                display: flex;
-                align-items: flex-start;
-                gap: var(--space-3, 0.75rem);
-                padding: var(--space-4, 1rem);
-                border: 1px solid #fecdca;
-                border-radius: var(--radius-lg, 0.5rem);
-                color: #912018;
-                background: #fef3f2;
-            }
-
-            .account-modal-warning i {
-                margin-top: 0.3rem;
-            }
-
-            .account-modal .modal-footer {
-                display: flex;
-                align-items: center;
-                justify-content: flex-end;
-                gap: var(--space-3, 0.75rem);
-                padding: var(--space-4, 1rem) var(--space-6, 1.5rem);
-                border-top: 1px solid var(--border-color-light, #e9ecef);
-                background: var(--color-gray-50, #fafafa);
-            }
-
-            .account-modal .modal-footer form {
-                margin: 0;
-            }
-
-            .account-modal .modal-footer .btn-modern {
-                min-width: 6.5rem;
-                padding: var(--space-3, 0.75rem) var(--space-5, 1.25rem);
-            }
-
-            .account-modal .btn-danger {
-                color: var(--text-inverse, #fff);
-                border-color: #d92d20;
-                background: #d92d20;
-            }
-
-            .account-modal .btn-danger:hover {
-                border-color: #b42318;
-                background: #b42318;
-            }
-
-            .account-modal .btn-warning {
-                color: #7a2e0e;
-                border-color: #fedf89;
-                background: #fef0c7;
-            }
-
-            .account-modal .btn-warning:hover {
-                border-color: #fdb022;
-                background: #fedf89;
-            }
-
-            .account-modal .btn-primary {
-                color: var(--text-inverse, #fff);
-                border-color: var(--color-primary, #275ed8);
-                background: var(--color-primary, #275ed8);
-            }
-
-            .account-modal .btn-primary:hover {
-                border-color: var(--color-primary-dark, #1e4db3);
-                background: var(--color-primary-dark, #1e4db3);
-            }
-
-            @media (max-width: 576px) {
-                .account-modal .modal-dialog {
-                    margin: var(--space-4, 1rem);
-                }
-
-                .account-modal .modal-footer,
-                .account-modal .modal-footer form,
-                .account-modal .modal-footer .btn-modern {
-                    width: 100%;
-                }
-
-                .account-modal .modal-footer {
-                    flex-direction: column-reverse;
-                }
-            }
-
             @media (max-width: 900px) {
                 .settings-section,
                 .account-field-row {
@@ -722,16 +547,30 @@
                             </p>
                         </div>
                         <div class="account-actions">
-                            <button th:if="${queriedaccount.isEnabled()}" id="open-disable-account-modal" type="button"
-                                    class="btn-modern btn-warning" data-toggle="modal" data-target="#disable-account-modal">
-                                <i class="fas fa-ban"></i>
-                                Disable Account
-                            </button>
-                            <button th:if="${queriedaccount.isDisabled()}" id="open-enable-account-modal" type="button"
-                                    class="btn-modern btn-success" data-toggle="modal" data-target="#enable-account-modal">
-                                <i class="fas fa-check"></i>
-                                Enable Account
-                            </button>
+                            <form th:if="${queriedaccount.isEnabled()}" th:action="@{/admin/account/disable}" method="post" class="mb-0">
+                                <input type="hidden" name="id" th:value="${queriedaccount.id}">
+                                <button id="account-disable-btn" type="button" class="btn-modern btn-danger"
+                                        data-confirm data-confirm-severity="danger" data-confirm-icon="fa-ban"
+                                        th:data-confirm-title="|Disable ${queriedaccount.username}?|"
+                                        data-confirm-message="They will no longer be able to sign in. Their data is kept, and you can enable the account again here."
+                                        data-confirm-label="Disable account"
+                                        th:data-confirm-detail="${queriedaccount.email}">
+                                    <i class="fas fa-ban" aria-hidden="true"></i>
+                                    Disable Account
+                                </button>
+                            </form>
+                            <form th:if="${queriedaccount.isDisabled()}" th:action="@{/admin/account/enable}" method="post" class="mb-0">
+                                <input type="hidden" name="id" th:value="${queriedaccount.id}">
+                                <button id="account-enable-btn" type="button" class="btn-modern btn-success"
+                                        data-confirm data-confirm-severity="primary" data-confirm-icon="fa-circle-check"
+                                        th:data-confirm-title="|Enable ${queriedaccount.username}?|"
+                                        data-confirm-message="This restores their sign-in access."
+                                        data-confirm-label="Enable account"
+                                        th:data-confirm-detail="${queriedaccount.email}">
+                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                    Enable Account
+                                </button>
+                            </form>
                         </div>
                     </div>
 
@@ -743,13 +582,20 @@
                         </div>
                         <div class="account-actions">
                             <span th:attr="data-toggle=${queriedaccount.isEnabled()} ? 'tooltip' : null, title=${queriedaccount.isEnabled()} ? 'Disable the account before deleting' : null">
-                                <button id="open-delete-account-modal" type="button" class="btn-modern btn-danger"
-                                        th:classappend="${queriedaccount.isEnabled()} ? ' disabled' : ''"
-                                        th:attr="data-toggle=${queriedaccount.isEnabled()} ? '' : 'modal', data-target=${queriedaccount.isEnabled()} ? '' : '#delete-account-modal'"
-                                        th:disabled="${queriedaccount.isEnabled()}">
-                                    <i class="fas fa-trash"></i>
-                                    Delete Account
-                                </button>
+                                <form th:action="@{/admin/delete-account}" method="post" class="mb-0">
+                                    <input type="hidden" name="id" th:value="${queriedaccount.id}">
+                                    <button id="account-delete-btn" type="button" class="btn-modern btn-danger"
+                                            th:classappend="${queriedaccount.isEnabled()} ? ' disabled' : ''"
+                                            data-confirm data-confirm-severity="danger" data-confirm-icon="fa-trash"
+                                            th:data-confirm-title="|Permanently delete ${queriedaccount.username}?|"
+                                            data-confirm-message="This permanently removes the account and its sign-in credentials. It cannot be undone."
+                                            data-confirm-label="Delete account"
+                                            th:data-confirm-detail="${queriedaccount.email}"
+                                            th:disabled="${queriedaccount.isEnabled()}">
+                                        <i class="fas fa-trash" aria-hidden="true"></i>
+                                        Delete Account
+                                    </button>
+                                </form>
                             </span>
                         </div>
                     </div>
@@ -760,107 +606,21 @@
 
     <!-- Modals -->
     <th:block layout:fragment="modals">
-        <!-- Delete Account Modal -->
-        <div th:if="${user.isAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
-            <div class="modal fade account-modal" id="delete-account-modal" tabindex="-1" aria-labelledby="delete-account-modal-label" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <div class="account-modal-heading">
-                                <span class="account-modal-icon danger" aria-hidden="true"><i class="fas fa-trash"></i></span>
-                                <h5 class="modal-title" id="delete-account-modal-label" th:text="|Permanently delete '${queriedaccount.username}'?|">Delete Account?</h5>
-                            </div>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <i class="fas fa-xmark" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="account-modal-warning">
-                                <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
-                                <span>This permanently removes the account and its sign-in credentials. This action cannot be undone.</span>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn-modern btn-outline" data-dismiss="modal">Cancel</button>
-                            <form th:action="@{/admin/delete-account}" method="post" class="mb-0 d-inline">
-                                <input type="hidden" name="id" th:value="${queriedaccount.id}">
-                                <button type="submit" class="btn-modern btn-danger"><i class="fas fa-trash" aria-hidden="true"></i> Delete account</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Disable Account Modal -->
-        <div class="modal fade account-modal" id="disable-account-modal" tabindex="-1" aria-labelledby="disable-account-modal-label" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div class="account-modal-heading">
-                            <span class="account-modal-icon warning" aria-hidden="true"><i class="fas fa-ban"></i></span>
-                            <h5 class="modal-title" id="disable-account-modal-label" th:text="|Disable '${queriedaccount.username}'?|">Disable Account?</h5>
-                        </div>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <i class="fas fa-xmark" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        Do you want to disable this account from login access? This action cannot be easily undone.
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-modern btn-outline" data-dismiss="modal">Cancel</button>
-                        <form th:action="@{/admin/account/disable}" method="post" class="mb-0 d-inline">
-                            <input type="hidden" name="id" th:value="${queriedaccount.id}">
-                            <button type="submit" class="btn-modern btn-warning"><i class="fas fa-ban" aria-hidden="true"></i> Disable account</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Enable Account Modal -->
-        <div class="modal fade account-modal" id="enable-account-modal" tabindex="-1" aria-labelledby="enable-account-modal-label" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div class="account-modal-heading">
-                            <span class="account-modal-icon success" aria-hidden="true"><i class="fas fa-check"></i></span>
-                            <h5 class="modal-title" id="enable-account-modal-label" th:text="|Enable '${queriedaccount.username}'?|">Enable Account?</h5>
-                        </div>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <i class="fas fa-xmark" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        Do you want to re-enable this account for login access?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-modern btn-outline" data-dismiss="modal">Cancel</button>
-                        <form th:action="@{/admin/account/enable}" method="post" class="mb-0 d-inline">
-                            <input type="hidden" name="id" th:value="${queriedaccount.id}">
-                            <button type="submit" class="btn-modern btn-primary"><i class="fas fa-check" aria-hidden="true"></i> Enable account</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Change Password Modal -->
-        <div class="modal fade account-modal" id="change-password-modal" tabindex="-1" aria-labelledby="change-password-modal-label" aria-hidden="true">
+        <div class="modal fade admin-modal" id="change-password-modal" tabindex="-1" aria-labelledby="change-password-modal-label" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <div class="account-modal-heading">
-                            <span class="account-modal-icon" aria-hidden="true"><i class="fas fa-key"></i></span>
+                        <div class="admin-modal-heading">
+                            <span class="admin-modal-icon" aria-hidden="true"><i class="fas fa-key"></i></span>
                             <h5 class="modal-title" id="change-password-modal-label">Change password</h5>
                         </div>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <i class="fas fa-xmark" aria-hidden="true"></i>
                         </button>
                     </div>
-                    <div class="modal-body">
-                        <form method="post" th:action="|/admin/accounts/${queriedaccount.id}/changepassword|" id="change-password-form">
+                    <form method="post" th:action="|/admin/accounts/${queriedaccount.id}/changepassword|" id="change-password-form">
+                        <div class="modal-body">
                             <div class="form-group mb-4">
                                 <label for="new-password" class="form-label">Password</label>
                                 <input type="password" class="form-control" name="password" id="new-password"
@@ -868,22 +628,23 @@
                                        autocomplete="new-password" aria-describedby="password-requirements" required>
                                 <small id="password-requirements" class="form-text text-muted">At least 8 characters with one uppercase letter, one lowercase letter, and one number.</small>
                             </div>
-                            <div class="form-group mb-4">
+                            <div class="form-group">
                                 <label for="new-cpassword" class="form-label">Confirm Password</label>
                                 <input type="password" class="form-control" name="cpassword" id="new-cpassword"
                                        minlength="8" autocomplete="new-password" aria-describedby="confirm-password-requirements" required>
                                 <small id="confirm-password-requirements" class="form-text text-muted">Enter the same password again.</small>
                             </div>
 
-                            <div th:if="${changePasswordError}" class="alert-modern alert-danger mb-3" th:text="${changePasswordError}"></div>
-
-                            <hr>
+                            <div th:if="${changePasswordError}" class="alert-modern alert-danger mt-3 mb-0" th:text="${changePasswordError}"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-modern btn-outline" data-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn-modern btn-primary">
-                                <i class="fas fa-key"></i>
+                                <i class="fas fa-key" aria-hidden="true"></i>
                                 Update Password
                             </button>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
