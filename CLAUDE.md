@@ -8,7 +8,7 @@ This is a Spring Boot application that displays Jewish prayer services (minyanim
 2. **Materialized Calendar Events**: `CalendarEvent` entities are the single source of truth, pre-computed for rolling 11-week window (3 past, 8 future)
 3. **Day-Level Precedence**: Imported events suppress all rules for that org+date (applied by `EffectiveScheduleService`)
 4. **Frontend Queries**: `ZmanimService` queries materialized calendar_events via `EffectiveScheduleService`, converts to `MinyanEvent` via `CalendarEventAdapter`
-5. **Weekly Materialization**: Scheduled job runs Sunday 2 AM, deletes+rebuilds RULES events (preserves IMPORTED/MANUAL)
+5. **Scheduled Import + Materialization** (v1.21.0): The calendar import runs on the cron saved in Settings (`calendar.import.cron`, default Sunday 2 AM, site timezone), and materialization runs right after each scheduled import. Materialization deletes and rebuilds RULES events, keeping IMPORTED/MANUAL ones. It also runs on startup.
 6. **Admin UI**: Complete calendar management interface for org admins and super admins with Backpack for Laravel-inspired design
 
 **Legacy Data Flow (pre-v1.4.0 - DEPRECATED):**
@@ -65,7 +65,8 @@ All responses use `ApiResponse<T>` with `{ data, meta, error }`. See `docs/api/R
   - Delete + rebuild strategy for RULES events (preserves IMPORTED/MANUAL)
   - Rolling 11-week window (3 past, 8 future weeks)
   - Day-level precedence: if any imported events exist for org+date, suppress all rules for that day
-- **CalendarMaterializationScheduler**: `@Scheduled` task runs weekly (Sunday 2 AM) and on application startup
+- **CalendarMaterializationScheduler**: runs on application startup and from the admin "rematerialize" triggers. The weekly run comes from `CalendarImportScheduler`, which runs on the configurable import cron and materializes after each import (v1.21.0).
+- **Configurable schedules** (v1.21.0): `service/schedule/CronSchedule` (cron ↔ day/time picker, validation, minimum interval of 1 hour) and `ScheduledCronJob` (reschedule on save, fallback). Both the calendar import and the weekly review email use them. The UI is the shared fragment `templates/admin/fragments/schedule-picker.html` with `static/admin/schedule-picker.{js,css}`.
 - **EffectiveScheduleService**: Query layer that applies day-level precedence when fetching events
   - `getEffectiveEventsForDate(orgId, date)`: Returns only effective events (precedence applied)
   - `getAllEventsForDate(orgId, date)`: Returns all events for admin views
@@ -119,11 +120,19 @@ All responses use `ApiResponse<T>` with `{ data, meta, error }`. See `docs/api/R
 - **Color-Coded Badges**: Blue (rules), Green (imported), Orange (manual), semantic colors for status/type
 - **Consistent Templates**: All admin pages follow same structure (see `templates/admin/calendar-events.html`)
 - **Settings Integration**: Always inject siteName/supportEmail via `@ModelAttribute` for branding
+- **Confirmations and modals** (v1.21.0): Never use native `confirm()`, `alert()` or `prompt()`, or hand-built confirmation modals. Use the shared dialog that `admin/layout.html` includes once:
+  - Buttons: `data-confirm`, `data-confirm-title`, `data-confirm-message`, `data-confirm-severity` (danger/warning/primary). They submit the closest form, or a `data-confirm-form` selector.
+  - Script/AJAX actions: `AdminConfirm.ask({...}, onConfirm)`.
+  - Form modals: use the shared `.admin-modal` style from `static/admin/admin-modal.css`.
+  - `AdminPopupAuditTest` fails the build when this is broken.
+- **Wording**: User-facing admin text says "Shul"/"Shuls", never "Organization". Code, routes, field names and the API keep `organization`.
+- **Redirects**: Any user-supplied `rd`/return path must go through `AdminController.safeAdminRedirect` (same-site `/admin` paths only).
 - **Responsive Design**: Mobile-first, collapsible sidebar, horizontal-scrolling tables
 
 ### Security
 - **WebSecurityConfiguration**: Spring Security setup
 - **Encrypter**: Password hashing for `TNMUser`
+- **Sessions** (v1.21.0): HTTP sessions are stored in the database with Spring Session JDBC (`SPRING_SESSION` tables, created automatically), so redeploys don't sign admins out. Session attributes must be `Serializable`. The idle timeout is `SESSION_TIMEOUT` (default 7d), and the cookie's Secure flag is set by `SESSION_COOKIE_SECURE`.
 - Admin actions check org ownership: `!getCurrentUser().getOrganizationId().equals(minyan.getOrganizationId())`
 
 ## Database (MariaDB)
