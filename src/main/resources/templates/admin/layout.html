@@ -26,6 +26,7 @@
     <link th:rel="stylesheet" th:href="@{/admin/styles.css}">
     <link th:rel="stylesheet" th:href="@{/admin/sidebar.css}">
     <link th:rel="stylesheet" th:href="@{/admin/dashboard.css}">
+    <link th:rel="stylesheet" th:href="@{/admin/admin-modal.css}">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -376,6 +377,9 @@
         });
     </script>
     
+    <!-- Shared confirmation dialog (data-confirm triggers; see /admin/confirm-modal.js) -->
+    <th:block th:replace="~{admin/fragments/confirm-modal :: confirmModal}"></th:block>
+
     <!-- Page-specific modals -->
     <th:block layout:fragment="modals"></th:block>
 

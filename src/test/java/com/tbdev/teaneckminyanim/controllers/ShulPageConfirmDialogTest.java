@@ -127,7 +127,6 @@ class ShulPageConfirmDialogTest {
             String template = Files.readString(Path.of("src/main/resources/templates/admin/" + page + ".html"));
             assertFalse(template.contains("confirm("), page);
             assertFalse(template.contains("onsubmit"), page);
-            assertTrue(template.contains("~{admin/fragments/confirm-modal :: confirmModal}"), page);
             assertTrue(template.contains("data-confirm-title=\"Delete manual override?\""), page);
             Matcher deleteForm = Pattern.compile("<form[^>]*/delete[^>]*>(.*?)</form>", Pattern.DOTALL).matcher(template);
             assertTrue(deleteForm.find(), page);

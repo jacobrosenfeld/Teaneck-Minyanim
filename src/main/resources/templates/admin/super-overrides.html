@@ -576,9 +576,6 @@
     </div>
 </div>
 
-<th:block layout:fragment="modals">
-    <th:block th:replace="~{admin/fragments/confirm-modal :: confirmModal}"></th:block>
-</th:block>
 
 <th:block layout:fragment="scripts">
 <script>
@@ -729,8 +726,6 @@
             event.preventDefault();
             if (window.showToast) {
                 window.showToast('Please select a shul before saving.', 'warning');
-            } else {
-                alert('Please select a shul before saving.');
             }
             openOrgPicker();
         });

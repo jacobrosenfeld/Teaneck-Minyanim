@@ -547,9 +547,9 @@
                                           th:id="${'disable-account-form-' + member.id}">
                                         <input type="hidden" name="id" th:value="${member.id}">
                                         <input type="hidden" name="rd" th:value="${'/admin/organization?id=' + organization.id}">
-                                        <button type="button" class="btn-modern btn-sm btn-warning"
+                                        <button type="button" class="btn-modern btn-sm btn-danger"
                                                 data-confirm
-                                                data-confirm-severity="warning"
+                                                data-confirm-severity="danger"
                                                 data-confirm-icon="fa-ban"
                                                 th:data-confirm-title="|Disable ${member.username}?|"
                                                 data-confirm-message="They will no longer be able to sign in. You can enable the account again from its settings page."
@@ -576,8 +576,6 @@
 </div>
 
 <th:block layout:fragment="modals">
-    <th:block th:replace="~{admin/fragments/confirm-modal :: confirmModal}"></th:block>
-
     <!-- Add Account Modal -->
     <div class="modal fade admin-modal" id="add-account-modal" tabindex="-1" aria-labelledby="add-account-modal-label" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

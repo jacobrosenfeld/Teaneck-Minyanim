@@ -36,9 +36,18 @@ class UserManagementWebTest {
     void accountDialogsUseAdminDesignSystemStyling() throws Exception {
         String template = Files.readString(Path.of("src/main/resources/templates/account.html"));
 
-        assertTrue(template.contains("modal fade account-modal"));
-        assertTrue(template.contains("account-modal-icon danger"));
-        assertTrue(template.contains("account-modal-icon warning"));
+        // Disable, enable and delete confirm through the shared dialog; the password form uses .admin-modal.
+        assertTrue(template.contains("modal fade admin-modal\" id=\"change-password-modal\""));
+        assertTrue(template.contains("admin-modal-heading"));
+        assertFalse(template.contains("account-modal"));
+        assertFalse(template.contains("id=\"disable-account-modal\""));
+        assertFalse(template.contains("id=\"enable-account-modal\""));
+        assertFalse(template.contains("id=\"delete-account-modal\""));
+        assertTrue(template.contains("th:action=\"@{/admin/account/disable}\""));
+        assertTrue(template.contains("th:action=\"@{/admin/account/enable}\""));
+        assertTrue(template.contains("th:action=\"@{/admin/delete-account}\""));
+        assertTrue(template.contains("data-confirm-label=\"Disable account\""));
+        assertTrue(template.contains("data-confirm-label=\"Delete account\""));
         assertTrue(template.contains("modal-dialog modal-dialog-centered"));
         assertTrue(template.contains("btn-modern btn-outline"));
         assertTrue(template.contains("btn-modern btn-danger"));

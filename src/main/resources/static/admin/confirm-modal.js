@@ -17,6 +17,8 @@
  *   data-confirm-action    fallback when there is no form: a same-origin /admin path to POST to
  *                          (a form with the CSRF token is built). Any other URL is refused.
  *
+ * Script callers (e.g. AJAX actions) use AdminConfirm.ask(options, onConfirm); see ask() below.
+ *
  * All text is set with textContent, never parsed as HTML, and no attribute value is used as a link or
  * script URL. The only URL written to the DOM is the output of safeAdminAction().
  */
@@ -33,7 +35,7 @@
         primary: {button: 'btn-primary', icon: 'fa-circle-question'}
     };
 
-    var state = {trigger: null, form: null, action: null};
+    var state = {trigger: null, form: null, action: null, onConfirm: null, onSecondary: null};
 
     function modalEl() {
         return document.getElementById('confirm-modal');
@@ -135,12 +137,68 @@
         return true;
     }
 
-    function open(trigger) {
+    function resetState() {
+        state.trigger = null;
+        state.form = null;
+        state.action = null;
+        state.onConfirm = null;
+        state.onSecondary = null;
+    }
+
+    /**
+     * Fills and shows the dialog. config: {opener, title, message, detail, label, severity, icon,
+     * form, action, onConfirm, secondary: {label, icon, onClick}}. Exactly one of form, action
+     * (already validated) or onConfirm says what Confirm does.
+     */
+    function show(config) {
         var modal = modalEl();
         if (!modal || !window.jQuery) {
             return false;
         }
 
+        var severityName = SEVERITIES[config.severity] ? config.severity : 'danger';
+        var severity = SEVERITIES[severityName];
+
+        part('title').textContent = config.title || 'Are you sure?';
+        part('message').textContent = config.message || 'This action cannot be undone.';
+
+        var detail = part('detail');
+        detail.textContent = config.detail || '';
+        detail.hidden = !config.detail;
+
+        var icon = part('icon');
+        icon.className = 'admin-modal-icon ' + severityName;
+        icon.firstElementChild.className = 'fas ' + (config.icon && ICON_PATTERN.test(config.icon) ? config.icon : severity.icon);
+
+        var confirmButton = part('confirm');
+        confirmButton.className = 'btn-modern ' + severity.button;
+        confirmButton.disabled = false;
+        confirmButton.querySelector('span').textContent = config.label || 'Confirm';
+
+        var secondaryButton = part('secondary');
+        var secondary = config.secondary && typeof config.secondary.onClick === 'function' ? config.secondary : null;
+        if (secondaryButton) {
+            secondaryButton.hidden = !secondary;
+            secondaryButton.querySelector('span').textContent = secondary ? (secondary.label || '') : '';
+            var secondaryIcon = secondaryButton.querySelector('i');
+            var secondaryIconName = secondary && secondary.icon && ICON_PATTERN.test(secondary.icon) ? secondary.icon : null;
+            secondaryIcon.className = secondaryIconName ? 'fas ' + secondaryIconName : '';
+            secondaryIcon.hidden = !secondaryIconName;
+        }
+
+        resetState();
+        state.trigger = config.opener || null;
+        state.form = config.form || null;
+        state.action = state.form ? null : (config.action || null);
+        state.onConfirm = typeof config.onConfirm === 'function' ? config.onConfirm : null;
+        state.onSecondary = secondary ? secondary.onClick : null;
+
+        window.jQuery(modal).modal('show');
+        return true;
+    }
+
+    /** Opens the dialog for a [data-confirm] trigger, submitting its form (or validated action URL). */
+    function open(trigger) {
         var form = resolveForm(trigger);
         var action = null;
         if (!form) {
@@ -154,51 +212,65 @@
             }
             action = rawAction;
         }
+        return show({
+            opener: trigger,
+            title: trigger.getAttribute('data-confirm-title'),
+            message: trigger.getAttribute('data-confirm-message'),
+            detail: trigger.getAttribute('data-confirm-detail'),
+            label: trigger.getAttribute('data-confirm-label'),
+            severity: trigger.getAttribute('data-confirm-severity'),
+            icon: trigger.getAttribute('data-confirm-icon'),
+            form: form,
+            action: action
+        });
+    }
 
-        var severityName = trigger.getAttribute('data-confirm-severity') || 'danger';
-        var severity = SEVERITIES[severityName] || SEVERITIES.danger;
-        if (!SEVERITIES[severityName]) {
-            severityName = 'danger';
+    /**
+     * For pages that act in script (e.g. AJAX): AdminConfirm.ask({title, message, detail, label,
+     * severity, icon, opener, secondary: {label, icon, onClick}}, onConfirm). onConfirm runs after
+     * the dialog closes; so does secondary.onClick. Returns false if the dialog is unavailable.
+     */
+    function ask(options, onConfirm) {
+        options = options || {};
+        if (typeof onConfirm !== 'function') {
+            return false;
         }
+        return show({
+            opener: options.opener || document.activeElement,
+            title: options.title,
+            message: options.message,
+            detail: options.detail,
+            label: options.label,
+            severity: options.severity,
+            icon: options.icon,
+            secondary: options.secondary,
+            onConfirm: onConfirm
+        });
+    }
 
-        part('title').textContent = trigger.getAttribute('data-confirm-title') || 'Are you sure?';
-        part('message').textContent = trigger.getAttribute('data-confirm-message') || 'This action cannot be undone.';
-
-        var detail = part('detail');
-        var detailText = trigger.getAttribute('data-confirm-detail');
-        detail.textContent = detailText || '';
-        detail.hidden = !detailText;
-
-        var icon = part('icon');
-        icon.className = 'admin-modal-icon ' + severityName;
-        var iconName = trigger.getAttribute('data-confirm-icon');
-        icon.firstElementChild.className = 'fas ' + (iconName && ICON_PATTERN.test(iconName) ? iconName : severity.icon);
-
-        var confirmButton = part('confirm');
-        confirmButton.className = 'btn-modern ' + severity.button;
-        confirmButton.disabled = false;
-        confirmButton.querySelector('span').textContent = trigger.getAttribute('data-confirm-label') || 'Confirm';
-
-        state.trigger = trigger;
-        state.form = form;
-        state.action = action;
-
-        window.jQuery(modal).modal('show');
-        return true;
+    function hideThen(callback) {
+        window.jQuery(modalEl()).one('hidden.bs.modal', function () {
+            callback();
+        }).modal('hide');
     }
 
     function confirm() {
-        if (!state.form && !state.action) {
-            return;
-        }
-        var confirmButton = part('confirm');
-        confirmButton.disabled = true;
-
         var form = state.form;
         var action = state.action;
+        var onConfirm = state.onConfirm;
+        if (!form && !action && !onConfirm) {
+            return;
+        }
+        part('confirm').disabled = true;
         state.form = null;
         state.action = null;
+        state.onConfirm = null;
+        state.onSecondary = null;
 
+        if (onConfirm) {
+            hideThen(onConfirm);
+            return;
+        }
         if (form) {
             // Keep focus restoration from jumping while the page navigates away.
             state.trigger = null;
@@ -213,9 +285,25 @@
         window.jQuery(modalEl()).modal('hide');
     }
 
+    function secondaryAction() {
+        var onSecondary = state.onSecondary;
+        if (!onSecondary) {
+            return;
+        }
+        state.onSecondary = null;
+        state.onConfirm = null;
+        // The secondary action usually opens another dialog, which takes focus from here.
+        state.trigger = null;
+        hideThen(onSecondary);
+    }
+
     document.addEventListener('click', function (event) {
         var trigger = event.target.closest ? event.target.closest('[data-confirm]') : null;
-        if (!trigger || trigger.disabled || trigger.getAttribute('aria-disabled') === 'true') {
+        // Only buttons and links are triggers; a click anywhere inside a container never is.
+        if (!trigger || (trigger.tagName !== 'BUTTON' && trigger.tagName !== 'A')) {
+            return;
+        }
+        if (trigger.disabled || trigger.getAttribute('aria-disabled') === 'true') {
             return;
         }
         event.preventDefault();
@@ -230,6 +318,10 @@
         modal.dataset.confirmBound = 'true';
 
         part('confirm').addEventListener('click', confirm);
+        var secondaryButton = part('secondary');
+        if (secondaryButton) {
+            secondaryButton.addEventListener('click', secondaryAction);
+        }
 
         window.jQuery(modal)
             .on('shown.bs.modal', function () {
@@ -241,9 +333,7 @@
             })
             .on('hidden.bs.modal', function () {
                 var trigger = state.trigger;
-                state.trigger = null;
-                state.form = null;
-                state.action = null;
+                resetState();
                 if (trigger && document.body.contains(trigger) && typeof trigger.focus === 'function') {
                     trigger.focus();
                 }
@@ -256,5 +346,5 @@
         bindModal();
     }
 
-    window.AdminConfirm = {open: open, safeAdminAction: safeAdminAction};
+    window.AdminConfirm = {open: open, ask: ask, safeAdminAction: safeAdminAction};
 })(window, document);
