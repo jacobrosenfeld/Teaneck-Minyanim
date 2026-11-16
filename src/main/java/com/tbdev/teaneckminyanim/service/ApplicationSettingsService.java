@@ -7,12 +7,13 @@ import com.tbdev.teaneckminyanim.model.ApplicationSettings;
 import com.tbdev.teaneckminyanim.repo.ApplicationSettingsRepository;
 import com.tbdev.teaneckminyanim.security.SensitiveSettingCrypto;
 import com.tbdev.teaneckminyanim.security.SensitiveSettingCrypto.SensitiveSettingCryptoException;
+import com.tbdev.teaneckminyanim.service.schedule.CronSchedule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
+import java.util.Collection;
 import java.util.Optional;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -43,6 +44,7 @@ public class ApplicationSettingsService {
     private static final Pattern IOS_APP_ID_PATH_PATTERN = Pattern.compile("/id(\\d+)(?:[/?#]|$)");
     private static final Pattern IOS_APP_ID_QUERY_PATTERN = Pattern.compile("[?&]id=(\\d+)(?:[&#]|$)");
     private static final Pattern NUMERIC_ID_PATTERN = Pattern.compile("^\\d+$");
+    private static final Pattern GTM_CONTAINER_ID_PATTERN = Pattern.compile("^GTM-[A-Z0-9]+$");
 
     @Autowired
     public ApplicationSettingsService(
@@ -165,6 +167,82 @@ public class ApplicationSettingsService {
         return getString(SettingKey.CALENDAR_IMPORT_CRON);
     }
     
+    /**
+     * Mode the settings page uses to edit the import schedule. Unknown stored values read as SIMPLE.
+     */
+    public CronSchedule.Mode getCalendarImportScheduleMode() {
+        return CronSchedule.Mode.fromStored(getString(SettingKey.CALENDAR_IMPORT_SCHEDULE_MODE));
+    }
+
+    /**
+     * Validates and saves the calendar import schedule from the settings page.
+     *
+     * @return the cron expression that was saved
+     * @see #saveCronSchedule
+     */
+    public String saveCalendarImportSchedule(
+            String mode,
+            String frequency,
+            Collection<String> days,
+            String time,
+            String cron) throws ValidationException {
+        return saveCronSchedule(SettingKey.CALENDAR_IMPORT_CRON, SettingKey.CALENDAR_IMPORT_SCHEDULE_MODE,
+                mode, frequency, days, time, cron);
+    }
+
+    /**
+     * Validates and saves the weekly review email schedule from the Email Settings page.
+     *
+     * @return the cron expression that was saved
+     * @see #saveCronSchedule
+     */
+    public String saveWeeklyReviewEmailSchedule(
+            String mode,
+            String frequency,
+            Collection<String> days,
+            String time,
+            String cron) throws ValidationException {
+        return saveCronSchedule(SettingKey.EMAIL_WEEKLY_REVIEW_CRON, SettingKey.EMAIL_WEEKLY_REVIEW_SCHEDULE_MODE,
+                mode, frequency, days, time, cron);
+    }
+
+    /**
+     * Validates and saves a schedule picker's values. In SIMPLE mode the cron is generated from
+     * {@code frequency}, {@code days} and {@code time} (the {@code cron} argument is ignored); in
+     * ADVANCED mode {@code cron} is saved as entered. The cron must pass
+     * {@link CronSchedule#validationError(String)} (syntax and minimum interval).
+     * Nothing is saved unless every field is valid.
+     */
+    private String saveCronSchedule(
+            SettingKey cronKey,
+            SettingKey modeKey,
+            String mode,
+            String frequency,
+            Collection<String> days,
+            String time,
+            String cron) throws ValidationException {
+        CronSchedule.Mode parsedMode;
+        String newCron;
+        try {
+            parsedMode = CronSchedule.Mode.fromString(mode);
+            if (parsedMode == CronSchedule.Mode.SIMPLE) {
+                newCron = CronSchedule.toCron(CronSchedule.fromForm(frequency, days, time));
+            } else {
+                newCron = cron == null ? "" : cron.trim();
+            }
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException(e.getMessage());
+        }
+        String error = CronSchedule.validationError(newCron);
+        if (error != null) {
+            throw new ValidationException(error);
+        }
+
+        updateSetting(cronKey, newCron);
+        updateSetting(modeKey, parsedMode.name());
+        return newCron;
+    }
+
     public Integer getCalendarCleanupDays() {
         return getInteger(SettingKey.CALENDAR_CLEANUP_DAYS);
     }
@@ -238,6 +316,19 @@ public class ApplicationSettingsService {
         return getString(SettingKey.RECAPTCHA_SECRET_KEY);
     }
 
+    /**
+     * Google Tag Manager container ID, trimmed. Returns an empty string when unset or when the
+     * stored value is not a valid container ID, so templates can treat empty as "no GTM".
+     */
+    public String getGtmContainerId() {
+        String value = getString(SettingKey.GTM_CONTAINER_ID);
+        if (value == null) {
+            return "";
+        }
+        String trimmed = value.trim();
+        return GTM_CONTAINER_ID_PATTERN.matcher(trimmed).matches() ? trimmed : "";
+    }
+
     public boolean isRecaptchaEnabled() {
         return hasText(getRecaptchaSiteKey()) && hasText(getRecaptchaSecretKey());
     }
@@ -278,6 +369,25 @@ public class ApplicationSettingsService {
             log.warn("Invalid weekly review email day '{}', using default", value);
             return DayOfWeek.valueOf(SettingKey.EMAIL_WEEKLY_REVIEW_DAY.getDefaultValue());
         }
+    }
+
+    /**
+     * Cron for the weekly review email. When the stored cron is blank (installs that predate it),
+     * it is derived from the legacy day/time settings so the send time doesn't change.
+     */
+    public String getWeeklyReviewEmailCron() {
+        String stored = getString(SettingKey.EMAIL_WEEKLY_REVIEW_CRON);
+        return stored == null || stored.isBlank() ? getWeeklyReviewEmailLegacyCron() : stored.trim();
+    }
+
+    /** Cron derived from the legacy {@code email.weekly-review.day} and {@code .time} settings. */
+    public String getWeeklyReviewEmailLegacyCron() {
+        return CronSchedule.weeklyCron(getWeeklyReviewEmailDay(), getWeeklyReviewEmailTime());
+    }
+
+    /** Mode the Email Settings page uses for the digest schedule. Blank or unknown reads as SIMPLE. */
+    public CronSchedule.Mode getWeeklyReviewEmailScheduleMode() {
+        return CronSchedule.Mode.fromStored(getString(SettingKey.EMAIL_WEEKLY_REVIEW_SCHEDULE_MODE));
     }
 
     public LocalTime getWeeklyReviewEmailTime() {
@@ -614,7 +724,22 @@ public class ApplicationSettingsService {
                 validateTimezone(value);
                 break;
             case CALENDAR_IMPORT_CRON:
+            case EMAIL_WEEKLY_REVIEW_CRON:
                 validateCronExpression(value);
+                break;
+            case CALENDAR_IMPORT_SCHEDULE_MODE:
+            case EMAIL_WEEKLY_REVIEW_SCHEDULE_MODE:
+                try {
+                    CronSchedule.Mode.fromString(value);
+                } catch (IllegalArgumentException e) {
+                    throw new ValidationException(e.getMessage());
+                }
+                break;
+            case GTM_CONTAINER_ID:
+                if (!GTM_CONTAINER_ID_PATTERN.matcher(value).matches()) {
+                    throw new ValidationException(
+                            "GTM container ID must look like GTM-XXXXXXX (capital letters and digits), or be left blank.");
+                }
                 break;
             case CALENDAR_CLEANUP_DAYS:
                 validatePositiveInteger(value);
@@ -630,6 +755,7 @@ public class ApplicationSettingsService {
             case FEEDBACK_MOBILE_APP_TOKEN:
             case RECAPTCHA_SITE_KEY:
             case RECAPTCHA_SECRET_KEY:
+            case GTM_CONTAINER_ID:
             case MOBILE_IOS_APP_URL:
             case MOBILE_GOOGLE_PLAY_URL:
             case EMAIL_PROVIDER:
@@ -643,6 +769,8 @@ public class ApplicationSettingsService {
             case EMAIL_SES_ACCESS_KEY_ID:
             case EMAIL_SES_SECRET_ACCESS_KEY:
             case EMAIL_SES_CONFIGURATION_SET:
+            case EMAIL_WEEKLY_REVIEW_CRON:
+            case EMAIL_WEEKLY_REVIEW_SCHEDULE_MODE:
                 return true;
             default:
                 return false;
@@ -761,10 +889,9 @@ public class ApplicationSettingsService {
     }
     
     private void validateCronExpression(String value) throws ValidationException {
-        try {
-            CronExpression.parse(value);
-        } catch (Exception e) {
-            throw new ValidationException("Invalid cron expression: " + e.getMessage());
+        String error = CronSchedule.validationError(value);
+        if (error != null) {
+            throw new ValidationException(error);
         }
     }
     

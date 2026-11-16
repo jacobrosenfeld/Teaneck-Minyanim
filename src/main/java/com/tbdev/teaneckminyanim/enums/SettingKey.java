@@ -30,6 +30,7 @@ public enum SettingKey {
     FEEDBACK_MOBILE_APP_TOKEN("feedback.mobile-app-token", SettingType.STRING, "", true),
     RECAPTCHA_SITE_KEY("recaptcha.site-key", SettingType.STRING, ""),
     RECAPTCHA_SECRET_KEY("recaptcha.secret-key", SettingType.STRING, "", true),
+    GTM_CONTAINER_ID("analytics.gtm.container-id", SettingType.STRING, "GTM-T2P4J8V"),
 
     // Email Provider Settings
     EMAIL_PROVIDER("email.provider", SettingType.STRING, ""),
@@ -48,9 +49,14 @@ public enum SettingKey {
     EMAIL_WEEKLY_REVIEW_ENABLED("email.weekly-review.enabled", SettingType.BOOLEAN, "true"),
     EMAIL_WEEKLY_REVIEW_DAY("email.weekly-review.day", SettingType.STRING, "SATURDAY"),
     EMAIL_WEEKLY_REVIEW_TIME("email.weekly-review.time", SettingType.STRING, "22:00"),
+    // Blank defaults on purpose: a blank cron means "derive it from the legacy day/time above",
+    // so installs that predate the cron keep their current send time when these are seeded.
+    EMAIL_WEEKLY_REVIEW_CRON("email.weekly-review.cron", SettingType.STRING, ""),
+    EMAIL_WEEKLY_REVIEW_SCHEDULE_MODE("email.weekly-review.schedule.mode", SettingType.STRING, ""),
 
     // Calendar Import Settings
     CALENDAR_IMPORT_CRON("calendar.import.cron", SettingType.STRING, "0 0 2 * * SUN"),
+    CALENDAR_IMPORT_SCHEDULE_MODE("calendar.import.schedule.mode", SettingType.STRING, "SIMPLE"),
     CALENDAR_CLEANUP_DAYS("calendar.cleanup.days", SettingType.INTEGER, "30");
     
     private final String key;
@@ -142,6 +148,8 @@ public enum SettingKey {
                 return "reCAPTCHA Site Key";
             case RECAPTCHA_SECRET_KEY:
                 return "reCAPTCHA Secret Key";
+            case GTM_CONTAINER_ID:
+                return "Google Tag Manager Container ID";
             case EMAIL_PROVIDER:
                 return "Email Provider";
             case EMAIL_SMTP_HOST:
@@ -174,8 +182,14 @@ public enum SettingKey {
                 return "Send Day";
             case EMAIL_WEEKLY_REVIEW_TIME:
                 return "Send Time";
+            case EMAIL_WEEKLY_REVIEW_CRON:
+                return "Weekly Review Email Schedule (Cron)";
+            case EMAIL_WEEKLY_REVIEW_SCHEDULE_MODE:
+                return "Weekly Review Email Schedule Mode";
             case CALENDAR_IMPORT_CRON:
                 return "Calendar Import Schedule (Cron)";
+            case CALENDAR_IMPORT_SCHEDULE_MODE:
+                return "Calendar Import Schedule Mode";
             case CALENDAR_CLEANUP_DAYS:
                 return "Calendar Cleanup Threshold (Days)";
             default:
@@ -224,6 +238,8 @@ public enum SettingKey {
                 return "Public reCAPTCHA site key used by website feedback and subscription forms.";
             case RECAPTCHA_SECRET_KEY:
                 return "Private server-side reCAPTCHA secret key used to verify feedback and subscription form submissions.";
+            case GTM_CONTAINER_ID:
+                return "Google Tag Manager container ID loaded on public and admin pages (e.g., GTM-XXXXXXX). Leave blank to turn off Tag Manager.";
             case EMAIL_PROVIDER:
                 return "Email delivery provider. Supported values: SMTP or SES. Leave blank to disable email sending.";
             case EMAIL_SMTP_HOST:
@@ -249,13 +265,21 @@ public enum SettingKey {
             case EMAIL_SES_SECRET_ACCESS_KEY:
                 return "AWS secret access key used for SES API delivery";
             case EMAIL_SES_CONFIGURATION_SET:
-                return "Whether the weekly minyan review digest is sent to admins automatically on the send day and time below. Turn off on dev or staging servers to avoid duplicate digests. Weekly digest test sends still work when this is off.";
+                return "Optional SES configuration set name for outgoing emails";
+            case EMAIL_WEEKLY_REVIEW_ENABLED:
+                return "Whether the weekly minyan review digest is sent to admins automatically on the schedule below. Turn off on dev or staging servers to avoid duplicate digests. Weekly digest test sends still work when this is off.";
             case EMAIL_WEEKLY_REVIEW_DAY:
-                return "Day of the week the weekly digest is sent. The digest covers the next Sunday through Saturday (the current week when sent on a Sunday).";
+                return "Legacy send day. Only used to derive the schedule while email.weekly-review.cron is blank. The digest covers the next Sunday through Saturday (the current week when sent on a Sunday).";
             case EMAIL_WEEKLY_REVIEW_TIME:
-                return "Time of day the weekly digest is sent, in the site timezone set on the main Settings page.";
+                return "Legacy send time. Only used to derive the schedule while email.weekly-review.cron is blank. Uses the site timezone set on the main Settings page.";
+            case EMAIL_WEEKLY_REVIEW_CRON:
+                return "Cron expression for when the weekly review digest is sent, in the site timezone. Blank means use the legacy send day and time.";
+            case EMAIL_WEEKLY_REVIEW_SCHEDULE_MODE:
+                return "Whether the Email Settings page edits the digest schedule with the simple day/time picker (SIMPLE) or a raw cron expression (ADVANCED)";
             case CALENDAR_IMPORT_CRON:
-                return "Cron expression for automatic calendar import schedule (e.g., '0 0 2 * * SUN' for Sundays at 2am)";
+                return "Cron expression for automatic calendar import schedule (e.g., '0 0 2 * * SUN' for Sundays at 2am). Runs in the site timezone.";
+            case CALENDAR_IMPORT_SCHEDULE_MODE:
+                return "Whether the settings page edits the import schedule with the simple day/time picker (SIMPLE) or a raw cron expression (ADVANCED)";
             case CALENDAR_CLEANUP_DAYS:
                 return "Number of days to keep old calendar entries before cleanup (must be > 0)";
             default:
@@ -275,7 +299,8 @@ public enum SettingKey {
             return "Timezone";
         } else if (key.startsWith("mobile.")) {
             return "Mobile Apps";
-        } else if (key.startsWith("mapbox.") || key.startsWith("feedback.") || key.startsWith("recaptcha.")) {
+        } else if (key.startsWith("mapbox.") || key.startsWith("feedback.") || key.startsWith("recaptcha.")
+                || key.startsWith("analytics.")) {
             return "External Services";
         } else if (key.startsWith("email.")) {
             return "Email";

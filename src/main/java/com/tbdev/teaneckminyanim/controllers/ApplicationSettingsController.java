@@ -6,8 +6,11 @@ import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
+import com.tbdev.teaneckminyanim.service.calendar.CalendarImportScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -33,6 +36,7 @@ public class ApplicationSettingsController {
     private final ApplicationSettingsService settingsService;
     private final TNMUserService userService;
     private final VersionService versionService;
+    private final CalendarImportScheduler calendarImportScheduler;
 
     /**
      * Display the application settings page.
@@ -86,6 +90,10 @@ public class ApplicationSettingsController {
 
             // Update the setting
             settingsService.updateSettingByKey(settingKey, settingValue);
+            if (SettingKey.CALENDAR_IMPORT_CRON.getKey().equals(settingKey)
+                    || SettingKey.TIMEZONE.getKey().equals(settingKey)) {
+                calendarImportScheduler.reschedule();
+            }
             
             log.info("Setting updated: {} = {} by user {}", 
                     settingKey,
@@ -106,6 +114,61 @@ public class ApplicationSettingsController {
         }
 
         return new ModelAndView(new RedirectView("/admin/application-settings", true));
+    }
+
+    /**
+     * Save the calendar import schedule from the settings page picker.
+     * SIMPLE mode builds the cron from frequency/days/time; ADVANCED saves the cron as entered.
+     * The running schedule is replaced right away, without a restart.
+     */
+    @ResponseBody
+    @PostMapping("/admin/settings/calendar-import-schedule")
+    public ResponseEntity<CronScheduleResponse> saveCalendarImportSchedule(
+            @RequestParam("mode") String mode,
+            @RequestParam(value = "frequency", required = false) String frequency,
+            @RequestParam(value = "days", required = false) List<String> days,
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "cron", required = false) String cron) {
+
+        if (!isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to perform this action");
+        }
+
+        try {
+            String savedCron = settingsService.saveCalendarImportSchedule(mode, frequency, days, time, cron);
+            calendarImportScheduler.reschedule();
+            log.info("Calendar import schedule updated: mode={}, cron='{}' by user {}",
+                    settingsService.getCalendarImportScheduleMode(), savedCron, getCurrentUser().getUsername());
+            return ResponseEntity.ok(CronScheduleResponse.saved(calendarImportScheduler.currentView()));
+        } catch (ApplicationSettingsService.ValidationException e) {
+            log.warn("Validation error saving calendar import schedule: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CronScheduleResponse.failure(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error saving calendar import schedule: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(CronScheduleResponse.failure("Schedule could not be saved."));
+        }
+    }
+
+    /**
+     * Preview a schedule without saving it: validity (same check as save), readable summary,
+     * next run, and whether a cron can be shown in the simple picker.
+     */
+    @ResponseBody
+    @GetMapping("/admin/settings/calendar-import-schedule/preview")
+    public ResponseEntity<CronScheduleResponse> previewCalendarImportSchedule(
+            @RequestParam("mode") String mode,
+            @RequestParam(value = "frequency", required = false) String frequency,
+            @RequestParam(value = "days", required = false) List<String> days,
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "cron", required = false) String cron) {
+
+        if (!isSuperAdmin()) {
+            throw new AccessDeniedException("You are not authorized to access this page");
+        }
+
+        return ResponseEntity.ok(CronScheduleResponse.preview(mode, frequency, days, time, cron,
+                calendarImportScheduler.effectiveZone(), CalendarImportScheduler.SCHEDULE_PROFILE));
     }
 
     /**

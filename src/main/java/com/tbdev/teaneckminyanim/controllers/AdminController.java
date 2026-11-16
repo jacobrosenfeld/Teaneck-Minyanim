@@ -13,6 +13,7 @@ import com.tbdev.teaneckminyanim.minyan.Schedule;
 import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import com.tbdev.teaneckminyanim.service.auth.MagicLinkService;
 import com.tbdev.teaneckminyanim.service.email.WeeklyMinyanReviewEmailScheduler;
+import com.tbdev.teaneckminyanim.service.calendar.CalendarImportScheduler;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +79,9 @@ public class AdminController {
 
     @Autowired
     private WeeklyMinyanReviewEmailScheduler weeklyReviewScheduler;
+
+    @Autowired
+    private CalendarImportScheduler calendarImportScheduler;
 
     @Autowired
     private UserManagementService userManagementService;
@@ -278,6 +282,7 @@ public class AdminController {
         mv.addObject("applicationSettingsByCategory", applicationSettingsByCategory);
         mv.addObject("settingSections", buildSettingsPageSections(applicationSettingsByCategory));
         mv.addObject("emailProvider", this.settingsService.getEmailProvider());
+        mv.addObject("importSchedule", calendarImportScheduler.currentView());
 
         addStandardPageData(mv);
 
@@ -322,6 +327,9 @@ public class AdminController {
             if (key == SettingKey.TIMEZONE) {
                 weeklyReviewScheduler.reschedule();
             }
+            if (key == SettingKey.TIMEZONE || key == SettingKey.CALENDAR_IMPORT_CRON) {
+                calendarImportScheduler.reschedule();
+            }
 
             log.info("Application setting updated: {} = {} by user {}",
                     key.getKey(),
@@ -354,7 +362,7 @@ public class AdminController {
 
         Map<String, List<SettingsPageField>> fieldsByCategory = new LinkedHashMap<>();
         for (SettingKey key : SettingKey.values()) {
-            if ("Email".equals(key.getCategory())) {
+            if ("Email".equals(key.getCategory()) || isCalendarImportScheduleKey(key)) {
                 continue;
             }
             com.tbdev.teaneckminyanim.model.ApplicationSettings setting = settingsByKey.get(key.getKey());
@@ -393,6 +401,11 @@ public class AdminController {
             }
         });
         return sections;
+    }
+
+    /** Edited by the dedicated schedule picker on the settings page, not as plain fields. */
+    private static boolean isCalendarImportScheduleKey(SettingKey key) {
+        return key == SettingKey.CALENDAR_IMPORT_CRON || key == SettingKey.CALENDAR_IMPORT_SCHEDULE_MODE;
     }
 
     private List<String> settingsCategoryOrder() {
@@ -517,6 +530,9 @@ public class AdminController {
         }
         if (key == SettingKey.CALENDAR_IMPORT_CRON) {
             return "0 0 2 * * SUN";
+        }
+        if (key == SettingKey.GTM_CONTAINER_ID) {
+            return "GTM-XXXXXXX (blank turns Tag Manager off)";
         }
         if ("INTEGER".equals(settingType)) {
             return "30";
@@ -1355,6 +1371,7 @@ public class AdminController {
 
             // Update the setting
             settingsService.updateSettingByKey(settingKey, settingValue);
+            rescheduleCalendarImportIfNeeded(settingKey);
             
             log.info("Application setting updated: {} = {} by user {}", 
                     settingKey,
@@ -1369,6 +1386,13 @@ public class AdminController {
         } catch (Exception e) {
             log.error("Error updating setting {}: {}", settingKey, e.getMessage(), e);
             return settings(null, "Error updating setting: " + e.getMessage());
+        }
+    }
+
+    private void rescheduleCalendarImportIfNeeded(String settingKey) {
+        if (SettingKey.CALENDAR_IMPORT_CRON.getKey().equals(settingKey)
+                || SettingKey.TIMEZONE.getKey().equals(settingKey)) {
+            calendarImportScheduler.reschedule();
         }
     }
 
