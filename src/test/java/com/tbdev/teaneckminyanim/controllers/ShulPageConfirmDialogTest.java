@@ -114,6 +114,51 @@ class ShulPageConfirmDialogTest {
     }
 
     @Test
+    void confirmTriggersOnlyTargetAdminUrls() throws Exception {
+        // Rendered shul page: every form action is an /admin path and no trigger uses a free-form action URL.
+        String html = renderShulPage();
+        Matcher actions = Pattern.compile("<form[^>]*\\saction=\"([^\"]*)\"").matcher(html);
+        int count = 0;
+        while (actions.find()) {
+            count++;
+            assertTrue(actions.group(1).startsWith("/admin/"), actions.group(1));
+        }
+        assertTrue(count >= 3, "expected profile, disable and add-account forms");
+        assertFalse(html.contains("data-confirm-action"));
+
+        // Converted templates submit their own server-rendered /admin form, never a data-confirm-action URL.
+        for (String page : List.of("organization", "manual-overrides", "super-overrides")) {
+            String template = Files.readString(Path.of("src/main/resources/templates/admin/" + page + ".html"));
+            assertFalse(template.contains("data-confirm-action"), page);
+            Matcher thActions = Pattern.compile("th:action=\"@\\{([^}(]*)").matcher(template);
+            while (thActions.find()) {
+                assertTrue(thActions.group(1).startsWith("/admin/"), page + ": " + thActions.group(1));
+            }
+        }
+    }
+
+    @Test
+    void confirmScriptValidatesActionUrlsBeforeUse() throws Exception {
+        String script = Files.readString(Path.of("src/main/resources/static/admin/confirm-modal.js"));
+        assertTrue(script.contains("function safeAdminAction(value)"));
+        assertTrue(script.contains("url.origin !== window.location.origin"));
+        assertTrue(script.contains("url.protocol !== 'http:' && url.protocol !== 'https:'"));
+        assertTrue(script.contains("return url.pathname + url.search;"));
+        // The only assignment to a URL sink uses the sanitized value.
+        Matcher sinks = Pattern.compile("(?<!state)\\.(action|href|src|formAction)\\s*=\\s*([^;]+);").matcher(script);
+        int sinkCount = 0;
+        while (sinks.find()) {
+            sinkCount++;
+            assertEquals("safeAction", sinks.group(2).trim(), sinks.group());
+        }
+        assertEquals(1, sinkCount);
+        assertFalse(script.contains("innerHTML"));
+        assertFalse(script.contains("insertAdjacentHTML"));
+        // A data-confirm-form selector only counts when it resolves to a <form>.
+        assertTrue(script.contains("element instanceof HTMLFormElement"));
+    }
+
+    @Test
     void disableFromShulPageRedirectsBackWithFlashMessage() throws Exception {
         TNMUserService users = mock(TNMUserService.class);
         TNMUser manager = account("actor", "shulmanager", Role.ADMIN);

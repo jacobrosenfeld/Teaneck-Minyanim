@@ -11,11 +11,14 @@
  *   data-confirm-detail    optional extra context (e.g. the row being changed)
  *   data-confirm-label     confirm button text
  *   data-confirm-severity  danger (default) | warning | primary
- *   data-confirm-icon      optional Font Awesome class (e.g. "fa-ban")
- *   data-confirm-form      selector of the POST form to submit; defaults to the trigger's own form
- *   data-confirm-action    URL to POST to when there is no form (a form with the CSRF token is built)
+ *   data-confirm-icon      optional Font Awesome icon name (e.g. "fa-ban"); anything else is ignored
+ *   data-confirm-form      selector of the POST form to submit; defaults to the trigger's own form.
+ *                          Only a <form> element is accepted. Prefer this (or the closest form).
+ *   data-confirm-action    fallback when there is no form: a same-origin /admin path to POST to
+ *                          (a form with the CSRF token is built). Any other URL is refused.
  *
- * All text is set with textContent, never as HTML.
+ * All text is set with textContent, never parsed as HTML, and no attribute value is used as a link or
+ * script URL. The only URL written to the DOM is the output of safeAdminAction().
  */
 (function (window, document) {
     'use strict';
@@ -41,16 +44,57 @@
         return modal ? modal.querySelector('[data-confirm-part="' + name + '"]') : null;
     }
 
+    var ICON_PATTERN = /^fa-[a-z0-9-]+$/;
+
+    function isForm(element) {
+        return element instanceof HTMLFormElement;
+    }
+
     function resolveForm(trigger) {
         var selector = trigger.getAttribute('data-confirm-form');
         if (selector) {
+            var target = null;
             try {
-                return document.querySelector(selector);
+                target = document.querySelector(selector);
             } catch (ignored) {
-                return null;
+                target = null;
             }
+            return isForm(target) ? target : null;
         }
-        return trigger.closest('form');
+        var closest = trigger.closest('form');
+        return isForm(closest) ? closest : null;
+    }
+
+    /**
+     * Returns the normalized path + query of {@code value} when it is a same-origin http(s) URL
+     * under /admin, otherwise null. Never returns the raw attribute value.
+     */
+    function safeAdminAction(value) {
+        if (typeof value !== 'string' || value.trim() === '') {
+            return null;
+        }
+        var url;
+        try {
+            url = new URL(value.trim(), window.location.origin);
+        } catch (ignored) {
+            return null;
+        }
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+            return null;
+        }
+        if (url.origin !== window.location.origin) {
+            return null;
+        }
+        if (url.pathname !== '/admin' && url.pathname.indexOf('/admin/') !== 0) {
+            return null;
+        }
+        return url.pathname + url.search;
+    }
+
+    function refuseAction(value) {
+        if (window.console && console.warn) {
+            console.warn('Confirm dialog: refusing to submit to a URL outside /admin on this site.', value);
+        }
     }
 
     function csrfInput() {
@@ -76,13 +120,19 @@
         HTMLFormElement.prototype.submit.call(form);
     }
 
-    function postTo(action) {
+    function postTo(rawAction) {
+        var safeAction = safeAdminAction(rawAction);
+        if (safeAction === null) {
+            refuseAction(rawAction);
+            return false;
+        }
         var form = document.createElement('form');
         form.method = 'post';
-        form.action = action;
+        form.action = safeAction;
         form.hidden = true;
         document.body.appendChild(form);
         submitForm(form);
+        return true;
     }
 
     function open(trigger) {
@@ -92,9 +142,17 @@
         }
 
         var form = resolveForm(trigger);
-        var action = trigger.getAttribute('data-confirm-action');
-        if (!form && !action) {
-            return false;
+        var action = null;
+        if (!form) {
+            var rawAction = trigger.getAttribute('data-confirm-action');
+            if (rawAction === null) {
+                return false;
+            }
+            if (safeAdminAction(rawAction) === null) {
+                refuseAction(rawAction);
+                return false;
+            }
+            action = rawAction;
         }
 
         var severityName = trigger.getAttribute('data-confirm-severity') || 'danger';
@@ -113,7 +171,8 @@
 
         var icon = part('icon');
         icon.className = 'admin-modal-icon ' + severityName;
-        icon.firstElementChild.className = 'fas ' + (trigger.getAttribute('data-confirm-icon') || severity.icon);
+        var iconName = trigger.getAttribute('data-confirm-icon');
+        icon.firstElementChild.className = 'fas ' + (iconName && ICON_PATTERN.test(iconName) ? iconName : severity.icon);
 
         var confirmButton = part('confirm');
         confirmButton.className = 'btn-modern ' + severity.button;
@@ -122,7 +181,7 @@
 
         state.trigger = trigger;
         state.form = form;
-        state.action = form ? null : action;
+        state.action = action;
 
         window.jQuery(modal).modal('show');
         return true;
@@ -139,14 +198,19 @@
         var action = state.action;
         state.form = null;
         state.action = null;
-        // Keep focus restoration from jumping while the page navigates away.
-        state.trigger = null;
 
         if (form) {
+            // Keep focus restoration from jumping while the page navigates away.
+            state.trigger = null;
             submitForm(form);
-        } else {
-            postTo(action);
+            return;
         }
+        if (postTo(action)) {
+            state.trigger = null;
+            return;
+        }
+        // Refused: close the dialog and leave the page as it was (focus returns to the trigger).
+        window.jQuery(modalEl()).modal('hide');
     }
 
     document.addEventListener('click', function (event) {
@@ -192,5 +256,5 @@
         bindModal();
     }
 
-    window.AdminConfirm = {open: open};
+    window.AdminConfirm = {open: open, safeAdminAction: safeAdminAction};
 })(window, document);
