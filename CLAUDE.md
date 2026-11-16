@@ -184,7 +184,7 @@ mvn test
 
 **Feature flow (test each PR on dev before merging):**
 1. Branch from `dev` and open the feature PR against **`dev`**.
-2. To test a PR live before merging, run the **Deploy to dev** workflow manually (Actions → Deploy to dev → Run workflow) and enter the PR's branch name in `ref`. The dev site then runs that branch, and nothing is merged.
+2. To test a PR live before merging, run the **Deploy to dev** workflow manually (Actions → Deploy to dev → Run workflow), pick the PR's branch in **Use workflow from**, and leave the text box blank. The dev site then runs that branch, and nothing is merged. For a branch created before this workflow had a manual trigger (it won't appear in the dropdown or will fail), keep **Use workflow from** on `main` and type the branch, tag, or SHA in the text box instead.
 3. To test several open PRs together, create `test/<name>` from `dev`, merge the PR branches into it, and deploy that ref. Fix problems on the original feature branch, then rebuild the `test/*` branch. Delete it when done.
 4. Review feedback goes on the open PR, and fixes are pushed to the same branch. Merge into `dev` once it passes on dev and is approved. Merging to `dev` auto-deploys it.
 
