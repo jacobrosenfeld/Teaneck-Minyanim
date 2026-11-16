@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: Branch, tag, or commit SHA to deploy to the dev site
-        required: true
-        default: dev
+        description: Optional branch, tag, or commit SHA to deploy. Leave blank to deploy the branch picked in "Use workflow from".
+        required: false
+        default: ''
 
 concurrency:
   group: deploy-dev
