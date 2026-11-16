@@ -193,6 +193,10 @@
             }
 
             .shul-switch {
+                /* Containing block for the visually hidden checkbox. Without it the absolutely positioned input
+                   is placed against the page, stretches the document past the viewport and adds a second
+                   scrollbar around #admin-main. */
+                position: relative;
                 display: inline-flex;
                 align-items: center;
                 gap: var(--space-3, 0.75rem);
@@ -203,6 +207,9 @@
 
             .shul-switch input {
                 position: absolute;
+                top: 0;
+                left: 0;
+                margin: 0;
                 opacity: 0;
                 width: 1px;
                 height: 1px;
