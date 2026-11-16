@@ -76,6 +76,11 @@ public class LoginController {
     public boolean magicLinkEnabled() {
         return magicLinkEnabled;
     }
+
+    @ModelAttribute("passkeysEnabled")
+    public boolean passkeysEnabled() {
+        return passkeysEnabled;
+    }
     
     @GetMapping("/admin/login")
     public ModelAndView login(@RequestParam(value = "error",required = false) String error, @RequestParam(value = "logout",	required = false) boolean logout) {
@@ -144,6 +149,11 @@ public class LoginController {
                     null,
                     List.of(new SimpleGrantedAuthority(user.role().getName())));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Session-fixation protection: never promote a pre-existing (possibly planted)
+            // session ID to an authenticated one. Rotate it, or start a fresh session.
+            if (request.getSession(false) != null) {
+                request.changeSessionId();
+            }
             request.getSession(true).setAttribute(
                     HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                     SecurityContextHolder.getContext());

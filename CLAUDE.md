@@ -8,7 +8,7 @@ This is a Spring Boot application that displays Jewish prayer services (minyanim
 2. **Materialized Calendar Events**: `CalendarEvent` entities are the single source of truth, pre-computed for rolling 11-week window (3 past, 8 future)
 3. **Day-Level Precedence**: Imported events suppress all rules for that org+date (applied by `EffectiveScheduleService`)
 4. **Frontend Queries**: `ZmanimService` queries materialized calendar_events via `EffectiveScheduleService`, converts to `MinyanEvent` via `CalendarEventAdapter`
-5. **Weekly Materialization**: Scheduled job runs Sunday 2 AM, deletes+rebuilds RULES events (preserves IMPORTED/MANUAL)
+5. **Scheduled Import + Materialization** (v1.21.0): The calendar import runs on the cron saved in Settings (`calendar.import.cron`, default Sunday 2 AM, site timezone), and materialization runs right after each scheduled import. Materialization deletes and rebuilds RULES events, keeping IMPORTED/MANUAL ones. It also runs on startup.
 6. **Admin UI**: Complete calendar management interface for org admins and super admins with Backpack for Laravel-inspired design
 
 **Legacy Data Flow (pre-v1.4.0 - DEPRECATED):**
@@ -65,7 +65,8 @@ All responses use `ApiResponse<T>` with `{ data, meta, error }`. See `docs/api/R
   - Delete + rebuild strategy for RULES events (preserves IMPORTED/MANUAL)
   - Rolling 11-week window (3 past, 8 future weeks)
   - Day-level precedence: if any imported events exist for org+date, suppress all rules for that day
-- **CalendarMaterializationScheduler**: `@Scheduled` task runs weekly (Sunday 2 AM) and on application startup
+- **CalendarMaterializationScheduler**: runs on application startup and from the admin "rematerialize" triggers. The weekly run comes from `CalendarImportScheduler`, which runs on the configurable import cron and materializes after each import (v1.21.0).
+- **Configurable schedules** (v1.21.0): `service/schedule/CronSchedule` (cron ↔ day/time picker, validation, minimum interval of 1 hour) and `ScheduledCronJob` (reschedule on save, fallback). Both the calendar import and the weekly review email use them. The UI is the shared fragment `templates/admin/fragments/schedule-picker.html` with `static/admin/schedule-picker.{js,css}`.
 - **EffectiveScheduleService**: Query layer that applies day-level precedence when fetching events
   - `getEffectiveEventsForDate(orgId, date)`: Returns only effective events (precedence applied)
   - `getAllEventsForDate(orgId, date)`: Returns all events for admin views
@@ -119,11 +120,19 @@ All responses use `ApiResponse<T>` with `{ data, meta, error }`. See `docs/api/R
 - **Color-Coded Badges**: Blue (rules), Green (imported), Orange (manual), semantic colors for status/type
 - **Consistent Templates**: All admin pages follow same structure (see `templates/admin/calendar-events.html`)
 - **Settings Integration**: Always inject siteName/supportEmail via `@ModelAttribute` for branding
+- **Confirmations and modals** (v1.21.0): Never use native `confirm()`, `alert()` or `prompt()`, or hand-built confirmation modals. Use the shared dialog that `admin/layout.html` includes once:
+  - Buttons: `data-confirm`, `data-confirm-title`, `data-confirm-message`, `data-confirm-severity` (danger/warning/primary). They submit the closest form, or a `data-confirm-form` selector.
+  - Script/AJAX actions: `AdminConfirm.ask({...}, onConfirm)`.
+  - Form modals: use the shared `.admin-modal` style from `static/admin/admin-modal.css`.
+  - `AdminPopupAuditTest` fails the build when this is broken.
+- **Wording**: User-facing admin text says "Shul"/"Shuls", never "Organization". Code, routes, field names and the API keep `organization`.
+- **Redirects**: Any user-supplied `rd`/return path must go through `AdminController.safeAdminRedirect` (same-site `/admin` paths only).
 - **Responsive Design**: Mobile-first, collapsible sidebar, horizontal-scrolling tables
 
 ### Security
 - **WebSecurityConfiguration**: Spring Security setup
 - **Encrypter**: Password hashing for `TNMUser`
+- **Sessions** (v1.21.0): HTTP sessions are stored in the database with Spring Session JDBC (`SPRING_SESSION` tables, created automatically), so redeploys don't sign admins out. Session attributes must be `Serializable`. The idle timeout is `SESSION_TIMEOUT` (default 7d), and the cookie's Secure flag is set by `SESSION_COOKIE_SECURE`.
 - Admin actions check org ownership: `!getCurrentUser().getOrganizationId().equals(minyan.getOrganizationId())`
 
 ## Database (MariaDB)
@@ -178,15 +187,21 @@ mvn test
 
 | Branch | Auto-deploy | Purpose |
 |--------|-------------|---------|
-| `main` | Yes → production | Stable releases only. Feature PRs target `main` and merge only once approved. |
-| `dev`  | Yes → dev site | Shared test slot. Pushing to `dev` still auto-deploys, but feature work is tested on dev **without** merging (see below). |
+| `main` | Yes → production | Stable releases only. Changes reach `main` only through a release PR from `dev`. |
+| `dev`  | Yes → dev site | Integration branch. Feature PRs target `dev` and are merged here once tested and approved. |
 | `test/*` | No (deploy manually) | Throwaway combined branches for testing several open PRs together. Never merged. |
 
-**Testing flow (PRs stay open while testing):**
-1. Open feature PRs against **`main`**. Never open a feature PR against `dev` just to test it, because merging it closes the PR.
-2. To test a branch live, run the **Deploy to dev** workflow manually (Actions → Deploy to dev → Run workflow), pick the branch in **Use workflow from**, and leave the text box blank. The dev site then runs that branch; nothing is merged. For a branch created before this workflow had a manual trigger (it won't appear in the dropdown or will fail), keep **Use workflow from** on `main` and type the branch, tag, or SHA in the text box instead.
-3. To test several open PRs at once, create `test/<name>` from `main`, merge the PR branches into it, and deploy that ref. Fix problems on the original feature branch, then rebuild the `test/*` branch. Delete it when done.
-4. Review feedback goes on the open PR, and fixes are pushed to the same branch. Merge to `main` once approved.
+**Feature flow (test each PR on dev before merging):**
+1. Branch from `dev` and open the feature PR against **`dev`**.
+2. To test a PR live before merging, run the **Deploy to dev** workflow manually (Actions → Deploy to dev → Run workflow), pick the PR's branch in **Use workflow from**, and leave the text box blank. The dev site then runs that branch, and nothing is merged. For a branch created before this workflow had a manual trigger (it won't appear in the dropdown or will fail), keep **Use workflow from** on `main` and type the branch, tag, or SHA in the text box instead.
+3. To test several open PRs together, create `test/<name>` from `dev`, merge the PR branches into it, and deploy that ref. Fix problems on the original feature branch, then rebuild the `test/*` branch. Delete it when done.
+4. Review feedback goes on the open PR, and fixes are pushed to the same branch. Merge into `dev` once it passes on dev and is approved. Merging to `dev` auto-deploys it.
+
+**Release flow (`dev` → `main`):**
+1. When `dev` holds a tested set of changes, commit the version bump (`pom.xml`) and the CHANGELOG entry on `dev`. Move `[Unreleased]` into a dated version section.
+2. Open a release PR from `dev` to `main`. GitHub only auto-closes issues when a PR merges into `main`, so list every `Fixes #N` from the included feature PRs in the release PR body.
+3. Merging the release PR deploys to production.
+4. Feature PRs merged to `dev` must not bump the version or edit the CHANGELOG independently. Put a suggested CHANGELOG entry in the PR description instead, and the release commit collects them. This avoids conflicts between parallel PRs.
 
 **Caveats:** dev is a single server, so only one ref is live at a time, and the most recent deploy wins (including an automatic deploy from a push to `dev`). The dev database is shared and Hibernate `ddl-auto=update` keeps any columns or tables a branch added after you switch away. That's harmless for additive changes, but avoid deploying branches with destructive schema changes to dev without a plan.
 

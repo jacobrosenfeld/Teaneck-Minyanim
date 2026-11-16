@@ -446,6 +446,84 @@ class CalendarMaterializationServiceTest {
         assertTrue(saved.stream().allMatch(e -> "Main".equals(e.getLocationName())));
     }
 
+    @Test
+    void syncImportedEntriesInRangeLive_setsLocationIdWhenEntryLocationMatchesOrgLocation() {
+        String orgId = "org-loc";
+        LocalDate date = LocalDate.now();
+        Organization org = Organization.builder().id(orgId).name("Org").orgColor("#000000").build();
+        Location sanctuary = new Location("L-main", "Main Sanctuary", orgId);
+
+        OrganizationCalendarEntry entry = OrganizationCalendarEntry.builder()
+                .id(501L)
+                .organizationId(orgId)
+                .date(date)
+                .classification(MinyanType.SHACHARIS)
+                .startTime(LocalTime.of(7, 0))
+                .enabled(true)
+                .location("main sanctuary")
+                .build();
+
+        when(organizationService.findById(orgId)).thenReturn(Optional.of(org));
+        when(locationService.findMatching(orgId)).thenReturn(List.of(sanctuary));
+        when(importedEntryRepository.findEntriesInRange(orgId, date, date)).thenReturn(List.of(entry));
+        when(calendarEventRepository.findByOrganizationIdAndSourceAndDateBetween(
+                orgId, EventSource.IMPORTED, date, date)).thenReturn(List.of());
+
+        service.syncImportedEntriesInRangeLive(orgId, date, date);
+
+        ArgumentCaptor<List<CalendarEvent>> captor = ArgumentCaptor.forClass(List.class);
+        verify(calendarEventRepository).saveAll(captor.capture());
+        CalendarEvent created = captor.getValue().get(0);
+        assertEquals("L-main", created.getLocationId());
+        assertEquals("Main Sanctuary", created.getLocationName());
+    }
+
+    @Test
+    void syncImportedEntriesInRangeLive_keepsAdminEditedNotesAndLocationOnMaterializedRow() {
+        String orgId = "org-edit";
+        LocalDate date = LocalDate.now();
+        Organization org = Organization.builder().id(orgId).name("Org").orgColor("#000000").build();
+
+        OrganizationCalendarEntry entry = OrganizationCalendarEntry.builder()
+                .id(601L)
+                .organizationId(orgId)
+                .date(date)
+                .classification(MinyanType.MINCHA)
+                .startTime(LocalTime.of(13, 45))
+                .enabled(true)
+                .location(null)
+                .notes(null)
+                .build();
+        CalendarEvent edited = CalendarEvent.builder()
+                .id(6L)
+                .organizationId(orgId)
+                .date(date)
+                .minyanType(MinyanType.MINCHA)
+                .startTime(LocalTime.of(13, 45))
+                .enabled(true)
+                .source(EventSource.IMPORTED)
+                .sourceRef("import-601")
+                .notes("Admin note")
+                .locationId("L-hall")
+                .locationName("Social Hall")
+                .manuallyEdited(true)
+                .build();
+
+        when(organizationService.findById(orgId)).thenReturn(Optional.of(org));
+        when(importedEntryRepository.findEntriesInRange(orgId, date, date)).thenReturn(List.of(entry));
+        when(calendarEventRepository.findByOrganizationIdAndSourceAndDateBetween(
+                orgId, EventSource.IMPORTED, date, date)).thenReturn(List.of(edited));
+
+        service.syncImportedEntriesInRangeLive(orgId, date, date);
+
+        ArgumentCaptor<List<CalendarEvent>> captor = ArgumentCaptor.forClass(List.class);
+        verify(calendarEventRepository).saveAll(captor.capture());
+        CalendarEvent saved = captor.getValue().get(0);
+        assertEquals("Admin note", saved.getNotes());
+        assertEquals("L-hall", saved.getLocationId());
+        assertEquals("Social Hall", saved.getLocationName());
+    }
+
     private com.tbdev.teaneckminyanim.minyan.Schedule fixedSchedule(String time) {
         return new com.tbdev.teaneckminyanim.minyan.Schedule(
                 time, time, time, time, time, time, time, time, time, time, time);

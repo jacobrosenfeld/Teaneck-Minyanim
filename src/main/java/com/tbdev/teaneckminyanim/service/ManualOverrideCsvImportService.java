@@ -71,7 +71,7 @@ public class ManualOverrideCsvImportService {
 
         Optional<Organization> orgOpt = organizationService.findById(orgId);
         if (orgOpt.isEmpty()) {
-            result.addError("Organization not found.");
+            result.addError("Shul not found.");
             return result;
         }
         Organization org = orgOpt.get();

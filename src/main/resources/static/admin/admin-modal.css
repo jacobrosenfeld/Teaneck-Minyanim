@@ -1,0 +1,223 @@
+/*
+ * Shared admin dialog style (.admin-modal), loaded by admin/layout.html.
+ * Used by the shared confirm dialog (fragments/confirm-modal.html) and by every
+ * admin form or info modal. Markup:
+ *   <div class="modal fade admin-modal" ...>
+ *     <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+ *       <div class="modal-header">
+ *         <div class="admin-modal-heading">
+ *           <span class="admin-modal-icon [danger|warning|success]"><i class="fas fa-..."></i></span>
+ *           <h5 class="modal-title">Title</h5>
+ *         </div>
+ *         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><i class="fas fa-xmark"></i></button>
+ *       </div>
+ *       <div class="modal-body">...</div>
+ *       <div class="modal-footer">Cancel + primary action</div>
+ *     </div></div>
+ *   </div>
+ * Add .admin-modal-lg for wider form dialogs. A form may wrap .modal-body and .modal-footer together.
+ */
+
+.admin-modal .modal-dialog {
+    max-width: 34rem;
+}
+
+.admin-modal .modal-content {
+    overflow: hidden;
+    border: 1px solid var(--border-color-light, #e9ecef);
+    border-radius: var(--radius-xl, 0.75rem);
+    background: var(--bg-surface, #fff);
+    box-shadow: var(--shadow-xl, 0 20px 25px rgba(0, 0, 0, 0.14));
+}
+
+.admin-modal .modal-header {
+    align-items: flex-start;
+    gap: var(--space-4, 1rem);
+    padding: var(--space-6, 1.5rem) var(--space-6, 1.5rem) var(--space-4, 1rem);
+    border: 0;
+}
+
+.admin-modal-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3, 0.75rem);
+    min-width: 0;
+}
+
+.admin-modal-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 2.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-full, 9999px);
+    color: var(--color-primary, #275ed8);
+    background: var(--color-primary-lighter, #e3ecfa);
+}
+
+.admin-modal-icon.danger {
+    color: #b42318;
+    background: #fef3f2;
+}
+
+.admin-modal-icon.warning {
+    color: #b54708;
+    background: #fffaeb;
+}
+
+.admin-modal .modal-title {
+    margin: 0;
+    color: var(--text-primary, #212529);
+    font-size: var(--font-size-xl, 1.25rem);
+    font-weight: var(--font-weight-semibold, 600);
+    line-height: var(--line-height-tight, 1.25);
+    overflow-wrap: anywhere;
+}
+
+.admin-modal .close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 2rem;
+    width: 2rem;
+    height: 2rem;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-full, 9999px);
+    color: var(--text-secondary, #6c757d);
+    background: transparent;
+    font-size: var(--font-size-base, 1rem);
+    opacity: 1;
+    text-shadow: none;
+}
+
+.admin-modal .close:hover,
+.admin-modal .close:focus {
+    color: var(--text-primary, #212529);
+    background: var(--bg-hover, #f5f5f5);
+}
+
+.admin-modal .modal-body {
+    padding: 0 var(--space-6, 1.5rem) var(--space-6, 1.5rem);
+    color: var(--text-secondary, #6c757d);
+    font-size: var(--font-size-base, 1rem);
+    line-height: var(--line-height-relaxed, 1.75);
+}
+
+.admin-modal-detail {
+    margin-top: var(--space-3, 0.75rem);
+    padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+    color: var(--text-primary, #212529);
+    background: var(--bg-body, #f8f9fa);
+    border: 1px solid var(--border-color-light, #e9ecef);
+    border-radius: var(--radius-lg, 0.5rem);
+    font-size: var(--font-size-sm, 0.875rem);
+    overflow-wrap: anywhere;
+}
+
+.admin-modal .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-3, 0.75rem);
+    padding: var(--space-4, 1rem) var(--space-6, 1.5rem);
+    background: var(--bg-body, #f8f9fa);
+    border-top: 1px solid var(--border-color-light, #e9ecef);
+}
+
+.admin-modal .modal-footer > * {
+    margin: 0;
+}
+
+@media (max-width: 480px) {
+    .admin-modal .modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}
+
+
+.admin-modal.admin-modal-lg .modal-dialog {
+    max-width: 44rem;
+}
+
+.admin-modal-icon.success {
+    color: #027a48;
+    background: #ecfdf3;
+}
+
+.admin-modal .modal-body .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.admin-modal .modal-footer form {
+    margin: 0;
+}
+
+.admin-modal .modal-footer .btn-modern {
+    min-width: 6.5rem;
+    padding: var(--space-3, 0.75rem) var(--space-5, 1.25rem);
+}
+
+.admin-modal .btn-danger {
+    color: var(--text-inverse, #fff);
+    border-color: #d92d20;
+    background: #d92d20;
+}
+
+.admin-modal .btn-danger:hover:not(:disabled) {
+    border-color: #b42318;
+    background: #b42318;
+}
+
+.admin-modal .btn-warning {
+    color: #7a2e0e;
+    border-color: #fedf89;
+    background: #fef0c7;
+}
+
+.admin-modal .btn-warning:hover:not(:disabled) {
+    border-color: #fdb022;
+    background: #fedf89;
+}
+
+.admin-modal .btn-primary {
+    color: var(--text-inverse, #fff);
+    border-color: var(--color-primary, #275ed8);
+    background: var(--color-primary, #275ed8);
+}
+
+.admin-modal .btn-primary:hover:not(:disabled) {
+    border-color: var(--color-primary-dark, #1e4db3);
+    background: var(--color-primary-dark, #1e4db3);
+}
+
+/* Highlighted warning box inside a dialog body. */
+.admin-modal-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3, 0.75rem);
+    padding: var(--space-4, 1rem);
+    border: 1px solid #fecdca;
+    border-radius: var(--radius-lg, 0.5rem);
+    color: #912018;
+    background: #fef3f2;
+}
+
+.admin-modal-warning i {
+    margin-top: 0.3rem;
+}
+
+@media (max-width: 576px) {
+    .admin-modal .modal-dialog {
+        margin: var(--space-4, 1rem);
+    }
+
+    .admin-modal .modal-footer,
+    .admin-modal .modal-footer form,
+    .admin-modal .modal-footer .btn-modern {
+        width: 100%;
+    }
+}

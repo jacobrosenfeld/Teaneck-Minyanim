@@ -13,6 +13,7 @@ import com.tbdev.teaneckminyanim.minyan.Schedule;
 import com.tbdev.teaneckminyanim.service.auth.PasskeyCredentialService;
 import com.tbdev.teaneckminyanim.service.auth.MagicLinkService;
 import com.tbdev.teaneckminyanim.service.email.WeeklyMinyanReviewEmailScheduler;
+import com.tbdev.teaneckminyanim.service.calendar.CalendarImportScheduler;
 import com.tbdev.teaneckminyanim.tools.IDGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -80,6 +81,9 @@ public class AdminController {
     private WeeklyMinyanReviewEmailScheduler weeklyReviewScheduler;
 
     @Autowired
+    private CalendarImportScheduler calendarImportScheduler;
+
+    @Autowired
     private UserManagementService userManagementService;
 
     @ModelAttribute("siteName")
@@ -119,7 +123,7 @@ public class AdminController {
 
     private void requireOrganizationAccess(String orgId) {
         if (!canAccessOrganization(orgId)) {
-            throw new AccessDeniedException("You do not have permission to access this organization.");
+            throw new AccessDeniedException("You do not have permission to access this shul.");
         }
     }
 
@@ -199,7 +203,7 @@ public class AdminController {
     private boolean hasUserPermissions(String orgId) throws Exception {
         Optional<Organization> org = organizationService.findById(orgId);
         if (org.isEmpty()) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         } else {
 //            verify user has user permissions for this organization
             return canAccessOrganization(org.get().getId());
@@ -278,6 +282,7 @@ public class AdminController {
         mv.addObject("applicationSettingsByCategory", applicationSettingsByCategory);
         mv.addObject("settingSections", buildSettingsPageSections(applicationSettingsByCategory));
         mv.addObject("emailProvider", this.settingsService.getEmailProvider());
+        mv.addObject("importSchedule", calendarImportScheduler.currentView());
 
         addStandardPageData(mv);
 
@@ -322,6 +327,9 @@ public class AdminController {
             if (key == SettingKey.TIMEZONE) {
                 weeklyReviewScheduler.reschedule();
             }
+            if (key == SettingKey.TIMEZONE || key == SettingKey.CALENDAR_IMPORT_CRON) {
+                calendarImportScheduler.reschedule();
+            }
 
             log.info("Application setting updated: {} = {} by user {}",
                     key.getKey(),
@@ -354,7 +362,7 @@ public class AdminController {
 
         Map<String, List<SettingsPageField>> fieldsByCategory = new LinkedHashMap<>();
         for (SettingKey key : SettingKey.values()) {
-            if ("Email".equals(key.getCategory())) {
+            if ("Email".equals(key.getCategory()) || isCalendarImportScheduleKey(key)) {
                 continue;
             }
             com.tbdev.teaneckminyanim.model.ApplicationSettings setting = settingsByKey.get(key.getKey());
@@ -393,6 +401,11 @@ public class AdminController {
             }
         });
         return sections;
+    }
+
+    /** Edited by the dedicated schedule picker on the settings page, not as plain fields. */
+    private static boolean isCalendarImportScheduleKey(SettingKey key) {
+        return key == SettingKey.CALENDAR_IMPORT_CRON || key == SettingKey.CALENDAR_IMPORT_SCHEDULE_MODE;
     }
 
     private List<String> settingsCategoryOrder() {
@@ -518,6 +531,9 @@ public class AdminController {
         if (key == SettingKey.CALENDAR_IMPORT_CRON) {
             return "0 0 2 * * SUN";
         }
+        if (key == SettingKey.GTM_CONTAINER_ID) {
+            return "GTM-XXXXXXX (blank turns Tag Manager off)";
+        }
         if ("INTEGER".equals(settingType)) {
             return "30";
         }
@@ -590,7 +606,7 @@ public class AdminController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/new-organization");
 
-        mv.getModel().put("successmessage", success ? "The organization was successfully created." : null);
+        mv.getModel().put("successmessage", success ? "The shul was successfully created." : null);
         mv.getModel().put("errormessage", error);
         mv.getModel().put("inputerrormessage", inputErrorMessage);
 
@@ -887,7 +903,7 @@ public class AdminController {
             Organization organization = getOrganization(organizationId);
             if (organization == null) {
 //                    TODO: HANDLE ERROR CORRECTLY
-                throw new Exception("Organization not found.");
+                throw new Exception("Shul not found.");
             }
 
             mv.getModel().put("organization", organization);
@@ -899,7 +915,7 @@ public class AdminController {
                     .map(TNMUser::getId)
                     .collect(Collectors.toSet()));
         } else {
-            throw new AccessDeniedException("You are not authorized to view this organization.");
+            throw new AccessDeniedException("You are not authorized to view this shul.");
         }
 
         addStandardPageData(mv);
@@ -921,12 +937,12 @@ public class AdminController {
 
         Organization organization = getOrganization(id);
         if (organization == null) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         }
 
 //        validate input
         if (name == null || name.isEmpty()) {
-            return organization(id, null, null, "Organization name cannot be empty.", null);
+            return organization(id, null, null, "Shul name cannot be empty.", null);
         }
 
         URI siteURI = null;
@@ -968,7 +984,7 @@ public class AdminController {
                 return organization(id, null, null, "Sorry, the update failed.", null);
             }
         } else {
-            throw new AccessDeniedException("You do not have permission to view this organization.");
+            throw new AccessDeniedException("You do not have permission to view this shul.");
         }
     }
 
@@ -977,17 +993,18 @@ public class AdminController {
                                             @RequestParam(value = "rd", required = false) String redirect) throws Exception {
         Optional<Organization> organization = this.organizationService.findById(id);
         if (organization.isEmpty()) {
-            return organizations(null, "Sorry, the organization could not be found.");
+            return organizations(null, "Sorry, the shul could not be found.");
         }
 
         if (!canAccessOrganization(organization.get().getId())) {
-            throw new AccessDeniedException("You do not have permission to disable this organization.");
+            throw new AccessDeniedException("You do not have permission to disable this shul.");
         }
 
         organization.get().setEnabled(false);
         this.organizationService.update(organization.get());
 
-        RedirectView redirectView = new RedirectView(redirect != null ? redirect : "/admin/organization?id=" + id, true);
+        String safeRedirect = safeAdminRedirect(redirect);
+        RedirectView redirectView = new RedirectView(safeRedirect != null ? safeRedirect : "/admin/organization?id=" + id, true);
         return new ModelAndView(redirectView);
     }
 
@@ -996,17 +1013,18 @@ public class AdminController {
                                            @RequestParam(value = "rd", required = false) String redirect) throws Exception {
         Optional<Organization> organization = this.organizationService.findById(id);
         if (organization.isEmpty()) {
-            return organizations(null, "Sorry, the organization could not be found.");
+            return organizations(null, "Sorry, the shul could not be found.");
         }
 
         if (!canAccessOrganization(organization.get().getId())) {
-            throw new AccessDeniedException("You do not have permission to enable this organization.");
+            throw new AccessDeniedException("You do not have permission to enable this shul.");
         }
 
         organization.get().setEnabled(true);
         this.organizationService.update(organization.get());
 
-        RedirectView redirectView = new RedirectView(redirect != null ? redirect : "/admin/organization?id=" + id, true);
+        String safeRedirect = safeAdminRedirect(redirect);
+        RedirectView redirectView = new RedirectView(safeRedirect != null ? safeRedirect : "/admin/organization?id=" + id, true);
         return new ModelAndView(redirectView);
     }
 
@@ -1016,15 +1034,15 @@ public class AdminController {
 //            get organization and check if it exists
             Optional<Organization> organization = this.organizationService.findById(id);
             if (organization.isEmpty()) {
-                return organizations(null, "Sorry, the organization could not be deleted.");
+                return organizations(null, "Sorry, the shul could not be deleted.");
             } else {
                 if (organization.get().isEnabled()) {
-                    return organization(id, null, "Disable the organization before deleting.", null, null);
+                    return organization(id, null, "Disable the shul before deleting.", null, null);
                 }
                 if (this.organizationService.delete(organization.get())) {
-                    return organizations("Successfully deleted the organization.", null);
+                    return organizations("Successfully deleted the shul.", null);
                 } else {
-                    return organizations(null, "Sorry, the organization could not be deleted.");
+                    return organizations(null, "Sorry, the shul could not be deleted.");
                 }
             }
         } /*else if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority(Role.USER.getName()))) {
@@ -1032,22 +1050,22 @@ public class AdminController {
             TNMUser user = this.TNMUserDAO.findByName(username);
             String associatedOrganizationId = user.getOrganizationId();
             if (!associatedOrganizationId.equals(id)) {
-                throw new AccessDeniedException("You do not have permission to view this organization.");
+                throw new AccessDeniedException("You do not have permission to view this shul.");
             } else {
 //                get organization and check if it exists
                 Organization organization = this.organizationDAO.findById(id);
                 if (organization != null) {
                     if (this.organizationDAO.delete(organization)) {
-                        return organizations("Successfully deleted the organization.", null);
+                        return organizations("Successfully deleted the shul.", null);
                     } else {
                         return organizations(null, "Sorry, the delete failed.");
                     }
                 } else {
-                    return organizations(null, "Sorry, the organization could not be deleted.");
+                    return organizations(null, "Sorry, the shul could not be deleted.");
                 }
             }
         }*/ else {
-            throw new AccessDeniedException("You do not have permission to delete an organization.");
+            throw new AccessDeniedException("You do not have permission to delete a shul.");
         }
     }
 
@@ -1088,8 +1106,13 @@ public class AdminController {
             throw new AccessDeniedException("You do not have permission to disable this account.");
         }
 
+        String safeRedirect = safeAdminRedirect(redirect);
+
         TNMUser account = this.TNMUserDAO.findById(id);
         if (account == null) {
+            if (safeRedirect != null) {
+                return redirectWithFlash(safeRedirect, "errorMessage", "Account not found.");
+            }
             return accounts(null, "Account not found.");
         }
 
@@ -1099,14 +1122,64 @@ public class AdminController {
         }
 
         account.setEnabled(false);
-        this.TNMUserDAO.update(account);
+        boolean updated = this.TNMUserDAO.update(account);
 
-        if (redirect != null) {
-            RedirectView redirectView = new RedirectView(redirect, true);
-            return new ModelAndView(redirectView);
+        if (safeRedirect != null) {
+            return updated
+                    ? redirectWithFlash(safeRedirect, "successMessage", "Disabled " + account.getUsername() + ".")
+                    : redirectWithFlash(safeRedirect, "errorMessage", "Sorry, " + account.getUsername() + " could not be disabled.");
         }
 
         return account(id, "Account disabled successfully.", null, null);
+    }
+
+    /**
+     * Returns {@code rd} only when it is a same-site path inside the admin panel, such as
+     * {@code /admin/organization?id=abc}. Absolute URLs, protocol-relative {@code //host} values,
+     * backslashes, control characters and paths outside {@code /admin} return {@code null}, so
+     * callers fall back to their default page instead of redirecting off-site.
+     */
+    static String safeAdminRedirect(String rd) {
+        if (rd == null || rd.isBlank()) {
+            return null;
+        }
+        String candidate = rd.trim();
+        if (!(candidate.equals("/admin") || candidate.startsWith("/admin/") || candidate.startsWith("/admin?"))) {
+            return null;
+        }
+        for (int i = 0; i < candidate.length(); i++) {
+            char c = candidate.charAt(i);
+            if (c == '\\' || Character.isISOControl(c) || Character.isWhitespace(c)) {
+                return null;
+            }
+        }
+        try {
+            URI uri = new URI(candidate);
+            if (uri.getScheme() != null || uri.getRawAuthority() != null) {
+                return null;
+            }
+            String path = uri.getPath();
+            if (path == null || path.contains("/../") || path.endsWith("/..")) {
+                return null;
+            }
+        } catch (URISyntaxException e) {
+            return null;
+        }
+        return candidate;
+    }
+
+    /** Redirects to a path already checked by {@link #safeAdminRedirect} and carries one flash message. */
+    private ModelAndView redirectWithFlash(String safePath, String key, String message) {
+        org.springframework.web.context.request.RequestAttributes attributes =
+                org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        if (attributes instanceof org.springframework.web.context.request.ServletRequestAttributes servletAttributes) {
+            org.springframework.web.servlet.FlashMap flash =
+                    org.springframework.web.servlet.support.RequestContextUtils.getOutputFlashMap(servletAttributes.getRequest());
+            if (flash != null) {
+                flash.put(key, message);
+            }
+        }
+        return new ModelAndView(new RedirectView(safePath, true));
     }
 
     @PostMapping("/admin/account/enable")
@@ -1126,9 +1199,9 @@ public class AdminController {
         account.setEnabled(true);
         this.TNMUserDAO.update(account);
 
-        if (redirect != null) {
-            RedirectView redirectView = new RedirectView(redirect, true);
-            return new ModelAndView(redirectView);
+        String safeRedirect = safeAdminRedirect(redirect);
+        if (safeRedirect != null) {
+            return new ModelAndView(new RedirectView(safeRedirect, true));
         }
 
         return account(id, "Account enabled successfully.", null, null);
@@ -1355,6 +1428,7 @@ public class AdminController {
 
             // Update the setting
             settingsService.updateSettingByKey(settingKey, settingValue);
+            rescheduleCalendarImportIfNeeded(settingKey);
             
             log.info("Application setting updated: {} = {} by user {}", 
                     settingKey,
@@ -1369,6 +1443,13 @@ public class AdminController {
         } catch (Exception e) {
             log.error("Error updating setting {}: {}", settingKey, e.getMessage(), e);
             return settings(null, "Error updating setting: " + e.getMessage());
+        }
+    }
+
+    private void rescheduleCalendarImportIfNeeded(String settingKey) {
+        if (SettingKey.CALENDAR_IMPORT_CRON.getKey().equals(settingKey)
+                || SettingKey.TIMEZONE.getKey().equals(settingKey)) {
+            calendarImportScheduler.reschedule();
         }
     }
 
@@ -1486,7 +1567,7 @@ public class AdminController {
     public ModelAndView locations(@PathVariable(value = "oid") String oid, String successMessage, String errorMessage) {
         Organization organization = getOrganization(oid);
         if (organization == null) {
-            throw new AccessDeniedException("Organization not found.");
+            throw new AccessDeniedException("Shul not found.");
         }
         String oidToUse = organization.getId();
 
@@ -1510,7 +1591,7 @@ public class AdminController {
     public ModelAndView createLocation(@RequestParam(value = "name", required = true) String name, @RequestParam(value = "oid", required = true) String organizationId) {
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
-            throw new AccessDeniedException("Organization not found.");
+            throw new AccessDeniedException("Shul not found.");
         }
 
         if (name.isEmpty()) {
@@ -1534,7 +1615,7 @@ public class AdminController {
             throw new AccessDeniedException("Location not found.");
         }
         if (!canAccessOrganization(locationToUpdate.getOrganizationId())) {
-            throw new AccessDeniedException("You do not have permission to update a location for this organization.");
+            throw new AccessDeniedException("You do not have permission to update a location for this shul.");
         }
 
         String organizationId = locationToUpdate.getOrganizationId();
@@ -1559,7 +1640,7 @@ public class AdminController {
         }
         String organizationId = locationToDelete.getOrganizationId();
         if (!canAccessOrganization(locationToDelete.getOrganizationId())) {
-            throw new AccessDeniedException("You do not have permission to delete a location for this organization.");
+            throw new AccessDeniedException("You do not have permission to delete a location for this shul.");
         }
 
         if (locationDAO.delete(locationToDelete)) {
@@ -1579,7 +1660,7 @@ public class AdminController {
 
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
-            throw new AccessDeniedException("Organization not found.");
+            throw new AccessDeniedException("Shul not found.");
         }
         String oidToUse = organization.getId();
 
@@ -1674,7 +1755,7 @@ public class AdminController {
 
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
-            throw new AccessDeniedException("Organization not found.");
+            throw new AccessDeniedException("Shul not found.");
         }
         String oidToUse = organization.getId();
 
@@ -1770,8 +1851,9 @@ public class AdminController {
         calendarMaterializationService.syncRulesForOrganizationLive(minyan.getOrganizationId());
 
         ModelAndView mv = new ModelAndView();
-        if (rd != null) {
-            mv.setViewName("redirect:" + rd);
+        String safeRedirect = safeAdminRedirect(rd);
+        if (safeRedirect != null) {
+            mv.setViewName("redirect:" + safeRedirect);
         } else {
             mv.setViewName("redirect:/admin/" + minyan.getOrganizationId() + "/minyanim");
         }
@@ -1795,8 +1877,9 @@ public class AdminController {
         calendarMaterializationService.syncRulesForOrganizationLive(minyan.getOrganizationId());
 
         ModelAndView mv = new ModelAndView();
-        if (rd != null) {
-            mv.setViewName("redirect:" + rd);
+        String safeRedirect = safeAdminRedirect(rd);
+        if (safeRedirect != null) {
+            mv.setViewName("redirect:" + safeRedirect);
         } else {
             mv.setViewName("redirect:/admin/" + minyan.getOrganizationId() + "/minyanim");
         }
@@ -1875,7 +1958,7 @@ public class AdminController {
 //        get and verify organization
         Organization organization = getOrganization(orgId);
         if (organization == null) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         }
 
         ModelAndView mv = newMinyan(orgId);
@@ -1958,7 +2041,7 @@ public class AdminController {
 //        authenticate user has permission to edit minyan
         Organization minyanOrganization = getOrganization(minyan.getOrganizationId());
         if (minyanOrganization == null) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         }
         mv.addObject("minyan", minyan);
         mv.addObject("organization", minyanOrganization);
@@ -2029,7 +2112,7 @@ public class AdminController {
 //        confirm user has access to organization
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         }
 
         Minyan oldMinyan = minyanService.findById(minyanId);
@@ -2037,7 +2120,7 @@ public class AdminController {
             throw new Exception("Minyan not found.");
         }
         if (!organization.getId().equals(oldMinyan.getOrganizationId())) {
-            throw new AccessDeniedException("Minyan does not belong to this organization.");
+            throw new AccessDeniedException("Minyan does not belong to this shul.");
         }
 
         String organizationColor = organization.getOrgColor();
@@ -2105,7 +2188,7 @@ public class AdminController {
 
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         }
 
         Minyan minyan = minyanService.findById(minyanId);
@@ -2142,7 +2225,7 @@ public class AdminController {
             Organization org = getOrganization(orgId);
             if (org == null) {
                 ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
-                mv.addObject("errorMessage", "Organization not found");
+                mv.addObject("errorMessage", "Shul not found");
                 return mv;
             }
 
@@ -2421,7 +2504,7 @@ public class AdminController {
         try {
             Organization org = getOrganization(orgId);
             if (org == null) {
-                String message = "Organization not found";
+                String message = "Shul not found";
                 if (ajaxRequest) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(Map.of("success", false, "message", message));
@@ -2440,7 +2523,7 @@ public class AdminController {
                 
                 // Verify entry belongs to this organization
                 if (!entry.getOrganizationId().equals(orgId)) {
-                    throw new AccessDeniedException("Entry does not belong to this organization");
+                    throw new AccessDeniedException("Entry does not belong to this shul");
                 }
 
                 // Toggle enabled status
@@ -2509,7 +2592,7 @@ public class AdminController {
         try {
             Organization org = getOrganization(orgId);
             if (org == null) {
-                String message = "Organization not found";
+                String message = "Shul not found";
                 if (ajaxRequest) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(Map.of("success", false, "message", message));
@@ -2535,7 +2618,7 @@ public class AdminController {
 
             // Verify entry belongs to this organization
             if (!entry.getOrganizationId().equals(orgId)) {
-                throw new AccessDeniedException("Entry does not belong to this organization");
+                throw new AccessDeniedException("Entry does not belong to this shul");
             }
 
             String successMessage;
@@ -2599,7 +2682,7 @@ public class AdminController {
         try {
             Organization org = getOrganization(orgId);
             if (org == null) {
-                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Shul+not+found");
             }
 
             // Delete all existing entries for this organization

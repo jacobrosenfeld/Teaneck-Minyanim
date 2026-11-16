@@ -10,7 +10,7 @@
   </parent>  
   <groupId>com.tbdev</groupId>  
   <artifactId>Teaneck-Minyanim</artifactId>  
-  <version>1.20.0</version>
+  <version>1.21.0</version>
   <name>Teaneck-Minyanim</name>
   <description>Teaneck-Minyanim</description>
   <properties>
@@ -115,6 +115,11 @@
       <artifactId>spring-security-test</artifactId>  
       <scope>test</scope> 
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.mariadb.jdbc</groupId>
@@ -132,6 +137,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- Persist admin HTTP sessions in the database so redeploys don't log users out -->
+    <dependency>
+      <groupId>org.springframework.session</groupId>
+      <artifactId>spring-session-jdbc</artifactId>
     </dependency>
 
     <dependency>

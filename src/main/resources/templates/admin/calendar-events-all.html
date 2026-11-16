@@ -350,13 +350,16 @@
         <div>
             <h1 class="page-title">Master Calendar</h1>
             <p class="page-description"
-               th:text="|Materialized calendar events across all organizations on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
+               th:text="|Materialized calendar events across all shuls on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
         </div>
         <div class="page-actions">
-            <form method="post" action="/admin/calendar-events/rematerialize-all"
-                  style="display: inline;"
-                  onsubmit="return confirm('Rematerialize calendar events for ALL organizations? This may take a moment.')">
-                <button type="submit" class="btn-modern btn-secondary">
+            <form method="post" th:action="@{/admin/calendar-events/rematerialize-all}"
+                  style="display: inline;">
+                <button type="button" class="btn-modern btn-secondary"
+                        data-confirm data-confirm-severity="primary" data-confirm-icon="fa-sync-alt"
+                        data-confirm-title="Rematerialize all shuls?"
+                        data-confirm-message="Rule-based calendar events are rebuilt for every shul. Imported and manual events are kept. This may take a moment."
+                        data-confirm-label="Rematerialize all">
                     <i class="fas fa-sync-alt"></i>
                     <span>Rematerialize All</span>
                 </button>
@@ -397,13 +400,13 @@
             <form method="get" action="/admin/calendar-events/all">
                 <div class="filter-grid">
                     <div>
-                        <label class="field-label">Organization</label>
+                        <label class="field-label">Shul</label>
                         <select name="organizationId">
-                            <option value="">All Organizations</option>
+                            <option value="">All Shuls</option>
                             <option th:each="org : ${organizations}"
                                     th:value="${org.id}"
                                     th:text="${org.name}"
-                                    th:selected="${org.id == organizationFilter}">Organization</option>
+                                    th:selected="${org.id == organizationFilter}">Shul</option>
                         </select>
                     </div>
                     <div>
@@ -475,7 +478,7 @@
                 <thead>
                     <tr>
                         <th class="sortable" data-col="org" onclick="sortCol(this)">
-                            Organization <i class="sort-icon fas fa-sort"></i>
+                            Shul <i class="sort-icon fas fa-sort"></i>
                         </th>
                         <th class="sortable" data-col="date" onclick="sortCol(this)">
                             Date <i class="sort-icon fas fa-sort"></i>
@@ -562,9 +565,13 @@
                             <form th:if="${event.source.name() == 'MANUAL'}"
                                   method="post"
                                   th:action="@{/admin/{orgId}/calendar-events/{eventId}/delete(orgId=${event.organizationId},eventId=${event.id})}"
-                                  style="display: inline;"
-                                  onsubmit="return confirm('Delete this manual event?')">
-                                <button type="submit" class="mc-btn mc-btn-delete">Delete</button>
+                                  style="display: inline;">
+                                <button type="button" class="mc-btn mc-btn-delete"
+                                        data-confirm data-confirm-severity="danger" data-confirm-icon="fa-trash"
+                                        data-confirm-title="Delete this manual event?"
+                                        data-confirm-message="The manual event is removed from the calendar. It cannot be undone."
+                                        data-confirm-label="Delete event"
+                                        th:data-confirm-detail="${event.minyanType.displayName() + ' · ' + #temporals.format(event.date, 'EEE, MMM d, yyyy') + ' · ' + #temporals.format(event.startTime, 'h:mm a')}">Delete</button>
                             </form>
                         </td>
                     </tr>

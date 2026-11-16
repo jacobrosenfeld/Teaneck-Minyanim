@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.21.0] - 2026-11-16
+
+### Added
+- **Schedule picker for the calendar import (#309, #317)**: Settings → Calendar Import has a simple picker in place of the raw cron box:
+  - Daily or Weekly, with Sun–Sat day pills.
+  - A time in the site timezone.
+  - A readable summary and the next run time.
+  - An **Advanced** mode for raw cron. Switching back to Simple parses the cron, or asks before replacing a custom schedule.
+  - The chosen mode is saved in `calendar.import.schedule.mode`.
+- **Weekly review email schedule (#317)**: Email Settings → Weekly Review Emails uses the same picker.
+  - The schedule is stored in the new `email.weekly-review.cron` / `email.weekly-review.schedule.mode` settings.
+  - While the cron is blank, it is worked out from the existing send day and time, so current installs keep their send time.
+  - The digest always covers the upcoming Sunday–Saturday, whatever day it is sent.
+- **Live cron validation (#317)**: Both pickers check the cron as you type, using the server's parser. Invalid or empty crons show an inline error, and Save stays disabled until they are fixed. The server checks every save again.
+- **Google Tag Manager setting (#147)**: `analytics.gtm.container-id` (default `GTM-T2P4J8V`, so tracking is unchanged) lets super admins change or turn off GTM without a deploy. It applies to public and admin pages, and the value is escaped in the snippets.
+- **Homepage filter analytics (#221)**: Filter changes push `homepage_filter_type_selected` and `homepage_filter_shul_selected` events to `dataLayer`. Parameters: `page`, `interaction_source`, `filter_value`, `filter_type`, `filter_org`, `filter_active`, `visible_count`, `is_today`. To send them to GA4, add GA4 Event tags in GTM.
+- **Shared confirmation dialog (#223, #315)**: Every admin confirmation uses one in-app dialog, colour-coded by severity, in place of browser popups and per-page modals:
+  - User Management, account, shul and sidebar actions.
+  - Notifications, locations and minyanim.
+  - Maintenance and the calendar pages.
+  - Overrides and the schedule picker.
+
+  Form modals share one style (`admin-modal.css`). A test now fails the build if an admin page uses a native popup.
+- **Sign in with a passkey button (#301, #316)**: The admin login page has a visible passkey button that starts sign-in without an email. On browsers without passkey support it is hidden, with a note pointing to the email sign-in link.
+- **Expired notifications (#304, #314)**: Notifications past their expiration date show a red "Expired" status pill, which takes precedence over Enabled/Disabled, and their date is shown in red.
+  - Re-enabling an expired notification explains that it stays hidden until the date changes, and offers a shortcut to edit it.
+  - The create and edit forms warn when the chosen date has already passed.
+
+### Changed
+- **Admin sessions survive redeploys (#302, #316)**: HTTP sessions are stored in the database with Spring Session JDBC. The `SPRING_SESSION` tables are created automatically.
+  - The idle timeout is configurable with `SESSION_TIMEOUT` (default 7 days).
+  - Cookies stay HttpOnly and SameSite=Lax, with Secure set by `SESSION_COOKIE_SECURE`.
+  - Everyone is signed out once on the first deploy of this version.
+- **Calendar import follows its schedule (#309)**: The import now runs on the saved cron in the site timezone, and changes apply immediately without a restart. Materialization runs right after each scheduled import instead of as a separate Sunday 2 AM job.
+- **Schedules can't run more than once an hour (#317)**: The server rejects calendar import and weekly email crons that would run more often.
+- **"Shul" wording (#207, #319)**: The admin panel says "Shul"/"Shuls" instead of "Organization" in navigation, titles, labels, buttons, confirmations and messages. Routes, form fields and the public API are unchanged.
+- **Shul profile page (#210, #315)**: `/admin/organization` is restyled to match Settings:
+  - Section tabs and cards for Profile, Nusach & color, Calendar import and Accounts.
+  - A Save row at the end of the profile form.
+  - A small "Unsaved changes · Save" reminder only while there are unsaved edits.
+- **A shul's only account can be disabled (#315)**: The shul page no longer blocks this, which matches User Management.
+- **Notifications page (#208, #314)**: Restyled to the current admin design, with stat cards, a table card and modern create/edit dialogs.
+- **Imported locations (#225, #313)**: Imported calendar locations now map to the shul's Location records. Case, punctuation and Bais/Beis/Midrash/Medrash spelling differences are ignored. Imported events carry the matched `location_id`, and admin edits to a materialized imported event's notes or location are kept on later syncs.
+
+### Fixed
+- **Import schedule setting was ignored (#309)**: `calendar.import.cron` was saved but never used, because both schedulers hardcoded `0 0 2 * * SUN`.
+- **Stray "Main" notes on imported entries (#225, #313)**: "Main" in a location name ("Main Sanctuary", "Main Bais Medrash") is no longer added to the notes. Unmatched location text now gives no location and no notes.
+- **Disable button on the shul page (#303, #315)**: It now asks for confirmation, disables the account and returns to the shul page with a message.
+- **Shul page crash for older shuls (#315)**: Shuls with no calendar-import flag stored crashed the page partway through rendering. The page is also now null-safe for accounts without a role.
+- **Shul page double scrollbar (#315)**: A hidden toggle input stretched the page, so the shul page scrolled inside a second scrollbar.
+- **Toasts on the shul page (#315)**: Success and error messages now appear.
+- **Notification expiration drift (#314)**: Editing a notification no longer shifts its expiration date by the UTC offset on each save.
+- **Hebrew on the login page (#301, #316)**: The header quote no longer displays backwards on iPhone and iPad.
+- **SES setting description (#317)**: The AWS SES configuration-set setting no longer shows the weekly review email's description.
+
+### Security
+- **Open redirect closed (#315)**: `rd` return paths on account, shul and minyan enable/disable now only go to same-site `/admin` paths.
+- **Confirm dialog action URLs validated (#315)**: Fixes CodeQL alert js/xss-through-dom.
+- **Session fixation (#316)**: Passkey and magic-link logins now rotate the session ID, as password login already did.
+- **Password hash no longer logged (#316)**: Successful logins no longer write account details, including the password hash, to the server log. Accounts without a valid role are rejected cleanly.
+- **Passkey registration with stored sessions (#316)**: It keeps working, using a serializable options repository.
+
+### Removed
+- **Unused files**: The stale `organization.html.bak`, `settings.html.bak` and `settings.html.bak2` templates, and the unused `static/admin/organization.js` and `static/admin/calendar-events-tabulator.js`.
+
 ## [1.20.0] - 2026-11-15
 
 ### Added

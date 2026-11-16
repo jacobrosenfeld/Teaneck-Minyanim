@@ -4,16 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
- * Scheduled job for materializing calendar events.
- * 
+ * Startup and manual triggers for materializing calendar events.
+ *
  * Runs:
  * - On application startup (initial materialization)
- * - Every Sunday at 2 AM (weekly refresh)
- * 
+ * - Right after each scheduled calendar import, on the schedule saved in the
+ *   calendar import settings (see {@code CalendarImportScheduler}). That replaces the
+ *   former fixed "Sunday 2 AM" materialization cron.
+ *
  * Can also be triggered manually via admin endpoint.
  */
 @Slf4j
@@ -35,22 +36,6 @@ public class CalendarMaterializationScheduler {
             log.info("Initial calendar materialization completed successfully");
         } catch (Exception e) {
             log.error("Initial calendar materialization failed: {}", e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Run materialization weekly on Sunday at 2 AM.
-     * Cron: second, minute, hour, day of month, month, day of week
-     * "0 0 2 * * SUN" = 2:00 AM every Sunday
-     */
-    @Scheduled(cron = "0 0 2 * * SUN")
-    public void materializeWeekly() {
-        log.info("Running scheduled weekly calendar materialization");
-        try {
-            materializationService.materializeAll();
-            log.info("Scheduled weekly calendar materialization completed successfully");
-        } catch (Exception e) {
-            log.error("Scheduled weekly calendar materialization failed: {}", e.getMessage(), e);
         }
     }
 

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+    Shared confirmation dialog. admin/layout.html includes it once on every admin page.
+    Triggers carry data-confirm and the data-confirm-* attributes documented in /admin/confirm-modal.js.
+    Its look (.admin-modal) lives in /admin/admin-modal.css so any admin modal can share it.
+-->
+<th:block th:fragment="confirmModal">
+
+    <noscript>
+        <div class="alert alert-warning m-3" role="alert">
+            JavaScript is required to confirm and complete delete or disable actions on this page.
+        </div>
+    </noscript>
+
+    <div class="modal fade admin-modal" id="confirm-modal" tabindex="-1" role="dialog"
+         aria-modal="true" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-message"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="admin-modal-heading">
+                        <span class="admin-modal-icon danger" data-confirm-part="icon" aria-hidden="true"><i class="fas fa-triangle-exclamation"></i></span>
+                        <h5 class="modal-title" id="confirm-modal-title" data-confirm-part="title">Are you sure?</h5>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0" id="confirm-modal-message" data-confirm-part="message">This action cannot be undone.</p>
+                    <div class="admin-modal-detail" data-confirm-part="detail" hidden></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modern btn-outline" data-dismiss="modal" data-confirm-part="cancel">Cancel</button>
+                    <button type="button" class="btn-modern btn-secondary" data-confirm-part="secondary" hidden><i hidden aria-hidden="true"></i><span></span></button>
+                    <button type="button" class="btn-modern btn-danger" data-confirm-part="confirm"><span>Confirm</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/admin/confirm-modal.js}"></script>
+</th:block>
+</body>
+</html>

@@ -49,24 +49,36 @@
                                 <a class="btn-modern btn-secondary" th:href="@{/admin/account(id=${account.id})}">Account settings</a>
                                 <form th:action="@{/admin/users/send-welcome}" method="post"><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-secondary" type="submit" th:disabled="${!account.enabled}">Resend welcome email</button></form>
                                 <form th:action="@{/admin/users/send-link}" method="post"><input type="hidden" name="id" th:value="${account.id}"><button class="btn-modern btn-secondary" type="submit" th:disabled="${!account.enabled}">Send sign-in link</button></form>
-                                <form th:if="${account.id != user.id}" th:action="@{/admin/users/revoke-passkeys}" method="post"
-                                      data-confirm="Revoke all passkeys for this user? They will need an emailed sign-in link to register replacements.">
+                                <form th:if="${account.id != user.id}" th:action="@{/admin/users/revoke-passkeys}" method="post">
                                     <input type="hidden" name="id" th:value="${account.id}">
-                                    <button class="btn-modern btn-danger" type="submit"
+                                    <button class="btn-modern btn-danger" type="button"
+                                            data-confirm data-confirm-severity="danger" data-confirm-icon="fa-key"
+                                            th:data-confirm-title="|Revoke passkeys for ${account.username}?|"
+                                            data-confirm-message="They will need an emailed sign-in link to register replacements."
+                                            data-confirm-label="Revoke passkeys"
+                                            th:data-confirm-detail="${account.email}"
                                             th:disabled="${passkeyCount == null or passkeyCount == 0}">Revoke passkeys</button>
                                 </form>
-                                <form th:if="${account.id != user.id}" th:action="@{/admin/users/status}" method="post"
-                                      th:attr="data-confirm=${account.enabled} ? |Disable ${account.username}? They will lose access until re-enabled.| : null">
+                                <form th:if="${account.id != user.id}" th:action="@{/admin/users/status}" method="post">
                                     <input type="hidden" name="id" th:value="${account.id}">
                                     <input type="hidden" name="enabled" th:value="${!account.enabled}">
-                                    <button th:if="${account.enabled}" class="btn-modern btn-warning" type="submit"
-                                            title="An account must be disabled before it can be deleted.">Disable account</button>
+                                    <button th:if="${account.enabled}" class="btn-modern btn-danger" type="button"
+                                            title="An account must be disabled before it can be deleted."
+                                            data-confirm data-confirm-severity="danger" data-confirm-icon="fa-ban"
+                                            th:data-confirm-title="|Disable ${account.username}?|"
+                                            data-confirm-message="They will lose access until the account is enabled again."
+                                            data-confirm-label="Disable account"
+                                            th:data-confirm-detail="${account.email}">Disable account</button>
                                     <button th:unless="${account.enabled}" class="btn-modern btn-success" type="submit">Enable account</button>
                                 </form>
-                                <form th:if="${account.id != user.id and !account.enabled}" th:action="@{/admin/users/delete}" method="post"
-                                      th:attr="data-confirm=|Permanently delete ${account.username}? This removes their shul assignments, passkeys, and unused sign-in links and cannot be undone.|">
+                                <form th:if="${account.id != user.id and !account.enabled}" th:action="@{/admin/users/delete}" method="post">
                                     <input type="hidden" name="id" th:value="${account.id}">
-                                    <button class="btn-modern btn-danger" type="submit">Delete user</button>
+                                    <button class="btn-modern btn-danger" type="button"
+                                            data-confirm data-confirm-severity="danger" data-confirm-icon="fa-trash"
+                                            th:data-confirm-title="|Permanently delete ${account.username}?|"
+                                            data-confirm-message="This removes their shul assignments, passkeys, and unused sign-in links. It cannot be undone."
+                                            data-confirm-label="Delete user"
+                                            th:data-confirm-detail="${account.email}">Delete user</button>
                                 </form>
                             </div>
                         </div>
@@ -91,7 +103,7 @@
         <section class="settings-section" id="roles">
             <div class="section-copy"><h2 class="section-title">Role guide</h2><p class="section-description">Roles apply across every assigned shul.</p></div>
             <div class="settings-panel">
-                <div class="account-card"><div><div class="account-card-title"><span class="badge-modern role-chip role-chip-user">User</span></div><p class="account-card-description">Maintains schedules, locations, and organization details for assigned shuls.</p></div></div>
+                <div class="account-card"><div><div class="account-card-title"><span class="badge-modern role-chip role-chip-user">User</span></div><p class="account-card-description">Maintains schedules, locations, and shul details for assigned shuls.</p></div></div>
                 <div class="account-card"><div><div class="account-card-title"><span class="badge-modern role-chip role-chip-manager">Manager</span></div><p class="account-card-description">User access plus account maintenance for users whose shuls are all within their assigned scope. Permission assignment and authentication recovery are controlled by super admins.</p></div></div>
                 <div class="account-card"><div><div class="account-card-title"><span class="badge-modern role-chip role-chip-super-admin">Super admin</span></div><p class="account-card-description">Full access to all shuls, user permissions, and platform settings.</p></div></div>
             </div>

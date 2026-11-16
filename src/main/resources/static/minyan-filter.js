@@ -70,6 +70,36 @@
     }
   }
 
+  /**
+   * Analytics: push a GA4-friendly event to the GTM dataLayer. GTM routes these to GA4 and
+   * PostHog. Must never throw, even when GTM is turned off or blocked.
+   */
+  function pushAnalyticsEvent(eventName, payload) {
+    try {
+      window.dataLayer = window.dataLayer || [];
+      var event = { event: eventName };
+      for (var key in payload) {
+        if (Object.prototype.hasOwnProperty.call(payload, key)) event[key] = payload[key];
+      }
+      window.dataLayer.push(event);
+    } catch (e) {
+      // Ignore analytics failures; filtering must keep working.
+    }
+  }
+
+  function trackFilterChange(eventName, source, value, visibleCount) {
+    pushAnalyticsEvent(eventName, {
+      page: 'homepage',
+      interaction_source: source,
+      filter_value: value,
+      filter_type: activeType,
+      filter_org: activeOrg,
+      filter_active: activeType !== 'all' || activeOrg !== 'all',
+      visible_count: visibleCount,
+      is_today: isToday,
+    });
+  }
+
   function applyFilters() {
     var filterActive = activeType !== 'all' || activeOrg !== 'all';
     var visibleCount = 0;
@@ -100,25 +130,36 @@
     } else if (emptyState) {
       emptyState.style.display = 'none';
     }
+
+    return visibleCount;
   }
 
   // Type pill click handlers
   document.querySelectorAll('.filter-pill').forEach(function (btn) {
     btn.addEventListener('click', function () {
+      var newType = this.getAttribute('data-filter-type');
+      var changed = newType !== activeType;
       document.querySelectorAll('.filter-pill').forEach(function (b) {
         b.classList.remove('active');
       });
       this.classList.add('active');
-      activeType = this.getAttribute('data-filter-type');
-      applyFilters();
+      activeType = newType;
+      var visibleCount = applyFilters();
+      if (changed) {
+        trackFilterChange('homepage_filter_type_selected', 'type_pill', activeType, visibleCount);
+      }
     });
   });
 
   // Shul select handler
   if (shulSelect) {
     shulSelect.addEventListener('change', function () {
+      var changed = this.value !== activeOrg;
       activeOrg = this.value;
-      applyFilters();
+      var visibleCount = applyFilters();
+      if (changed) {
+        trackFilterChange('homepage_filter_shul_selected', 'shul_select', activeOrg, visibleCount);
+      }
     });
   }
 })();

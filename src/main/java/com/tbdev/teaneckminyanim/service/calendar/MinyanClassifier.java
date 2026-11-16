@@ -54,7 +54,18 @@ public class MinyanClassifier {
     // Explicit Shacharis title patterns that are strong enough to classify before non-minyan descriptions.
     private static final Pattern TEEN_MINYAN_TITLE_PATTERN =
         Pattern.compile("\\bteen\\s*-?\\s*minyan\\b", Pattern.CASE_INSENSITIVE);
-    
+
+    // Location phrases whose leading word ("Main", "Second") is also a title qualifier.
+    // These describe where the minyan meets, not which minyan it is, so they are stripped
+    // before qualifier extraction (issue #225: "Shacharis Main Sanctuary" must not get "Main").
+    private static final Pattern GENERIC_LOCATION_PATTERN = Pattern.compile(
+        "\\b(?:main|second|2nd)\\s+(?:"
+            + "(?:beis|bais|beit|beth|bet|beys)\\s+(?:ha)?m[ie]dr[ae]sh"
+            + "|(?:social\\s+|ball\\s*)?hall|ballroom|sanctuary|shul|synagogue|building|room|chapel"
+            + "|floor|level|lobby|campus|library|tent|entrance|bm"
+            + ")\\b",
+        Pattern.CASE_INSENSITIVE);
+
     static {
         // Combined Mincha/Maariv patterns (check FIRST - most specific)
         MINCHA_MAARIV_PATTERNS.add(Pattern.compile("mincha?h?\\s*[/&-]\\s*ma'?ariv", Pattern.CASE_INSENSITIVE));
@@ -160,6 +171,24 @@ public class MinyanClassifier {
      * @return Classification result with reason
      */
     public ClassificationResult classify(String title, String type, String description, LocalDate date, LocalTime time) {
+        return classify(title, type, description, date, time, List.of());
+    }
+
+    /**
+     * Classify a calendar entry, ignoring known location names when extracting title qualifiers.
+     *
+     * <p>Imported titles often carry the location ("Shacharis - Main Sanctuary"). Words inside a
+     * location name must not become notes, otherwise every minyan in the "Main Sanctuary" or
+     * "Main Bais Medrash" is labelled "Main" (issue #225). Any phrase in {@code locationPhrases}
+     * (the CSV location text and the organization's Location names) is removed from the title
+     * before qualifiers are extracted. Generic location phrases such as "Main Sanctuary",
+     * "Main Shul" and "Second Floor" are always removed. Classification itself still uses the
+     * full title.
+     *
+     * @param locationPhrases location names to ignore when building notes; may be null
+     */
+    public ClassificationResult classify(String title, String type, String description, LocalDate date,
+                                         LocalTime time, Collection<String> locationPhrases) {
         // Combine all text fields for analysis
         String combinedText = combineFields(title, type, description);
         
@@ -174,7 +203,7 @@ public class MinyanClassifier {
         // Check for combined Mincha/Maariv first (most specific)
         for (Pattern pattern : MINCHA_MAARIV_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
-                String notes = extractTitleQualifier(title);
+                String notes = extractTitleQualifier(title, locationPhrases);
                 return new ClassificationResult(
                     MinyanType.MINCHA_MAARIV,
                     "Matched combined Mincha/Maariv pattern: " + pattern.pattern(),
@@ -184,7 +213,7 @@ public class MinyanClassifier {
         }
 
         if (title != null && TEEN_MINYAN_TITLE_PATTERN.matcher(title).find()) {
-            String notes = extractTitleQualifier(title);
+            String notes = extractTitleQualifier(title, locationPhrases);
             return new ClassificationResult(
                 MinyanType.SHACHARIS,
                 "Matched explicit Teen Minyan title pattern: " + TEEN_MINYAN_TITLE_PATTERN.pattern(),
@@ -207,7 +236,7 @@ public class MinyanClassifier {
         // Check linked Selichos/Shacharis before plain Selichos or Shacharis.
         for (Pattern pattern : SELICHOS_SHACHARIS_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
-                String notes = extractTitleQualifier(title);
+                String notes = extractTitleQualifier(title, locationPhrases);
                 return new ClassificationResult(
                     MinyanType.SELICHOS_SHACHARIS,
                     "Matched linked Selichos/Shacharis pattern: " + pattern.pattern(),
@@ -219,7 +248,7 @@ public class MinyanClassifier {
         // Check Selichos
         for (Pattern pattern : SELICHOS_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
-                String titleQualifier = extractTitleQualifier(title);
+                String titleQualifier = extractTitleQualifier(title, locationPhrases);
                 String notes = null;
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
@@ -237,7 +266,7 @@ public class MinyanClassifier {
         for (Pattern pattern : NETZ_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
                 String netzNote = generateNetzHachamaNote(date);
-                String titleQualifier = extractTitleQualifier(title);
+                String titleQualifier = extractTitleQualifier(title, locationPhrases);
                 // Remove Netz-related qualifiers (hanetz, vasikin, netz, neitz, sunrise) to avoid duplication
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     titleQualifier = titleQualifier.replaceAll("(?i)\\b(hanetz|vasikin|netz|neitz|sunrise)\\b,?\\s*", "").trim();
@@ -285,7 +314,7 @@ public class MinyanClassifier {
         // Check Shacharis (including sunrise minyanim)
         for (Pattern pattern : SHACHARIS_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
-                String titleQualifier = extractTitleQualifier(title);
+                String titleQualifier = extractTitleQualifier(title, locationPhrases);
                 String notes = null;
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
@@ -301,7 +330,7 @@ public class MinyanClassifier {
         // Check Mincha (separate from combined Mincha/Maariv)
         for (Pattern pattern : MINCHA_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
-                String titleQualifier = extractTitleQualifier(title);
+                String titleQualifier = extractTitleQualifier(title, locationPhrases);
                 String notes = null;
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
@@ -317,7 +346,7 @@ public class MinyanClassifier {
         // Check Maariv (separate from combined Mincha/Maariv)
         for (Pattern pattern : MAARIV_PATTERNS) {
             if (pattern.matcher(combinedText).find()) {
-                String titleQualifier = extractTitleQualifier(title);
+                String titleQualifier = extractTitleQualifier(title, locationPhrases);
                 String notes = null;
                 if (titleQualifier != null && !titleQualifier.isEmpty()) {
                     notes = notes != null ? notes + ". " + titleQualifier : titleQualifier;
@@ -416,14 +445,16 @@ public class MinyanClassifier {
      * Extract special qualifiers from title that should be preserved as notes.
     * Examples: "Teen Minyan" → "Teen Minyan", "Early Shacharis" → "Early Shacharis"
      * 
-     * @param title The entry title
+     * @param rawTitle The entry title
+     * @param locationPhrases location names to strip from the title first (may be null)
      * @return Qualifier string or null if none found
      */
-    private String extractTitleQualifier(String title) {
+    private String extractTitleQualifier(String rawTitle, Collection<String> locationPhrases) {
+        String title = stripLocationPhrases(rawTitle, locationPhrases);
         if (title == null || title.trim().isEmpty()) {
             return null;
         }
-        
+
         String titleLower = title.toLowerCase().trim();
         List<String> qualifiers = new ArrayList<>();
         
@@ -472,6 +503,35 @@ public class MinyanClassifier {
         
         // Return comma-separated qualifiers if any found
         return qualifiers.isEmpty() ? null : String.join(", ", qualifiers);
+    }
+
+    /**
+     * Remove location names from a title so their words are not read as qualifiers.
+     * Returns the remaining text with whitespace collapsed and trimmed.
+     */
+    private String stripLocationPhrases(String title, Collection<String> locationPhrases) {
+        if (title == null) {
+            return null;
+        }
+        String stripped = title;
+        if (locationPhrases != null) {
+            // Longest first, so "Main Bais Medrash" is removed before a shorter "Bais Medrash".
+            List<String> phrases = locationPhrases.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(phrase -> !phrase.isEmpty())
+                .distinct()
+                .sorted(Comparator.comparingInt(String::length).reversed())
+                .toList();
+            for (String phrase : phrases) {
+                Pattern pattern = ImportedLocationMatcher.phrasePattern(phrase);
+                if (pattern != null) {
+                    stripped = pattern.matcher(stripped).replaceAll(" ");
+                }
+            }
+        }
+        stripped = GENERIC_LOCATION_PATTERN.matcher(stripped).replaceAll(" ");
+        return stripped.replaceAll("\\s+", " ").trim();
     }
 
     /**

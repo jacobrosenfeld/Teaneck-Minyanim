@@ -23,7 +23,7 @@
                 </svg>
                 Maintenance
             </h1>
-            <p class="admin-page-lead">Super-admin tools for data cleanup and system refresh. These operations affect all organizations.</p>
+            <p class="admin-page-lead">Super-admin tools for data cleanup and system refresh. These operations affect all shuls.</p>
         </div>
     </div>
 
@@ -76,7 +76,7 @@
                         <h5 class="card-title mb-0">Reimport All Calendars</h5>
                     </div>
                     <p class="card-text text-muted" style="font-size:.9rem;">
-                        Deletes all existing calendar entries for every organization that has a calendar URL configured,
+                        Deletes all existing calendar entries for every shul that has a calendar URL configured,
                         then fetches and re-classifies everything from scratch. Use this to fix stale data — for
                         example, entries that show "Shkiya:" instead of "Plag:" because they were imported before
                         the classifier was improved.
@@ -87,10 +87,16 @@
                         <li>Replaces stale imported materialized rows as part of the import</li>
                         <li>Live schedule updates for dates inside the rolling window</li>
                     </ul>
-                    <button type="button" class="btn btn-warning mt-2"
-                            data-toggle="modal" data-target="#reimport-all-modal">
-                        <i class="fas fa-sync-alt mr-1"></i> Reimport All Calendars
-                    </button>
+                    <form method="post" th:action="@{/admin/super/maintenance/reimport-all}" class="mb-0">
+                        <button type="button" class="btn btn-warning mt-2"
+                                data-confirm data-confirm-severity="danger" data-confirm-icon="fa-sync-alt"
+                                data-confirm-title="Reimport all calendars?"
+                                data-confirm-message="This deletes all existing calendar entries for every shul with a calendar URL, then re-fetches and re-classifies them from scratch. Manual location edits are lost."
+                                data-confirm-detail="It may take a minute or two. Dates inside the rolling schedule window sync to the live schedule automatically."
+                                data-confirm-label="Reimport all">
+                            <i class="fas fa-sync-alt mr-1"></i> Reimport All Calendars
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -114,35 +120,41 @@
                         <li>Preserves IMPORTED and MANUAL events</li>
                         <li>Covers the rolling 11-week window</li>
                     </ul>
-                    <button type="button" class="btn btn-secondary mt-2"
-                            data-toggle="modal" data-target="#rematerialize-all-modal">
-                        <i class="fas fa-calendar-alt mr-1"></i> Rematerialize All
-                    </button>
+                    <form method="post" th:action="@{/admin/super/maintenance/rematerialize-all}" class="mb-0">
+                        <button type="button" class="btn btn-secondary mt-2"
+                                data-confirm data-confirm-severity="primary" data-confirm-icon="fa-calendar-alt"
+                                data-confirm-title="Rematerialize all?"
+                                data-confirm-message="This rebuilds the materialized calendar: RULES events are deleted and regenerated. IMPORTED and MANUAL events are kept."
+                                data-confirm-detail="Safe to run at any time. It usually takes a few seconds."
+                                data-confirm-label="Rematerialize">
+                            <i class="fas fa-calendar-alt mr-1"></i> Rematerialize All
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
 
-        <!-- Geocode All Organizations -->
+        <!-- Geocode All Shuls -->
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <span class="badge badge-secondary mr-2" style="font-size:.75rem;">Safe</span>
-                        <h5 class="card-title mb-0">Geocode All Organizations</h5>
+                        <h5 class="card-title mb-0">Geocode All Shuls</h5>
                     </div>
                     <p class="card-text text-muted" style="font-size:.9rem;">
-                        Looks up GPS coordinates for organizations that are missing latitude/longitude values
+                        Looks up GPS coordinates for shuls that are missing latitude/longitude values
                         using the configured Mapbox Geocoding API. Existing coordinates are skipped unless
                         you choose to force a full refresh.
                     </p>
                     <ul class="text-muted" style="font-size:.85rem;">
-                        <li>Backfills missing coordinates for all organizations</li>
-                        <li>Can optionally refresh organizations that already have coordinates</li>
+                        <li>Backfills missing coordinates for all shuls</li>
+                        <li>Can optionally refresh shuls that already have coordinates</li>
                         <li>Useful after address cleanup or Mapbox token/config changes</li>
                     </ul>
                     <button type="button" class="btn btn-secondary mt-2"
                             data-toggle="modal" data-target="#geocode-all-modal">
-                        <i class="fas fa-map-marker-alt mr-1"></i> Geocode All Organizations
+                        <i class="fas fa-map-marker-alt mr-1"></i> Geocode All Shuls
                     </button>
                 </div>
             </div>
@@ -151,103 +163,42 @@
     </div>
 
     <!-- ------------------------------------------------------------------ -->
-    <!-- Confirmation modals                                                  -->
+    <!-- Geocode dialog (has an option, so it is a form dialog)              -->
     <!-- ------------------------------------------------------------------ -->
 
-    <!-- Reimport All modal -->
-    <div class="modal fade" id="reimport-all-modal" tabindex="-1"
-         aria-labelledby="reimport-all-modal-label" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title" id="reimport-all-modal-label">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>Reimport All Calendars?
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                </div>
-                <div class="modal-body">
-                    <p>This will <strong>delete all existing calendar entries</strong> for every organization
-                       that has a calendar URL, then re-fetch and re-classify from scratch.</p>
-                    <p class="text-muted" style="font-size:.9rem;">
-                        This operation may take a minute or two. The page will reload when it completes.
-                        Dates inside the rolling schedule window are synced to the live schedule automatically.
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                    <form method="post" th:action="@{/admin/super/maintenance/reimport-all}" style="display:inline;">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="btn btn-warning">
-                            <i class="fas fa-sync-alt mr-1"></i> Yes, Reimport All
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Rematerialize All modal -->
-    <div class="modal fade" id="rematerialize-all-modal" tabindex="-1"
-         aria-labelledby="rematerialize-all-modal-label" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="rematerialize-all-modal-label">
-                        <i class="fas fa-calendar-alt mr-2"></i>Rematerialize All?
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                </div>
-                <div class="modal-body">
-                    <p>This will trigger a full rebuild of the materialized calendar events table.
-                       All RULES-sourced events will be deleted and regenerated. IMPORTED and MANUAL
-                       events are preserved.</p>
-                    <p class="text-muted" style="font-size:.9rem;">
-                        This is safe to run at any time and typically takes a few seconds.
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                    <form method="post" th:action="@{/admin/super/maintenance/rematerialize-all}" style="display:inline;">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="btn btn-secondary">
-                            <i class="fas fa-calendar-alt mr-1"></i> Yes, Rematerialize
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Geocode All modal -->
-    <div class="modal fade" id="geocode-all-modal" tabindex="-1"
+    <div class="modal fade admin-modal" id="geocode-all-modal" tabindex="-1"
          aria-labelledby="geocode-all-modal-label" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="geocode-all-modal-label">
-                        <i class="fas fa-map-marker-alt mr-2"></i>Geocode All Organizations?
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <div class="admin-modal-heading">
+                        <span class="admin-modal-icon" aria-hidden="true"><i class="fas fa-map-marker-alt"></i></span>
+                        <h5 class="modal-title" id="geocode-all-modal-label">Geocode all shuls?</h5>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-xmark" aria-hidden="true"></i>
+                    </button>
                 </div>
                 <div class="modal-body">
-                    <p>This will look up GPS coordinates for all organizations missing location data using the Mapbox Geocoding API.</p>
-                    <p class="text-muted" style="font-size:.9rem;">
-                        Organizations that already have coordinates will be skipped unless you check the box below.
+                    <p>This will look up GPS coordinates for all shuls missing location data using the Mapbox Geocoding API.</p>
+                    <p class="mb-0">
+                        Shuls that already have coordinates will be skipped unless you check the box below.
                     </p>
                     <div class="mt-3">
                         <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:500;">
                             <input type="checkbox" id="geocode-force-checkbox" style="width:16px;height:16px;">
-                            Re-geocode all organizations, including those with existing coordinates
+                            Re-geocode all shuls, including those with existing coordinates
                         </label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                    <form method="post" th:action="@{/admin/super/maintenance/geocode-all}" id="geocode-all-form" style="display:inline;">
+                    <button type="button" class="btn-modern btn-outline" data-dismiss="modal">Cancel</button>
+                    <form method="post" th:action="@{/admin/super/maintenance/geocode-all}" id="geocode-all-form">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <input type="hidden" name="force" id="geocode-force-input" value="false">
-                        <button type="submit" class="btn btn-secondary">
-                            <i class="fas fa-map-marker-alt mr-1"></i> Run Geocoding
+                        <button type="submit" class="btn-modern btn-primary">
+                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i> Run geocoding
                         </button>
                     </form>
                 </div>
