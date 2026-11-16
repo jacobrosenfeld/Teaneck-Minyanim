@@ -3,7 +3,7 @@ package com.tbdev.teaneckminyanim.service;
 import com.tbdev.teaneckminyanim.enums.SettingKey;
 import com.tbdev.teaneckminyanim.model.ApplicationSettings;
 import com.tbdev.teaneckminyanim.repo.ApplicationSettingsRepository;
-import com.tbdev.teaneckminyanim.service.calendar.CalendarImportSchedule;
+import com.tbdev.teaneckminyanim.service.schedule.CronSchedule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +41,7 @@ class ApplicationSettingsImportScheduleAndGtmTest {
     @Test
     void scheduleModeAndGtmDefaults() {
         assertEquals("SIMPLE", SettingKey.CALENDAR_IMPORT_SCHEDULE_MODE.getDefaultValue());
-        assertEquals(CalendarImportSchedule.Mode.SIMPLE, service.getCalendarImportScheduleMode());
+        assertEquals(CronSchedule.Mode.SIMPLE, service.getCalendarImportScheduleMode());
         assertEquals("GTM-T2P4J8V", SettingKey.GTM_CONTAINER_ID.getDefaultValue());
         assertEquals("GTM-T2P4J8V", service.getGtmContainerId());
     }
@@ -63,7 +63,7 @@ class ApplicationSettingsImportScheduleAndGtmTest {
         assertEquals("0 0 */6 * * *", cron);
         assertEquals("0 0 */6 * * *", rows.get(SettingKey.CALENDAR_IMPORT_CRON).getSettingValue());
         assertEquals("ADVANCED", rows.get(SettingKey.CALENDAR_IMPORT_SCHEDULE_MODE).getSettingValue());
-        assertEquals(CalendarImportSchedule.Mode.ADVANCED, service.getCalendarImportScheduleMode());
+        assertEquals(CronSchedule.Mode.ADVANCED, service.getCalendarImportScheduleMode());
     }
 
     @Test
@@ -116,5 +116,66 @@ class ApplicationSettingsImportScheduleAndGtmTest {
         service.refreshCache();
 
         assertEquals("", service.getGtmContainerId());
+    }
+
+    @Test
+    void tooFrequentCronIsRejectedEverywhereAndNothingIsSaved() {
+        ApplicationSettingsService.ValidationException viaPicker = assertThrows(
+                ApplicationSettingsService.ValidationException.class,
+                () -> service.saveCalendarImportSchedule("ADVANCED", null, null, null, "0 */5 * * * *"));
+        assertTrue(viaPicker.getMessage().contains("60 minutes"), viaPicker.getMessage());
+        assertThrows(ApplicationSettingsService.ValidationException.class,
+                () -> service.saveCalendarImportSchedule("ADVANCED", null, null, null, "* * * * * *"));
+        assertThrows(ApplicationSettingsService.ValidationException.class,
+                () -> service.updateSetting(SettingKey.CALENDAR_IMPORT_CRON, "0 */5 * * * *"));
+        assertThrows(ApplicationSettingsService.ValidationException.class,
+                () -> service.saveWeeklyReviewEmailSchedule("ADVANCED", null, null, null, "0 */5 * * * *"));
+
+        assertEquals("0 0 2 * * SUN", rows.get(SettingKey.CALENDAR_IMPORT_CRON).getSettingValue());
+        assertEquals("", rows.get(SettingKey.EMAIL_WEEKLY_REVIEW_CRON).getSettingValue());
+    }
+
+    @Test
+    void weeklyReviewScheduleKeysDefaultToBlank() {
+        assertEquals("", SettingKey.EMAIL_WEEKLY_REVIEW_CRON.getDefaultValue());
+        assertEquals("", SettingKey.EMAIL_WEEKLY_REVIEW_SCHEDULE_MODE.getDefaultValue());
+        assertEquals(CronSchedule.Mode.SIMPLE, service.getWeeklyReviewEmailScheduleMode());
+    }
+
+    @Test
+    void blankWeeklyReviewCronIsDerivedFromLegacyDayAndTime() throws Exception {
+        assertEquals("0 0 22 * * SAT", service.getWeeklyReviewEmailCron());
+
+        service.updateSetting(SettingKey.EMAIL_WEEKLY_REVIEW_DAY, "SUNDAY");
+        service.updateSetting(SettingKey.EMAIL_WEEKLY_REVIEW_TIME, "08:30");
+
+        assertEquals("0 30 8 * * SUN", service.getWeeklyReviewEmailLegacyCron());
+        assertEquals("0 30 8 * * SUN", service.getWeeklyReviewEmailCron());
+    }
+
+    @Test
+    void savedWeeklyReviewCronWinsOverLegacyDayAndTime() throws Exception {
+        String cron = service.saveWeeklyReviewEmailSchedule("SIMPLE", "WEEKLY", List.of("FRI", "MON"), "07:15", null);
+
+        assertEquals("0 15 7 * * MON,FRI", cron);
+        assertEquals("0 15 7 * * MON,FRI", rows.get(SettingKey.EMAIL_WEEKLY_REVIEW_CRON).getSettingValue());
+        assertEquals("SIMPLE", rows.get(SettingKey.EMAIL_WEEKLY_REVIEW_SCHEDULE_MODE).getSettingValue());
+        assertEquals("0 15 7 * * MON,FRI", service.getWeeklyReviewEmailCron());
+        // Legacy keys are left in place as the fallback source.
+        assertEquals("SATURDAY", rows.get(SettingKey.EMAIL_WEEKLY_REVIEW_DAY).getSettingValue());
+
+        service.saveWeeklyReviewEmailSchedule("ADVANCED", null, null, null, "0 0 */12 * * *");
+        assertEquals("0 0 */12 * * *", service.getWeeklyReviewEmailCron());
+        assertEquals(CronSchedule.Mode.ADVANCED, service.getWeeklyReviewEmailScheduleMode());
+    }
+
+    @Test
+    void invalidWeeklyReviewScheduleIsRejected() {
+        assertThrows(ApplicationSettingsService.ValidationException.class,
+                () -> service.saveWeeklyReviewEmailSchedule("SIMPLE", "WEEKLY", List.of(), "07:15", null));
+        assertThrows(ApplicationSettingsService.ValidationException.class,
+                () -> service.saveWeeklyReviewEmailSchedule("ADVANCED", null, null, null, "bad cron"));
+        assertEquals("", rows.get(SettingKey.EMAIL_WEEKLY_REVIEW_CRON).getSettingValue());
+        assertEquals("", rows.get(SettingKey.EMAIL_WEEKLY_REVIEW_SCHEDULE_MODE).getSettingValue());
     }
 }

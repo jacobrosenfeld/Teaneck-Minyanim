@@ -6,7 +6,6 @@ import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
-import com.tbdev.teaneckminyanim.service.calendar.CalendarImportSchedule;
 import com.tbdev.teaneckminyanim.service.calendar.CalendarImportScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +21,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -126,7 +123,7 @@ public class ApplicationSettingsController {
      */
     @ResponseBody
     @PostMapping("/admin/settings/calendar-import-schedule")
-    public ResponseEntity<ImportScheduleResponse> saveCalendarImportSchedule(
+    public ResponseEntity<CronScheduleResponse> saveCalendarImportSchedule(
             @RequestParam("mode") String mode,
             @RequestParam(value = "frequency", required = false) String frequency,
             @RequestParam(value = "days", required = false) List<String> days,
@@ -142,24 +139,24 @@ public class ApplicationSettingsController {
             calendarImportScheduler.reschedule();
             log.info("Calendar import schedule updated: mode={}, cron='{}' by user {}",
                     settingsService.getCalendarImportScheduleMode(), savedCron, getCurrentUser().getUsername());
-            return ResponseEntity.ok(ImportScheduleResponse.success(calendarImportScheduler.currentView(), "Saved"));
+            return ResponseEntity.ok(CronScheduleResponse.saved(calendarImportScheduler.currentView()));
         } catch (ApplicationSettingsService.ValidationException e) {
             log.warn("Validation error saving calendar import schedule: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ImportScheduleResponse.failure(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CronScheduleResponse.failure(e.getMessage()));
         } catch (Exception e) {
             log.error("Error saving calendar import schedule: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ImportScheduleResponse.failure("Schedule could not be saved."));
+                    .body(CronScheduleResponse.failure("Schedule could not be saved."));
         }
     }
 
     /**
-     * Preview a schedule without saving it: readable summary, next run, and whether a cron
-     * can be shown in the simple picker (used when switching from Advanced back to simple mode).
+     * Preview a schedule without saving it: validity (same check as save), readable summary,
+     * next run, and whether a cron can be shown in the simple picker.
      */
     @ResponseBody
     @GetMapping("/admin/settings/calendar-import-schedule/preview")
-    public ResponseEntity<ImportScheduleResponse> previewCalendarImportSchedule(
+    public ResponseEntity<CronScheduleResponse> previewCalendarImportSchedule(
             @RequestParam("mode") String mode,
             @RequestParam(value = "frequency", required = false) String frequency,
             @RequestParam(value = "days", required = false) List<String> days,
@@ -170,59 +167,8 @@ public class ApplicationSettingsController {
             throw new AccessDeniedException("You are not authorized to access this page");
         }
 
-        try {
-            CalendarImportSchedule.Mode parsedMode = CalendarImportSchedule.Mode.fromString(mode);
-            String previewCron = parsedMode == CalendarImportSchedule.Mode.SIMPLE
-                    ? CalendarImportSchedule.toCron(CalendarImportSchedule.fromForm(frequency, days, time))
-                    : (cron == null ? "" : cron.trim());
-            ZoneId zone = calendarImportScheduler.effectiveZone();
-            CalendarImportSchedule.View view =
-                    CalendarImportSchedule.view(previewCron, parsedMode, zone, ZonedDateTime.now(zone));
-            if (!view.valid()) {
-                return ResponseEntity.ok(ImportScheduleResponse.invalid(view,
-                        previewCron.isEmpty() ? "Enter a cron expression." : "Not a valid cron expression."));
-            }
-            return ResponseEntity.ok(ImportScheduleResponse.success(view, null));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.ok(ImportScheduleResponse.failure(e.getMessage()));
-        }
-    }
-
-    /**
-     * JSON for the schedule picker. {@code simple} is null when the cron can't be shown in simple mode.
-     */
-    public record ImportScheduleResponse(
-            boolean success,
-            String message,
-            String mode,
-            String cron,
-            String summary,
-            String nextRun,
-            String timezone,
-            SimpleFields simple) {
-
-        public record SimpleFields(String frequency, List<String> days, String time) {
-        }
-
-        static ImportScheduleResponse success(CalendarImportSchedule.View view, String message) {
-            return fromView(true, view, message);
-        }
-
-        static ImportScheduleResponse invalid(CalendarImportSchedule.View view, String message) {
-            return fromView(false, view, message);
-        }
-
-        static ImportScheduleResponse failure(String message) {
-            return new ImportScheduleResponse(false, message, null, null, null, null, null, null);
-        }
-
-        private static ImportScheduleResponse fromView(boolean success, CalendarImportSchedule.View view, String message) {
-            SimpleFields simple = view.simpleCompatible()
-                    ? new SimpleFields(view.simple().frequency().name(), view.simple().dayCodes(), view.simple().timeValue())
-                    : null;
-            return new ImportScheduleResponse(success, message, view.mode().name(), view.cron(),
-                    view.summary(), view.nextRun(), view.timezone(), simple);
-        }
+        return ResponseEntity.ok(CronScheduleResponse.preview(mode, frequency, days, time, cron,
+                calendarImportScheduler.effectiveZone(), CalendarImportScheduler.SCHEDULE_PROFILE));
     }
 
     /**

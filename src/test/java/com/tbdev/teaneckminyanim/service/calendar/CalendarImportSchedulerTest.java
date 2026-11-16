@@ -72,6 +72,15 @@ class CalendarImportSchedulerTest {
     }
 
     @Test
+    void tooFrequentStoredCronFallsBackToDefault() {
+        when(settings.getCalendarImportCron()).thenReturn("0 */5 * * * *");
+
+        scheduler.reschedule();
+
+        assertEquals("0 0 2 * * SUN", capturedTriggers(1)[0].getExpression());
+    }
+
+    @Test
     void missingStoredCronFallsBackToDefault() {
         when(settings.getCalendarImportCron()).thenReturn(null);
         assertEquals("0 0 2 * * SUN", scheduler.effectiveCron());

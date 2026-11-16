@@ -1,19 +1,21 @@
 package com.tbdev.teaneckminyanim.service.calendar;
 
+import com.tbdev.teaneckminyanim.enums.SettingKey;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.CalendarMaterializationService;
-import lombok.RequiredArgsConstructor;
+import com.tbdev.teaneckminyanim.service.schedule.CronSchedule;
+import com.tbdev.teaneckminyanim.service.schedule.ScheduledCronJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
 
 /**
  * Runs the automatic calendar import on the schedule saved in the
@@ -30,76 +32,67 @@ import java.util.concurrent.ScheduledFuture;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class CalendarImportScheduler {
+
+    /** Used when the stored cron is missing, invalid or too frequent. */
+    public static final String DEFAULT_CRON = SettingKey.CALENDAR_IMPORT_CRON.getDefaultValue();
+
+    /** Summary verb and the picker's fallback (weekly on Sunday at 2:00 AM, matching {@link #DEFAULT_CRON}). */
+    public static final CronSchedule.Profile SCHEDULE_PROFILE = new CronSchedule.Profile(
+            "Runs", CronSchedule.SimpleSchedule.weekly(LocalTime.of(2, 0), DayOfWeek.SUNDAY));
+
+    private static final String JOB_NAME = "Calendar import";
 
     private final CalendarImportService importService;
     private final CalendarMaterializationService materializationService;
     private final ApplicationSettingsService settingsService;
-    private final TaskScheduler taskScheduler;
+    private final ScheduledCronJob job;
 
-    private ScheduledFuture<?> scheduledRun;
+    public CalendarImportScheduler(
+            CalendarImportService importService,
+            CalendarMaterializationService materializationService,
+            ApplicationSettingsService settingsService,
+            TaskScheduler taskScheduler) {
+        this.importService = importService;
+        this.materializationService = materializationService;
+        this.settingsService = settingsService;
+        this.job = new ScheduledCronJob(JOB_NAME, taskScheduler, this::runScheduledImport);
+    }
 
     /**
      * (Re)schedules the import from the current cron and timezone settings.
      * The previous schedule is cancelled first; a run already in progress is allowed to finish.
      */
     @EventListener(ApplicationReadyEvent.class)
-    public synchronized void reschedule() {
-        if (scheduledRun != null) {
-            scheduledRun.cancel(false);
-        }
-        String cron = effectiveCron();
-        ZoneId zone = effectiveZone();
-        scheduledRun = taskScheduler.schedule(this::runScheduledImport, new CronTrigger(cron, zone));
-        log.info("Calendar import scheduled with cron '{}' ({}); next run {}",
-                cron, zone, CalendarImportSchedule.nextRun(cron, zone, ZonedDateTime.now(zone)).orElse(null));
+    public void reschedule() {
+        job.schedule(effectiveCron(), effectiveZone());
     }
 
     /**
-     * Stored cron, or the default {@code 0 0 2 * * SUN} when the stored value is missing or invalid.
+     * Stored cron, or the default {@code 0 0 2 * * SUN} when the stored value is missing,
+     * invalid or fires more often than {@link CronSchedule#MIN_INTERVAL}.
      */
     public String effectiveCron() {
-        String stored = null;
-        try {
-            stored = settingsService.getCalendarImportCron();
-        } catch (RuntimeException e) {
-            log.warn("Could not read the calendar import cron setting: {}", e.getMessage());
-        }
-        if (CalendarImportSchedule.isValidCron(stored)) {
-            return stored.trim();
-        }
-        log.warn("Calendar import cron '{}' is missing or invalid; falling back to '{}'",
-                stored, CalendarImportSchedule.DEFAULT_CRON);
-        return CalendarImportSchedule.DEFAULT_CRON;
+        return ScheduledCronJob.usableCronOr(JOB_NAME, settingsService::getCalendarImportCron, () -> DEFAULT_CRON);
     }
 
-    /**
-     * Site timezone, or the JVM default (America/New_York, set at startup) when the setting is invalid.
-     */
+    /** Site timezone, or the JVM default (America/New_York, set at startup) when the setting is invalid. */
     public ZoneId effectiveZone() {
-        try {
-            return settingsService.getZoneId();
-        } catch (RuntimeException e) {
-            ZoneId fallback = ZoneId.systemDefault();
-            log.warn("Invalid timezone setting for the calendar import schedule; using {}: {}",
-                    fallback, e.getMessage());
-            return fallback;
-        }
+        return ScheduledCronJob.zoneOrDefault(JOB_NAME, settingsService::getZoneId);
     }
 
     /**
      * Current schedule for the settings page: the stored cron (even if invalid, so the admin
      * can see and fix it), the preferred mode and the next run in the site timezone.
      */
-    public CalendarImportSchedule.View currentView() {
+    public CronSchedule.View currentView() {
         ZoneId zone = effectiveZone();
-        String stored = settingsService.getCalendarImportCron();
-        return CalendarImportSchedule.view(
-                stored,
+        return CronSchedule.view(
+                settingsService.getCalendarImportCron(),
                 settingsService.getCalendarImportScheduleMode(),
                 zone,
-                ZonedDateTime.now(zone));
+                ZonedDateTime.now(zone),
+                SCHEDULE_PROFILE);
     }
 
     /**
