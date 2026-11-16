@@ -119,7 +119,7 @@ public class AdminController {
 
     private void requireOrganizationAccess(String orgId) {
         if (!canAccessOrganization(orgId)) {
-            throw new AccessDeniedException("You do not have permission to access this organization.");
+            throw new AccessDeniedException("You do not have permission to access this shul.");
         }
     }
 
@@ -199,7 +199,7 @@ public class AdminController {
     private boolean hasUserPermissions(String orgId) throws Exception {
         Optional<Organization> org = organizationService.findById(orgId);
         if (org.isEmpty()) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         } else {
 //            verify user has user permissions for this organization
             return canAccessOrganization(org.get().getId());
@@ -590,7 +590,7 @@ public class AdminController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin/new-organization");
 
-        mv.getModel().put("successmessage", success ? "The organization was successfully created." : null);
+        mv.getModel().put("successmessage", success ? "The shul was successfully created." : null);
         mv.getModel().put("errormessage", error);
         mv.getModel().put("inputerrormessage", inputErrorMessage);
 
@@ -887,7 +887,7 @@ public class AdminController {
             Organization organization = getOrganization(organizationId);
             if (organization == null) {
 //                    TODO: HANDLE ERROR CORRECTLY
-                throw new Exception("Organization not found.");
+                throw new Exception("Shul not found.");
             }
 
             mv.getModel().put("organization", organization);
@@ -899,7 +899,7 @@ public class AdminController {
                     .map(TNMUser::getId)
                     .collect(Collectors.toSet()));
         } else {
-            throw new AccessDeniedException("You are not authorized to view this organization.");
+            throw new AccessDeniedException("You are not authorized to view this shul.");
         }
 
         addStandardPageData(mv);
@@ -921,12 +921,12 @@ public class AdminController {
 
         Organization organization = getOrganization(id);
         if (organization == null) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         }
 
 //        validate input
         if (name == null || name.isEmpty()) {
-            return organization(id, null, null, "Organization name cannot be empty.", null);
+            return organization(id, null, null, "Shul name cannot be empty.", null);
         }
 
         URI siteURI = null;
@@ -968,7 +968,7 @@ public class AdminController {
                 return organization(id, null, null, "Sorry, the update failed.", null);
             }
         } else {
-            throw new AccessDeniedException("You do not have permission to view this organization.");
+            throw new AccessDeniedException("You do not have permission to view this shul.");
         }
     }
 
@@ -977,11 +977,11 @@ public class AdminController {
                                             @RequestParam(value = "rd", required = false) String redirect) throws Exception {
         Optional<Organization> organization = this.organizationService.findById(id);
         if (organization.isEmpty()) {
-            return organizations(null, "Sorry, the organization could not be found.");
+            return organizations(null, "Sorry, the shul could not be found.");
         }
 
         if (!canAccessOrganization(organization.get().getId())) {
-            throw new AccessDeniedException("You do not have permission to disable this organization.");
+            throw new AccessDeniedException("You do not have permission to disable this shul.");
         }
 
         organization.get().setEnabled(false);
@@ -996,11 +996,11 @@ public class AdminController {
                                            @RequestParam(value = "rd", required = false) String redirect) throws Exception {
         Optional<Organization> organization = this.organizationService.findById(id);
         if (organization.isEmpty()) {
-            return organizations(null, "Sorry, the organization could not be found.");
+            return organizations(null, "Sorry, the shul could not be found.");
         }
 
         if (!canAccessOrganization(organization.get().getId())) {
-            throw new AccessDeniedException("You do not have permission to enable this organization.");
+            throw new AccessDeniedException("You do not have permission to enable this shul.");
         }
 
         organization.get().setEnabled(true);
@@ -1016,15 +1016,15 @@ public class AdminController {
 //            get organization and check if it exists
             Optional<Organization> organization = this.organizationService.findById(id);
             if (organization.isEmpty()) {
-                return organizations(null, "Sorry, the organization could not be deleted.");
+                return organizations(null, "Sorry, the shul could not be deleted.");
             } else {
                 if (organization.get().isEnabled()) {
-                    return organization(id, null, "Disable the organization before deleting.", null, null);
+                    return organization(id, null, "Disable the shul before deleting.", null, null);
                 }
                 if (this.organizationService.delete(organization.get())) {
-                    return organizations("Successfully deleted the organization.", null);
+                    return organizations("Successfully deleted the shul.", null);
                 } else {
-                    return organizations(null, "Sorry, the organization could not be deleted.");
+                    return organizations(null, "Sorry, the shul could not be deleted.");
                 }
             }
         } /*else if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(new SimpleGrantedAuthority(Role.USER.getName()))) {
@@ -1032,22 +1032,22 @@ public class AdminController {
             TNMUser user = this.TNMUserDAO.findByName(username);
             String associatedOrganizationId = user.getOrganizationId();
             if (!associatedOrganizationId.equals(id)) {
-                throw new AccessDeniedException("You do not have permission to view this organization.");
+                throw new AccessDeniedException("You do not have permission to view this shul.");
             } else {
 //                get organization and check if it exists
                 Organization organization = this.organizationDAO.findById(id);
                 if (organization != null) {
                     if (this.organizationDAO.delete(organization)) {
-                        return organizations("Successfully deleted the organization.", null);
+                        return organizations("Successfully deleted the shul.", null);
                     } else {
                         return organizations(null, "Sorry, the delete failed.");
                     }
                 } else {
-                    return organizations(null, "Sorry, the organization could not be deleted.");
+                    return organizations(null, "Sorry, the shul could not be deleted.");
                 }
             }
         }*/ else {
-            throw new AccessDeniedException("You do not have permission to delete an organization.");
+            throw new AccessDeniedException("You do not have permission to delete a shul.");
         }
     }
 
@@ -1486,7 +1486,7 @@ public class AdminController {
     public ModelAndView locations(@PathVariable(value = "oid") String oid, String successMessage, String errorMessage) {
         Organization organization = getOrganization(oid);
         if (organization == null) {
-            throw new AccessDeniedException("Organization not found.");
+            throw new AccessDeniedException("Shul not found.");
         }
         String oidToUse = organization.getId();
 
@@ -1510,7 +1510,7 @@ public class AdminController {
     public ModelAndView createLocation(@RequestParam(value = "name", required = true) String name, @RequestParam(value = "oid", required = true) String organizationId) {
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
-            throw new AccessDeniedException("Organization not found.");
+            throw new AccessDeniedException("Shul not found.");
         }
 
         if (name.isEmpty()) {
@@ -1534,7 +1534,7 @@ public class AdminController {
             throw new AccessDeniedException("Location not found.");
         }
         if (!canAccessOrganization(locationToUpdate.getOrganizationId())) {
-            throw new AccessDeniedException("You do not have permission to update a location for this organization.");
+            throw new AccessDeniedException("You do not have permission to update a location for this shul.");
         }
 
         String organizationId = locationToUpdate.getOrganizationId();
@@ -1559,7 +1559,7 @@ public class AdminController {
         }
         String organizationId = locationToDelete.getOrganizationId();
         if (!canAccessOrganization(locationToDelete.getOrganizationId())) {
-            throw new AccessDeniedException("You do not have permission to delete a location for this organization.");
+            throw new AccessDeniedException("You do not have permission to delete a location for this shul.");
         }
 
         if (locationDAO.delete(locationToDelete)) {
@@ -1579,7 +1579,7 @@ public class AdminController {
 
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
-            throw new AccessDeniedException("Organization not found.");
+            throw new AccessDeniedException("Shul not found.");
         }
         String oidToUse = organization.getId();
 
@@ -1674,7 +1674,7 @@ public class AdminController {
 
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
-            throw new AccessDeniedException("Organization not found.");
+            throw new AccessDeniedException("Shul not found.");
         }
         String oidToUse = organization.getId();
 
@@ -1875,7 +1875,7 @@ public class AdminController {
 //        get and verify organization
         Organization organization = getOrganization(orgId);
         if (organization == null) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         }
 
         ModelAndView mv = newMinyan(orgId);
@@ -1958,7 +1958,7 @@ public class AdminController {
 //        authenticate user has permission to edit minyan
         Organization minyanOrganization = getOrganization(minyan.getOrganizationId());
         if (minyanOrganization == null) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         }
         mv.addObject("minyan", minyan);
         mv.addObject("organization", minyanOrganization);
@@ -2029,7 +2029,7 @@ public class AdminController {
 //        confirm user has access to organization
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         }
 
         Minyan oldMinyan = minyanService.findById(minyanId);
@@ -2037,7 +2037,7 @@ public class AdminController {
             throw new Exception("Minyan not found.");
         }
         if (!organization.getId().equals(oldMinyan.getOrganizationId())) {
-            throw new AccessDeniedException("Minyan does not belong to this organization.");
+            throw new AccessDeniedException("Minyan does not belong to this shul.");
         }
 
         String organizationColor = organization.getOrgColor();
@@ -2105,7 +2105,7 @@ public class AdminController {
 
         Organization organization = getOrganization(organizationId);
         if (organization == null) {
-            throw new Exception("Organization not found.");
+            throw new Exception("Shul not found.");
         }
 
         Minyan minyan = minyanService.findById(minyanId);
@@ -2142,7 +2142,7 @@ public class AdminController {
             Organization org = getOrganization(orgId);
             if (org == null) {
                 ModelAndView mv = new ModelAndView("redirect:/admin/" + orgId + "/calendar-entries");
-                mv.addObject("errorMessage", "Organization not found");
+                mv.addObject("errorMessage", "Shul not found");
                 return mv;
             }
 
@@ -2421,7 +2421,7 @@ public class AdminController {
         try {
             Organization org = getOrganization(orgId);
             if (org == null) {
-                String message = "Organization not found";
+                String message = "Shul not found";
                 if (ajaxRequest) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(Map.of("success", false, "message", message));
@@ -2440,7 +2440,7 @@ public class AdminController {
                 
                 // Verify entry belongs to this organization
                 if (!entry.getOrganizationId().equals(orgId)) {
-                    throw new AccessDeniedException("Entry does not belong to this organization");
+                    throw new AccessDeniedException("Entry does not belong to this shul");
                 }
 
                 // Toggle enabled status
@@ -2509,7 +2509,7 @@ public class AdminController {
         try {
             Organization org = getOrganization(orgId);
             if (org == null) {
-                String message = "Organization not found";
+                String message = "Shul not found";
                 if (ajaxRequest) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(Map.of("success", false, "message", message));
@@ -2535,7 +2535,7 @@ public class AdminController {
 
             // Verify entry belongs to this organization
             if (!entry.getOrganizationId().equals(orgId)) {
-                throw new AccessDeniedException("Entry does not belong to this organization");
+                throw new AccessDeniedException("Entry does not belong to this shul");
             }
 
             String successMessage;
@@ -2599,7 +2599,7 @@ public class AdminController {
         try {
             Organization org = getOrganization(orgId);
             if (org == null) {
-                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Organization+not+found");
+                return new RedirectView("/admin/" + orgId + "/calendar-entries?errorMessage=Shul+not+found");
             }
 
             // Delete all existing entries for this organization

@@ -23,7 +23,7 @@
                 </svg>
                 Maintenance
             </h1>
-            <p class="admin-page-lead">Super-admin tools for data cleanup and system refresh. These operations affect all organizations.</p>
+            <p class="admin-page-lead">Super-admin tools for data cleanup and system refresh. These operations affect all shuls.</p>
         </div>
     </div>
 
@@ -76,7 +76,7 @@
                         <h5 class="card-title mb-0">Reimport All Calendars</h5>
                     </div>
                     <p class="card-text text-muted" style="font-size:.9rem;">
-                        Deletes all existing calendar entries for every organization that has a calendar URL configured,
+                        Deletes all existing calendar entries for every shul that has a calendar URL configured,
                         then fetches and re-classifies everything from scratch. Use this to fix stale data — for
                         example, entries that show "Shkiya:" instead of "Plag:" because they were imported before
                         the classifier was improved.
@@ -122,27 +122,27 @@
             </div>
         </div>
 
-        <!-- Geocode All Organizations -->
+        <!-- Geocode All Shuls -->
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <span class="badge badge-secondary mr-2" style="font-size:.75rem;">Safe</span>
-                        <h5 class="card-title mb-0">Geocode All Organizations</h5>
+                        <h5 class="card-title mb-0">Geocode All Shuls</h5>
                     </div>
                     <p class="card-text text-muted" style="font-size:.9rem;">
-                        Looks up GPS coordinates for organizations that are missing latitude/longitude values
+                        Looks up GPS coordinates for shuls that are missing latitude/longitude values
                         using the configured Mapbox Geocoding API. Existing coordinates are skipped unless
                         you choose to force a full refresh.
                     </p>
                     <ul class="text-muted" style="font-size:.85rem;">
-                        <li>Backfills missing coordinates for all organizations</li>
-                        <li>Can optionally refresh organizations that already have coordinates</li>
+                        <li>Backfills missing coordinates for all shuls</li>
+                        <li>Can optionally refresh shuls that already have coordinates</li>
                         <li>Useful after address cleanup or Mapbox token/config changes</li>
                     </ul>
                     <button type="button" class="btn btn-secondary mt-2"
                             data-toggle="modal" data-target="#geocode-all-modal">
-                        <i class="fas fa-map-marker-alt mr-1"></i> Geocode All Organizations
+                        <i class="fas fa-map-marker-alt mr-1"></i> Geocode All Shuls
                     </button>
                 </div>
             </div>
@@ -166,7 +166,7 @@
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p>This will <strong>delete all existing calendar entries</strong> for every organization
+                    <p>This will <strong>delete all existing calendar entries</strong> for every shul
                        that has a calendar URL, then re-fetch and re-classify from scratch.</p>
                     <p class="text-muted" style="font-size:.9rem;">
                         This operation may take a minute or two. The page will reload when it completes.
@@ -225,19 +225,19 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="geocode-all-modal-label">
-                        <i class="fas fa-map-marker-alt mr-2"></i>Geocode All Organizations?
+                        <i class="fas fa-map-marker-alt mr-2"></i>Geocode All Shuls?
                     </h5>
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p>This will look up GPS coordinates for all organizations missing location data using the Mapbox Geocoding API.</p>
+                    <p>This will look up GPS coordinates for all shuls missing location data using the Mapbox Geocoding API.</p>
                     <p class="text-muted" style="font-size:.9rem;">
-                        Organizations that already have coordinates will be skipped unless you check the box below.
+                        Shuls that already have coordinates will be skipped unless you check the box below.
                     </p>
                     <div class="mt-3">
                         <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:500;">
                             <input type="checkbox" id="geocode-force-checkbox" style="width:16px;height:16px;">
-                            Re-geocode all organizations, including those with existing coordinates
+                            Re-geocode all shuls, including those with existing coordinates
                         </label>
                     </div>
                 </div>

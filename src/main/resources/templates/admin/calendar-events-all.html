@@ -350,12 +350,12 @@
         <div>
             <h1 class="page-title">Master Calendar</h1>
             <p class="page-description"
-               th:text="|Materialized calendar events across all organizations on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
+               th:text="|Materialized calendar events across all shuls on the ${siteName ?: 'Minyanim Platform'} platform.|"></p>
         </div>
         <div class="page-actions">
             <form method="post" action="/admin/calendar-events/rematerialize-all"
                   style="display: inline;"
-                  onsubmit="return confirm('Rematerialize calendar events for ALL organizations? This may take a moment.')">
+                  onsubmit="return confirm('Rematerialize calendar events for ALL shuls? This may take a moment.')">
                 <button type="submit" class="btn-modern btn-secondary">
                     <i class="fas fa-sync-alt"></i>
                     <span>Rematerialize All</span>
@@ -397,13 +397,13 @@
             <form method="get" action="/admin/calendar-events/all">
                 <div class="filter-grid">
                     <div>
-                        <label class="field-label">Organization</label>
+                        <label class="field-label">Shul</label>
                         <select name="organizationId">
-                            <option value="">All Organizations</option>
+                            <option value="">All Shuls</option>
                             <option th:each="org : ${organizations}"
                                     th:value="${org.id}"
                                     th:text="${org.name}"
-                                    th:selected="${org.id == organizationFilter}">Organization</option>
+                                    th:selected="${org.id == organizationFilter}">Shul</option>
                         </select>
                     </div>
                     <div>
@@ -475,7 +475,7 @@
                 <thead>
                     <tr>
                         <th class="sortable" data-col="org" onclick="sortCol(this)">
-                            Organization <i class="sort-icon fas fa-sort"></i>
+                            Shul <i class="sort-icon fas fa-sort"></i>
                         </th>
                         <th class="sortable" data-col="date" onclick="sortCol(this)">
                             Date <i class="sort-icon fas fa-sort"></i>

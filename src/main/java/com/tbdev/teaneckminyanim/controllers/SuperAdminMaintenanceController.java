@@ -114,7 +114,7 @@ public class SuperAdminMaintenanceController {
             long failed = results.values().stream().filter(r -> !r.success).count();
             long totalNew = results.values().stream().mapToLong(r -> r.newEntries).sum();
 
-            String msg = "Reimport complete: %d org(s) succeeded, %d failed, %d total entries imported."
+            String msg = "Reimport complete: %d shul(s) succeeded, %d failed, %d total entries imported."
                     .formatted(succeeded, failed, totalNew);
             if (failed > 0) {
                 String failedNames = results.entrySet().stream()
@@ -202,7 +202,7 @@ public class SuperAdminMaintenanceController {
                     .formatted(updated, skipped, failed);
             if (failed > 0) {
                 redirectAttributes.addFlashAttribute("warningMessage",
-                        msg + " Check Mapbox token and organization addresses for failures.");
+                        msg + " Check Mapbox token and shul addresses for failures.");
             } else {
                 redirectAttributes.addFlashAttribute("successMessage", msg);
             }
