@@ -6,6 +6,7 @@ import com.tbdev.teaneckminyanim.minyan.MinyanType;
 import com.tbdev.teaneckminyanim.model.*;
 import com.tbdev.teaneckminyanim.repo.CalendarEventRepository;
 import com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository;
+import com.tbdev.teaneckminyanim.service.calendar.ImportedLocationMatcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -254,9 +255,10 @@ public class CalendarMaterializationService {
         Map<String, CalendarEvent> bySourceRef = new HashMap<>();
         populateImportedEventCache(organizationId, existingImported, bySourceRef);
 
+        List<Location> orgLocations = loadOrganizationLocations(organizationId);
         List<CalendarEvent> eventsToSave = new ArrayList<>();
         for (OrganizationCalendarEntry entry : entries) {
-            upsertImportedEventFromEntry(entry, org, bySourceRef, eventsToSave);
+            upsertImportedEventFromEntry(entry, org, orgLocations, bySourceRef, eventsToSave);
         }
         disableOrphanedImportedEvents(entries, bySourceRef, eventsToSave);
 
@@ -311,9 +313,10 @@ public class CalendarMaterializationService {
         Map<String, CalendarEvent> bySourceRef = new HashMap<>();
         populateImportedEventCache(organizationId, existingImported, bySourceRef);
 
+        List<Location> orgLocations = loadOrganizationLocations(organizationId);
         List<CalendarEvent> eventsToSave = new ArrayList<>();
         for (OrganizationCalendarEntry entry : entries) {
-            upsertImportedEventFromEntry(entry, org, bySourceRef, eventsToSave);
+            upsertImportedEventFromEntry(entry, org, orgLocations, bySourceRef, eventsToSave);
         }
         disableOrphanedImportedEvents(entries, bySourceRef, eventsToSave);
 
@@ -326,6 +329,7 @@ public class CalendarMaterializationService {
     private void upsertImportedEventFromEntry(
             OrganizationCalendarEntry entry,
             Organization org,
+            List<Location> orgLocations,
             Map<String, CalendarEvent> existingBySourceRef,
             List<CalendarEvent> eventsToSave) {
         if (entry == null || entry.getId() == null) {
@@ -367,9 +371,13 @@ public class CalendarMaterializationService {
         target.setDate(entry.getDate());
         target.setMinyanType(minyanType);
         target.setStartTime(resolvedStartTime);
-        target.setNotes(entry.getNotes());
-        target.setLocationId(null);
-        target.setLocationName(entry.getLocation());
+        // An admin edit on the materialized row (notes/location) wins over the import.
+        if (existingEvent == null || !existingEvent.isManuallyEdited()) {
+            target.setNotes(entry.getNotes());
+            Optional<Location> location = ImportedLocationMatcher.match(entry.getLocation(), orgLocations);
+            target.setLocationId(location.map(Location::getId).orElse(null));
+            target.setLocationName(location.map(Location::getName).orElse(entry.getLocation()));
+        }
         target.setEnabled(entry.isEnabled() && (!entry.isSourceDeleted() || sourceDeletedButRestored));
         target.setNusach(org.getNusach());
 
@@ -392,6 +400,16 @@ public class CalendarMaterializationService {
                 existingEvent.setEnabled(false);
                 eventsToSave.add(existingEvent);
             }
+        }
+    }
+
+    private List<Location> loadOrganizationLocations(String organizationId) {
+        try {
+            List<Location> locations = locationService.findMatching(organizationId);
+            return locations != null ? locations : List.of();
+        } catch (Exception e) {
+            log.warn("Could not load locations for {}: {}", organizationId, e.getMessage());
+            return List.of();
         }
     }
 

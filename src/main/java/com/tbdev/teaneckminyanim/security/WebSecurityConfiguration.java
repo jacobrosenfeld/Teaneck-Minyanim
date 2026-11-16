@@ -13,7 +13,11 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.webauthn.authentication.WebAuthnAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
@@ -25,6 +29,8 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import jakarta.servlet.Filter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -128,6 +134,8 @@ public class WebSecurityConfiguration {
                 .rpName(settingsService.getSiteName())
                 .allowedOrigins(webAuthnAllowedOrigins(settingsService))
                 .disableDefaultRegistrationPage(true)
+                // Sessions are stored in the database, so session attributes must be Serializable.
+                .creationOptionsRepository(new SerializablePublicKeyCredentialCreationOptionsRepository())
             );
         }
 
@@ -146,7 +154,27 @@ public class WebSecurityConfiguration {
                     .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/admin/login")));
         }
 
-        return http.build();
+        DefaultSecurityFilterChain chain = http.build();
+        applySessionFixationProtectionToPasskeyLogin(chain, http.getSharedObject(SessionAuthenticationStrategy.class));
+        return chain;
+    }
+
+    /**
+     * Spring Security's WebAuthn configurer builds its authentication filter without the session
+     * authentication strategy that form login gets, so a passkey sign-in would keep the pre-login
+     * session ID. Apply the shared strategy (session ID rotation + CSRF token rotation) so passkey
+     * logins get the same session-fixation protection as every other login path.
+     */
+    static void applySessionFixationProtectionToPasskeyLogin(DefaultSecurityFilterChain chain,
+                                                             SessionAuthenticationStrategy sharedStrategy) {
+        SessionAuthenticationStrategy strategy = sharedStrategy != null
+                ? sharedStrategy
+                : new ChangeSessionIdAuthenticationStrategy();
+        for (Filter filter : chain.getFilters()) {
+            if (filter instanceof WebAuthnAuthenticationFilter webAuthnFilter) {
+                webAuthnFilter.setSessionAuthenticationStrategy(strategy);
+            }
+        }
     }
 
     @Bean

@@ -61,17 +61,26 @@ public class Notification {
     }
 
     /**
-     * Check if this notification is currently active
+     * Check if this notification's expiration date has passed.
+     * Uses the JVM default time zone, which the app sets from the TIMEZONE setting at startup
+     * (the same clock {@link #onCreate()} and the admin form's datetime-local input use).
+     */
+    public boolean isExpired() {
+        return isExpired(LocalDateTime.now());
+    }
+
+    /**
+     * Check whether this notification is expired as of {@code now}. A notification with no
+     * expiration date never expires; one whose expiration equals {@code now} is not yet expired.
+     */
+    public boolean isExpired(LocalDateTime now) {
+        return expirationDate != null && now.isAfter(expirationDate);
+    }
+
+    /**
+     * Check if this notification is currently active (enabled and not expired)
      */
     public boolean isActive() {
-        if (!enabled) {
-            return false;
-        }
-        
-        if (expirationDate != null && LocalDateTime.now().isAfter(expirationDate)) {
-            return false;
-        }
-        
-        return true;
+        return Boolean.TRUE.equals(enabled) && !isExpired();
     }
 }

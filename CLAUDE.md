@@ -178,15 +178,21 @@ mvn test
 
 | Branch | Auto-deploy | Purpose |
 |--------|-------------|---------|
-| `main` | Yes → production | Stable releases only. Feature PRs target `main` and merge only once approved. |
-| `dev`  | Yes → dev site | Shared test slot. Pushing to `dev` still auto-deploys, but feature work is tested on dev **without** merging (see below). |
+| `main` | Yes → production | Stable releases only. Changes reach `main` only through a release PR from `dev`. |
+| `dev`  | Yes → dev site | Integration branch. Feature PRs target `dev` and are merged here once tested and approved. |
 | `test/*` | No (deploy manually) | Throwaway combined branches for testing several open PRs together. Never merged. |
 
-**Testing flow (PRs stay open while testing):**
-1. Open feature PRs against **`main`**. Never open a feature PR against `dev` just to test it, because merging it closes the PR.
-2. To test a branch live, run the **Deploy to dev** workflow manually (Actions → Deploy to dev → Run workflow) and enter the branch name in `ref`. The dev site then runs that branch; nothing is merged.
-3. To test several open PRs at once, create `test/<name>` from `main`, merge the PR branches into it, and deploy that ref. Fix problems on the original feature branch, then rebuild the `test/*` branch. Delete it when done.
-4. Review feedback goes on the open PR, and fixes are pushed to the same branch. Merge to `main` once approved.
+**Feature flow (test each PR on dev before merging):**
+1. Branch from `dev` and open the feature PR against **`dev`**.
+2. To test a PR live before merging, run the **Deploy to dev** workflow manually (Actions → Deploy to dev → Run workflow), pick the PR's branch in **Use workflow from**, and leave the text box blank. The dev site then runs that branch, and nothing is merged. For a branch created before this workflow had a manual trigger (it won't appear in the dropdown or will fail), keep **Use workflow from** on `main` and type the branch, tag, or SHA in the text box instead.
+3. To test several open PRs together, create `test/<name>` from `dev`, merge the PR branches into it, and deploy that ref. Fix problems on the original feature branch, then rebuild the `test/*` branch. Delete it when done.
+4. Review feedback goes on the open PR, and fixes are pushed to the same branch. Merge into `dev` once it passes on dev and is approved. Merging to `dev` auto-deploys it.
+
+**Release flow (`dev` → `main`):**
+1. When `dev` holds a tested set of changes, commit the version bump (`pom.xml`) and the CHANGELOG entry on `dev`. Move `[Unreleased]` into a dated version section.
+2. Open a release PR from `dev` to `main`. GitHub only auto-closes issues when a PR merges into `main`, so list every `Fixes #N` from the included feature PRs in the release PR body.
+3. Merging the release PR deploys to production.
+4. Feature PRs merged to `dev` must not bump the version or edit the CHANGELOG independently. Put a suggested CHANGELOG entry in the PR description instead, and the release commit collects them. This avoids conflicts between parallel PRs.
 
 **Caveats:** dev is a single server, so only one ref is live at a time, and the most recent deploy wins (including an automatic deploy from a push to `dev`). The dev database is shared and Hibernate `ddl-auto=update` keeps any columns or tables a branch added after you switch away. That's harmless for additive changes, but avoid deploying branches with destructive schema changes to dev without a plan.
 

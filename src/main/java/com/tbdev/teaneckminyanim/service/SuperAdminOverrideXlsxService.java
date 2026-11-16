@@ -221,7 +221,7 @@ public class SuperAdminOverrideXlsxService {
 
         Optional<Organization> orgOpt = organizationService.findById(orgId);
         if (orgOpt.isEmpty()) {
-            result.addError("Organization not found.");
+            result.addError("Shul not found.");
             return result;
         }
         Organization organization = orgOpt.get();
@@ -610,7 +610,7 @@ public class SuperAdminOverrideXlsxService {
     private boolean validateSuperAdminWorkbookHeader(Sheet sheet, DataFormatter formatter, ImportResult result) {
         String firstHeader = readHeaderCell(sheet, formatter, SUPER_COL_ORG_NAME);
         if ("date".equals(firstHeader)) {
-            result.addError("This looks like an organization-specific override workbook. Upload it from that organization's Overrides page, or use the super-admin override template with organization_name as the first column.");
+            result.addError("This looks like a shul-specific override workbook. Upload it from that shul's Overrides page, or use the super-admin override template with organization_name as the first column.");
             return false;
         }
         if (!"organization_name".equals(firstHeader)) {
@@ -623,11 +623,11 @@ public class SuperAdminOverrideXlsxService {
     private boolean validateOrganizationWorkbookHeader(Sheet sheet, DataFormatter formatter, ImportResult result) {
         String firstHeader = readHeaderCell(sheet, formatter, ORG_COL_DATE);
         if ("organization_name".equals(firstHeader)) {
-            result.addError("This looks like a super-admin override workbook. Upload it from the Super Admin Overrides page, or use this organization's override template with date as the first column.");
+            result.addError("This looks like a super-admin override workbook. Upload it from the Super Admin Overrides page, or use this shul's override template with date as the first column.");
             return false;
         }
         if (!"date".equals(firstHeader)) {
-            result.addError("Organization override import requires date as the first column. Download this organization's override template and try again.");
+            result.addError("Shul override import requires date as the first column. Download this shul's override template and try again.");
             return false;
         }
         return true;

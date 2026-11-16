@@ -167,7 +167,7 @@ public class WeeklyMinyanReviewEmailService {
         Organization organization = orgId == null ? null : organizationsById.get(orgId);
         if (organization == null) {
             return WeeklyMinyanReviewTestSendResult.notSent(range, null, true, null,
-                    "Your organization is disabled or could not be found.");
+                    "Your shul is disabled or could not be found.");
         }
 
         OrganizationScheduleSummary summary = buildOrganizationSummaries(List.of(organization), range).getFirst();

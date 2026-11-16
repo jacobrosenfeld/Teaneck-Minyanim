@@ -145,7 +145,7 @@ public class SuperAdminOverridesController {
         try {
             Optional<Organization> orgOpt = organizationService.findById(organizationId);
             if (orgOpt.isEmpty()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Organization not found.");
+                redirectAttributes.addFlashAttribute("errorMessage", "Shul not found.");
                 return new RedirectView("/admin/super/overrides");
             }
             Organization org = orgOpt.get();
@@ -173,7 +173,7 @@ public class SuperAdminOverridesController {
             if (locationId != null && !locationId.isBlank()) {
                 Location selectedLocation = locationService.findById(locationId);
                 if (selectedLocation == null || !organizationId.equals(selectedLocation.getOrganizationId())) {
-                    redirectAttributes.addFlashAttribute("errorMessage", "Invalid location for selected organization.");
+                    redirectAttributes.addFlashAttribute("errorMessage", "Invalid location for selected shul.");
                     return new RedirectView("/admin/super/overrides");
                 }
                 resolvedLocationId = selectedLocation.getId();

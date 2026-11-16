@@ -18,7 +18,7 @@
         <div th:if="${organization != null}">
             <div class="admin-sidebar-section">
                 <div class="admin-sidebar-section-title">
-                    <span th:text="${organization.name}">Organization</span>
+                    <span th:text="${organization.name}">Shul</span>
                 </div>
             </div>
             <a class="admin-sidebar-link" th:href="@{|/admin/${organization.id}/minyanim|}" th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/minyanim')} ? 'active' : ''">
@@ -62,7 +62,7 @@
             <!-- Org Actions Section -->
             <div class="admin-sidebar-divider"></div>
             <div class="admin-sidebar-section" th:if="${user.isSuperAdmin()}">
-                <div class="admin-sidebar-section-title">Organization Actions</div>
+                <div class="admin-sidebar-section-title">Shul Actions</div>
             </div>
             <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and organization.isEnabled()}" href="#"
                data-toggle="modal" data-target="#disable-organization-modal">
@@ -70,7 +70,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0 9 9 0 0112.728 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 9l-6 6"/>
                 </svg>
-                <span>Disable Organization</span>
+                <span>Disable Shul</span>
             </a>
 
             <form th:if="${user.isSuperAdmin() and !organization.enabled}" th:action="@{/admin/enable-organization}" method="post">
@@ -85,12 +85,12 @@
 
                 <a class="admin-sidebar-link disabled text-muted" th:if="${user.isSuperAdmin() and organization.enabled}"
                     aria-disabled="true" href="#" style="color: var(--color-danger, #dc3545); cursor: not-allowed;"
-                    data-toggle="tooltip" data-placement="right" title="Disable the organization before deleting"
+                    data-toggle="tooltip" data-placement="right" title="Disable the shul before deleting"
                     onclick="return false;">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
-                <span>Delete Organization</span>
+                <span>Delete Shul</span>
             </a>
 
             <a class="admin-sidebar-link" th:if="${user.isSuperAdmin() and !organization.enabled}"
@@ -99,7 +99,7 @@
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
-                <span>Delete Organization</span>
+                <span>Delete Shul</span>
             </a>
             
             <div class="admin-sidebar-divider"></div>
@@ -108,7 +108,7 @@
         <!-- Non-Org Context Sidebar (for users without org context) -->
         <div th:if="${organization == null && !user.isSuperAdmin()}">
             <div class="admin-sidebar-section">
-                <div class="admin-sidebar-section-title">Organization</div>
+                <div class="admin-sidebar-section-title">Shul</div>
             </div>
             <a class="admin-sidebar-link" th:href="@{|/admin/${user.getOrganizationId()}/minyanim|}">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +139,7 @@
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
-                <span>My Organization</span>
+                <span>My Shul</span>
             </a>
             
             <div class="admin-sidebar-divider"></div>
@@ -155,14 +155,14 @@
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/>
                 </svg>
-                <span>Organizations</span>
+                <span>Shuls</span>
             </a>
             <a class="admin-sidebar-link" th:href="@{/admin/new-organization}"
                th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/new-organization')} ? 'active' : ''">
                 <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
                 </svg>
-                <span>New Organization</span>
+                <span>New Shul</span>
             </a>
             <a class="admin-sidebar-link" th:href="@{/admin/accounts}"
                th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/admin/accounts')} ? 'active' : ''">
@@ -244,7 +244,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                Do you want to disable this organization's data from being shown on the site? Its login access will also be disabled.
+                Do you want to disable this shul's data from being shown on the site? Its login access will also be disabled.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
@@ -267,7 +267,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                This will permanently remove all data for this organization and its accounts. This action cannot be undone.
+                This will permanently remove all data for this shul and its accounts. This action cannot be undone.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
