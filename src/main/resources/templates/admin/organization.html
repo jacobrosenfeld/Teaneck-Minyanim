@@ -480,9 +480,9 @@
                         <label class="shul-switch" for="useScrapedCalendar">
                             <input type="checkbox" name="useScrapedCalendar" id="useScrapedCalendar"
                                    aria-labelledby="useScrapedCalendar-label"
-                                   th:checked="${organization.useScrapedCalendar}">
+                                   th:checked="${organization.useScrapedCalendar == true}">
                             <span class="shul-switch-track" aria-hidden="true"></span>
-                            <span id="useScrapedCalendar-state" th:text="${organization.useScrapedCalendar ? 'On' : 'Off'}">Off</span>
+                            <span id="useScrapedCalendar-state" th:text="${organization.useScrapedCalendar == true ? 'On' : 'Off'}">Off</span>
                         </label>
                     </div>
                 </div>
@@ -534,7 +534,10 @@
                             <td th:text="${member.username}"></td>
                             <td th:text="${member.email}"></td>
                             <td>
-                                <span th:replace="~{admin/fragments/role-chip :: roleChip(${member})}"></span>
+                                <th:block th:if="${member.roleId != null and member.role() != null}">
+                                    <span th:replace="~{admin/fragments/role-chip :: roleChip(${member})}"></span>
+                                </th:block>
+                                <span th:unless="${member.roleId != null and member.role() != null}" class="badge-modern">Unknown role</span>
                             </td>
                             <td>
                                 <div class="table-actions table-actions-nowrap"
@@ -545,8 +548,6 @@
                                         <input type="hidden" name="id" th:value="${member.id}">
                                         <input type="hidden" name="rd" th:value="${'/admin/organization?id=' + organization.id}">
                                         <button type="button" class="btn-modern btn-sm btn-warning"
-                                                th:disabled="${associatedusers.size() <= 1}"
-                                                th:title="${associatedusers.size() <= 1 ? 'A shul needs at least one account' : null}"
                                                 data-confirm
                                                 data-confirm-severity="warning"
                                                 data-confirm-icon="fa-ban"

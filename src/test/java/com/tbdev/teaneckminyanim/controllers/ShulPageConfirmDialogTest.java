@@ -92,10 +92,33 @@ class ShulPageConfirmDialogTest {
     }
 
     @Test
-    void shulPageKeepsDisableButtonDisabledForSingleAccountShul() throws Exception {
+    void shulPageAllowsDisablingAShulsOnlyAccount() throws Exception {
+        // A shul does not need to keep an account (owner feedback on #315).
         String html = render("/single-account-preview");
         String peerForm = formWithId(html, "disable-account-form-peer");
-        assertTrue(peerForm.contains("disabled=\"disabled\""), peerForm);
+        assertFalse(peerForm.contains("disabled=\"disabled\""), peerForm);
+        assertFalse(html.contains("at least one account"));
+    }
+
+    @Test
+    void shulPageRendersForShulWithNoAccountsAndImportUnset() throws Exception {
+        // Regression: a legacy row with USE_SCRAPED_CALENDAR = NULL threw mid-render and spliced the
+        // error page into the shul page right after the "Enable calendar import" row.
+        String html = render("/no-accounts-preview");
+        assertTrue(html.contains("id=\"useScrapedCalendar-state\">Off</span>"), html);
+        assertFalse(html.contains("checked=\"checked\""));
+        assertTrue(html.contains("id=\"shul-accounts\""));
+        assertTrue(html.contains("No accounts are assigned to this shul yet."));
+        assertTrue(html.contains("</html>"));
+    }
+
+    @Test
+    void shulPageToleratesAccountsWithMissingFields() throws Exception {
+        String html = render("/incomplete-accounts-preview");
+        assertTrue(html.contains("id=\"disable-account-form-noemail\""));
+        assertTrue(html.contains("data-confirm-detail=\"noemail\""));
+        assertTrue(html.contains("Unknown role"));
+        assertTrue(html.contains("</html>"));
     }
 
     @Test
@@ -383,6 +406,29 @@ class ShulPageConfirmDialogTest {
             TNMUser peer = TNMUser.builder().id("peer").username("peermanager").email("peer@example.com")
                     .roleId(1).organizationId("one").build();
             return page(superAdmin, List.of(peer), java.util.Set.of("peer"));
+        }
+
+        @GetMapping("/no-accounts-preview")
+        ModelAndView noAccountsPage() {
+            TNMUser superAdmin = TNMUser.builder().id("super").username("superadmin").email("super@example.com")
+                    .roleId(1).build();
+            ModelAndView mv = page(superAdmin, List.of(), java.util.Set.of());
+            Organization org = (Organization) mv.getModel().get("organization");
+            org.setUseScrapedCalendar(null);
+            org.setCalendar(null);
+            org.setOrgColor(null);
+            org.setNusach(null);
+            return mv;
+        }
+
+        @GetMapping("/incomplete-accounts-preview")
+        ModelAndView incompleteAccountsPage() {
+            TNMUser superAdmin = TNMUser.builder().id("super").username("superadmin").email("super@example.com")
+                    .roleId(1).build();
+            TNMUser noEmail = TNMUser.builder().id("noemail").username("noemail").roleId(2).organizationId("one").build();
+            TNMUser noRole = TNMUser.builder().id("norole").username("norole").email("norole@example.com")
+                    .organizationId("one").build();
+            return page(superAdmin, java.util.Arrays.asList(noEmail, noRole), java.util.Set.of("noemail"));
         }
 
         private ModelAndView page(TNMUser viewer, List<TNMUser> accounts, java.util.Set<String> manageable) {
