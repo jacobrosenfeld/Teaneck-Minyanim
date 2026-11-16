@@ -244,21 +244,16 @@
                 outline-offset: 2px;
             }
 
-            .shul-save-bar {
-                position: sticky;
-                bottom: 0;
-                z-index: 5;
+            /* Save row: the footer of the last profile card, so it plainly belongs to the form above. */
+            .shul-form-actions {
                 display: flex;
                 align-items: center;
                 justify-content: flex-end;
                 flex-wrap: wrap;
                 gap: var(--space-3, 0.75rem);
-                margin: 0 0 var(--space-8, 2rem);
-                padding: var(--space-3, 0.75rem) var(--space-5, 1.25rem);
-                background: var(--bg-surface, #fff);
-                border: 1px solid var(--border-color, #dee2e6);
-                border-radius: var(--radius-lg, 0.5rem);
-                box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
+                padding: var(--space-4, 1rem) var(--space-5, 1.25rem);
+                background: var(--bg-body, #f8f9fa);
+                border-top: 1px solid var(--border-color, #dee2e6);
             }
 
             .shul-save-state {
@@ -274,9 +269,46 @@
                 color: var(--color-warning, #ff9800);
             }
 
-            .shul-save-bar .alert {
+            .shul-form-actions .alert {
                 flex: 1 1 100%;
                 margin: 0;
+            }
+
+            /* Accounts are managed separately from the profile form. */
+            .shul-section-divider {
+                margin: var(--space-8, 2rem) 0 var(--space-6, 1.5rem);
+                border: 0;
+                border-top: 1px solid var(--border-color, #dee2e6);
+            }
+
+            /* Compact reminder, only while there are unsaved changes and the Save row is off screen. */
+            .shul-unsaved-float {
+                position: fixed;
+                right: var(--space-6, 1.5rem);
+                bottom: var(--space-6, 1.5rem);
+                z-index: 1030;
+                display: flex;
+                align-items: center;
+                gap: var(--space-3, 0.75rem);
+                padding: var(--space-2, 0.5rem) var(--space-2, 0.5rem) var(--space-2, 0.5rem) var(--space-4, 1rem);
+                color: var(--text-primary, #212529);
+                background: var(--bg-surface, #fff);
+                border: 1px solid var(--border-color, #dee2e6);
+                border-radius: var(--radius-full, 9999px);
+                box-shadow: var(--shadow-lg, 0 10px 24px rgba(0, 0, 0, 0.12));
+                font-size: var(--font-size-sm, 0.875rem);
+            }
+
+            .shul-unsaved-float[hidden] {
+                display: none;
+            }
+
+            .shul-unsaved-float i {
+                color: var(--color-warning, #ff9800);
+            }
+
+            .shul-unsaved-float .btn-modern {
+                border-radius: var(--radius-full, 9999px);
             }
 
             .shul-accounts-table {
@@ -313,12 +345,19 @@
             }
 
             @media (max-width: 480px) {
-                .shul-save-bar .btn-modern {
+                .shul-form-actions .btn-modern {
                     width: 100%;
                 }
 
                 .shul-save-state {
                     margin-right: 0;
+                }
+
+                .shul-unsaved-float {
+                    left: var(--space-4, 1rem);
+                    right: var(--space-4, 1rem);
+                    bottom: var(--space-4, 1rem);
+                    justify-content: space-between;
                 }
             }
         </style>
@@ -485,27 +524,31 @@
                             <span id="useScrapedCalendar-state" th:text="${organization.useScrapedCalendar == true ? 'On' : 'Off'}">Off</span>
                         </label>
                     </div>
+
+                    <div class="shul-form-actions" id="shul-form-actions">
+                        <span class="shul-save-state" id="shul-save-state" role="status">
+                            <i class="far fa-circle" aria-hidden="true"></i>
+                            <span>No unsaved changes</span>
+                        </span>
+                        <div th:if="${updateError}" class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                            <span th:text="${updateError}"></span>
+                        </div>
+                        <button type="submit" class="btn-modern btn-primary"
+                                title="Saves Profile, Nusach &amp; color, and Calendar import">
+                            <i class="fas fa-save" aria-hidden="true"></i>
+                            <span>Save changes</span>
+                        </button>
+                    </div>
                 </div>
             </section>
 
-            <div class="shul-save-bar">
-                <span class="shul-save-state" id="shul-save-state" role="status">
-                    <i class="far fa-circle" aria-hidden="true"></i>
-                    <span>No unsaved changes</span>
-                </span>
-                <div th:if="${updateError}" class="alert alert-danger" role="alert">
-                    <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
-                    <span th:text="${updateError}"></span>
-                </div>
-                <button type="submit" class="btn-modern btn-primary">
-                    <i class="fas fa-save" aria-hidden="true"></i>
-                    <span>Save changes</span>
-                </button>
-            </div>
         </form>
 
-        <!-- Associated accounts -->
-        <section class="shul-section" id="shul-accounts" th:if="${user.isAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+        <!-- Associated accounts: separate from the profile form and its Save button -->
+        <th:block th:if="${user.isAdmin()}" sec:authorize="hasRole('ROLE_ADMIN')">
+        <hr class="shul-section-divider">
+        <section class="shul-section" id="shul-accounts">
             <div class="shul-section-copy">
                 <h2 class="shul-section-title">
                     <i class="fas fa-users" aria-hidden="true"></i>
@@ -572,6 +615,13 @@
                 </div>
             </div>
         </section>
+        </th:block>
+
+        <div class="shul-unsaved-float" id="shul-unsaved-float" role="status" hidden>
+            <i class="fas fa-circle-dot" aria-hidden="true"></i>
+            <span>Unsaved changes</span>
+            <button type="submit" form="shul-profile-form" class="btn-modern btn-sm btn-primary">Save</button>
+        </div>
     </div>
 </div>
 
@@ -655,10 +705,27 @@
                 }
 
                 var saveState = document.getElementById('shul-save-state');
+                var actions = document.getElementById('shul-form-actions');
+                var floatBar = document.getElementById('shul-unsaved-float');
                 var initial = new URLSearchParams(new FormData(form)).toString();
                 var dirty = false;
+                var actionsVisible = true;
+
+                // The compact bar shows only while there are unsaved changes and the Save row is off screen.
+                function updateFloat() {
+                    if (floatBar) floatBar.hidden = !(dirty && !actionsVisible);
+                }
+
+                if (actions && floatBar && 'IntersectionObserver' in window) {
+                    new IntersectionObserver(function (entries) {
+                        actionsVisible = entries[entries.length - 1].isIntersecting;
+                        updateFloat();
+                    }).observe(actions);
+                }
+
                 function refresh() {
                     dirty = new URLSearchParams(new FormData(form)).toString() !== initial;
+                    updateFloat();
                     if (!saveState) return;
                     saveState.className = 'shul-save-state' + (dirty ? ' unsaved' : '');
                     saveState.querySelector('i').className = dirty ? 'fas fa-circle-dot' : 'far fa-circle';
@@ -666,7 +733,7 @@
                 }
                 form.addEventListener('input', refresh);
                 form.addEventListener('change', refresh);
-                form.addEventListener('submit', function () { dirty = false; });
+                form.addEventListener('submit', function () { dirty = false; updateFloat(); });
                 window.addEventListener('beforeunload', function (event) {
                     if (!dirty) return;
                     event.preventDefault();

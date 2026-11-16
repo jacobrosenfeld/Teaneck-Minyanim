@@ -92,6 +92,33 @@ class ShulPageConfirmDialogTest {
     }
 
     @Test
+    void saveRowBelongsToTheProfileFormAndAccountsComeAfterIt() throws Exception {
+        String html = renderShulPage();
+        int formStart = html.indexOf("id=\"shul-profile-form\"");
+        int calendar = html.indexOf("id=\"shul-calendar\"");
+        int actions = html.indexOf("id=\"shul-form-actions\"");
+        int formEnd = html.indexOf("</form>", actions);
+        int accounts = html.indexOf("id=\"shul-accounts\"");
+        assertTrue(formStart > 0 && formStart < calendar && calendar < actions && actions < formEnd);
+        // The Save row is the footer of the Calendar import card, inside the profile form.
+        String calendarSection = html.substring(calendar, html.indexOf("</section>", calendar));
+        assertTrue(calendarSection.contains("id=\"shul-form-actions\""));
+        assertTrue(calendarSection.contains("<span>Save changes</span>"));
+        // Accounts start after the form, behind a divider, with nothing from the form in between.
+        assertTrue(accounts > formEnd);
+        String between = html.substring(formEnd + "</form>".length(), accounts);
+        assertTrue(between.contains("shul-section-divider"), between);
+        assertFalse(between.contains("<button"), between);
+        assertFalse(between.contains("<input"), between);
+        // No always-visible sticky bar; the compact reminder starts hidden and targets the profile form.
+        assertFalse(html.contains("shul-save-bar"));
+        Matcher floatBar = Pattern.compile("<div class=\"shul-unsaved-float\"[^>]*>").matcher(html);
+        assertTrue(floatBar.find());
+        assertTrue(floatBar.group().contains(" hidden"), floatBar.group());
+        assertTrue(html.contains("<button type=\"submit\" form=\"shul-profile-form\""));
+    }
+
+    @Test
     void shulPageAllowsDisablingAShulsOnlyAccount() throws Exception {
         // A shul does not need to keep an account (owner feedback on #315).
         String html = render("/single-account-preview");
