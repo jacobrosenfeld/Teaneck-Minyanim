@@ -9,6 +9,7 @@
     <title th:text="|Settings - ${siteName ?: 'Minyanim Platform'}|">Settings</title>
 
     <th:block layout:fragment="styles">
+        <link rel="stylesheet" th:href="@{/admin/schedule-picker.css}">
         <style>
             .settings-breadcrumb {
                 display: flex;
@@ -456,6 +457,15 @@
                 </div>
 
                 <div class="settings-panel">
+                    <th:block th:if="${section.id == 'calendar-import' and importSchedule != null}">
+                        <form th:replace="~{admin/fragments/schedule-picker :: schedulePicker(${importSchedule},
+                                'import-schedule-form',
+                                @{/admin/settings/calendar-import-schedule},
+                                @{/admin/settings/calendar-import-schedule/preview},
+                                'Import Schedule',
+                                'When the automatic calendar import runs. The calendar is refreshed right after each import.')}"></form>
+                    </th:block>
+
                     <form th:each="field : ${section.fields}"
                           class="setting-field-form"
                           th:action="@{/admin/settings/update-field}"
@@ -546,6 +556,7 @@
 <th:block layout:fragment="scripts">
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.43/builds/moment-timezone-with-data.min.js"></script>
+    <script th:src="@{/admin/schedule-picker.js}"></script>
 
     <script>
         const successMsg = /*[[${success}]]*/ null;

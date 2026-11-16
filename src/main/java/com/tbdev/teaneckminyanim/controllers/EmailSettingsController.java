@@ -61,6 +61,7 @@ public class EmailSettingsController {
         ModelAndView mv = new ModelAndView("admin/email-settings");
         mv.addObject("sections", sections());
         mv.addObject("emailProvider", settingsService.getEmailProvider());
+        mv.addObject("weeklyReviewSchedule", weeklyReviewScheduler.currentView());
         addStandardPageData(mv);
         return mv;
     }
@@ -96,7 +97,9 @@ public class EmailSettingsController {
 
             settingsService.updateSetting(key, settingValue);
             log.info("Email setting updated: {} by user {}", key.getKey(), user.getUsername());
-            if (key == SettingKey.EMAIL_WEEKLY_REVIEW_DAY || key == SettingKey.EMAIL_WEEKLY_REVIEW_TIME) {
+            if (key == SettingKey.EMAIL_WEEKLY_REVIEW_DAY
+                    || key == SettingKey.EMAIL_WEEKLY_REVIEW_TIME
+                    || key == SettingKey.EMAIL_WEEKLY_REVIEW_CRON) {
                 weeklyReviewScheduler.reschedule();
             }
             return ResponseEntity.ok(FieldUpdateResponse.success(
@@ -111,6 +114,51 @@ public class EmailSettingsController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(FieldUpdateResponse.failure(key.getKey(), "Setting could not be saved."));
         }
+    }
+
+    /**
+     * Save the weekly review email schedule from the schedule picker. SIMPLE mode builds the
+     * cron from frequency/days/time; ADVANCED saves the cron as entered. Both are validated
+     * (syntax and minimum interval) and the running schedule is replaced right away.
+     */
+    @ResponseBody
+    @PostMapping("/admin/settings/email/weekly-review-schedule")
+    public ResponseEntity<CronScheduleResponse> saveWeeklyReviewSchedule(
+            @RequestParam("mode") String mode,
+            @RequestParam(value = "frequency", required = false) String frequency,
+            @RequestParam(value = "days", required = false) List<String> days,
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "cron", required = false) String cron) {
+        TNMUser user = requireSuperAdmin();
+
+        try {
+            String savedCron = settingsService.saveWeeklyReviewEmailSchedule(mode, frequency, days, time, cron);
+            weeklyReviewScheduler.reschedule();
+            log.info("Weekly review email schedule updated: cron='{}' by user {}", savedCron, user.getUsername());
+            return ResponseEntity.ok(CronScheduleResponse.saved(weeklyReviewScheduler.currentView()));
+        } catch (ApplicationSettingsService.ValidationException e) {
+            log.warn("Validation error saving weekly review email schedule: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CronScheduleResponse.failure(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error saving weekly review email schedule: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(CronScheduleResponse.failure("Schedule could not be saved."));
+        }
+    }
+
+    /** Preview the weekly review email schedule without saving it (same validation as save). */
+    @ResponseBody
+    @GetMapping("/admin/settings/email/weekly-review-schedule/preview")
+    public ResponseEntity<CronScheduleResponse> previewWeeklyReviewSchedule(
+            @RequestParam("mode") String mode,
+            @RequestParam(value = "frequency", required = false) String frequency,
+            @RequestParam(value = "days", required = false) List<String> days,
+            @RequestParam(value = "time", required = false) String time,
+            @RequestParam(value = "cron", required = false) String cron) {
+        requireSuperAdmin();
+
+        return ResponseEntity.ok(CronScheduleResponse.preview(mode, frequency, days, time, cron,
+                weeklyReviewScheduler.effectiveZone(), weeklyReviewScheduler.scheduleProfile()));
     }
 
     private List<EmailSettingSection> sections() {
@@ -138,9 +186,7 @@ public class EmailSettingsController {
                                         "select",
                                         List.of(
                                                 new SettingOption("true", "Enabled"),
-                                                new SettingOption("false", "Disabled"))),
-                                field(SettingKey.EMAIL_WEEKLY_REVIEW_DAY, "select", dayOptions()),
-                                field(SettingKey.EMAIL_WEEKLY_REVIEW_TIME, "time"))),
+                                                new SettingOption("false", "Disabled"))))),
                 new EmailSettingSection(
                         "sender",
                         "Sender Defaults",
@@ -223,15 +269,6 @@ public class EmailSettingsController {
             return value;
         }
         return key.maskValue(value);
-    }
-
-    private static List<SettingOption> dayOptions() {
-        List<SettingOption> options = new ArrayList<>();
-        DayOfWeek day = DayOfWeek.SUNDAY;
-        for (int i = 0; i < 7; i++, day = day.plus(1)) {
-            options.add(new SettingOption(day.name(), dayLabel(day)));
-        }
-        return options;
     }
 
     private static String dayLabel(DayOfWeek day) {

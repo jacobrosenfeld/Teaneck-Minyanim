@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Shared cron schedule picker (calendar import on Settings, weekly review email on Email Settings).
+  Simple mode: Daily/Weekly, day pills, time. Advanced mode: raw Spring cron, validated live
+  through the preview endpoint (the same check the save endpoint runs).
+
+  Usage:
+    <form th:replace="~{admin/fragments/schedule-picker :: schedulePicker(${view}, 'my-form-id',
+          @{/save/url}, @{/preview/url}, 'Title', 'Description')}"></form>
+  `view` is a CronSchedule.View. Include /admin/schedule-picker.css and /admin/schedule-picker.js
+  on the page; the script initialises every form[data-schedule-picker].
+-->
+<form th:fragment="schedulePicker(view, formId, action, previewUrl, title, description)"
+      th:id="${formId}"
+      class="schedule-editor"
+      data-schedule-picker
+      th:action="${action}"
+      th:data-preview-url="${previewUrl}"
+      th:data-valid="${view.valid()}"
+      method="post"
+      novalidate>
+    <div class="schedule-editor-header">
+        <span class="field-label" th:text="${title}">Schedule</span>
+        <p class="field-description" th:text="${description}">When this runs.</p>
+    </div>
+
+    <div class="schedule-grid" data-role="simple" th:id="${formId + '-simple'}" th:hidden="${view.advanced()}">
+        <div class="schedule-row">
+            <p class="schedule-row-label" th:id="${formId + '-frequency-label'}">Frequency</p>
+            <fieldset class="schedule-choices" th:attr="aria-labelledby=${formId + '-frequency-label'}">
+                <label class="schedule-choice">
+                    <input type="radio" name="frequency" value="DAILY" th:checked="${!view.weekly()}">
+                    <span>Daily</span>
+                </label>
+                <label class="schedule-choice">
+                    <input type="radio" name="frequency" value="WEEKLY" th:checked="${view.weekly()}">
+                    <span>Weekly</span>
+                </label>
+            </fieldset>
+        </div>
+
+        <div class="schedule-row" data-role="days-row" th:id="${formId + '-days-row'}" th:hidden="${!view.weekly()}">
+            <p class="schedule-row-label" th:id="${formId + '-days-label'}">Days</p>
+            <fieldset class="schedule-choices" th:attr="aria-labelledby=${formId + '-days-label'}">
+                <label class="schedule-choice" th:each="day : ${ {'SUN','MON','TUE','WED','THU','FRI','SAT'} }">
+                    <input type="checkbox" name="days" th:value="${day}" th:checked="${view.hasDay(day)}">
+                    <span th:text="${#strings.capitalize(#strings.toLowerCase(day))}">Sun</span>
+                </label>
+            </fieldset>
+        </div>
+
+        <div class="schedule-row">
+            <label class="schedule-row-label" th:for="${formId + '-time'}">Time</label>
+            <div class="schedule-time">
+                <input type="time" class="field-input" name="time" step="60" data-role="time"
+                       th:id="${formId + '-time'}" th:value="${view.simple().timeValue()}">
+                <span class="schedule-zone">
+                    <i class="fas fa-globe"></i>
+                    <span th:text="${view.timezone()}">America/New_York</span>
+                </span>
+            </div>
+        </div>
+
+        <p class="schedule-field-error" data-role="simple-error" th:id="${formId + '-simple-error'}"
+           aria-live="polite"></p>
+    </div>
+
+    <label class="schedule-advanced-toggle" th:for="${formId + '-advanced'}">
+        <input type="checkbox" data-role="advanced-toggle" th:id="${formId + '-advanced'}" th:checked="${view.advanced()}">
+        <span>Advanced: use a custom cron expression</span>
+    </label>
+
+    <div class="schedule-advanced" data-role="advanced" th:id="${formId + '-advanced-block'}" th:hidden="${!view.advanced()}"
+         th:with="cronInvalid=${view.advanced() and !view.valid()}">
+        <label class="field-label" th:for="${formId + '-cron'}">Cron expression</label>
+        <input type="text" class="field-input" name="cron" data-role="cron"
+               spellcheck="false" autocomplete="off" placeholder="0 0 2 * * SUN"
+               th:id="${formId + '-cron'}"
+               th:value="${view.cron()}"
+               th:classappend="${cronInvalid ? 'is-invalid' : ''}"
+               th:attr="aria-invalid=${cronInvalid ? 'true' : 'false'},aria-describedby=${formId + '-cron-error ' + formId + '-cron-help'}">
+        <p class="schedule-field-error" data-role="cron-error" th:id="${formId + '-cron-error'}" aria-live="polite"
+           th:text="${cronInvalid ? view.error() : ''}"></p>
+        <p class="schedule-help" th:id="${formId + '-cron-help'}">
+            Six fields: second, minute, hour, day of month, month, day of week, in the site timezone.
+            Runs must be at least an hour apart.
+            Examples: <code>0 0 2 * * SUN</code> (Sundays at 2:00 AM),
+            <code>0 30 3 * * MON-FRI</code> (weekdays at 3:30 AM),
+            <code>0 0 */6 * * *</code> (every 6 hours).
+            <a href="https://docs.spring.io/spring-framework/reference/integration/scheduling.html#scheduling-cron-expression"
+               target="_blank" rel="noopener noreferrer">Spring cron syntax</a>
+        </p>
+    </div>
+
+    <div class="schedule-preview" aria-live="polite">
+        <i class="fas fa-calendar-check"></i>
+        <div>
+            <p class="schedule-summary" data-role="summary"
+               th:classappend="${view.valid() ? '' : 'error'}"
+               th:text="${view.valid() ? view.summary() : 'Fix the schedule above to see when it runs.'}">Runs every Sunday at 2:00 AM</p>
+            <p class="schedule-next-run" data-role="next-run"
+               th:text="${view.nextRun() != null ? 'Next run: ' + view.nextRun() : ''}"></p>
+        </div>
+    </div>
+
+    <div class="schedule-actions">
+        <span class="field-state" data-role="state">
+            <i class="far fa-circle"></i>
+            <span>Saved schedule</span>
+        </span>
+        <button class="field-discard-button" type="button" data-role="discard" disabled
+                th:attr="aria-label=${'Discard ' + title + ' changes'}">
+            <i class="fas fa-times"></i>
+        </button>
+        <button class="field-save-button" type="submit" data-role="save"
+                th:disabled="${!view.valid()}"
+                th:attr="aria-label=${'Save ' + title}">
+            <i class="fas fa-check"></i>
+        </button>
+    </div>
+</form>
+</body>
+</html>

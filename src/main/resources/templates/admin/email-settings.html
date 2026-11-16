@@ -9,6 +9,7 @@
     <title th:text="|Email Settings - ${siteName ?: 'Minyanim Platform'}|">Email Settings</title>
 
     <th:block layout:fragment="styles">
+        <link rel="stylesheet" th:href="@{/admin/schedule-picker.css}">
         <style>
             .settings-breadcrumb {
                 display: flex;
@@ -479,6 +480,15 @@
                         </span>
                     </div>
                 </form>
+
+                <th:block th:if="${section.id == 'weekly-review' and weeklyReviewSchedule != null}">
+                    <form th:replace="~{admin/fragments/schedule-picker :: schedulePicker(${weeklyReviewSchedule},
+                            'weekly-review-schedule-form',
+                            @{/admin/settings/email/weekly-review-schedule},
+                            @{/admin/settings/email/weekly-review-schedule/preview},
+                            'Send Schedule',
+                            'When the weekly review digest is sent. Whatever day it goes out, the digest always covers the upcoming Sunday through Saturday.')}"></form>
+                </th:block>
             </div>
         </section>
 
@@ -536,6 +546,7 @@
 </div>
 
 <th:block layout:fragment="scripts">
+    <script th:src="@{/admin/schedule-picker.js}"></script>
     <script>
         function setEmailFieldClean(form) {
             const state = form.querySelector('.field-state');
