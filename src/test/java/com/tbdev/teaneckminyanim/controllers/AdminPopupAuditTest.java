@@ -24,9 +24,8 @@ class AdminPopupAuditTest {
     private static final Path TEMPLATES = Path.of("src/main/resources/templates");
     private static final Path STATIC = Path.of("src/main/resources/static");
 
-    /** Owned by another open PR (#317), or not routed by any controller. */
-    private static final Set<String> EXCLUDED = Set.of(
-            "admin/settings.html", "admin/email-settings.html", "admin/settings-old.html");
+    /** Not routed by any controller. */
+    private static final Set<String> EXCLUDED = Set.of("admin/settings-old.html");
 
     private static final Pattern NATIVE_DIALOG =
             Pattern.compile("(?<![\\w.$])(?:window\\.)?(confirm|alert|prompt)\\s*\\(");

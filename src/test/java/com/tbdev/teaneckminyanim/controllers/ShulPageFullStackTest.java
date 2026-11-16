@@ -154,7 +154,8 @@ class ShulPageFullStackTest {
     void convertedAdminPagesRenderWithTheSharedDialog() throws Exception {
         for (String path : List.of("/admin/FSORGA/locations", "/admin/notifications", "/admin/super/maintenance",
                 "/admin/FSORGA/calendar-events", "/admin/calendar-events/all", "/admin/FSORGA/overrides",
-                "/admin/super/overrides", "/admin/accounts", "/admin/account?id=FSOFF")) {
+                "/admin/super/overrides", "/admin/accounts", "/admin/account?id=FSOFF",
+                "/admin/settings", "/admin/settings/email")) {
             String html = page(path, as("fs-super"));
             assertEquals(1, html.split("id=\"confirm-modal\"", -1).length - 1, path);
             assertTrue(html.contains("/admin/admin-modal.css"), path);

@@ -35,7 +35,7 @@
         primary: {button: 'btn-primary', icon: 'fa-circle-question'}
     };
 
-    var state = {trigger: null, form: null, action: null, onConfirm: null, onSecondary: null};
+    var state = {trigger: null, form: null, action: null, onConfirm: null, onSecondary: null, onCancel: null};
 
     function modalEl() {
         return document.getElementById('confirm-modal');
@@ -143,6 +143,7 @@
         state.action = null;
         state.onConfirm = null;
         state.onSecondary = null;
+        state.onCancel = null;
     }
 
     /**
@@ -192,6 +193,7 @@
         state.action = state.form ? null : (config.action || null);
         state.onConfirm = typeof config.onConfirm === 'function' ? config.onConfirm : null;
         state.onSecondary = secondary ? secondary.onClick : null;
+        state.onCancel = typeof config.onCancel === 'function' ? config.onCancel : null;
 
         window.jQuery(modal).modal('show');
         return true;
@@ -227,8 +229,9 @@
 
     /**
      * For pages that act in script (e.g. AJAX): AdminConfirm.ask({title, message, detail, label,
-     * severity, icon, opener, secondary: {label, icon, onClick}}, onConfirm). onConfirm runs after
-     * the dialog closes; so does secondary.onClick. Returns false if the dialog is unavailable.
+     * severity, icon, opener, secondary: {label, icon, onClick}, onCancel}, onConfirm). onConfirm runs
+     * after the dialog closes; so does secondary.onClick. onCancel runs when it closes any other way
+     * (Cancel, the close button, ESC, backdrop). Returns false if the dialog is unavailable.
      */
     function ask(options, onConfirm) {
         options = options || {};
@@ -244,6 +247,7 @@
             severity: options.severity,
             icon: options.icon,
             secondary: options.secondary,
+            onCancel: options.onCancel,
             onConfirm: onConfirm
         });
     }
@@ -262,6 +266,7 @@
             return;
         }
         part('confirm').disabled = true;
+        state.onCancel = null;
         state.form = null;
         state.action = null;
         state.onConfirm = null;
@@ -292,6 +297,7 @@
         }
         state.onSecondary = null;
         state.onConfirm = null;
+        state.onCancel = null;
         // The secondary action usually opens another dialog, which takes focus from here.
         state.trigger = null;
         hideThen(onSecondary);
@@ -333,7 +339,11 @@
             })
             .on('hidden.bs.modal', function () {
                 var trigger = state.trigger;
+                var onCancel = state.onCancel;
                 resetState();
+                if (onCancel) {
+                    onCancel();
+                }
                 if (trigger && document.body.contains(trigger) && typeof trigger.focus === 'function') {
                     trigger.focus();
                 }

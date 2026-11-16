@@ -224,6 +224,29 @@
         form.addEventListener('input', onFieldEvent);
         form.addEventListener('change', onFieldEvent);
 
+        // Asks in the shared admin confirm dialog; resolves true only when the admin confirms.
+        function confirmSwitch() {
+            return new Promise(function (resolve) {
+                var asked = window.AdminConfirm && window.AdminConfirm.ask({
+                    opener: advancedToggle,
+                    title: 'Replace custom schedule?',
+                    message: SWITCH_WARNING,
+                    label: 'Switch to simple',
+                    severity: 'warning',
+                    icon: 'fa-calendar-days',
+                    onCancel: function () {
+                        resolve(false);
+                    }
+                }, function () {
+                    resolve(true);
+                });
+                if (!asked) {
+                    // No dialog available: keep the custom schedule rather than replace it silently.
+                    resolve(false);
+                }
+            });
+        }
+
         advancedToggle.addEventListener('change', function () {
             if (advancedToggle.checked) {
                 // Simple -> Advanced: start the cron box from the picker's schedule.
@@ -244,15 +267,18 @@
             fetchPreview(check).then(function (result) {
                 if (result.valid && result.simple) {
                     fillPicker(result.simple);
-                } else if (!window.confirm(SWITCH_WARNING)) {
-                    advancedToggle.checked = true;
+                    return true;
                 }
-            }).catch(function () {
-                if (!window.confirm(SWITCH_WARNING)) {
-                    advancedToggle.checked = true;
-                }
-            }).then(function () {
+                return confirmSwitch();
+            }, function () {
+                return confirmSwitch();
+            }).then(function (switched) {
                 advancedToggle.disabled = false;
+                if (!switched) {
+                    // Cancelled: stay in Advanced with the custom schedule untouched.
+                    advancedToggle.checked = true;
+                    advancedToggle.focus();
+                }
                 onChange();
             });
         });
