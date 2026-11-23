@@ -7,8 +7,12 @@ import com.tbdev.teaneckminyanim.model.CalendarEvent;
 import com.tbdev.teaneckminyanim.model.Location;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.repo.CalendarEventRepository;
+import com.tbdev.teaneckminyanim.security.AdminAction;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
 import com.tbdev.teaneckminyanim.service.LocationService;
+import com.tbdev.teaneckminyanim.service.ManualOverrideService;
+import com.tbdev.teaneckminyanim.service.NotManualOverrideException;
+import com.tbdev.teaneckminyanim.service.OverrideNotFoundException;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.SuperAdminOverrideXlsxService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
@@ -53,6 +57,7 @@ public class SuperAdminOverridesController {
     private final LocationService locationService;
     private final CalendarEventRepository calendarEventRepository;
     private final SuperAdminOverrideXlsxService superAdminOverrideXlsxService;
+    private final ManualOverrideService manualOverrideService;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -127,6 +132,7 @@ public class SuperAdminOverridesController {
         return mv;
     }
 
+    @AdminAction("override.create")
     @PostMapping("/admin/super/overrides/manual")
     public RedirectView createManualOverride(
             @RequestParam String organizationId,
@@ -143,85 +149,25 @@ public class SuperAdminOverridesController {
         requireSuperAdmin();
 
         try {
-            Optional<Organization> orgOpt = organizationService.findById(organizationId);
-            if (orgOpt.isEmpty()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Shul not found.");
-                return new RedirectView("/admin/super/overrides");
-            }
-            Organization org = orgOpt.get();
-
-            LocalDate rangeEnd = endDate != null ? endDate : startDate;
-            if (rangeEnd.isBefore(startDate)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "End date cannot be before start date.");
-                return new RedirectView("/admin/super/overrides");
-            }
-
-            MinyanType parsedType;
-            try {
-                parsedType = MinyanType.valueOf(minyanType);
-            } catch (IllegalArgumentException ex) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Invalid minyan type.");
-                return new RedirectView("/admin/super/overrides");
-            }
-
             String normalizedMode = "FULL_DAY_REPLACE".equalsIgnoreCase(overrideMode)
-                    ? "FULL_DAY_REPLACE"
-                    : "ADDITIVE";
-
-            String resolvedLocationId = null;
-            String resolvedLocationName = trimToNull(locationName);
-            if (locationId != null && !locationId.isBlank()) {
-                Location selectedLocation = locationService.findById(locationId);
-                if (selectedLocation == null || !organizationId.equals(selectedLocation.getOrganizationId())) {
-                    redirectAttributes.addFlashAttribute("errorMessage", "Invalid location for selected shul.");
-                    return new RedirectView("/admin/super/overrides");
-                }
-                resolvedLocationId = selectedLocation.getId();
-                if (resolvedLocationName == null) {
-                    resolvedLocationName = selectedLocation.getName();
-                }
-            }
-
-            Nusach resolvedNusach = org.getNusach();
-            if (nusach != null && !nusach.isBlank()) {
-                try {
-                    resolvedNusach = Nusach.valueOf(nusach.toUpperCase(Locale.US));
-                } catch (IllegalArgumentException ex) {
-                    redirectAttributes.addFlashAttribute("errorMessage", "Invalid nusach.");
-                    return new RedirectView("/admin/super/overrides");
-                }
-            }
-
+                    ? ManualOverrideService.MODE_FULL_DAY_REPLACE
+                    : ManualOverrideService.MODE_ADDITIVE;
             String username = userService.getCurrentUser() != null
                     ? userService.getCurrentUser().getUsername()
                     : "super-admin";
 
-            int createdCount = 0;
-            int updatedCount = 0;
-            for (LocalDate d = startDate; !d.isAfter(rangeEnd); d = d.plusDays(1)) {
-                boolean updated = superAdminOverrideXlsxService.upsertManualEvent(
-                        organizationId,
-                        d,
-                        startTime,
-                        parsedType,
-                        normalizedMode,
-                        resolvedLocationId,
-                        resolvedLocationName,
-                        trimToNull(notes),
-                        resolvedNusach,
-                        true,
-                        username
-                );
-                if (updated) {
-                    updatedCount++;
-                } else {
-                    createdCount++;
-                }
-            }
+            ManualOverrideService.CreateResult result = manualOverrideService.createAsSuperAdmin(
+                    organizationId,
+                    new ManualOverrideService.CreateOverrideCommand(
+                            startDate, endDate, startTime, minyanType, normalizedMode,
+                            locationId, locationName, notes, nusach, true),
+                    username);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Manual overrides saved (" + ("FULL_DAY_REPLACE".equals(normalizedMode) ? "full-day replace" : "additive")
-                            + "). Created: " + createdCount + ", Updated: " + updatedCount + ".");
+                            + "). Created: " + result.created() + ", Updated: " + result.updated() + ".");
+        } catch (IllegalArgumentException | OverrideNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage() + ".");
         } catch (Exception e) {
             log.error("Error creating super-admin manual overrides", e);
             redirectAttributes.addFlashAttribute("errorMessage", "Save failed: " + e.getMessage());
@@ -241,6 +187,7 @@ public class SuperAdminOverridesController {
                 .body(bytes);
     }
 
+    @AdminAction("override.import")
     @PostMapping("/admin/super/overrides/import")
     public RedirectView importSuperOverrides(
             @RequestParam("file") MultipartFile file,
@@ -276,6 +223,7 @@ public class SuperAdminOverridesController {
         return new RedirectView("/admin/super/overrides");
     }
 
+    @AdminAction("override.delete")
     @PostMapping("/admin/super/overrides/{eventId}/delete")
     public RedirectView deleteManualOverride(
             @PathVariable Long eventId,
@@ -283,19 +231,12 @@ public class SuperAdminOverridesController {
         requireSuperAdmin();
 
         try {
-            Optional<CalendarEvent> eventOpt = calendarEventRepository.findById(eventId);
-            if (eventOpt.isEmpty()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Manual override not found.");
-                return new RedirectView("/admin/super/overrides");
-            }
-            CalendarEvent event = eventOpt.get();
-            if (event.getSource() != EventSource.MANUAL) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Only MANUAL overrides can be deleted here.");
-                return new RedirectView("/admin/super/overrides");
-            }
-
-            calendarEventRepository.delete(event);
+            manualOverrideService.deleteAsSuperAdmin(eventId);
             redirectAttributes.addFlashAttribute("successMessage", "Manual override deleted.");
+        } catch (OverrideNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Manual override not found.");
+        } catch (NotManualOverrideException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only MANUAL overrides can be deleted here.");
         } catch (Exception e) {
             log.error("Error deleting manual override {}", eventId, e);
             redirectAttributes.addFlashAttribute("errorMessage", "Delete failed: " + e.getMessage());
@@ -304,6 +245,7 @@ public class SuperAdminOverridesController {
         return new RedirectView("/admin/super/overrides");
     }
 
+    @AdminAction("override.toggle")
     @PostMapping("/admin/super/overrides/{eventId}/toggle")
     public RedirectView toggleManualOverride(
             @PathVariable Long eventId,
@@ -311,34 +253,23 @@ public class SuperAdminOverridesController {
         requireSuperAdmin();
 
         try {
-            Optional<CalendarEvent> eventOpt = calendarEventRepository.findById(eventId);
-            if (eventOpt.isEmpty()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Manual override not found.");
-                return new RedirectView("/admin/super/overrides");
-            }
-            CalendarEvent event = eventOpt.get();
-            if (event.getSource() != EventSource.MANUAL) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Only MANUAL overrides can be toggled here.");
-                return new RedirectView("/admin/super/overrides");
-            }
-
-            event.setEnabled(!event.isEnabled());
-            calendarEventRepository.save(event);
+            String username = userService.getCurrentUser() != null
+                    ? userService.getCurrentUser().getUsername()
+                    : "super-admin";
+            CalendarEvent event = manualOverrideService.toggleAsSuperAdmin(eventId, username);
             redirectAttributes.addFlashAttribute(
                     "successMessage",
                     "Manual override " + (event.isEnabled() ? "enabled." : "disabled."));
+        } catch (OverrideNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Manual override not found.");
+        } catch (NotManualOverrideException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only MANUAL overrides can be toggled here.");
         } catch (Exception e) {
             log.error("Error toggling manual override {}", eventId, e);
             redirectAttributes.addFlashAttribute("errorMessage", "Toggle failed: " + e.getMessage());
         }
 
         return new RedirectView("/admin/super/overrides");
-    }
-
-    private String trimToNull(String value) {
-        if (value == null) return null;
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private void requireSuperAdmin() {

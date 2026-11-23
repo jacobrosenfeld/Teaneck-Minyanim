@@ -7,6 +7,7 @@ import com.tbdev.teaneckminyanim.model.CalendarEvent;
 import com.tbdev.teaneckminyanim.model.Location;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.repo.CalendarEventRepository;
+import com.tbdev.teaneckminyanim.security.AdminAction;
 import com.tbdev.teaneckminyanim.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,7 @@ public class CalendarEventsAdminController {
     private final ApplicationSettingsService settingsService;
     private final EffectiveScheduleService effectiveScheduleService;
     private final SuperAdminOverrideXlsxService overrideXlsxService;
+    private final ManualOverrideService manualOverrideService;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -307,6 +309,7 @@ public class CalendarEventsAdminController {
      * - ADDITIVE: append manual event to winning day source (IMPORTED or RULES)
      * - FULL_DAY_REPLACE: use only MANUAL events for that day
      */
+    @AdminAction("override.create")
     @PostMapping({"/admin/{orgId}/calendar-events/manual", "/admin/{orgId}/overrides/manual"})
     public RedirectView createManualOverride(
             @PathVariable String orgId,
@@ -324,95 +327,29 @@ public class CalendarEventsAdminController {
 
         String redirectPath = "/admin/" + orgId + "/overrides";
         try {
-            // Check authorization
-            if (!userService.canAccessOrganization(orgId)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
-                return new RedirectView(redirectPath);
-            }
-
-            Optional<Organization> orgOpt = organizationService.findById(orgId);
-            if (orgOpt.isEmpty()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Shul not found");
-                return new RedirectView(redirectPath);
-            }
-            Organization org = orgOpt.get();
-
             LocalDate rangeStart = startDate != null ? startDate : date;
             if (rangeStart == null) {
                 rangeStart = LocalDate.now();
             }
-            LocalDate rangeEnd = endDate != null ? endDate : rangeStart;
-            if (rangeEnd.isBefore(rangeStart)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "End date cannot be before start date");
-                return new RedirectView(redirectPath);
-            }
-
-            MinyanType parsedType;
-            try {
-                parsedType = MinyanType.valueOf(minyanType);
-            } catch (IllegalArgumentException ex) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Invalid minyan type");
-                return new RedirectView(redirectPath);
-            }
-
-            String resolvedLocationId = null;
-            String resolvedLocationName = trimToNull(locationName);
-            if (locationId != null && !locationId.isBlank()) {
-                Location selectedLocation = locationService.findById(locationId);
-                if (selectedLocation == null || !orgId.equals(selectedLocation.getOrganizationId())) {
-                    redirectAttributes.addFlashAttribute("errorMessage", "Invalid location for this shul");
-                    return new RedirectView(redirectPath);
-                }
-                resolvedLocationId = selectedLocation.getId();
-                if (resolvedLocationName == null) {
-                    resolvedLocationName = selectedLocation.getName();
-                }
-            }
-
-            Nusach resolvedNusach = org.getNusach();
-            if (nusach != null && !nusach.isBlank()) {
-                try {
-                    resolvedNusach = Nusach.valueOf(nusach);
-                } catch (IllegalArgumentException ex) {
-                    redirectAttributes.addFlashAttribute("errorMessage", "Invalid nusach");
-                    return new RedirectView(redirectPath);
-                }
-            }
-
+            // Anything other than FULL_DAY_REPLACE has always meant ADDITIVE on the form.
             String normalizedMode = "FULL_DAY_REPLACE".equalsIgnoreCase(overrideMode)
-                    ? "FULL_DAY_REPLACE"
-                    : "ADDITIVE";
+                    ? ManualOverrideService.MODE_FULL_DAY_REPLACE
+                    : ManualOverrideService.MODE_ADDITIVE;
 
-            String username = userService.getCurrentUser() != null
-                    ? userService.getCurrentUser().getUsername()
-                    : "system";
-
-            int createdCount = 0;
-            int updatedCount = 0;
-            for (LocalDate d = rangeStart; !d.isAfter(rangeEnd); d = d.plusDays(1)) {
-                boolean updated = overrideXlsxService.upsertManualEvent(
-                        orgId,
-                        d,
-                        startTime,
-                        parsedType,
-                        normalizedMode,
-                        resolvedLocationId,
-                        resolvedLocationName,
-                        trimToNull(notes),
-                        resolvedNusach,
-                        true,
-                        username
-                );
-                if (updated) {
-                    updatedCount++;
-                } else {
-                    createdCount++;
-                }
-            }
+            ManualOverrideService.CreateResult result = manualOverrideService.create(
+                    orgId,
+                    new ManualOverrideService.CreateOverrideCommand(
+                            rangeStart, endDate, startTime, minyanType, normalizedMode,
+                            locationId, locationName, notes, nusach, true),
+                    currentUsername());
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Manual overrides saved (" + ("FULL_DAY_REPLACE".equals(normalizedMode) ? "full-day replace" : "additive")
-                            + "). Created: " + createdCount + ", Updated: " + updatedCount + ".");
+                            + "). Created: " + result.created() + ", Updated: " + result.updated() + ".");
+        } catch (AccessDeniedException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
+        } catch (IllegalArgumentException | OverrideNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             log.error("Error creating manual override", e);
             redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
@@ -449,6 +386,7 @@ public class CalendarEventsAdminController {
     /**
      * Import manual overrides from XLSX.
      */
+    @AdminAction("override.import")
     @PostMapping({"/admin/{orgId}/calendar-events/manual/import", "/admin/{orgId}/overrides/import"})
     public RedirectView importManualOverrides(
             @PathVariable String orgId,
@@ -493,6 +431,7 @@ public class CalendarEventsAdminController {
     /**
      * Delete manual override event from dedicated overrides page.
      */
+    @AdminAction("override.delete")
     @PostMapping("/admin/{orgId}/overrides/{eventId}/delete")
     public RedirectView deleteOverrideEvent(
             @PathVariable String orgId,
@@ -501,28 +440,31 @@ public class CalendarEventsAdminController {
         return deleteManualEventInternal(orgId, eventId, redirectAttributes, "/admin/" + orgId + "/overrides");
     }
 
+    @AdminAction("override.toggle")
     @PostMapping("/admin/{orgId}/overrides/{eventId}/toggle")
     public RedirectView toggleOverrideEvent(
             @PathVariable String orgId,
             @PathVariable Long eventId,
             RedirectAttributes redirectAttributes) {
-        return toggleEventInternal(orgId, eventId, redirectAttributes, "/admin/" + orgId + "/overrides", true);
+        return toggleManualOverrideInternal(orgId, eventId, redirectAttributes, "/admin/" + orgId + "/overrides");
     }
 
     /**
      * Toggle enabled status of a calendar event
      */
+    @AdminAction("calendar-event.toggle")
     @PostMapping("/admin/{orgId}/calendar-events/{eventId}/toggle")
     public RedirectView toggleEvent(
             @PathVariable String orgId,
             @PathVariable Long eventId,
             RedirectAttributes redirectAttributes) {
-        return toggleEventInternal(orgId, eventId, redirectAttributes, "/admin/" + orgId + "/calendar-events", false);
+        return toggleEventInternal(orgId, eventId, redirectAttributes, "/admin/" + orgId + "/calendar-events");
     }
 
     /**
      * Update event details
      */
+    @AdminAction("calendar-event.update")
     @PostMapping("/admin/{orgId}/calendar-events/{eventId}/update")
     public RedirectView updateEvent(
             @PathVariable String orgId,
@@ -583,6 +525,7 @@ public class CalendarEventsAdminController {
     /**
      * Trigger manual materialization for organization
      */
+    @AdminAction("calendar-event.rematerialize")
     @PostMapping("/admin/{orgId}/calendar-events/rematerialize")
     public RedirectView rematerialize(
             @PathVariable String orgId,
@@ -612,6 +555,7 @@ public class CalendarEventsAdminController {
     /**
      * Trigger full materialization from the master calendar page.
      */
+    @AdminAction("calendar-event.rematerialize-all")
     @PostMapping("/admin/calendar-events/rematerialize-all")
     public RedirectView rematerializeAll(RedirectAttributes redirectAttributes) {
         if (!userService.isSuperAdmin()) {
@@ -634,6 +578,7 @@ public class CalendarEventsAdminController {
     /**
      * Delete event (only for MANUAL source events)
      */
+    @AdminAction("override.delete")
     @PostMapping("/admin/{orgId}/calendar-events/{eventId}/delete")
     public RedirectView deleteEvent(
             @PathVariable String orgId,
@@ -648,36 +593,44 @@ public class CalendarEventsAdminController {
             RedirectAttributes redirectAttributes,
             String redirectPath) {
         try {
-            // Check authorization
-            if (!userService.canAccessOrganization(orgId)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
-                return new RedirectView(redirectPath);
-            }
-            
-            Optional<CalendarEvent> eventOpt = calendarEventRepository.findById(eventId);
-            if (eventOpt.isEmpty() || !eventOpt.get().getOrganizationId().equals(orgId)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Event not found");
-                return new RedirectView(redirectPath);
-            }
-            
-            CalendarEvent event = eventOpt.get();
-            
-            // Only allow deleting MANUAL events
-            if (event.getSource() != EventSource.MANUAL) {
-                redirectAttributes.addFlashAttribute("errorMessage", 
-                        "Can only delete manual events. Use disable for other event types.");
-                return new RedirectView(redirectPath);
-            }
-            
-            calendarEventRepository.delete(event);
-            
+            manualOverrideService.delete(orgId, String.valueOf(eventId));
             redirectAttributes.addFlashAttribute("successMessage", "Event deleted successfully");
-            
+        } catch (AccessDeniedException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
+        } catch (OverrideNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Event not found");
+        } catch (NotManualOverrideException e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Can only delete manual events. Use disable for other event types.");
         } catch (Exception e) {
             log.error("Error deleting event", e);
             redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
         }
-        
+
+        return new RedirectView(redirectPath);
+    }
+
+    private RedirectView toggleManualOverrideInternal(
+            String orgId,
+            Long eventId,
+            RedirectAttributes redirectAttributes,
+            String redirectPath) {
+        try {
+            CalendarEvent event = manualOverrideService.toggle(orgId, String.valueOf(eventId), currentUsername());
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Event " + (event.isEnabled() ? "enabled" : "disabled") + " successfully");
+        } catch (AccessDeniedException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
+        } catch (OverrideNotFoundException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Event not found");
+        } catch (NotManualOverrideException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only manual overrides can be toggled here.");
+        } catch (Exception e) {
+            log.error("Error toggling event", e);
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
+        }
+
         return new RedirectView(redirectPath);
     }
 
@@ -685,8 +638,7 @@ public class CalendarEventsAdminController {
             String orgId,
             Long eventId,
             RedirectAttributes redirectAttributes,
-            String redirectPath,
-            boolean manualOnly) {
+            String redirectPath) {
         try {
             if (!userService.canAccessOrganization(orgId)) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Not authorized");
@@ -700,11 +652,6 @@ public class CalendarEventsAdminController {
             }
 
             CalendarEvent event = eventOpt.get();
-            if (manualOnly && event.getSource() != EventSource.MANUAL) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Only manual overrides can be toggled here.");
-                return new RedirectView(redirectPath);
-            }
-
             event.setEnabled(!event.isEnabled());
             calendarEventRepository.save(event);
 
@@ -756,9 +703,9 @@ public class CalendarEventsAdminController {
         };
     }
 
-    private String trimToNull(String value) {
-        if (value == null) return null;
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+    private String currentUsername() {
+        return userService.getCurrentUser() != null
+                ? userService.getCurrentUser().getUsername()
+                : "system";
     }
 }

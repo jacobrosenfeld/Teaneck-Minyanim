@@ -6,6 +6,7 @@ import com.tbdev.teaneckminyanim.service.CalendarMaterializationScheduler;
 import com.tbdev.teaneckminyanim.service.CalendarMaterializationService;
 import com.tbdev.teaneckminyanim.service.EffectiveScheduleService;
 import com.tbdev.teaneckminyanim.service.LocationService;
+import com.tbdev.teaneckminyanim.service.ManualOverrideService;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.SuperAdminOverrideXlsxService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
@@ -32,6 +33,7 @@ class CalendarEventsAdminControllerTest {
     private final ApplicationSettingsService settingsService = mock(ApplicationSettingsService.class);
     private final EffectiveScheduleService effectiveScheduleService = mock(EffectiveScheduleService.class);
     private final SuperAdminOverrideXlsxService overrideXlsxService = mock(SuperAdminOverrideXlsxService.class);
+    private final ManualOverrideService manualOverrideService = mock(ManualOverrideService.class);
 
     private final CalendarEventsAdminController controller = new CalendarEventsAdminController(
             calendarEventRepository,
@@ -42,7 +44,8 @@ class CalendarEventsAdminControllerTest {
             userService,
             settingsService,
             effectiveScheduleService,
-            overrideXlsxService);
+            overrideXlsxService,
+            manualOverrideService);
 
     @Test
     void rematerializeAll_triggersSchedulerAndReturnsToMasterCalendar() {
