@@ -1,6 +1,7 @@
 package com.tbdev.teaneckminyanim.controllers;
 
 import com.tbdev.teaneckminyanim.model.*;
+import com.tbdev.teaneckminyanim.security.AdminAction;
 import com.tbdev.teaneckminyanim.security.Encrypter;
 import com.tbdev.teaneckminyanim.service.*;
 import com.tbdev.teaneckminyanim.enums.SettingKey;
@@ -85,6 +86,12 @@ public class AdminController {
 
     @Autowired
     private UserManagementService userManagementService;
+
+    @Autowired
+    private MinyanAdminService minyanAdminService;
+
+    @Autowired
+    private ShulProfileService shulProfileService;
 
     @ModelAttribute("siteName")
     public String siteName() {
@@ -292,6 +299,7 @@ public class AdminController {
     }
 
     @ResponseBody
+    @AdminAction("settings.update")
     @PostMapping("/admin/settings/update-field")
     public ResponseEntity<SettingsFieldUpdateResponse> updateSettingsField(
             @RequestParam("settingKey") String settingKey,
@@ -622,6 +630,7 @@ public class AdminController {
         return mv;
     }
 
+    @AdminAction("shul.create")
     @RequestMapping(value = "/admin/create-organization", method = RequestMethod.POST)
     public ModelAndView createOrganization(@RequestParam(value = "name", required = true) String name,
                                            @RequestParam(value = "address", required = true) String address,
@@ -810,6 +819,7 @@ public class AdminController {
         return mv;
     }
 
+    @AdminAction("account.change-password")
     @PostMapping("/admin/accounts/{accountId}/changepassword")
     public String changeAccountPassword(@PathVariable String accountId,
                                         @RequestParam String password,
@@ -923,6 +933,7 @@ public class AdminController {
         return mv;
     }
 
+    @AdminAction("shul.update")
     @RequestMapping(value = "/admin/update-organization", method = RequestMethod.POST)
     public ModelAndView updateOrganization(@RequestParam(value = "id", required = true) String id,
                                            @RequestParam(value = "name", required = true) String name,
@@ -939,20 +950,8 @@ public class AdminController {
         if (organization == null) {
             throw new Exception("Shul not found.");
         }
-
-//        validate input
-        if (name == null || name.isEmpty()) {
-            return organization(id, null, null, "Shul name cannot be empty.", null);
-        }
-
-        URI siteURI = null;
-        if (siteURIString != null && !siteURIString.isEmpty()) {
-            try {
-                siteURI = new URI(siteURIString);
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-                return organization(id, null, null, "Invalid website URL.", null);
-            }
+        if (!isUser()) {
+            throw new AccessDeniedException("You do not have permission to view this shul.");
         }
 
         Nusach nusach = Nusach.fromString(nusachString);
@@ -960,34 +959,26 @@ public class AdminController {
             return organization(id, null, null, "Invalid nusach type.", null);
         }
 
-        // Mutate the existing org so fields not present in the form (enabled,
-        // coordinates, etc.) are preserved.
-        organization.setName(name);
-        organization.setAddress(address);
-        organization.setWebsiteURIStr(siteURI != null ? siteURI.toString() : null);
-        organization.setNusach(nusach);
-        organization.setOrgColor(orgColor);
-        organization.setUrlSlug(urlSlug);
-        organization.setCalendar(calendar);
-        organization.setUseScrapedCalendar(useScrapedCalendar != null ? useScrapedCalendar : false);
-        organization.setWhatsapp(whatsapp != null && !whatsapp.isEmpty() ? whatsapp : null);
-
-        // Ensure organization has a slug (generate from name if not provided)
-        organizationService.ensureSlug(organization);
-
-        if (isUser()) {
-            if (this.organizationService.update(organization)) {
-                geocodeIfAddressChanged(id, address);
-                RedirectView redirectView = new RedirectView("/admin/organization?id=" + id, true);
-                return new ModelAndView(redirectView);
-            } else {
-                return organization(id, null, null, "Sorry, the update failed.", null);
-            }
-        } else {
-            throw new AccessDeniedException("You do not have permission to view this shul.");
+        // The form always sends every field, so an absent optional field means "cleared".
+        ShulProfileCommand command = new ShulProfileCommand(
+                name == null ? "" : name,
+                address == null ? "" : address,
+                siteURIString == null ? "" : siteURIString,
+                nusach,
+                orgColor,
+                urlSlug == null ? "" : urlSlug,
+                whatsapp == null ? "" : whatsapp,
+                calendar == null ? "" : calendar,
+                useScrapedCalendar != null ? useScrapedCalendar : false);
+        try {
+            shulProfileService.update(id, command);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return organization(id, null, null, e.getMessage(), null);
         }
+        return new ModelAndView(new RedirectView("/admin/organization?id=" + id, true));
     }
 
+    @AdminAction("shul.disable")
     @PostMapping("/admin/disable-organization")
     public ModelAndView disableOrganization(@RequestParam(value = "id") String id,
                                             @RequestParam(value = "rd", required = false) String redirect) throws Exception {
@@ -1008,6 +999,7 @@ public class AdminController {
         return new ModelAndView(redirectView);
     }
 
+    @AdminAction("shul.enable")
     @PostMapping("/admin/enable-organization")
     public ModelAndView enableOrganization(@RequestParam(value = "id") String id,
                                            @RequestParam(value = "rd", required = false) String redirect) throws Exception {
@@ -1028,6 +1020,7 @@ public class AdminController {
         return new ModelAndView(redirectView);
     }
 
+    @AdminAction("shul.delete")
     @PostMapping("/admin/delete-organization")
     public ModelAndView deleteOrganization(@RequestParam(value = "id", required = true) String id) throws Exception {
         if (isSuperAdmin()) {
@@ -1069,6 +1062,7 @@ public class AdminController {
         }
     }
 
+    @AdminAction("account.delete")
     @PostMapping("/admin/delete-account")
     public ModelAndView deleteAccount(@RequestParam(value = "id", required = true) String id) throws Exception {
         if (!isSuperAdmin() && !isAdmin()) {
@@ -1099,6 +1093,7 @@ public class AdminController {
         return accounts(null, "Sorry, the account could not be deleted.");
     }
 
+    @AdminAction("account.disable")
     @PostMapping("/admin/account/disable")
     public ModelAndView disableAccount(@RequestParam("id") String id,
                                        @RequestParam(value = "rd", required = false) String redirect) {
@@ -1182,6 +1177,7 @@ public class AdminController {
         return new ModelAndView(new RedirectView(safePath, true));
     }
 
+    @AdminAction("account.enable")
     @PostMapping("/admin/account/enable")
     public ModelAndView enableAccount(@RequestParam("id") String id,
                                       @RequestParam(value = "rd", required = false) String redirect) {
@@ -1207,6 +1203,7 @@ public class AdminController {
         return account(id, "Account enabled successfully.", null, null);
     }
 
+    @AdminAction("account.create")
     @PostMapping("/admin/create-account")
     public ModelAndView createAccount(
             @RequestParam(value = "username", required = true) String username,
@@ -1249,6 +1246,7 @@ public class AdminController {
                 "Created " + created.getUsername() + " and sent their welcome email.", null, null, null);
     }
 
+    @AdminAction("account.update")
     @RequestMapping(value = "/admin/update-account", method = RequestMethod.POST)
     public ModelAndView updateAccount(
             @RequestParam(value = "id", required = true) String id,
@@ -1315,6 +1313,7 @@ public class AdminController {
         return account(id, null, "Sorry, an error occurred. The account could not be updated.", null);
     }
 
+    @AdminAction("account.notifications")
     @PostMapping("/admin/account/notifications")
     public ModelAndView updateAccountNotifications(
             @RequestParam(value = "id", required = true) String id,
@@ -1346,6 +1345,7 @@ public class AdminController {
         }
     }
 
+    @AdminAction("settings.update")
     @RequestMapping(value = "/admin/update-settings", method = RequestMethod.POST)
     public ModelAndView updateSettings(
             @RequestParam(value = "setting", required = false) String setting,
@@ -1409,6 +1409,7 @@ public class AdminController {
         }
     }
     
+    @AdminAction("application-setting.update")
     @RequestMapping(value = "/admin/settings/update-application-setting", method = RequestMethod.POST)
     public ModelAndView updateApplicationSetting(
             @RequestParam("settingKey") String settingKey,
@@ -1587,6 +1588,7 @@ public class AdminController {
         return mv;
     }
 
+    @AdminAction("location.create")
     @PostMapping("/admin/create-location")
     public ModelAndView createLocation(@RequestParam(value = "name", required = true) String name, @RequestParam(value = "oid", required = true) String organizationId) {
         Organization organization = getOrganization(organizationId);
@@ -1606,6 +1608,7 @@ public class AdminController {
         }
     }
 
+    @AdminAction("location.update")
     @RequestMapping(value = "/admin/update-location", method = RequestMethod.POST)
     public ModelAndView updateLocation(
             @RequestParam(value = "id", required = true) String id,
@@ -1632,6 +1635,7 @@ public class AdminController {
         }
     }
 
+    @AdminAction("location.delete")
     @PostMapping("/admin/delete-location")
     public ModelAndView deleteLocation(@RequestParam(value = "id", required = true) String id) {
         Location locationToDelete = locationDAO.findById(id);
@@ -1834,6 +1838,7 @@ public class AdminController {
     }
 
     //    enable and disable pages
+    @AdminAction("minyan.enable")
     @PostMapping("/admin/minyanim/{id}/enable")
     public ModelAndView enableMinyan(@PathVariable String id, @RequestParam(value = "rd", required = false) String rd) {
         Minyan minyan = minyanService.findById(id);
@@ -1841,14 +1846,12 @@ public class AdminController {
             throw new IllegalArgumentException("Invalid minyan ID.");
         }
 
-//        ensure that user is admin or minyan is in their organization
-        if (!canAccessOrganization(minyan.getOrganizationId())) {
-            throw new AccessDeniedException("You do not have permission to enable this minyan.");
+        // MinyanAdminService checks shul access, saves, and syncs the materialized calendar.
+        try {
+            minyanAdminService.setEnabled(minyan.getOrganizationId(), id, true);
+        } catch (MinyanAdminService.MinyanNotFoundException e) {
+            throw new IllegalArgumentException("Invalid minyan ID.");
         }
-
-        minyan.setEnabled(true);
-        minyanService.update(minyan);
-        calendarMaterializationService.syncRulesForOrganizationLive(minyan.getOrganizationId());
 
         ModelAndView mv = new ModelAndView();
         String safeRedirect = safeAdminRedirect(rd);
@@ -1860,6 +1863,7 @@ public class AdminController {
         return mv;
     }
 
+    @AdminAction("minyan.disable")
     @PostMapping("/admin/minyanim/{id}/disable")
     public ModelAndView disableMinyan(@PathVariable String id, @RequestParam(value = "rd", required = false) String rd) {
         Minyan minyan = minyanService.findById(id);
@@ -1867,14 +1871,12 @@ public class AdminController {
             throw new IllegalArgumentException("Invalid minyan ID.");
         }
 
-//        ensure that user is admin or minyan is in their organization
-        if (!canAccessOrganization(minyan.getOrganizationId())) {
-            throw new AccessDeniedException("You do not have permission to disable this minyan.");
+        // MinyanAdminService checks shul access, saves, and syncs the materialized calendar.
+        try {
+            minyanAdminService.setEnabled(minyan.getOrganizationId(), id, false);
+        } catch (MinyanAdminService.MinyanNotFoundException e) {
+            throw new IllegalArgumentException("Invalid minyan ID.");
         }
-
-        minyan.setEnabled(false);
-        minyanService.update(minyan);
-        calendarMaterializationService.syncRulesForOrganizationLive(minyan.getOrganizationId());
 
         ModelAndView mv = new ModelAndView();
         String safeRedirect = safeAdminRedirect(rd);
@@ -1901,6 +1903,7 @@ public class AdminController {
         return mv;
     }
 
+    @AdminAction("minyan.create")
     @PostMapping("/admin/{orgId}/minyanim/create")
     public ModelAndView createMinyan(@PathVariable String orgId,
                                      @RequestParam(value = "type", required = false) String type,
@@ -2053,6 +2056,7 @@ public class AdminController {
         return mv;
     }
 
+    @AdminAction("minyan.update")
     @RequestMapping(value = "/admin/{organizationId}/minyanim/{minyanId}/update", method = RequestMethod.POST)
     public ModelAndView updateMinyan(@PathVariable("organizationId") String organizationId,
                                      @PathVariable("minyanId") String minyanId,
@@ -2115,16 +2119,6 @@ public class AdminController {
             throw new Exception("Shul not found.");
         }
 
-        Minyan oldMinyan = minyanService.findById(minyanId);
-        if (oldMinyan == null) {
-            throw new Exception("Minyan not found.");
-        }
-        if (!organization.getId().equals(oldMinyan.getOrganizationId())) {
-            throw new AccessDeniedException("Minyan does not belong to this shul.");
-        }
-
-        String organizationColor = organization.getOrgColor();
-
 //        verify minyan type
         MinyanType minyanType = MinyanType.fromString(type);
         if (minyanType == null) {
@@ -2132,32 +2126,6 @@ public class AdminController {
             vm.addObject("errormessage", "Sorry, there was an error creating the minyan. Please try again. (M01)");
             return vm;
         }
-
-//        get and verify location
-        Location location = locationDAO.findById(locationId);
-        if (location != null) {
-            if (!location.getOrganizationId().equals(organization.getId())) {
-                throw new AccessDeniedException("You do not have permission to create a minyan using this location.");
-            }
-        } else {
-            throw new AccessDeniedException("Location not found.");
-        }
-
-//        create minyan times
-        MinyanTime sundayTime = MinyanTime.fromFormData(sundayTimeType, sundayTimeString, sundayZman, sundayZmanOffset);
-        MinyanTime mondayTime = MinyanTime.fromFormData(mondayTimeType, mondayTimeString, mondayZman, mondayZmanOffset);
-        MinyanTime tuesdayTime = MinyanTime.fromFormData(tuesdayTimeType, tuesdayTimeString, tuesdayZman, tuesdayZmanOffset);
-        MinyanTime wednesdayTime = MinyanTime.fromFormData(wednesdayTimeType, wednesdayTimeString, wednesdayZman, wednesdayZmanOffset);
-        MinyanTime thursdayTime = MinyanTime.fromFormData(thursdayTimeType, thursdayTimeString, thursdayZman, thursdayZmanOffset);
-        MinyanTime fridayTime = MinyanTime.fromFormData(fridayTimeType, fridayTimeString, fridayZman, fridayZmanOffset);
-        MinyanTime shabbosTime = MinyanTime.fromFormData(shabbosTimeType, shabbosTimeString, shabbosZman, shabbosZmanOffset);
-        MinyanTime rcTime = MinyanTime.fromFormData(rcTimeType, rcTimeString, rcZman, rcZmanOffset);
-        MinyanTime ytTime = MinyanTime.fromFormData(ytTimeType, ytTimeString, ytZman, ytZmanOffset);
-        MinyanTime chanukaTime = MinyanTime.fromFormData(chanukaTimeType, chanukaTimeString, chanukaZman, chanukaZmanOffset);
-        MinyanTime rccTime = MinyanTime.fromFormData(rccTimeType, rccTimeString, rccZman, rccZmanOffset);
-
-        log.debug("Parsed minyan times: sun={}, mon={}, tue={}, wed={}, thu={}, fri={}, shab={}, rc={}, yt={}, chan={}, rcc={}",
-                sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, rcTime, ytTime, chanukaTime, rccTime);
 
 //        validate nusach
         Nusach nusach = Nusach.fromString(nusachString);
@@ -2167,14 +2135,42 @@ public class AdminController {
             return mv;
         }
 
-        Schedule schedule = new Schedule(sundayTime, mondayTime, tuesdayTime, wednesdayTime, thursdayTime, fridayTime, shabbosTime, rcTime, ytTime, chanukaTime, rccTime);
+//        create minyan times (a slot that cannot be read keeps its current value)
+        Map<MinyanDay, MinyanTime> slots = new EnumMap<>(MinyanDay.class);
+        try {
+            slots.put(MinyanDay.SUNDAY, MinyanTime.fromFormData(sundayTimeType, sundayTimeString, sundayZman, sundayZmanOffset));
+            slots.put(MinyanDay.MONDAY, MinyanTime.fromFormData(mondayTimeType, mondayTimeString, mondayZman, mondayZmanOffset));
+            slots.put(MinyanDay.TUESDAY, MinyanTime.fromFormData(tuesdayTimeType, tuesdayTimeString, tuesdayZman, tuesdayZmanOffset));
+            slots.put(MinyanDay.WEDNESDAY, MinyanTime.fromFormData(wednesdayTimeType, wednesdayTimeString, wednesdayZman, wednesdayZmanOffset));
+            slots.put(MinyanDay.THURSDAY, MinyanTime.fromFormData(thursdayTimeType, thursdayTimeString, thursdayZman, thursdayZmanOffset));
+            slots.put(MinyanDay.FRIDAY, MinyanTime.fromFormData(fridayTimeType, fridayTimeString, fridayZman, fridayZmanOffset));
+            slots.put(MinyanDay.SHABBOS, MinyanTime.fromFormData(shabbosTimeType, shabbosTimeString, shabbosZman, shabbosZmanOffset));
+            slots.put(MinyanDay.ROSH_CHODESH, MinyanTime.fromFormData(rcTimeType, rcTimeString, rcZman, rcZmanOffset));
+            slots.put(MinyanDay.YOM_TOV, MinyanTime.fromFormData(ytTimeType, ytTimeString, ytZman, ytZmanOffset));
+            slots.put(MinyanDay.CHANUKA, MinyanTime.fromFormData(chanukaTimeType, chanukaTimeString, chanukaZman, chanukaZmanOffset));
+            slots.put(MinyanDay.ROSH_CHODESH_CHANUKA, MinyanTime.fromFormData(rccTimeType, rccTimeString, rccZman, rccZmanOffset));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            ModelAndView mv = viewMinyan(minyanId, null);
+            mv.addObject("errormessage", "Sorry, one of the times could not be read. Please check the times and try again. (M04)");
+            return mv;
+        }
 
-        Minyan updatedMinyan = new Minyan(oldMinyan.getId(), organization, minyanType, location, schedule, notes, nusach, oldMinyan.isEnabled(), organizationColor, whatsapp);
+        // The form always sends notes and whatsapp, so an absent value means "cleared".
+        MinyanUpdateCommand command = new MinyanUpdateCommand(minyanType, locationId == null ? "" : locationId, nusach,
+                notes == null ? "" : notes, whatsapp == null ? "" : whatsapp, slots);
 
         try {
-            minyanService.update(updatedMinyan);
-            calendarMaterializationService.syncRulesForOrganizationLive(organization.getId());
-            return new ModelAndView("redirect:/admin/minyanim/" + oldMinyan.getId() + "/view?success=updated");
+            // MinyanAdminService checks shul access, validates, saves (keeping the enabled flag), and syncs the calendar.
+            minyanAdminService.update(organization.getId(), minyanId, command);
+            return new ModelAndView("redirect:/admin/minyanim/" + minyanId + "/view?success=updated");
+        } catch (MinyanAdminService.MinyanNotFoundException e) {
+            throw new Exception("Minyan not found.");
+        } catch (IllegalArgumentException e) {
+            ModelAndView mv = viewMinyan(minyanId, null);
+            mv.addObject("errormessage", e.getMessage());
+            return mv;
+        } catch (AccessDeniedException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Failed to update minyan {}", minyanId, e);
             ModelAndView mv = viewMinyan(minyanId, null);
@@ -2183,6 +2179,7 @@ public class AdminController {
         }
     }
 
+    @AdminAction("minyan.delete")
     @PostMapping("/admin/{organizationId}/minyanim/{minyanId}/delete")
     public ModelAndView deleteMinyan(@PathVariable("organizationId") String organizationId, @PathVariable("minyanId") String minyanId) throws Exception {
 
@@ -2215,6 +2212,7 @@ public class AdminController {
     /**
      * Manual trigger for calendar import for a specific organization
      */
+    @AdminAction("calendar.import")
     @PostMapping("/admin/{orgId}/calendar/import")
     public ModelAndView triggerCalendarImport(@PathVariable String orgId) {
         if (!isUser()) {
@@ -2483,6 +2481,7 @@ public class AdminController {
     /**
      * Toggle enabled/disabled status for a calendar entry
      */
+    @AdminAction("calendar-entry.toggle")
     @PostMapping("/admin/{orgId}/calendar-entries/{entryId}/toggle")
     public Object toggleCalendarEntry(@PathVariable String orgId,
                                       @PathVariable Long entryId,
@@ -2570,6 +2569,7 @@ public class AdminController {
     /**
      * Update location for a calendar entry
      */
+    @AdminAction("calendar-entry.update-location")
     @PostMapping("/admin/{orgId}/calendar-entries/{entryId}/update-location")
     public Object updateEntryLocation(@PathVariable String orgId,
                                       @PathVariable Long entryId,
@@ -2673,6 +2673,7 @@ public class AdminController {
     /**
      * Reimport all calendar entries for an organization (override all existing data)
      */
+    @AdminAction("calendar.reimport-all")
     @PostMapping("/admin/{orgId}/calendar/reimport-all")
     public RedirectView reimportAllCalendarEntries(@PathVariable String orgId) {
         if (!isUser()) {
