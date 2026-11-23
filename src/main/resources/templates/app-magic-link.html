@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--
+  Fallback for app sign-in links (/app/auth/magic-link?token=...) opened in a browser.
+  The token must never be read or rendered here, and the page must load no analytics or other
+  third-party scripts (the shared navbar includes Tag Manager, so it is not used).
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
+    <meta name="robots" content="noindex, nofollow">
+    <title th:text="|Open in the app - ${siteName ?: 'Teaneck Minyanim'}|">Open in the app - Teaneck Minyanim</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/icons/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+    <meta name="theme-color" content="#ffffff">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
+    <link href="/assets/css/style.css" rel="stylesheet" type="text/css" media="all" />
+    <style>
+        body { background: #f3f6fb; }
+        .app-link-card {
+            max-width: 560px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #dbe3ef;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(31, 41, 55, 0.08);
+            overflow: hidden;
+        }
+        .app-link-card-header { background: #275ed8; color: #ffffff; padding: 1.5rem 1.75rem; }
+        .app-link-card-header .eyebrow {
+            font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.88;
+        }
+        .app-link-card-header h1 { font-size: 1.5rem; font-weight: 700; margin: 0.35rem 0 0; color: #ffffff; }
+        .app-link-card-body { padding: 1.75rem; color: #1f2937; }
+        .app-link-card-body p { font-size: 1rem; line-height: 1.6; }
+        .app-link-steps { padding-left: 1.25rem; margin-bottom: 1.5rem; }
+        .app-link-steps li { margin-bottom: 0.5rem; line-height: 1.55; }
+        .app-link-note {
+            background: #f8fafc; border-left: 4px solid #275ed8; border-radius: 6px;
+            padding: 0.85rem 1rem; font-size: 0.92rem; margin-bottom: 1.5rem;
+        }
+        .app-link-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+        .app-link-actions a {
+            display: inline-block; padding: 0.7rem 1.25rem; border-radius: 8px; font-weight: 700;
+            text-decoration: none;
+        }
+        .app-link-primary { background: #275ed8; color: #ffffff; }
+        .app-link-primary:hover, .app-link-primary:focus { background: #1f4fb8; color: #ffffff; }
+        .app-link-secondary { border: 1px solid #275ed8; color: #275ed8; }
+        .app-link-secondary:hover, .app-link-secondary:focus { background: #eef3fd; color: #1f4fb8; }
+        .app-link-footer { color: #64748b; font-size: 0.85rem; text-align: center; margin-top: 1.5rem; }
+    </style>
+</head>
+
+<body>
+    <main class="container" style="padding: 3rem 16px;">
+        <div class="app-link-card">
+            <div class="app-link-card-header">
+                <div class="eyebrow">App sign-in link</div>
+                <h1 th:text="|Open this link in the ${siteName ?: 'Teaneck Minyanim'} app|">Open this link in the Teaneck Minyanim app</h1>
+            </div>
+            <div class="app-link-card-body">
+                <p>This sign-in link is meant for the mobile app, and it looks like it opened in a web browser instead.</p>
+                <ol class="app-link-steps">
+                    <li>Open the sign-in email <strong>on the phone where the
+                        <span th:text="${siteName ?: 'Teaneck Minyanim'}">Teaneck Minyanim</span> app is installed</strong>.</li>
+                    <li>Tap the sign-in button in the email. The app opens and signs you in.</li>
+                </ol>
+                <div class="app-link-note">
+                    The link works once and expires 15 minutes after it was sent. If it has expired, request a new
+                    one from the app's sign-in screen.
+                </div>
+                <p>Don't have the app, or want to use a computer? You can sign in on the website instead.</p>
+                <div class="app-link-actions">
+                    <a class="app-link-primary" href="/admin/login">Sign in on the website</a>
+                    <a class="app-link-secondary" href="/">Go to the homepage</a>
+                </div>
+            </div>
+        </div>
+        <p class="app-link-footer" th:if="${supportEmail != null}">
+            Need help? <a th:href="@{|mailto:${supportEmail}|}" th:text="${supportEmail}">support@example.com</a>
+        </p>
+    </main>
+</body>
+</html>
