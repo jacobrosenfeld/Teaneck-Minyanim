@@ -22,11 +22,18 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Token-bucket rate limiter for /api/v1/** endpoints.
  *
- * Each unique client IP gets its own bucket. The default limit is 60 requests
- * per minute (one per second on average), configurable via
- * api.ratelimit.requests-per-minute in application.properties.
- * Feedback submissions use a stricter bucket because each accepted request can
- * create external GitHub/email work.
+ * Each unique client IP gets its own bucket per category:
+ * <ul>
+ *   <li>{@code /api/v1/auth/**} (sign-in, refresh, logout): api.ratelimit.auth-requests-per-minute (10)</li>
+ *   <li>Feedback submissions: api.ratelimit.feedback-requests-per-minute (5), because each accepted
+ *       request can create external GitHub/email work</li>
+ *   <li>Other non-GET requests (admin writes): api.ratelimit.write-requests-per-minute (30)</li>
+ *   <li>Reads (GET/HEAD): api.ratelimit.requests-per-minute (60)</li>
+ * </ul>
+ *
+ * The filter runs inside the API security chain, after CORS and before bearer-token authentication, so
+ * invalid tokens are rate limited too and 429 responses still carry CORS headers. Its automatic servlet
+ * registration is disabled in {@code WebSecurityConfiguration}.
  *
  * Responses on limit:
  *   HTTP 429 with Retry-After: 60 and a standard ApiResponse error body.
@@ -46,8 +53,34 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     @Value("${api.ratelimit.feedback-requests-per-minute:5}")
     private int feedbackRequestsPerMinute;
 
+    @Value("${api.ratelimit.auth-requests-per-minute:10}")
+    private int authRequestsPerMinute;
+
+    @Value("${api.ratelimit.write-requests-per-minute:30}")
+    private int writeRequestsPerMinute;
+
     private final ConcurrentMap<String, Bucket> buckets = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Bucket> feedbackBuckets = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Bucket> authBuckets = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Bucket> writeBuckets = new ConcurrentHashMap<>();
+
+    /** Rate-limit categories, each with its own per-IP buckets. */
+    enum Category { READ, WRITE, AUTH, FEEDBACK }
+
+    static Category categorize(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        if (uri.equals("/api/v1/auth") || uri.startsWith("/api/v1/auth/")) {
+            return Category.AUTH;
+        }
+        if (uri.startsWith("/api/v1/feedback")) {
+            return Category.FEEDBACK;
+        }
+        String method = request.getMethod();
+        if ("GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method)) {
+            return Category.READ;
+        }
+        return Category.WRITE;
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -60,9 +93,19 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
         String ip = resolveClientIp(request);
-        boolean feedbackRequest = request.getRequestURI().startsWith("/api/v1/feedback");
-        int limit = feedbackRequest ? feedbackRequestsPerMinute : requestsPerMinute;
-        ConcurrentMap<String, Bucket> bucketMap = feedbackRequest ? feedbackBuckets : buckets;
+        Category category = categorize(request);
+        int limit = switch (category) {
+            case AUTH -> authRequestsPerMinute;
+            case FEEDBACK -> feedbackRequestsPerMinute;
+            case WRITE -> writeRequestsPerMinute;
+            case READ -> requestsPerMinute;
+        };
+        ConcurrentMap<String, Bucket> bucketMap = switch (category) {
+            case AUTH -> authBuckets;
+            case FEEDBACK -> feedbackBuckets;
+            case WRITE -> writeBuckets;
+            case READ -> buckets;
+        };
         Bucket bucket = bucketMap.computeIfAbsent(ip, k -> newBucket(limit));
 
         if (bucket.tryConsume(1)) {

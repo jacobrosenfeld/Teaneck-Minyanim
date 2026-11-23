@@ -1,11 +1,32 @@
 package com.tbdev.teaneckminyanim.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tbdev.teaneckminyanim.api.ApiException;
+import com.tbdev.teaneckminyanim.api.ApiRateLimitFilter;
+import com.tbdev.teaneckminyanim.api.dto.ApiResponse;
 import com.tbdev.teaneckminyanim.service.TNMUserDetailsService;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
+import com.tbdev.teaneckminyanim.service.TNMUserService;
+import com.tbdev.teaneckminyanim.service.auth.ApiKeyService;
+import com.tbdev.teaneckminyanim.service.auth.AppTokenService;
+import com.tbdev.teaneckminyanim.service.auth.AuthAuditService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.savedrequest.NullRequestCache;
+import org.springframework.security.web.webauthn.api.PublicKeyCredentialRpEntity;
+import org.springframework.security.web.webauthn.management.PublicKeyCredentialUserEntityRepository;
+import org.springframework.security.web.webauthn.management.WebAuthnRelyingPartyOperations;
+import org.springframework.security.web.webauthn.management.Webauthn4JRelyingPartyOperations;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -34,6 +55,9 @@ import jakarta.servlet.Filter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.HexFormat;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +78,67 @@ public class WebSecurityConfiguration {
 
     @Value("${auth.passkeys.enabled:true}")
     private boolean passkeysEnabled;
+
+    /** Comma-separated SHA-256 signing-certificate fingerprints of the Android app, colon-separated hex. */
+    @Value("${app.links.android-sha256-fingerprints:}")
+    private String androidSha256Fingerprints = "";
+
+    /**
+     * Stateless chain for the REST API. It never reads or creates the HTTP session, so a browser admin
+     * cookie cannot authorize API calls (which is why CSRF is off here). Requests authenticate with
+     * {@code Authorization: Bearer}; URL rules are permitAll and authorization happens in the controllers
+     * through {@code ApiAuthorizationService}.
+     */
+    @Bean
+    @Order(1)
+    public SecurityFilterChain apiFilterChain(HttpSecurity http,
+                                              ApiRateLimitFilter rateLimitFilter,
+                                              ApiKeyService apiKeyService,
+                                              AppTokenService appTokenService,
+                                              TNMUserService users,
+                                              AuthAuditService auditService,
+                                              ObjectMapper objectMapper) throws Exception {
+        BearerTokenAuthenticationFilter bearerFilter = new BearerTokenAuthenticationFilter(
+                apiKeyService, appTokenService, users, auditService, objectMapper);
+        http
+            .securityMatcher("/api/v1/**")
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .securityContext(context -> context.securityContextRepository(new RequestAttributeSecurityContextRepository()))
+            .requestCache(cache -> cache.requestCache(new NullRequestCache()))
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .httpBasic(basic -> basic.disable())
+            .formLogin(form -> form.disable())
+            .logout(logout -> logout.disable())
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, e) ->
+                        writeApiError(response, objectMapper, ApiException.unauthenticated()))
+                .accessDeniedHandler((request, response, e) ->
+                        writeApiError(response, objectMapper, ApiException.forbidden("Access denied."))))
+            .addFilterAfter(rateLimitFilter, CorsFilter.class)
+            .addFilterBefore(bearerFilter, AnonymousAuthenticationFilter.class);
+        return http.build();
+    }
+
+    /** The rate limiter runs inside {@link #apiFilterChain}; stop Boot also registering it as a servlet filter. */
+    @Bean
+    public FilterRegistrationBean<ApiRateLimitFilter> apiRateLimitFilterRegistration(ApiRateLimitFilter filter) {
+        FilterRegistrationBean<ApiRateLimitFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    private static void writeApiError(jakarta.servlet.http.HttpServletResponse response, ObjectMapper objectMapper,
+                                      ApiException error) throws java.io.IOException {
+        response.setStatus(error.getStatus().value());
+        if (error.getStatus().value() == 401) {
+            response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
+        }
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        objectMapper.writeValue(response.getOutputStream(), ApiResponse.err(error.getCode(), error.getMessage()));
+    }
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -99,6 +184,7 @@ public class WebSecurityConfiguration {
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/**").permitAll()
+                .requestMatchers("/.well-known/**", "/app/auth/**").permitAll()
                 .requestMatchers("/api/docs", "/api/docs.json",
                                  "/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/", "/zmanim/**", "/orgs/**", "/org/**", "/admin/login",
@@ -177,6 +263,24 @@ public class WebSecurityConfiguration {
         }
     }
 
+    /**
+     * The WebAuthn relying party shared by browser passkey sign-in ({@code http.webAuthn}, which looks this bean
+     * up by type and uses it instead of building its own) and native app passkey sign-in, so one passkey works
+     * on the website and in the app.
+     */
+    @Bean
+    public WebAuthnRelyingPartyOperations webAuthnRelyingPartyOperations(
+            PublicKeyCredentialUserEntityRepository userEntities,
+            UserCredentialRepository userCredentials,
+            ApplicationSettingsService settingsService) {
+        PublicKeyCredentialRpEntity rp = PublicKeyCredentialRpEntity.builder()
+                .id(webAuthnRpId(settingsService))
+                .name(settingsService.getSiteName())
+                .build();
+        return new Webauthn4JRelyingPartyOperations(userEntities, userCredentials, rp,
+                webAuthnAllowedOrigins(settingsService));
+    }
+
     @Bean
     public UserCredentialRepository userCredentialRepository(JdbcOperations jdbcOperations,
                                                              WebAuthnCredentialSchemaInitializer schemaInitializer) {
@@ -217,6 +321,35 @@ public class WebSecurityConfiguration {
             origins.add(PASSKEY_DEV_ORIGIN);
         }
         origins.add(origin(uri));
+        origins.addAll(androidApkKeyHashOrigins(androidSha256Fingerprints));
+        return origins;
+    }
+
+    /**
+     * Android passkey origins: {@code android:apk-key-hash:<base64url, no padding, of the SHA-256 signing
+     * certificate fingerprint>} for each comma-separated colon-hex fingerprint. Invalid entries are skipped.
+     */
+    static Set<String> androidApkKeyHashOrigins(String fingerprints) {
+        Set<String> origins = new LinkedHashSet<>();
+        if (fingerprints == null || fingerprints.isBlank()) {
+            return origins;
+        }
+        for (String fingerprint : fingerprints.split(",")) {
+            String hex = fingerprint.trim().replace(":", "");
+            if (hex.isEmpty()) {
+                continue;
+            }
+            try {
+                byte[] bytes = HexFormat.of().parseHex(hex);
+                if (bytes.length != 32) {
+                    throw new IllegalArgumentException("expected 32 bytes");
+                }
+                origins.add("android:apk-key-hash:" + Base64.getUrlEncoder().withoutPadding().encodeToString(bytes));
+            } catch (IllegalArgumentException e) {
+                org.slf4j.LoggerFactory.getLogger(WebSecurityConfiguration.class)
+                        .warn("Ignoring invalid Android SHA-256 fingerprint in app.links.android-sha256-fingerprints");
+            }
+        }
         return origins;
     }
 
