@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="|API Keys - ${siteName ?: 'Minyanim Platform'}|">API Keys</title>
+    <th:block layout:fragment="styles">
+        <link rel="stylesheet" th:href="@{/admin/api-keys.css}">
+    </th:block>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div id="api-keys-page" th:attr="data-open-create=${openCreateModal != null and openCreateModal} ? 'true' : 'false'">
+
+        <div class="admin-page-header">
+            <div>
+                <h1 class="admin-page-title">
+                    <i class="fas fa-key me-2" aria-hidden="true"></i>
+                    API keys
+                </h1>
+                <p class="admin-page-lead">Personal API keys and mobile app sessions. A key can never do more than the account that owns it, and stops working when that account is disabled.</p>
+            </div>
+            <button type="button" class="btn-modern btn-primary" data-toggle="modal" data-target="#create-key-modal">
+                <i class="fas fa-plus" aria-hidden="true"></i> Create API key
+            </button>
+        </div>
+
+        <!-- Flash messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+
+        <!-- One-time key panel. Present only in the response to the create POST. -->
+        <section th:if="${createdKey != null}" class="new-key-panel" id="new-key-panel" aria-labelledby="new-key-title">
+            <h2 id="new-key-title" class="new-key-title">
+                <i class="fas fa-circle-check" aria-hidden="true"></i>
+                API key created: <span th:text="${createdKeyName}">name</span>
+            </h2>
+            <p class="new-key-warning"><strong>This key will not be shown again.</strong> Copy it now and store it somewhere safe.</p>
+            <div class="new-key-row">
+                <code class="new-key-value" id="new-key-value" th:text="${createdKey}">tnm_xxxxxxxx</code>
+                <button type="button" class="btn-modern btn-secondary" id="copy-key-btn">
+                    <i class="fas fa-copy" aria-hidden="true"></i> <span id="copy-key-label">Copy key</span>
+                </button>
+            </div>
+            <p class="new-key-feedback" id="copy-key-feedback" role="status" aria-live="polite"></p>
+        </section>
+
+        <!-- Stats -->
+        <div class="keys-stats">
+            <div class="keys-stat">
+                <div class="keys-stat-value" th:text="${activeKeyCount}">0</div>
+                <div class="keys-stat-label">Active keys</div>
+            </div>
+            <div class="keys-stat">
+                <div class="keys-stat-value" th:text="${revokedKeyCount}">0</div>
+                <div class="keys-stat-label">Revoked keys</div>
+            </div>
+            <div class="keys-stat">
+                <div class="keys-stat-value" th:text="${sessionCount}">0</div>
+                <div class="keys-stat-label">Active mobile sessions</div>
+            </div>
+        </div>
+
+        <!-- Keys table -->
+        <div class="table-card keys-card">
+            <div class="table-topbar">
+                <div class="table-topbar-left">API keys <span class="count-pill" th:text="${#lists.size(keys)}">0</span></div>
+            </div>
+            <div class="table-scroll">
+                <table class="table-modern table-admin-wide" id="keys-table">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Owner</th>
+                        <th>Key</th>
+                        <th>Permissions</th>
+                        <th>Shuls</th>
+                        <th>Created</th>
+                        <th>Last used</th>
+                        <th>Status</th>
+                        <th><span class="sr-only">Actions</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="key : ${keys}" th:classappend="${!key.active} ? 'row-revoked' : ''">
+                        <td class="table-cell-nowrap"><strong th:text="${key.name}">Name</strong></td>
+                        <td class="table-cell-nowrap" th:text="${key.owner}">owner</td>
+                        <td class="table-cell-nowrap"><code th:text="${key.displayPrefix + '…'}">tnm_AbCd1234…</code></td>
+                        <td>
+                            <span th:if="${key.sameAsOwner}" class="badge-modern badge-info">Same as owner</span>
+                            <span th:unless="${key.sameAsOwner}" class="scope-pills">
+                                <span th:each="scope : ${key.scopes}" class="badge-modern badge-secondary" th:text="${scope}">scope</span>
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${#lists.isEmpty(key.shuls)}" class="text-muted">All of owner's shuls</span>
+                            <span th:unless="${#lists.isEmpty(key.shuls)}" th:text="${#strings.listJoin(key.shuls, ', ')}">Shul A</span>
+                        </td>
+                        <td class="table-cell-nowrap" th:text="${key.createdAt}">date</td>
+                        <td class="table-cell-nowrap" th:text="${key.lastUsedAt}">Never</td>
+                        <td class="table-cell-nowrap">
+                            <span th:if="${key.active}" class="badge-modern badge-success">Active</span>
+                            <span th:unless="${key.active}" class="badge-modern badge-danger" th:title="${key.revokedAt}">Revoked</span>
+                        </td>
+                        <td class="table-cell-nowrap">
+                            <form th:if="${key.active}" th:action="@{/admin/api-keys/{id}/revoke(id=${key.id})}" method="post">
+                                <button type="button" class="btn-modern btn-outline btn-sm"
+                                        data-confirm data-confirm-severity="danger" data-confirm-icon="fa-key"
+                                        data-confirm-title="Revoke API key?"
+                                        th:data-confirm-message="|Anything using “${key.name}” will stop working immediately. This cannot be undone.|"
+                                        th:data-confirm-detail="|Owner: ${key.owner}|"
+                                        data-confirm-label="Revoke key">Revoke</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(keys)}">
+                        <td colspan="9" class="text-muted text-center">No API keys yet.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mobile sessions table -->
+        <div class="table-card keys-card">
+            <div class="table-topbar">
+                <div class="table-topbar-left">Mobile sessions <span class="count-pill" th:text="${#lists.size(sessions)}">0</span></div>
+            </div>
+            <div class="table-scroll">
+                <table class="table-modern table-admin-wide" id="sessions-table">
+                    <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Device</th>
+                        <th>Signed in with</th>
+                        <th>Created</th>
+                        <th>Last used</th>
+                        <th>Refresh expires</th>
+                        <th><span class="sr-only">Actions</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${sessions}">
+                        <td class="table-cell-nowrap"><strong th:text="${s.user}">user</strong></td>
+                        <td th:text="${s.deviceName}">device</td>
+                        <td class="table-cell-nowrap" th:text="${s.method}">Passkey</td>
+                        <td class="table-cell-nowrap" th:text="${s.createdAt}">date</td>
+                        <td class="table-cell-nowrap" th:text="${s.lastUsedAt}">date</td>
+                        <td class="table-cell-nowrap" th:text="${s.refreshExpiresAt}">date</td>
+                        <td class="table-cell-nowrap">
+                            <form th:action="@{/admin/api-keys/sessions/{id}/revoke(id=${s.id})}" method="post">
+                                <button type="button" class="btn-modern btn-outline btn-sm"
+                                        data-confirm data-confirm-severity="danger" data-confirm-icon="fa-mobile-screen"
+                                        data-confirm-title="Revoke mobile session?"
+                                        th:data-confirm-message="|${s.user} will be signed out of ${s.deviceName} and will need to sign in again.|"
+                                        data-confirm-label="Revoke session">Revoke</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(sessions)}">
+                        <td colspan="7" class="text-muted text-center">No active mobile sessions.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div layout:fragment="modals">
+    <!-- Create API key -->
+    <div class="modal fade admin-modal admin-modal-lg" id="create-key-modal" tabindex="-1"
+         aria-labelledby="create-key-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="admin-modal-heading">
+                        <span class="admin-modal-icon" aria-hidden="true"><i class="fas fa-key"></i></span>
+                        <h5 class="modal-title" id="create-key-modal-label">Create API key</h5>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <form method="post" th:action="@{/admin/api-keys/create}" id="create-key-form">
+                    <div class="modal-body">
+                        <div class="alert alert-danger" th:if="${createError}" role="alert">
+                            <span th:text="${createError}"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="key-owner" class="form-label">Owner</label>
+                            <select class="form-control" id="key-owner" name="ownerId" required>
+                                <option value="">Choose an account</option>
+                                <option th:each="o : ${owners}" th:value="${o.id}"
+                                        th:text="|${o.username} (${o.role})|"
+                                        th:attr="data-super=${o.superAdmin}, data-shuls=${o.shulIds}"
+                                        th:selected="${o.id == form.ownerId}">owner</option>
+                            </select>
+                            <small class="form-text text-muted">The key acts as this account and can never do more than it can.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="key-name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="key-name" name="name" maxlength="100"
+                                   th:value="${form.name}" placeholder="e.g. Website sync" required>
+                        </div>
+
+                        <fieldset class="form-group">
+                            <legend class="form-label">Permissions</legend>
+                            <div class="custom-control custom-radio">
+                                <input type="radio" class="custom-control-input" id="perm-same" name="permissions" value="same"
+                                       th:checked="${!form.specificScopes}">
+                                <label class="custom-control-label" for="perm-same">Same as owner</label>
+                            </div>
+                            <div class="custom-control custom-radio">
+                                <input type="radio" class="custom-control-input" id="perm-scopes" name="permissions" value="scopes"
+                                       th:checked="${form.specificScopes}">
+                                <label class="custom-control-label" for="perm-scopes">Specific scopes</label>
+                            </div>
+                            <div class="scope-list" id="scope-list">
+                                <div class="custom-control custom-checkbox" th:each="scope, st : ${allScopes}">
+                                    <input type="checkbox" class="custom-control-input" name="scopes"
+                                           th:id="|scope-${st.index}|" th:value="${scope.value()}"
+                                           th:checked="${form.scopes.contains(scope.value())}">
+                                    <label class="custom-control-label" th:for="|scope-${st.index}|">
+                                        <code th:text="${scope.value()}">scope</code>
+                                        <span class="scope-desc" th:text="${scope.description()}">description</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div class="form-group mb-0">
+                            <label for="key-shuls" class="form-label">Limit to shuls <span class="text-muted">(optional)</span></label>
+                            <select class="form-control" id="key-shuls" name="shuls" multiple size="5">
+                                <option th:each="shul : ${allShuls}" th:value="${shul.id}" th:text="${shul.name}"
+                                        th:selected="${form.shuls.contains(shul.id)}">Shul</option>
+                            </select>
+                            <small class="form-text text-muted">Leave empty for all of the owner's shuls. Only shuls the owner can access are listed.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-modern btn-outline" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-modern btn-primary">
+                            <i class="fas fa-key" aria-hidden="true"></i> Create key
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/admin/api-keys.js}"></script>
+</th:block>
+</body>
+</html>
