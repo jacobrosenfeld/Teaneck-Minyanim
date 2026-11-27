@@ -85,7 +85,7 @@
                                             when it was created and used. Only a one-way hash of the key is stored, never
                                             the key itself.</li>
                                         <li><strong>Passkey sign-in challenges:</strong> a short-lived one-time value used
-                                            to complete a passkey sign-in, deleted after 5 minutes.</li>
+                                            to complete a passkey sign-in. It expires after 5 minutes and is deleted within a couple of hours after that.</li>
                                         <li><strong>An authentication audit log:</strong> the type of event (for example
                                             sign-in, token refresh, key revoked), the account, the time, and a SHA-256
                                             hash of the IP address. We never store the raw IP address or the sign-in
