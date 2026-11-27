@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.controllers;
 
+import com.tbdev.teaneckminyanim.security.AdminAction;
 import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.email.EmailSendResult;
@@ -24,6 +25,7 @@ public class EmailAdminController {
     private final WeeklyMinyanReviewEmailService weeklyMinyanReviewEmailService;
     private final TNMUserService userService;
 
+    @AdminAction("email.test")
     @PostMapping("/test")
     public ResponseEntity<TestEmailResponse> sendTestEmail(@RequestParam("recipient") String recipient) {
         requireSuperAdmin();
@@ -33,6 +35,7 @@ public class EmailAdminController {
         return ResponseEntity.status(status).body(TestEmailResponse.from(result));
     }
 
+    @AdminAction("weekly-review.test")
     @PostMapping("/weekly-minyan-review/test")
     public ResponseEntity<WeeklyDigestTestEmailResponse> sendWeeklyDigestTestEmail(
             @RequestParam(value = "refreshBeforeSend", defaultValue = "false") boolean refreshBeforeSend,

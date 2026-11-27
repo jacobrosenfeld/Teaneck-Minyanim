@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.controllers;
 
+import com.tbdev.teaneckminyanim.security.AdminAction;
 import com.tbdev.teaneckminyanim.enums.SettingKey;
 import com.tbdev.teaneckminyanim.model.ApplicationSettings;
 import com.tbdev.teaneckminyanim.model.TNMUser;
@@ -68,6 +69,7 @@ public class ApplicationSettingsController {
     /**
      * Update a single application setting.
      */
+    @AdminAction("application-setting.update")
     @PostMapping("/admin/application-settings/update")
     public ModelAndView updateSetting(
             @RequestParam("settingKey") String settingKey,
@@ -121,6 +123,7 @@ public class ApplicationSettingsController {
      * SIMPLE mode builds the cron from frequency/days/time; ADVANCED saves the cron as entered.
      * The running schedule is replaced right away, without a restart.
      */
+    @AdminAction("calendar-import.schedule")
     @ResponseBody
     @PostMapping("/admin/settings/calendar-import-schedule")
     public ResponseEntity<CronScheduleResponse> saveCalendarImportSchedule(
@@ -174,6 +177,7 @@ public class ApplicationSettingsController {
     /**
      * Refresh settings cache (force reload from database).
      */
+    @AdminAction("application-setting.refresh-cache")
     @PostMapping("/admin/application-settings/refresh-cache")
     public ModelAndView refreshCache(RedirectAttributes redirectAttributes) {
         
