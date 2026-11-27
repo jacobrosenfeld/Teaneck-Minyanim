@@ -36,6 +36,13 @@ import java.util.HexFormat;
 @RequiredArgsConstructor
 public class MagicLinkService {
     public static final String PURPOSE_LOGIN = "LOGIN";
+    /**
+     * Sign-in links for the mobile app. Kept apart from {@link #PURPOSE_LOGIN}: the website's verify page
+     * never accepts an app token, and the app's exchange endpoint never accepts a website token.
+     */
+    public static final String PURPOSE_APP_LOGIN = "APP_LOGIN";
+    /** Path of the app sign-in link. It opens the app as a universal/app link, or a fallback page in a browser. */
+    public static final String APP_LOGIN_PATH = "/app/auth/magic-link";
     public static final Duration TOKEN_TTL = Duration.ofMinutes(15);
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -53,6 +60,20 @@ public class MagicLinkService {
 
     @Transactional
     public MagicLinkRequestResult requestLoginLink(String identifier, HttpServletRequest request) {
+        return requestLink(identifier, request, false);
+    }
+
+    /**
+     * The mobile app's variant of {@link #requestLoginLink}: same neutral result, rate limits, unknown or
+     * disabled handling and auditing, but the emailed link is {@code <siteRoot>/app/auth/magic-link?token=...}
+     * and its token can only be exchanged by the app ({@link #consumeAppLoginToken}).
+     */
+    @Transactional
+    public MagicLinkRequestResult requestAppLoginLink(String identifier, HttpServletRequest request) {
+        return requestLink(identifier, request, true);
+    }
+
+    private MagicLinkRequestResult requestLink(String identifier, HttpServletRequest request, boolean app) {
         if (!magicLinkEnabled) return MagicLinkRequestResult.neutral();
         String normalizedIdentifier = TNMUser.normalizeEmail(identifier);
         if (normalizedIdentifier == null) {
@@ -79,21 +100,21 @@ public class MagicLinkService {
             return MagicLinkRequestResult.neutral();
         }
 
-        auditService.record("MAGIC_LINK_REQUESTED", user.getId(), ipHash, null);
-        sendManagedLinkInternal(user, request, false);
+        auditService.record("MAGIC_LINK_REQUESTED", user.getId(), ipHash, app ? "app" : null);
+        sendManagedLinkInternal(user, request, false, app);
         return MagicLinkRequestResult.neutral();
     }
 
     /** Called only after super-admin authorization. */
     @Transactional
     public boolean sendManagedLoginLink(TNMUser user, HttpServletRequest request) {
-        return magicLinkEnabled && sendManagedLinkInternal(user, request, false);
+        return magicLinkEnabled && sendManagedLinkInternal(user, request, false, false);
     }
 
     /** Called only after super-admin authorization. */
     @Transactional
     public boolean sendManagedWelcomeLink(TNMUser user, HttpServletRequest request) {
-        return magicLinkEnabled && sendManagedLinkInternal(user, request, true);
+        return magicLinkEnabled && sendManagedLinkInternal(user, request, true, false);
     }
 
     @Transactional
@@ -104,31 +125,31 @@ public class MagicLinkService {
             auditService.record("WELCOME_EMAIL_RATE_LIMITED", user.getId(), ipHash, "profile");
             return false;
         }
-        return sendManagedLinkInternal(user, request, true);
+        return sendManagedLinkInternal(user, request, true, false);
     }
 
-    private boolean sendManagedLinkInternal(TNMUser user, HttpServletRequest request, boolean welcome) {
+    private boolean sendManagedLinkInternal(TNMUser user, HttpServletRequest request, boolean welcome, boolean app) {
         if (user == null || user.isDisabled()) return false;
         String normalizedEmail = TNMUser.normalizeEmail(user.getEmail());
         if (normalizedEmail == null) return false;
         String rawToken = generateToken();
         MagicLinkToken token = MagicLinkToken.builder()
                 .id(IDGenerator.generateID('M')).accountId(user.getId())
-                .tokenHash(hashToken(rawToken)).purpose(PURPOSE_LOGIN)
+                .tokenHash(hashToken(rawToken)).purpose(app ? PURPOSE_APP_LOGIN : PURPOSE_LOGIN)
                 .expiresAt(LocalDateTime.now().plus(TOKEN_TTL))
                 .requestedEmailHash(sha256(normalizedEmail))
                 .requestIpHash(sha256(clientIp(request)))
                 .userAgent(truncate(request == null ? null : request.getHeader("User-Agent"), 500)).build();
         tokenRepository.save(token);
-        String loginUrl = buildLoginUrl(rawToken, request);
+        String loginUrl = app ? buildAppLoginUrl(rawToken, request) : buildLoginUrl(rawToken, request);
         EmailSendResult result = welcome
                 ? welcomeEmailService.sendWelcome(user, loginUrl)
-                : sendLoginLink(user, loginUrl);
+                : sendLoginLink(user, loginUrl, app);
         if (result.isSuccess()) {
             user.setInvitedAt(LocalDateTime.now());
             userService.update(user);
             auditService.record(welcome ? "WELCOME_EMAIL_SENT" : "MAGIC_LINK_SENT",
-                    user.getId(), sha256(clientIp(request)), null);
+                    user.getId(), sha256(clientIp(request)), app ? "app" : null);
         } else {
             tokenRepository.delete(token);
             log.warn("Magic-link delivery failed for account {}", user.getId());
@@ -139,8 +160,22 @@ public class MagicLinkService {
         return result.isSuccess();
     }
 
+    /** Consumes a website sign-in link token. App tokens ({@link #PURPOSE_APP_LOGIN}) are rejected. */
     @Transactional(noRollbackFor = MagicLinkAuthenticationException.class)
     public TNMUser consumeLoginToken(String rawToken) {
+        return consumeToken(rawToken, PURPOSE_LOGIN);
+    }
+
+    /**
+     * Consumes a mobile-app sign-in link token with the same one-time, replay-safe checks as
+     * {@link #consumeLoginToken}. Website tokens ({@link #PURPOSE_LOGIN}) are rejected.
+     */
+    @Transactional(noRollbackFor = MagicLinkAuthenticationException.class)
+    public TNMUser consumeAppLoginToken(String rawToken) {
+        return consumeToken(rawToken, PURPOSE_APP_LOGIN);
+    }
+
+    private TNMUser consumeToken(String rawToken, String purpose) {
         if (!magicLinkEnabled) {
             throw new MagicLinkAuthenticationException("Sign-in link is invalid or expired.");
         }
@@ -157,7 +192,7 @@ public class MagicLinkService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        if (!PURPOSE_LOGIN.equals(token.getPurpose()) || !token.isUsable(now)) {
+        if (!purpose.equals(token.getPurpose()) || !token.isUsable(now)) {
             auditService.record("MAGIC_LINK_REJECTED", token.getAccountId(), null, token.getId());
             throw new MagicLinkAuthenticationException("Sign-in link is invalid or expired.");
         }
@@ -179,7 +214,8 @@ public class MagicLinkService {
             user.setInviteAcceptedAt(now);
         }
         userService.update(user);
-        auditService.record("MAGIC_LINK_USED", user.getId(), null, token.getId());
+        auditService.record("MAGIC_LINK_USED", user.getId(), null,
+                PURPOSE_APP_LOGIN.equals(purpose) ? "app " + token.getId() : token.getId());
 
         return user;
     }
@@ -196,23 +232,42 @@ public class MagicLinkService {
         return sha256(token);
     }
 
-    private EmailSendResult sendLoginLink(TNMUser user, String loginUrl) {
+    private EmailSendResult sendLoginLink(TNMUser user, String loginUrl, boolean app) {
         String siteName = settingsService.getSiteName();
         String escapedSiteName = HtmlUtils.htmlEscape(siteName);
         String escapedLoginUrl = HtmlUtils.htmlEscape(loginUrl);
         String escapedUsername = HtmlUtils.htmlEscape(
                 user.getUsername() == null || user.getUsername().isBlank() ? "there" : user.getUsername());
 
+        String html = brandedLoginEmail(escapedSiteName, escapedUsername, escapedLoginUrl);
+        String text = "Use this link to sign in to " + siteName + ":\n\n"
+                + loginUrl + "\n\n"
+                + "This link expires in 15 minutes and can only be used once.";
+        if (app) {
+            html = appWording(html, escapedSiteName);
+            text = "Open this link on the phone where the " + siteName + " app is installed to sign in to the app:\n\n"
+                    + loginUrl + "\n\n"
+                    + "This link expires in 15 minutes and can only be used once.";
+        }
         EmailMessage message = EmailMessage.builder()
                 .to(user.getEmail())
-                .subject("Sign in to " + siteName)
-                .textBody("Use this link to sign in to " + siteName + ":\n\n"
-                        + loginUrl + "\n\n"
-                        + "This link expires in 15 minutes and can only be used once.")
-                .htmlBody(brandedLoginEmail(escapedSiteName, escapedUsername, escapedLoginUrl))
-                .metadata("source", "admin-magic-link")
+                .subject(app ? "Sign in to the " + siteName + " app" : "Sign in to " + siteName)
+                .textBody(text)
+                .htmlBody(html)
+                .metadata("source", app ? "app-magic-link" : "admin-magic-link")
                 .build();
         return emailService.send(message);
+    }
+
+    /** The website sign-in email reworded for the app: open it on the phone that has the app installed. */
+    private static String appWording(String html, String escapedSiteName) {
+        return html
+                .replace("Use the secure button below to sign in. No password is required.",
+                        "Open this email on the phone where the " + escapedSiteName + " app is installed, then tap "
+                                + "the button below to sign in to the app. No password is required.")
+                .replace(">Sign in to " + escapedSiteName + "</a>", ">Sign in to the " + escapedSiteName + " app</a>")
+                .replace("If the button does not work, copy and paste this link into your browser:",
+                        "If the button does not open the app, copy this link and open it on that phone:");
     }
 
     private String brandedLoginEmail(String siteName, String username, String loginUrl) {
@@ -256,6 +311,15 @@ public class MagicLinkService {
         return UriComponentsBuilder
                 .fromHttpUrl(resolveMagicLinkRootUrl(request))
                 .path("/admin/login/magic-link/verify")
+                .queryParam("token", rawToken)
+                .toUriString();
+    }
+
+    /** The app sign-in link, built from the same safe root URL as {@link #buildLoginUrl}. */
+    String buildAppLoginUrl(String rawToken, HttpServletRequest request) {
+        return UriComponentsBuilder
+                .fromHttpUrl(resolveMagicLinkRootUrl(request))
+                .path(APP_LOGIN_PATH)
                 .queryParam("token", rawToken)
                 .toUriString();
     }

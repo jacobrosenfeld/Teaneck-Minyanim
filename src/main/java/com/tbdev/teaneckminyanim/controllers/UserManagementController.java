@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.controllers;
 
+import com.tbdev.teaneckminyanim.security.AdminAction;
 import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.service.UserManagementService;
 import com.tbdev.teaneckminyanim.service.auth.MagicLinkService;
@@ -20,6 +21,7 @@ public class UserManagementController {
     private final MagicLinkService magicLinks;
     private final PasskeyCredentialService passkeys;
 
+    @AdminAction("user.create")
     @PostMapping("/admin/users/create")
     public String create(@RequestParam String username, @RequestParam String email,
                          @RequestParam String access,
@@ -45,6 +47,7 @@ public class UserManagementController {
         return "redirect:/admin/accounts";
     }
 
+    @AdminAction("user.update")
     @PostMapping("/admin/users/update")
     public String update(@RequestParam String id, @RequestParam String email, @RequestParam String access,
                          @RequestParam(required = false) Set<String> organizationIds,
@@ -72,6 +75,7 @@ public class UserManagementController {
         return returnToAccount ? "redirect:/admin/account?id=" + id : "redirect:/admin/accounts";
     }
 
+    @AdminAction("user.send-link")
     @PostMapping("/admin/users/send-link")
     public String sendLink(@RequestParam String id, HttpServletRequest request, RedirectAttributes redirect) {
         TNMUser target = management.requireTarget(id);
@@ -82,6 +86,7 @@ public class UserManagementController {
         return "redirect:/admin/accounts";
     }
 
+    @AdminAction("user.send-welcome")
     @PostMapping("/admin/users/send-welcome")
     public String sendWelcome(@RequestParam String id, HttpServletRequest request, RedirectAttributes redirect) {
         TNMUser target = management.requireTarget(id);
@@ -92,6 +97,7 @@ public class UserManagementController {
         return "redirect:/admin/accounts";
     }
 
+    @AdminAction("user.delete")
     @PostMapping("/admin/users/delete")
     public String delete(@RequestParam String id, RedirectAttributes redirect) {
         try {
@@ -104,6 +110,7 @@ public class UserManagementController {
         return "redirect:/admin/accounts";
     }
 
+    @AdminAction("user.set-status")
     @PostMapping("/admin/users/status")
     public String updateStatus(@RequestParam String id, @RequestParam boolean enabled, RedirectAttributes redirect) {
         try {
@@ -116,6 +123,7 @@ public class UserManagementController {
         return "redirect:/admin/accounts";
     }
 
+    @AdminAction("user.revoke-passkeys")
     @PostMapping("/admin/users/revoke-passkeys")
     public String revoke(@RequestParam String id, RedirectAttributes redirect) {
         TNMUser actor = management.requireSuperAdmin();

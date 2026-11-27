@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.controllers;
 
+import com.tbdev.teaneckminyanim.security.AdminAction;
 import com.tbdev.teaneckminyanim.enums.SettingKey;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.TNMUser;
@@ -66,6 +67,7 @@ public class EmailSettingsController {
         return mv;
     }
 
+    @AdminAction("email-setting.update")
     @ResponseBody
     @PostMapping("/admin/settings/email/update-field")
     public ResponseEntity<FieldUpdateResponse> updateField(
@@ -121,6 +123,7 @@ public class EmailSettingsController {
      * cron from frequency/days/time; ADVANCED saves the cron as entered. Both are validated
      * (syntax and minimum interval) and the running schedule is replaced right away.
      */
+    @AdminAction("weekly-review.schedule")
     @ResponseBody
     @PostMapping("/admin/settings/email/weekly-review-schedule")
     public ResponseEntity<CronScheduleResponse> saveWeeklyReviewSchedule(

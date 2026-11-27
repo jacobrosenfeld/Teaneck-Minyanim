@@ -293,8 +293,28 @@ public class SuperAdminOverrideXlsxService {
     // Manual upsert API (used by form-based create flows)
     // ---------------------------------------------------------------------
 
+    /** Result of {@link #upsertManualRow}: the saved row and whether it replaced an existing one. */
+    public record UpsertedManualEvent(CalendarEvent event, boolean existed) {}
+
     @Transactional
     public boolean upsertManualEvent(
+            String organizationId,
+            LocalDate date,
+            LocalTime startTime,
+            MinyanType minyanType,
+            String overrideMode,
+            String locationId,
+            String locationName,
+            String notes,
+            Nusach nusach,
+            boolean enabled,
+            String username) {
+        return upsertManualRow(organizationId, date, startTime, minyanType, overrideMode, locationId,
+                locationName, notes, nusach, enabled, username).existed();
+    }
+
+    @Transactional
+    public UpsertedManualEvent upsertManualRow(
             String organizationId,
             LocalDate date,
             LocalTime startTime,
@@ -345,8 +365,8 @@ public class SuperAdminOverrideXlsxService {
         event.setDynamicTimeString(null);
         event.setWhatsapp(null);
 
-        calendarEventRepository.save(event);
-        return existing.isPresent();
+        CalendarEvent saved = calendarEventRepository.save(event);
+        return new UpsertedManualEvent(saved, existing.isPresent());
     }
 
     private Optional<CalendarEvent> selectExistingManualEvent(

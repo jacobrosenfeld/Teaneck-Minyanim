@@ -103,6 +103,9 @@ public class UserManagementService {
         }
         target.setEnabled(enabled);
         repository.save(target);
+        if (!enabled) {
+            users.onAccountDisabled(target.getId());
+        }
     }
 
     @Transactional
@@ -119,6 +122,7 @@ public class UserManagementService {
         passkeys.revokeAll(target);
         magicLinkTokens.deleteByAccountId(target.getId());
         authAuditEvents.deleteByAccountId(target.getId());
+        users.onAccountDeleted(target.getId());
         repository.delete(target);
         return username;
     }
