@@ -1,5 +1,6 @@
 package com.tbdev.teaneckminyanim.controllers;
 
+import com.tbdev.teaneckminyanim.security.AdminAction;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.repo.OrganizationCalendarEntryRepository;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
@@ -99,6 +100,7 @@ public class SuperAdminMaintenanceController {
      * re-fetches and re-classifies each one from scratch. Imported materialized
      * rows are also replaced by the import live-sync path.
      */
+    @AdminAction("maintenance.reimport-all")
     @PostMapping("/admin/super/maintenance/reimport-all")
     public RedirectView reimportAll(RedirectAttributes redirectAttributes) {
         requireSuperAdmin();
@@ -137,6 +139,7 @@ public class SuperAdminMaintenanceController {
     /**
      * Triggers a full rebuild of the materialized {@code calendar_events} table.
      */
+    @AdminAction("maintenance.rematerialize-all")
     @PostMapping("/admin/super/maintenance/rematerialize-all")
     public RedirectView rematerializeAll(RedirectAttributes redirectAttributes) {
         requireSuperAdmin();
@@ -161,6 +164,7 @@ public class SuperAdminMaintenanceController {
      * when force=true. Used to backfill coordinates after address cleanup or
      * geocoding configuration changes.
      */
+    @AdminAction("maintenance.geocode-all")
     @PostMapping("/admin/super/maintenance/geocode-all")
     public RedirectView geocodeAll(
             @RequestParam(value = "force", required = false, defaultValue = "false") boolean force,

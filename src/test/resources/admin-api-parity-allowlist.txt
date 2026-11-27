@@ -1,0 +1,58 @@
+# Admin actions (and API-only tags) the parity test accepts without a matching pair.
+# Format: tag | status | reason     ('#' starts a comment)
+#   pending    admin action not yet in the Admin API
+#   by-design  stays browser-only on purpose
+#   api-ahead  API endpoint exists, the admin panel has no handler for it yet
+# The test fails if an entry is stale (now covered, or used by nothing), malformed or duplicated.
+
+override.update | api-ahead | Single-row override editing in the admin panel is tracked in #322; ManualOverrideService.update is ready for it.
+
+# Browser-only credential management
+account.change-password | by-design | Password changes are browser-only credential management.
+api-key.create | by-design | API keys are created in the browser only, so a key can never mint another key.
+api-key.revoke | by-design | API key management is browser-only credential management; a key cannot manage keys.
+app-session.revoke | by-design | Revoking mobile sessions is browser-only credential management for super admins.
+user.revoke-passkeys | by-design | Passkey management is browser-only credential management.
+
+# Not yet in the Admin API
+account.create | pending | Phase 2: not yet in the Admin API
+account.delete | pending | Phase 2: not yet in the Admin API
+account.disable | pending | Phase 2: not yet in the Admin API
+account.enable | pending | Phase 2: not yet in the Admin API
+account.notifications | pending | Phase 2: not yet in the Admin API
+account.update | pending | Phase 2: not yet in the Admin API
+application-setting.refresh-cache | pending | Phase 2: not yet in the Admin API
+application-setting.update | pending | Phase 2: not yet in the Admin API
+calendar-entry.toggle | pending | Phase 2: not yet in the Admin API
+calendar-entry.update-location | pending | Phase 2: not yet in the Admin API
+calendar-event.rematerialize | pending | Phase 2: not yet in the Admin API
+calendar-event.rematerialize-all | pending | Phase 2: not yet in the Admin API
+calendar-event.toggle | pending | Phase 2: not yet in the Admin API
+calendar-event.update | pending | Phase 2: not yet in the Admin API
+calendar-import.schedule | pending | Phase 2: not yet in the Admin API
+calendar.import | pending | Phase 2: not yet in the Admin API
+calendar.reimport-all | pending | Phase 2: not yet in the Admin API
+email-setting.update | pending | Phase 2: not yet in the Admin API
+email.test | pending | Phase 2: not yet in the Admin API
+location.create | pending | Phase 2: not yet in the Admin API
+location.delete | pending | Phase 2: not yet in the Admin API
+location.update | pending | Phase 2: not yet in the Admin API
+maintenance.geocode-all | pending | Phase 2: not yet in the Admin API
+maintenance.reimport-all | pending | Phase 2: not yet in the Admin API
+maintenance.rematerialize-all | pending | Phase 2: not yet in the Admin API
+minyan.create | pending | Phase 2: not yet in the Admin API
+minyan.delete | pending | Phase 2: not yet in the Admin API
+override.import | pending | Phase 2: not yet in the Admin API
+settings.update | pending | Phase 2: not yet in the Admin API
+shul.create | pending | Phase 2: not yet in the Admin API
+shul.delete | pending | Phase 2: not yet in the Admin API
+shul.disable | pending | Phase 2: not yet in the Admin API
+shul.enable | pending | Phase 2: not yet in the Admin API
+user.create | pending | Phase 2: not yet in the Admin API
+user.delete | pending | Phase 2: not yet in the Admin API
+user.send-link | pending | Phase 2: not yet in the Admin API
+user.send-welcome | pending | Phase 2: not yet in the Admin API
+user.set-status | pending | Phase 2: not yet in the Admin API
+user.update | pending | Phase 2: not yet in the Admin API
+weekly-review.schedule | pending | Phase 2: not yet in the Admin API
+weekly-review.test | pending | Phase 2: not yet in the Admin API
