@@ -223,6 +223,13 @@
                 </svg>
                 <span>Maintenance</span>
             </a>
+            <a class="admin-sidebar-link" th:href="@{/admin/api-keys}"
+               th:classappend="${#httpServletRequest != null and #strings.contains(#httpServletRequest.requestURI, '/api-keys')} ? 'active' : ''">
+                <svg class="admin-sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a4 4 0 11-3.874 5H3v-2h8.126A4 4 0 0115 7zm0 2a2 2 0 100 4 2 2 0 000-4z"/>
+                </svg>
+                <span>API keys</span>
+            </a>
             <div class="admin-sidebar-divider"></div>
         </div>
 

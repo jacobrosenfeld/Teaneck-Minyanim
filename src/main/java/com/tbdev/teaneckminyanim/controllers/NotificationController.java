@@ -4,13 +4,17 @@ import com.tbdev.teaneckminyanim.model.Notification;
 import com.tbdev.teaneckminyanim.model.Organization;
 import com.tbdev.teaneckminyanim.model.TNMUser;
 import com.tbdev.teaneckminyanim.service.ApplicationSettingsService;
+import com.tbdev.teaneckminyanim.security.AdminAction;
 import com.tbdev.teaneckminyanim.service.NotificationService;
+import com.tbdev.teaneckminyanim.service.NotificationService.NotificationCommand;
+import com.tbdev.teaneckminyanim.service.NotificationService.NotificationNotFoundException;
 import com.tbdev.teaneckminyanim.service.OrganizationService;
 import com.tbdev.teaneckminyanim.service.TNMUserService;
 import com.tbdev.teaneckminyanim.service.VersionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,8 +50,7 @@ public class NotificationController {
      * Check if current user is super admin
      */
     private boolean isSuperAdmin() {
-        TNMUser user = getCurrentUser();
-        return user.getOrganizationId() == null && user.isAdmin();
+        return tnmUserService.isSuperAdmin();
     }
 
     /**
@@ -79,6 +82,9 @@ public class NotificationController {
      */
     @GetMapping
     public ModelAndView showNotifications() {
+        if (!isSuperAdmin()) {
+            throw new AccessDeniedException("This page is restricted to super admins.");
+        }
         ModelAndView mv = new ModelAndView("admin/notifications");
         
         // Add user to model for sidebar
@@ -99,8 +105,9 @@ public class NotificationController {
     }
 
     /**
-     * Create a new notification
+     * Create a new notification (super admins only; enforced in the service).
      */
+    @AdminAction("notification.create")
     @PostMapping("/create")
     @ResponseBody
     public ResponseEntity<?> createNotification(
@@ -109,27 +116,14 @@ public class NotificationController {
             @RequestParam String type,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime expirationDate,
             @RequestParam(required = false) Integer maxDisplays) {
-        
-        try {
-            Notification notification = new Notification();
-            notification.setTitle(title);
-            notification.setMessage(message);
-            notification.setType(type);
-            notification.setEnabled(true);
-            notification.setExpirationDate(expirationDate);
-            notification.setMaxDisplays(maxDisplays);
-            
-            Notification saved = notificationService.save(notification);
-            return ResponseEntity.ok(saved);
-        } catch (Exception e) {
-            log.error("Error creating notification", e);
-            return ResponseEntity.badRequest().body("Error creating notification: " + e.getMessage());
-        }
+        return run("creating", () -> ResponseEntity.ok(notificationService.create(
+                NotificationCommand.full(title, message, type, true, expirationDate, maxDisplays))));
     }
 
     /**
      * Update an existing notification
      */
+    @AdminAction("notification.update")
     @PostMapping("/update/{id}")
     @ResponseBody
     public ResponseEntity<?> updateNotification(
@@ -140,55 +134,46 @@ public class NotificationController {
             @RequestParam Boolean enabled,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime expirationDate,
             @RequestParam(required = false) Integer maxDisplays) {
-        
-        try {
-            Notification notification = notificationService.findById(id);
-            if (notification == null) {
-                return ResponseEntity.notFound().build();
-            }
-            
-            notification.setTitle(title);
-            notification.setMessage(message);
-            notification.setType(type);
-            notification.setEnabled(enabled);
-            notification.setExpirationDate(expirationDate);
-            notification.setMaxDisplays(maxDisplays);
-            
-            Notification saved = notificationService.save(notification);
-            return ResponseEntity.ok(saved);
-        } catch (Exception e) {
-            log.error("Error updating notification", e);
-            return ResponseEntity.badRequest().body("Error updating notification: " + e.getMessage());
-        }
+        return run("updating", () -> ResponseEntity.ok(notificationService.update(id,
+                NotificationCommand.full(title, message, type, enabled, expirationDate, maxDisplays))));
     }
 
     /**
      * Toggle notification enabled status
      */
+    @AdminAction("notification.toggle")
     @PostMapping("/toggle/{id}")
     @ResponseBody
     public ResponseEntity<?> toggleNotification(@PathVariable String id) {
-        try {
-            boolean enabled = notificationService.toggleEnabled(id);
-            return ResponseEntity.ok(enabled);
-        } catch (Exception e) {
-            log.error("Error toggling notification", e);
-            return ResponseEntity.badRequest().body("Error toggling notification: " + e.getMessage());
-        }
+        return run("toggling", () -> ResponseEntity.ok(notificationService.toggleEnabled(id)));
     }
 
     /**
      * Delete a notification
      */
+    @AdminAction("notification.delete")
     @PostMapping("/delete/{id}")
     @ResponseBody
     public ResponseEntity<?> deleteNotification(@PathVariable String id) {
-        try {
+        return run("deleting", () -> {
             notificationService.delete(id);
             return ResponseEntity.ok().build();
+        });
+    }
+
+    /** Maps service errors to plain-text responses the page shows in a toast. */
+    private ResponseEntity<?> run(String verb, java.util.function.Supplier<ResponseEntity<?>> action) {
+        try {
+            return action.get();
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only super admins can manage notifications.");
+        } catch (NotificationNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            log.error("Error deleting notification", e);
-            return ResponseEntity.badRequest().body("Error deleting notification: " + e.getMessage());
+            log.error("Error {} notification", verb, e);
+            return ResponseEntity.badRequest().body("Error " + verb + " notification.");
         }
     }
 }
