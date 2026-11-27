@@ -93,7 +93,7 @@ Every admin action must be reachable from both the admin panel and the Admin API
    - Examples: `ManualOverrideService`, `MinyanAdminService`, `ShulProfileService`, the admin methods of `NotificationService`.
 2. **The same `@AdminAction("area.verb")` tag** (`security/AdminAction`) goes on the admin handler and on its `/api/v1` endpoint. Every `/admin/**` POST/PUT/PATCH/DELETE handler must carry one.
 3. **The API endpoint** gets full Swagger docs, `@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)` and a section in `docs/api/README.md`.
-4. **`AdminApiParityTest` fails CI** if an admin write handler has no tag, or a tag has no API endpoint and isn't in `src/test/resources/admin-api-parity-allowlist.txt`. Allowlist entries are `pending` (not built yet) or `by-design` (e.g. API-key management is browser-only), each with a reason.
+4. **`AdminApiParityTest` fails CI** if an admin write handler has no tag, or a tag has no API endpoint and isn't in `src/test/resources/admin-api-parity-allowlist.txt`. Allowlist entries are `pending` (not in the API yet), `by-design` (e.g. API-key management is browser-only) or `api-ahead` (the API has it but the panel doesn't yet, e.g. single-row override editing, #322), each with a reason.
    - When you add an admin action, add its API endpoint, or a `pending` entry with a reason.
    - When you cover a pending action, remove its allowlist line; the test fails on stale entries.
 
