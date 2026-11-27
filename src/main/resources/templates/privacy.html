@@ -73,6 +73,30 @@
                                     <p><strong>No account registration.</strong> The app does not require you to create an
                                     account or provide any personal information such as your name, email address, or phone
                                     number.</p>
+                                    <p><strong>Shul administrator sign-in.</strong> This applies only to the staff accounts
+                                    of participating shuls who manage schedules, not to people who use the app or website
+                                    to look up minyanim. When an administrator signs in to the website or the mobile app,
+                                    we store:</p>
+                                    <ul>
+                                        <li><strong>Mobile session records:</strong> the device name the app sends, the
+                                            user agent, how they signed in (email link or passkey), when the session was
+                                            created and last used, and when it expires.</li>
+                                        <li><strong>Personal API key records:</strong> a key's name, its permissions and
+                                            when it was created and used. Only a one-way hash of the key is stored, never
+                                            the key itself.</li>
+                                        <li><strong>Passkey sign-in challenges:</strong> a short-lived one-time value used
+                                            to complete a passkey sign-in, deleted after 5 minutes.</li>
+                                        <li><strong>An authentication audit log:</strong> the type of event (for example
+                                            sign-in, token refresh, key revoked), the account, the time, and a SHA-256
+                                            hash of the IP address. We never store the raw IP address or the sign-in
+                                            tokens in this log.</li>
+                                    </ul>
+                                    <p>We keep this to keep administrator accounts secure and to detect and prevent abuse.
+                                    Mobile session records are deleted 7 days after the session ends or expires. Revoked
+                                    API keys stay listed so there is a record of them. The audit log is kept for security
+                                    review and is removed only when the administrator's account is deleted. If an
+                                    administrator account is disabled, all of that person's mobile sessions and API keys
+                                    are revoked immediately.</p>
 
                                     <h5 class="font-weight-bold mt-4">2. How We Use Information</h5>
                                     <ul>
@@ -103,7 +127,7 @@
 
                                     <h5 class="font-weight-bold mt-4">5. Data Retention</h5>
                                     <p>We do not store personal data on our servers beyond what is necessary to operate the
-                                    Service. Cached schedule data stored on your device by the app is managed by your
+                                    Service. Retention of shul administrator sign-in records is described in section 1. Cached schedule data stored on your device by the app is managed by your
                                     device's operating system and can be cleared by deleting the app.</p>
 
                                     <h5 class="font-weight-bold mt-4">6. Children's Privacy</h5>
@@ -143,7 +167,7 @@
                                     <hr class="mt-5">
                                     <p class="text-muted" style="font-size: 0.85rem;">
                                         &copy; <span th:text="${siteName ?: 'Teaneck Minyanim'}">Teaneck Minyanim</span>.
-                                        Last updated November 16, 2026.
+                                        Last updated November 27, 2026.
                                     </p>
 
                                 </div>
