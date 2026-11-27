@@ -17,15 +17,25 @@ This is a Spring Boot application that displays Jewish prayer services (minyanim
 3. `Schedule` class wrapped rule-based schedules into `MinyanTime` objects
 4. `Organization` owns multiple `Minyan` instances and calendar entries; each `Minyan` links to a `Location`
 
-## Public REST API (v1.8.0)
+## REST API (public v1.8.0, Admin API v1.22.0)
 
 ### Overview
 Versioned JSON API at `/api/v1/` powering the mobile app and third-party consumers.
 - **Interactive docs (Scalar):** `/api/docs` — rendered by `ScalarDocsController` from CDN, spec at `/api/docs.json`
 - **OpenAPI JSON:** `/api/docs.json`
 - **Human-readable reference:** `docs/api/README.md`
-- **Auth:** None (public read-only). Rate limit: 60 req/min/IP via Bucket4j (`ApiRateLimitFilter`).
-- **CORS:** `GET`/`OPTIONS` allowed from any origin on `/api/v1/**`
+- **Auth:** Public reads need none. Admin endpoints need `Authorization: Bearer <token>`; see "Admin API authentication" below.
+- **Rate limits (per IP, `ApiRateLimitFilter`):**
+
+  | Requests | Limit |
+  |---|---|
+  | Reads | 60/min |
+  | `/api/v1/auth/**` | 10/min |
+  | Other writes | 30/min |
+  | Feedback | 5/min |
+
+  The limiter runs inside the API security chain, before bearer auth.
+- **CORS:** `GET`/`POST`/`OPTIONS` are allowed from any origin on `/api/v1/**`, without credentials, so PATCH and DELETE can't be called cross-origin from a browser.
 
 ### Endpoints
 | Method | Path | Description |
@@ -35,10 +45,62 @@ Versioned JSON API at `/api/v1/` powering the mobile app and third-party consume
 | GET | `/api/v1/organizations/{id}/schedule` | Per-org schedule (max 30-day range) |
 | GET | `/api/v1/schedule` | Combined all-org schedule (max 14-day range) |
 | GET | `/api/v1/zmanim` | 14 halachic times for a date |
-| GET | `/api/v1/notifications` | Active announcements/banners |
+| GET | `/api/v1/notifications` | Active announcements/banners (`?includeInactive=true` is the admin list: super admin + `notifications:write`) |
+
+**Admin API (v1.22.0; Bearer token required unless marked public):**
+
+| Method | Path | Scope | Description |
+|---|---|---|---|
+| POST | `/api/v1/auth/magic-link/request` | public | Email an app sign-in link (`/app/auth/magic-link?token=`) |
+| POST | `/api/v1/auth/magic-link/exchange` | public | Swap a one-time app link token for access + refresh tokens |
+| POST | `/api/v1/auth/passkey/options` | public | Native passkey challenge (`{challengeId, publicKey}`) |
+| POST | `/api/v1/auth/passkey/verify` | public | Verify the native passkey assertion and issue tokens |
+| POST | `/api/v1/auth/refresh` | public (refresh token) | Rotate the refresh token and issue a new pair |
+| POST | `/api/v1/auth/logout` | public (refresh token) | Revoke the session family |
+| GET | `/api/v1/me` | any token | Current user, shuls, token kind, effective scopes |
+| GET | `/api/v1/organizations/{id}/overrides` | `schedule:read` | MANUAL overrides in a date range (max 62 days) |
+| POST | `/api/v1/organizations/{id}/overrides` | `overrides:write` | Create overrides (date range) |
+| PATCH / DELETE | `/api/v1/organizations/{id}/overrides/{eventId}` | `overrides:write` | Edit, toggle or delete one MANUAL override (409 for RULES/IMPORTED) |
+| GET | `/api/v1/organizations/{id}/minyanim[/{minyanId}]` | `schedule:read` | Admin view of minyanim, including disabled ones and the 11-slot schedule |
+| PATCH | `/api/v1/organizations/{id}/minyanim/{minyanId}` | `minyanim:write` | Enable or disable, partial schedule, notes, location, nusach |
+| PATCH | `/api/v1/organizations/{id}` | `shul:write` | Edit the shul profile |
+| POST / PATCH / DELETE | `/api/v1/notifications[/{id}]` | `notifications:write` + super admin | Manage site-wide notifications |
+
+The universal-link association files, `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json`, are served by `WellKnownController` outside `/api`. They return 404 until `APP_APPLE_TEAM_ID`, `APP_IOS_BUNDLE_ID`, `APP_ANDROID_PACKAGE` and `APP_ANDROID_SHA256` are set.
+
+### Admin API authentication (v1.22.0)
+- **One auth layer.** A stateless second `SecurityFilterChain` for `/api/v1/**` (`WebSecurityConfiguration.apiFilterChain`) never reads the HTTP session, so browser cookies can't authorize API calls, which is why CSRF is off there.
+- **Bearer filter.** `BearerTokenAuthenticationFilter` resolves `Authorization: Bearer`:
+  - `tnm_…` is a personal API key (`ApiKey`, `ApiKeyService`).
+  - `tnmapp_…` is a mobile access token (`AppSession`, `AppTokenService`; 15-minute TTL). Refresh tokens are `tnmrt_…` (30 days, rotate on every use; reuse revokes the session family).
+  - All of them are stored only as SHA-256 hashes. Raw values are never logged or audited.
+- **Principal.** Both kinds of token become an `ApiAuthentication` named by the username, so `TNMUserService.getCurrentUser()`, `isSuperAdmin()` and `canAccessOrganization()` work unchanged. `canAccessOrganization` is also narrowed by a key's shul restriction.
+- **Authorizing in API controllers.** Call `ApiAuthorizationService.require(ApiScope, orgId)`, `requireSuperAdmin(scope)` or `requireAuthenticated()`. Effective permission = the key's scopes ∩ what the owner can do right now. App tokens and "same as owner" keys hold every scope.
+- **Scopes (`ApiScope`):** `schedule:read`, `overrides:write`, `minyanim:write`, `notifications:write`, `shul:write`.
+- **Errors.** Throw `ApiException`; `ApiExceptionHandler` renders the envelope.
+  - Codes: `VALIDATION_ERROR`, `UNAUTHENTICATED`, `INVALID_TOKEN`, `FORBIDDEN`, `INSUFFICIENT_SCOPE`, `NOT_FOUND`, `NOT_MANUAL_OVERRIDE`, `RATE_LIMITED`, `INTERNAL_ERROR`.
+  - The handler does not map `IllegalArgumentException`. Catch it and rethrow `ApiException.validation(...)`.
+- **API keys.** Only super admins create and revoke them, on `/admin/api-keys` (`ApiKeyAdminController`). A key is shown once, rendered straight from the POST response, never via flash or session. API keys can't manage API keys.
+- **Revocation.** Disabling a user revokes all of their tokens and keys (`TNMUserService.onAccountDisabled`), and deleting a user removes them (`onAccountDeleted`).
+- **Audit.** Every token issue, use and rejection goes through `AuthAuditService`.
+- **Mobile sign-in.**
+  - App magic links use token purpose `APP_LOGIN`; web and app links can't be used in place of each other.
+  - Native passkeys reuse the shared `WebAuthnRelyingPartyOperations` bean, with single-use DB challenges (`ApiWebAuthnChallenge`). Android passkey origins come from `APP_ANDROID_SHA256`.
+
+### MANDATORY: Admin panel ↔ API parity
+Every admin action must be reachable from both the admin panel and the Admin API through the same code:
+1. **One service method per action.** It validates, authorizes (`canAccessOrganization` / `isSuperAdmin`), writes and syncs. The MVC controller and the API controller are thin wrappers that only parse input and map errors.
+   - Examples: `ManualOverrideService`, `MinyanAdminService`, `ShulProfileService`, the admin methods of `NotificationService`.
+2. **The same `@AdminAction("area.verb")` tag** (`security/AdminAction`) goes on the admin handler and on its `/api/v1` endpoint. Every `/admin/**` POST/PUT/PATCH/DELETE handler must carry one.
+3. **The API endpoint** gets full Swagger docs, `@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)` and a section in `docs/api/README.md`.
+4. **`AdminApiParityTest` fails CI** if an admin write handler has no tag, or a tag has no API endpoint and isn't in `src/test/resources/admin-api-parity-allowlist.txt`. Allowlist entries are `pending` (not built yet) or `by-design` (e.g. API-key management is browser-only), each with a reason.
+   - When you add an admin action, add its API endpoint, or a `pending` entry with a reason.
+   - When you cover a pending action, remove its allowlist line; the test fails on stale entries.
 
 ### Key files
 - `src/main/java/com/tbdev/teaneckminyanim/api/` — all API controllers and `OpenApiConfig`
+- `src/main/java/com/tbdev/teaneckminyanim/api/admin/` — Admin API controllers (DTOs in `api/dto/admin/`, auth DTOs in `api/dto/auth/`)
+- `src/main/java/com/tbdev/teaneckminyanim/service/auth/` — `ApiKeyService`, `AppTokenService`, `ApiAuthorizationService`, `NativePasskeyService`, `MagicLinkService`
 - `src/main/java/com/tbdev/teaneckminyanim/api/dto/` — public DTOs (never expose JPA entities)
 - `src/main/java/com/tbdev/teaneckminyanim/api/ApiRateLimitFilter.java` — per-IP rate limiting
 - `docs/api/README.md` — human-readable API reference
@@ -101,7 +163,7 @@ All responses use `ApiResponse<T>` with `{ data, meta, error }`. See `docs/api/R
 
 ### Controllers
 - **ZmanimController**: Routes homepage (`/`) and subscription page
-- **AdminController**: 1499-line monolith handling org/minyan CRUD, security checks, and schedule editing
+- **AdminController**: large controller (~2700 lines) for org/minyan/location/account CRUD and schedule editing. Minyan enable/disable/update and shul profile edits now delegate to `MinyanAdminService` / `ShulProfileService`; keep new logic in services, not here
   - Uses `isSuperAdmin()` and `getCurrentUser()` for access control
   - Creates/updates minyanim via form params (`sunday-time-type`, `sunday-fixed-time`, etc.)
 - **CalendarEventsAdminController** (v1.4.0): Manages materialized calendar events with full CRUD
@@ -208,7 +270,7 @@ mvn test
 ## Important Context
 - **Deprecated Code**: `TimeRule` contains TODOs about deprecated Java Date methods
 - **Hebrew Calendar Logic**: Heavy reliance on Kosherjava library; Teaneck coordinates are hardcoded (not configurable)
-- **No REST API**: All endpoints return HTML views via `ModelAndView`; frontend uses form submissions
+- **REST API**: The website itself uses HTML views via `ModelAndView` and form submissions; the JSON API under `/api/v1/` serves the mobile app and integrations (see the REST API section)
 - **Credentials in Code**: Database password and hardcoded coordinates in properties - address before production deployment
 
 ## Code Style
